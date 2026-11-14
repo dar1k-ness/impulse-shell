@@ -1063,12 +1063,12 @@ An animation whose every step changes what the window shows:
 
 The steps of one run each: Quickshell `100 100 2 4 16 17`, rusty-impulse `103 103 0 3 17 16`.
 
-Still different: when the steps draw, rusty-impulse ends some 15 to 25 ms earlier than
-Quickshell in every row, and as much earlier with no busy step at all (291 to 296 ms against
-314 to 332). It is not the late step: the third step of such a run comes 4 ms after the second
-in rusty-impulse (once 6) and 16 to 17 ms after it under Quickshell, and the second 12 to 13 ms
-after the first (three times 16 to 29) against 14 to 19. The same before the fix below. Not
-looked into further and held by no test.
+The times of this section were taken before the first step of an animation was made as in
+"The first step of an animation" below. The fixture is its only-Timer case (one window, the
+only Timer counting starts the animation), where Quickshell's end moves by a frame and more
+from one round of runs to another and rusty-impulse's does not: in this round rusty-impulse
+ended 15 to 25 ms earlier in every row where the steps draw, and with no busy step at all
+(291 to 296 ms against 314 to 332). The rows were not measured again.
 
 Why three steps at once, from the Qt sources and the Wayland traces of both. Qt sends a frame
 for every step, whatever changed, and computes a step two frames ahead of the screen: its
@@ -1123,6 +1123,95 @@ late ones, five. With every core of the machine busy a Quickshell thread that go
 processor for a frame took the third step after the second callback in one run of 20, and
 had taken five by the fourth in all of them. What the Timers do once such an animation ended
 is the same as in Qt and is held by the other tests of that file.
+
+## The first step of an animation
+
+Compared with Quickshell 0.3.2 on Qt 6.12.0 under headless sway at 60 Hz. A NumberAnimation
+of 300 ms is started by the handler of a Timer, in a shell that has shown its windows and is
+idle. When Qt takes the first step depends on how many windows are exposed and on what
+started the animation driver, and rusty-impulse follows the three cases:
+
+- **One window, and a Timer was counting besides the one that started the animation** (or
+  that one repeats). The driver
+  starts from the event loop after the handler (`QQmlAnimationTimer::startAnimations`), the
+  window gets an update for it (`QSGThreadedRenderLoop::animationStarted`), and the driver
+  steps right after that sync (`polishAndSync`): the first step comes within 1 ms of
+  `start()`, before any frame callback. `AnimClock::first` in `crates/shell/src/main.rs`.
+- **One window, and the Timer that started the animation was the only one counting and
+  does not repeat.** A Timer is a `QPauseAnimation`. As its countdown ends none is left
+  running, so `QUnifiedTimer` starts the driver for that end
+  (`QQmlAnimationTimer::restart`, `QUnifiedTimer::localRestart`), before the Timer's handler
+  runs. The window's update and the step after its sync come before the animation the
+  handler started is in the driver's list (`startAnimations` is queued behind them): that
+  step moves nothing, and the animation takes its first step with the frame callback of that
+  frame, one frame later. rusty-impulse sends that one frame too, changed or not, and steps
+  first with its callback (`Steppers::lone` in `crates/qml/src/steppers.rs`,
+  `World::timer_started_driver`, `AnimClock::late`).
+- **No window or several windows exposed.** The driver is stepped by a timer of one vsync
+  and not as a window syncs (`QSGThreadedRenderLoop::startOrStopAnimationTimer`): the first
+  step comes one interval after the start, whatever started the driver
+  (`AnimClock::one_window`).
+
+Before, rusty-impulse took the first step one vsync after `start()` in every case, and with
+one window a second step as it sent the frame of the first.
+
+The end of the animation after `start()` on the wall clock, 8 runs each one after another,
+and the first steps of a typical run:
+
+| Windows | Started by | Steps draw | Quickshell | rusty-impulse | Before |
+|---|---|---|---|---|---|
+| one | a Timer while another counts | yes | 271 to 277 in 5 runs, 286 to 291 in 3 (0, 7, 24) | 270 to 274 (0, 10, 12) | 287 to 290 (17, 27, 29) |
+| one | a Timer while another counts | no | 272 to 294 (0, 4, 21) | 300 to 301 (0, 17, 34) | 317 (17, 34, 50) |
+| one | the only Timer | yes | 288 to 292 in 6 runs, 303 to 304 in 2 (4, 21, 37) | 290 to 292, once 300 (1, 17, 33) | 288 to 294, once 307 (17, 27, 29) |
+| one | the only Timer | no | 288 to 294, 303, 308 (4, 20, 37) | 300 to 301 (1, 17, 34) | 317 to 318 |
+| two, one animates | a Timer while another counts | yes | 304 to 310 (17, 33, 49) | 299 to 304 (17, 27, 43) | 287, 296 to 298 |
+| two, one animates | the only Timer | yes | 305 to 308 (17, 33, 49) | 300 to 306, once 314 (17, 27, 43) | not measured |
+| two, both animate | a Timer while another counts | yes | 304 to 306, once 289 | 301 to 308, once 325 | 302 to 304, once 320 |
+
+Each animated value takes 19 steps in both with two windows.
+
+Still different:
+
+- With one window Quickshell ends at one of two times a frame apart. Its second step follows
+  the first at once only when its main thread asks for the next update before its render
+  thread has asked for the frame callback (`QWaylandWindow::requestUpdate` against
+  `handleUpdate`); each later step is another go at that race, and once won the render
+  thread stays a frame ahead. rusty-impulse always takes that extra step after the frame of
+  the first when another Timer was counting, as Quickshell does in most runs, and never
+  with the only Timer.
+- With the only Timer, Quickshell's end also moves with where sway's 60 Hz clock stands as
+  the Timer ends: in another round of 8 runs it took its first step 10 to 13 ms after
+  `start()` and ended at 305 to 324 ms in every run, against 4 to 8 ms and the times of the
+  table. rusty-impulse's one frame is answered within 1 ms, and it ended at 291 to 293 ms
+  (once 304) in that round too.
+- Under headless sway the frame callbacks come 16.1 to 16.2 ms apart to rusty-impulse and
+  16.6 to 16.7 ms apart to Quickshell, by the times sway itself stamps on them: 8 ms over
+  the 18 steps of the animation. Why sway paces the two differently was not found.
+- With one window and steps that draw nothing, Quickshell still sends a frame for each step
+  and steps with the callbacks, the extra step included; rusty-impulse sends no frame and
+  steps by its vsync timer after the first step, and ends when the 300 ms are over, up to
+  28 ms after Quickshell. Nothing on the screen differs, since nothing is drawn.
+- With two windows Quickshell's steps come from its timer, 16 ms apart on the wall clock (the
+  whole milliseconds of one vsync) and independent of the frame callbacks, each moving the
+  animation clock by 16.67 ms: after the first step an animation runs 4 % fast at 60 Hz.
+  rusty-impulse steps first by its vsync timer too, then once per frame callback of a window
+  that draws; the step of the first callback moves the clock by the time since the timer's
+  step. It ends 2 to 5 ms before Quickshell here.
+
+Held by tests: `an_animation_takes_its_first_step_as_it_starts_as_under_quickshell` of
+`crates/shell/tests/timer_clock_equiv.rs` checks that the first step of both comes less than
+half a vsync after the start on the fixture's clock (17 ms in rusty-impulse before), and
+counts the steps before the second frame callback after the handler by the order of the lines
+of the Wayland trace (3 in rusty-impulse, 2 or 3 under Quickshell);
+`an_animation_started_as_the_only_timer_ends_steps_first_with_a_frame_callback` counts the
+steps of both before the first such callback (0 and 0; 2 in rusty-impulse before);
+`with_two_windows_the_first_step_comes_one_vsync_after_the_start_as_under_quickshell` checks
+on the fixture's clock that the first step of both comes no sooner than half a vsync after
+the start; `undrawn_animation_steps_on_a_timer` of `crates/shell/tests/idle_wakeups.rs`
+counts the one frame of the only-Timer case; unit tests of `AnimClock` in
+`crates/shell/src/main.rs` and
+`the_end_of_the_only_timer_counting_starts_the_driver_before_its_handler` in
+`crates/qml/src/runtime.rs`.
 
 ## A Repeater's model written while the Repeater builds
 

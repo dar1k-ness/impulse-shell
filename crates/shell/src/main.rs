@@ -604,6 +604,19 @@ struct AnimClock {
     /// The driver's last step came with a frame callback (or began the run), not by the
     /// vsync timer.
     on_frame: bool,
+    /// The running driver has taken its first step.
+    stepped: bool,
+    /// Exactly one window is exposed (`App::one_window`). Only then does
+    /// QSGThreadedRenderLoop step the driver as that window syncs, first right after the
+    /// update the window gets as the driver starts (startOrStopAnimationTimer,
+    /// polishAndSync). With none or several a timer of one vsync steps it, first one
+    /// interval after its start.
+    one_window: bool,
+    /// The end of a Timer's countdown started the driver before the Timer's handler ran
+    /// (`World::timer_started_driver`), and the handler started the animations registered
+    /// now. Qt draws a frame for the driver it started and steps it once before those
+    /// animations are in its list: their first step comes with that frame's callback.
+    late: bool,
     /// The wall time when the running driver's time started from zero.
     origin_wall: f64,
     /// The driver stopped with its time this far behind the wall time that went by since it
@@ -656,6 +669,9 @@ impl AnimClock {
             caught: 0.0,
             led: false,
             on_frame: true,
+            stepped: false,
+            one_window: true,
+            late: false,
             origin_wall: 0.0,
             owed: 0.0,
             stopped: 0.0,
@@ -671,9 +687,11 @@ impl AnimClock {
     /// of the window before that step is taken answers the frame drawn as the first one came
     /// (a compositor that had nothing to show for a while answers at once) and is a step of
     /// its own: Qt's render thread sends that frame only after the main thread has begun the
-    /// first one's step, and each callback delivers an update request.
+    /// first one's step, and each callback delivers an update request. So is a callback that
+    /// came before the extra step after a frame that leads one (`App::draw_frame`) was taken:
+    /// Qt's main thread took that step as the frame was drawn, before its callback.
     fn callback(&mut self, k: usize) {
-        if self.frame_due && self.called == Some(k) {
+        if self.frame_due && self.called.is_none_or(|c| c == k) {
             self.ahead = self.ahead.saturating_add(1);
         }
         self.frame_due = true;
@@ -695,7 +713,15 @@ impl AnimClock {
         animating: bool,
         awaiting: bool,
         give_up: Option<f64>,
+        registered: bool,
     ) -> Option<(f64, Due)> {
+        // QUnifiedTimer::startAnimationDriver, QSGThreadedRenderLoop::animationStarted: the
+        // one window exposed gets an update at once, and the driver takes its first step
+        // right after that sync. Qt's frame shows nothing new and is not sent here: the step
+        // is due now.
+        if self.first(registered) && !awaiting {
+            return Some((now, Due::Frame));
+        }
         if !(self.running && animating) {
             self.ahead = 0;
         } else if now - self.seen >= 2.0 * self.vsync
@@ -805,7 +831,19 @@ impl AnimClock {
 
     /// A wakeup now would be a new animation frame for `advance`.
     fn step_due(&self, wall: f64, awaiting: bool) -> bool {
-        !self.running || self.frame_due || self.ahead > 0 || (!awaiting && self.tick(wall))
+        !self.running
+            || self.frame_due
+            || self.ahead > 0
+            || (!awaiting && (self.first(true) || self.tick(wall)))
+    }
+
+    /// Animations are `registered` and their driver has its first step to take at once: one
+    /// window is exposed (`one_window`), and there is no frame that shows them at their start
+    /// to wait for.
+    fn first(&self, registered: bool) -> bool {
+        let driven = registered && !qml::debug::on(qml::debug::Switch::WALL_ANIM);
+        let at_once = self.one_window && !self.late;
+        driven && at_once && (!self.running || !(self.stepped || self.unshown))
     }
 
     /// The vsync timer is due. Each of its ticks is a step, as each event of
@@ -833,6 +871,8 @@ impl AnimClock {
         self.unshown = true;
         self.led = false;
         self.on_frame = true;
+        self.stepped = false;
+        self.late = false;
         self.stamp(wall)
     }
 
@@ -861,17 +901,29 @@ impl AnimClock {
             self.running = false;
             self.ahead = 0;
             self.flying = None;
+            self.late = false;
         } else {
             let delta = wall - self.wall;
-            if !self.running {
+            let first = !awaiting && self.first(true);
+            if !self.running && self.late && !frame_due && (awaiting || !self.tick(wall)) {
+                // The frame sent for the driver the Timer's end started is with the
+                // compositor; with no window to send one, the vsync timer's tick is to come.
+            } else if !self.running {
                 // Its first frame is one vsync on from its start.
+                let late = self.late;
                 self.begin(wall, since);
                 self.unshown = false;
                 self.m = self.fixed.unwrap_or(self.vsync);
                 self.t = self.origin + self.m;
+                self.stepped = true;
+                // With one window the frame that shows this step is followed by the extra
+                // step of `App::draw_frame`. Not when the step came with the frame callback
+                // of the frame a Timer's end sent, nor when a timer steps the driver.
+                self.led = late || !self.one_window;
             } else if self.unshown {
                 // The frame that shows the start is still to be drawn.
-            } else if frame_due || self.ahead > 0 || (!awaiting && self.tick(wall)) {
+            } else if frame_due || self.ahead > 0 || (!awaiting && (first || self.tick(wall))) {
+                self.stepped = true;
                 // (Else not a new frame: an IPC or service wakeup between two.)
                 // A step such a wakeup took before the vsync timer leaves the next one a whole
                 // interval after where this one was due: wakeups without end (posted events
@@ -898,7 +950,7 @@ impl AnimClock {
                 } else {
                     self.vsync
                 };
-                self.on_frame = frame_due;
+                self.on_frame = frame_due || first;
                 // A step by the timer is no first frame to follow with an extra step.
                 self.led |= !frame_due;
                 if frame_due {
@@ -2176,11 +2228,13 @@ impl App {
         }
         let awaiting = self.awaiting_frame();
         let give_up = self.callback_timeout();
+        self.clock.one_window = self.one_window();
         let frame = self.clock.arm(
             now,
             self.animating || self.ptr.swipe_animating(),
             awaiting,
             give_up,
+            animations_running(self),
         );
         if let Some((at, why)) = frame {
             q.push(at, why);
@@ -2399,6 +2453,13 @@ impl App {
             .filter_map(|k| self.wins[k].asked)
             .map(|t| self.loop_ms(t) + shell::sched::FRAME_CALLBACK_TIMEOUT_MS)
             .reduce(f64::min)
+    }
+
+    /// Exactly one window is exposed (`AnimClock::one_window`): it has committed a buffer
+    /// and the compositor answers its frames (`unexposed`).
+    fn one_window(&self) -> bool {
+        let exposed = |&k: &usize| self.wins[k].mapped.is_some() && !self.unexposed(k);
+        (0..self.wins.len()).filter(exposed).count() == 1
     }
 
     fn can_draw(&self, k: usize) -> bool {
@@ -2727,7 +2788,8 @@ impl App {
         let leads = animations_running(self)
             && !self.clock.answered
             && !self.clock.frame_due
-            && !self.clock.led;
+            && !self.clock.led
+            && !self.clock.late;
         if leads {
             self.clock.frame_due = true;
         }
@@ -3171,7 +3233,7 @@ impl App {
                 // Any other frame that changes no pixel (an item of a running animation moving
                 // while its opacity is 0) sends the compositor nothing, neither a commit nor a
                 // frame request: the next driver step comes by the vsync timer.
-                gpu.may_skip = veils.is_empty();
+                gpu.may_skip = veils.is_empty() && !self.clock.late;
                 let qh = &self.qh;
                 let retiring = &mut self.retiring;
                 let pres = self.presentation.as_ref();
@@ -3267,7 +3329,7 @@ impl App {
             }
             _ => vec![[0, 0, w as i64, h as i64]],
         };
-        if damage.is_empty() {
+        if damage.is_empty() && !self.clock.late {
             // The surface already shows this frame: nothing is sent, neither a commit nor a
             // frame request, and the next step of a running animation comes by the vsync timer.
             // It is the frame that shows an animation at its start all the same.
@@ -4986,6 +5048,7 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         app.step_started();
         let running = animations_running(app);
         let awaiting = app.awaiting_frame();
+        app.clock.one_window = app.one_window();
         app.read_wall(now);
         let at = app
             .clock
@@ -5016,6 +5079,15 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         app.panels_made();
         let tk = app.rt.tick(at);
         let tk = app.step_started().unwrap_or(tk);
+        // With none or several windows exposed Qt's driver is stepped by a timer, whose
+        // first tick is one interval after the driver's start whatever started it.
+        if std::mem::take(&mut app.rt.world.borrow_mut().timer_started_driver)
+            && !app.clock.running
+            && app.clock.one_window
+            && animations_running(app)
+        {
+            app.start_late();
+        }
         let slow_tk = lap();
         // Timer/animation handlers may have queued service calls (MPRIS, Hyprland dispatch);
         // send them now instead of at the next wakeup, which can be a second away.
@@ -10759,6 +10831,18 @@ impl App {
         self.clock.read_wall(wall, due);
     }
 
+    /// The handler of a Timer whose end started the driver started the animations that run
+    /// (`AnimClock::late`): the windows that show them send a frame now, as Qt's do for the
+    /// started driver, changed or not, and its callback is the driver's first step. One whose
+    /// last frame is still with the compositor has that callback to come.
+    fn start_late(&mut self) {
+        self.clock.late = true;
+        let shows = self.with_anim_attr(|animating, _, _| animating.to_vec());
+        for (win, shows) in self.wins.iter_mut().zip(shows) {
+            win.dirty |= shows;
+        }
+    }
+
     fn step_started(&mut self) -> Option<bool> {
         if !self.rt.animations_started() {
             return None;
@@ -11499,14 +11583,146 @@ mod tests {
         assert_eq!(clock.stamp(1000.5), start);
         assert_eq!(clock.advance(1001.0, true, 0.0, false), start);
         clock.shown();
-        // A pass that is no new frame (a wakeup between two ticks of the timer, a wait for
-        // a frame callback) moves nothing either; a step moves by the wall time that passed.
-        assert_eq!(clock.advance(1002.0, true, 0.0, false), start);
+        // With no frame to wait for the first step is due at once. After it a pass that is
+        // no new frame (a wakeup between two ticks of the timer, a wait for a frame callback)
+        // moves nothing either; a step moves by the wall time that passed.
+        assert_eq!(clock.advance(1001.5, true, 0.0, true), start);
+        assert_eq!(clock.advance(1002.0, true, 0.0, false), start + 2.0);
+        assert_eq!(clock.advance(1003.0, true, 0.0, false), start + 2.0);
         assert_eq!(clock.advance(1017.0, true, 0.0, false), start + 17.0);
         assert_eq!(clock.stamp(1020.0), start + 17.0);
         assert_eq!(clock.advance(1025.0, true, 0.0, true), start + 17.0);
         clock.frame_due = true;
         assert_eq!(clock.advance(1030.0, true, 0.0, true), start + 30.0);
+    }
+
+    /// QQmlAnimationTimer::startAnimations starts the driver from the event loop, and
+    /// QSGThreadedRenderLoop steps it right after the sync of the update it gives the window
+    /// for that: an animation's first step is due as soon as it is registered, not one vsync
+    /// later. The frame that shows it is followed by a second step (`App::draw_frame`), and the
+    /// third comes with that frame's callback.
+    #[test]
+    fn the_first_step_is_due_as_soon_as_an_animation_is_registered() {
+        let mut clock = AnimClock::new();
+        let v = clock.vsync;
+        let idle = clock.advance(1000.0, false, 0.0, false);
+        assert!(clock.arm(1000.0, false, false, None, false).is_none());
+        let due = clock.arm(1000.2, true, false, None, true);
+        assert!(matches!(due, Some((at, Due::Frame)) if at == 1000.2));
+        assert!(clock.step_due(1000.2, false));
+        assert_eq!(clock.advance(1000.2, true, idle, false), idle + v.trunc());
+        assert!(
+            !clock.led,
+            "the frame of the first step is followed by a step"
+        );
+        // A frame that changed no pixel is not sent and takes that step back: the second
+        // step is the vsync timer's.
+        clock.frame_due = true;
+        clock.sent(false, true);
+        let due = clock.arm(1000.3, true, false, None, true);
+        assert!(matches!(due, Some((at, Due::Frame)) if at > 1000.2 + 0.75 * v));
+        assert_eq!(clock.advance(1005.0, true, idle, false), idle + v.trunc());
+        // A frame that was sent is followed by the step, and its callback by the next.
+        clock.frame_due = true;
+        clock.sent(true, true);
+        assert!(clock.led);
+        assert_eq!(
+            clock.advance(1006.0, true, idle, true),
+            idle + (2.0 * v).trunc()
+        );
+        assert_eq!(
+            clock.advance(1007.0, true, idle, true),
+            idle + (2.0 * v).trunc()
+        );
+        clock.callback(0);
+        assert_eq!(
+            clock.advance(1010.0, true, idle, true),
+            idle + (3.0 * v).trunc()
+        );
+    }
+
+    /// The frame of the first step was sent, and its frame callback came before the step
+    /// that follows the frame was taken (a slow frame): they are two steps, both due at once.
+    /// Qt's main thread took the second step as its render thread drew the frame.
+    #[test]
+    fn a_frame_callback_that_comes_before_the_step_after_the_first_frame_is_a_step_too() {
+        let mut clock = AnimClock::new();
+        let v = clock.vsync;
+        let idle = clock.advance(1000.0, false, 0.0, false);
+        assert_eq!(clock.advance(1000.2, true, idle, false), idle + v.trunc());
+        clock.frame_due = true;
+        clock.sent(true, true);
+        clock.callback(0);
+        assert_eq!(
+            clock.advance(1012.0, true, idle, false),
+            idle + (2.0 * v).trunc()
+        );
+        assert!(clock.step_due(1012.5, true));
+        assert_eq!(
+            clock.advance(1012.5, true, idle, true),
+            idle + (3.0 * v).trunc()
+        );
+        assert!(!clock.step_due(1013.0, true));
+    }
+
+    /// With none or several windows exposed QSGThreadedRenderLoop steps the driver by a timer
+    /// of one vsync (startOrStopAnimationTimer): the first step comes one interval after the
+    /// start, and the frame that shows it is followed by no step before its frame callback.
+    #[test]
+    fn with_several_windows_the_first_step_comes_one_vsync_after_the_start() {
+        let mut clock = AnimClock::new();
+        let v = clock.vsync;
+        clock.one_window = false;
+        let idle = clock.advance(1000.0, false, 0.0, false);
+        let due = clock.arm(1000.2, true, false, None, true);
+        assert!(matches!(due, Some((at, Due::Frame)) if at > 1000.0 + 0.75 * v));
+        assert_eq!(
+            clock.advance(1000.0 + v, true, idle, false),
+            idle + v.trunc()
+        );
+        assert!(
+            clock.led,
+            "the frame of the first step is followed by no extra step"
+        );
+        assert!(!clock.step_due(1000.5 + v, true));
+        clock.callback(0);
+        assert_eq!(
+            clock.advance(1010.0 + v, true, idle, true),
+            idle + (2.0 * v).trunc()
+        );
+    }
+
+    /// The handler of the only Timer counting started the animation (`AnimClock::late`):
+    /// Qt's driver was started by the Timer's end and stepped before the animation was in
+    /// its list, so the first step waits for the frame callback of the frame sent meanwhile,
+    /// or for the vsync timer when no window sent one.
+    #[test]
+    fn an_animation_started_as_the_only_timer_ends_steps_first_with_a_frame_callback() {
+        let mut clock = AnimClock::new();
+        let v = clock.vsync;
+        let idle = clock.advance(1000.0, false, 0.0, false);
+        clock.late = true;
+        let due = clock.arm(1000.0, true, true, Some(1100.0), true);
+        assert!(matches!(due, Some((at, Due::Frame)) if at == 1100.0));
+        assert_eq!(clock.advance(1001.0, true, idle, true), idle + 1.0);
+        assert!(!clock.running);
+        clock.callback(0);
+        assert_eq!(clock.advance(1010.0, true, idle, false), idle + v.trunc());
+        assert!(clock.running && !clock.late && clock.led);
+
+        let mut clock = AnimClock::new();
+        let idle = clock.advance(1000.0, false, 0.0, false);
+        clock.late = true;
+        let due = clock.arm(1000.0, true, false, None, true);
+        assert!(matches!(due, Some((at, Due::Frame)) if at == 1000.0 + v));
+        assert_eq!(clock.advance(1005.0, true, idle, false), idle + 5.0);
+        assert!(!clock.running);
+        clock.arm(1005.0, true, false, None, true);
+        assert_eq!(
+            clock.advance(1000.0 + v, true, idle, false),
+            idle + v.trunc()
+        );
+        assert!(clock.running && !clock.late);
     }
 
     /// A step by the vsync timer is out of step with the output, so the frame callback of the
@@ -11553,7 +11769,7 @@ mod tests {
     fn a_timer_tick_soon_after_a_late_one_is_a_step() {
         let mut clock = AnimClock::new();
         let t0 = clock.advance(0.0, true, 0.0, false);
-        clock.arm(0.0, true, false, None);
+        clock.arm(0.0, true, false, None, true);
         let (mut wall, mut ticks) = (0.0, 0);
         // The loop wakes 20, 20, 20 and 7 ms after its last turn: each time the timer is due.
         for late in [20.0, 20.0, 20.0, 7.0].into_iter().cycle().take(30) {
@@ -11568,7 +11784,7 @@ mod tests {
             let t = clock.advance(wall, true, 0.0, false) - t0;
             let want = (f64::from(ticks + 1) * clock.vsync).trunc() - clock.vsync.trunc();
             assert_eq!(t, want, "after tick {ticks} at {wall} ms");
-            clock.arm(wall, true, false, None);
+            clock.arm(wall, true, false, None, true);
         }
         assert_eq!(clock.advance(wall, true, 0.0, false) - t0, 500.0);
         assert_eq!(wall, 509.0);
@@ -11577,20 +11793,20 @@ mod tests {
         // has passed since the last one.
         let at = clock.timer.unwrap();
         let before = clock.advance(at, true, 0.0, false);
-        clock.arm(at, true, false, None);
+        clock.arm(at, true, false, None, true);
         let early = at + 0.9 * clock.vsync;
         assert!(!clock.step_due(early, false));
         assert_eq!(clock.advance(early, true, 0.0, false), before);
-        clock.arm(early, true, false, None);
+        clock.arm(early, true, false, None, true);
         assert_eq!(clock.timer, Some(at + clock.vsync));
         assert!(clock.step_due(at + clock.vsync, false));
         assert!(clock.advance(at + clock.vsync, true, 0.0, false) > before);
         // A step by a frame callback is not followed by the tick the timer was armed for.
-        clock.arm(at + clock.vsync, true, false, None);
+        clock.arm(at + clock.vsync, true, false, None, true);
         let frame = at + 2.0 * clock.vsync - 2.0;
         clock.frame_due = true;
         let before = clock.advance(frame, true, 0.0, true);
-        clock.arm(frame, true, false, None);
+        clock.arm(frame, true, false, None, true);
         assert_eq!(clock.timer, Some(frame + clock.vsync));
         assert_eq!(clock.advance(frame + 2.0, true, 0.0, false), before);
     }
@@ -11653,14 +11869,14 @@ mod tests {
             ..AnimClock::new()
         };
         let mut at = clock.advance(0.0, true, 0.0, false);
-        clock.arm(0.0, true, false, None);
+        clock.arm(0.0, true, false, None, true);
         let mut steps = 0;
         for turn in 0..500 {
             let wall = f64::from(turn) * 2.0 + 1.0;
             let t = clock.advance(wall, true, 0.0, false);
             steps += u32::from(t != at);
             at = t;
-            clock.arm(wall + 1.9, true, false, None);
+            clock.arm(wall + 1.9, true, false, None, true);
         }
         assert!(!clock.timer_mode);
         assert!((59..=61).contains(&steps), "{steps} steps in a second");
@@ -11677,16 +11893,16 @@ mod tests {
         // end of the late turn are due at once, one a turn; the fourth an interval later.
         let mut clock = AnimClock::new();
         let t0 = clock.advance(0.0, true, 0.0, false);
-        clock.arm(0.0, true, false, None);
+        clock.arm(0.0, true, false, None, true);
         clock.advance(v, true, 0.0, false);
-        clock.arm(v + 100.0, true, false, None);
+        clock.arm(v + 100.0, true, false, None, true);
         let mut wall = v + 100.0;
         for step in 2..=4 {
             wall += 0.1;
             assert!(clock.step_due(wall, false), "step {step}");
             let t = clock.advance(wall, true, 0.0, false) - t0;
             assert_eq!(t.round(), (f64::from(step) * v).round(), "step {step}");
-            clock.arm(wall, true, false, None);
+            clock.arm(wall, true, false, None, true);
         }
         assert!(!clock.step_due(wall + 0.1, false));
         let next = clock.timer.unwrap();
@@ -11694,12 +11910,12 @@ mod tests {
         // A turn of less than two frames: the one tick it missed, and the grid goes on.
         let mut clock = AnimClock::new();
         clock.advance(0.0, true, 0.0, false);
-        clock.arm(0.0, true, false, None);
+        clock.arm(0.0, true, false, None, true);
         clock.advance(v, true, 0.0, false);
-        clock.arm(v + 30.0, true, false, None);
+        clock.arm(v + 30.0, true, false, None, true);
         assert!(clock.step_due(v + 30.1, false));
         clock.advance(v + 30.1, true, 0.0, false);
-        clock.arm(v + 30.1, true, false, None);
+        clock.arm(v + 30.1, true, false, None, true);
         assert!(!clock.step_due(v + 30.2, false));
         assert!((clock.timer.unwrap() - 3.0 * v).abs() < 1e-9);
 
@@ -11712,7 +11928,7 @@ mod tests {
             clock.shown();
             clock.callback(0);
             clock.advance(v, true, 0.0, flying);
-            clock.arm(v + 100.0, true, true, None);
+            clock.arm(v + 100.0, true, true, None, true);
             for _ in 0..callbacks {
                 clock.callback(0);
             }
@@ -11721,7 +11937,7 @@ mod tests {
                 let wall = v + 100.0 + f64::from(turn) * 0.1;
                 steps += u32::from(clock.step_due(wall, true));
                 clock.advance(wall, true, 0.0, true);
-                clock.arm(wall, true, true, None);
+                clock.arm(wall, true, true, None, true);
             }
             steps
         };
@@ -11738,9 +11954,9 @@ mod tests {
         clock.shown();
         clock.callback(0);
         clock.advance(v, true, 0.0, false);
-        clock.arm(v + 100.0, true, true, None);
+        clock.arm(v + 100.0, true, true, None, true);
         clock.advance(v + 100.1, true, 0.0, true);
-        clock.arm(v + 200.0, true, true, None);
+        clock.arm(v + 200.0, true, true, None, true);
         assert_eq!(clock.ahead, 1);
         // A turn of less than two frames is followed by the callback's step alone.
         let mut clock = AnimClock::new();
@@ -11748,10 +11964,10 @@ mod tests {
         clock.shown();
         clock.callback(0);
         clock.advance(v, true, 0.0, true);
-        clock.arm(v + 30.0, true, true, None);
+        clock.arm(v + 30.0, true, true, None, true);
         clock.callback(0);
         clock.advance(v + 30.1, true, 0.0, true);
-        clock.arm(v + 30.1, true, true, None);
+        clock.arm(v + 30.1, true, true, None, true);
         assert!(!clock.step_due(v + 30.2, true));
     }
 

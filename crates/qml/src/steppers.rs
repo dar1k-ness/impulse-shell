@@ -147,6 +147,11 @@ pub struct Steppers {
     timers: HashMap<usize, TimerRec>,
     /// Running Timers by due time.
     queue: BTreeSet<(Due, usize)>,
+    /// Timers that do not repeat whose countdown ended with no other Timer counting, until
+    /// their QEvent_Triggered is delivered. QUnifiedTimer::timerEvent of the pause timer:
+    /// the QPauseAnimation ends in updateAnimationTimers and none is left running, so
+    /// restart() resumes the QQmlAnimationTimer and localRestart() starts the driver.
+    lone: Vec<usize>,
     /// Start order of the next Timer (re)start.
     next_seq: u64,
     /// Timers and FrameAnimations at or above `seen` that are complete
@@ -263,6 +268,7 @@ impl World {
                 .retain(|e| !matches!(e, Posted::Triggered(t) | Posted::MaybeTick(t) if *t == i));
         }
         self.steppers.early.remove(&i);
+        self.steppers.lone.retain(|&l| l != i);
         self.steppers.destroy.retain(|&(_, o)| o != i);
         self.frame_anims.remove(&i);
         self.steppers.anim_imgs.remove(&i);
@@ -412,6 +418,9 @@ impl World {
     /// and triggers. One that was stopped, or started counting again, since the event was
     /// posted does nothing.
     pub(crate) fn timer_triggered(&mut self, t: usize) {
+        let lone = (self.steppers.lone.iter().position(|&l| l == t))
+            .map(|k| self.steppers.lone.swap_remove(k))
+            .is_some();
         if self.dead.contains(&t) {
             self.unqueue_timer(t);
             return;
@@ -420,6 +429,7 @@ impl World {
             return;
         }
         self.steppers.timers.remove(&t);
+        self.timer_started_driver |= lone;
         self.fire.push(Fire::Handler(t, Sym::new("onTriggered")));
         // runningChanged follows triggered.
         self.write_withheld(t, "running", Value::Bool(false));
@@ -754,6 +764,7 @@ impl World {
             }
         }
         due.sort_unstable_by_key(|(_, r)| r.seq);
+        let mut ended = Vec::new();
         for (t, r) in due {
             if self.dead.contains(&t) {
                 self.steppers.timers.remove(&t);
@@ -788,7 +799,11 @@ impl World {
                     },
                 );
                 self.posted.push_back(Posted::Triggered(t));
+                ended.push(t);
             }
+        }
+        if self.steppers.queue.is_empty() {
+            self.steppers.lone.append(&mut ended);
         }
     }
 

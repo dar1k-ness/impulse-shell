@@ -185,7 +185,10 @@ fn a_repeating_timer_is_triggered_once_for_the_intervals_the_clock_was_behind() 
             .map(|at| (at + 20.0) % 100.0)
             .collect();
         off.sort_by(f64::total_cmp);
-        ((r.len() as f64) < (last / 100.0).floor(), off[2] < 60.0)
+        (
+            (r.len() as f64) < ((last + 20.0) / 100.0).floor(),
+            off[2] < 60.0,
+        )
     };
     let [qt, ours] = &runs;
     assert_eq!(
@@ -239,10 +242,15 @@ FloatingWindow {
             console.log("late step over " + (Date.now() - t0))
         }
     }
+    Timer { interval: 600000; running: OTHER }
     Timer {
         interval: 500
         running: true
-        onTriggered: { root.t0 = Date.now(); an.start() }
+        onTriggered: {
+            root.t0 = Date.now()
+            console.log("the animation starts")
+            an.start()
+        }
     }
 }
 "#;
@@ -267,7 +275,13 @@ fn steps_logged(
 ) -> (Run, String) {
     let qml = (STEPS.replace("LATE", late))
         .replace("BUSY", &busy.to_string())
-        .replace("PAINT", &paint.to_string());
+        .replace("PAINT", &paint.to_string())
+        .replace("OTHER", "false");
+    run_steps(bin, dir, &qml, trace)
+}
+
+/// One run of the fixture `qml` under `bin`, and its log.
+fn run_steps(bin: &str, dir: &Path, qml: &str, trace: bool) -> (Run, String) {
     std::fs::create_dir_all(dir).unwrap();
     std::fs::write(dir.join("shell.qml"), qml).unwrap();
     let (r, w) = std::io::pipe().unwrap();
@@ -306,8 +320,16 @@ fn steps_logged(
 /// `nth` frame callback after it, of the frames the window asked for once the late step was
 /// over. Counted by the order of the lines in `log`, no clock.
 fn steps_by_callback(log: &str, nth: usize) -> usize {
+    steps_between(log, "late step over", nth)
+}
+
+/// How many steps a run of [`STEPS`] took between its last line `from` and the `nth` frame
+/// callback after it, of the frames the window asked for after that line.
+fn steps_between(log: &str, from: &str, nth: usize) -> usize {
     let lines: Vec<&str> = log.lines().collect();
-    let end = (lines.iter().rposition(|l| l.contains("late step over"))).expect("a late step");
+    let end = (lines.iter().rposition(|l| l.contains(from))).unwrap_or_else(|| {
+        panic!("no line {from:?}; log:\n{log}");
+    });
     let id = |l: &str, before: &str| {
         let at = l.find(before)?;
         let from = l[..at].rfind("wl_callback#")? + "wl_callback#".len();
@@ -327,7 +349,7 @@ fn steps_by_callback(log: &str, nth: usize) -> usize {
             steps += 1;
         }
     }
-    panic!("no {nth} frame callbacks after the late step; log:\n{log}");
+    panic!("no {nth} frame callbacks after {from:?}; log:\n{log}");
 }
 
 /// [`STEPS`] under Quickshell and under the native shell.
@@ -491,4 +513,172 @@ fn two_late_steps_in_a_row_are_followed_by_as_many_steps_at_once_as_under_quicks
         "steps after the two of 100 ms before the fourth frame callback: {our_steps} here, \
          {qt_steps} under Quickshell; log:\n{ours}"
     );
+}
+
+/// [`STEPS`], its animation started by the handler of a Timer that does not repeat, with the
+/// trace of both: when each took its first step, in ms after the handler on the fixture's
+/// clock, and how many steps it took before the `nth` frame callback that came after the
+/// handler, under Quickshell and here. `other`: another Timer is counting meanwhile.
+fn first_steps(other: bool, nth: usize) -> Option<[(f64, usize, String); 2]> {
+    if !testenv::require("qs") {
+        return None;
+    }
+    if std::env::var_os("WAYLAND_DISPLAY").is_none() {
+        testenv::unavailable("no Wayland compositor (WAYLAND_DISPLAY)");
+        return None;
+    }
+    let base = tempfile::tempdir().unwrap();
+    let qml = (STEPS.replace("LATE", "false"))
+        .replace("BUSY", "0")
+        .replace("PAINT", "true")
+        .replace("OTHER", &other.to_string());
+    let ours = env!("CARGO_BIN_EXE_rusty-impulse");
+    Some([("qs", "orig"), (ours, "native")].map(|(bin, dir)| {
+        let ((steps, _), log) = run_steps(bin, &base.path().join(dir), &qml, true);
+        (
+            steps[0].0,
+            steps_between(&log, "the animation starts", nth),
+            log,
+        )
+    }))
+}
+
+/// An animation takes its first step as soon as it is started: QQmlAnimationTimer's
+/// startAnimations starts the driver from the event loop, QSGThreadedRenderLoop gives the
+/// window an update for it, and the driver steps right after that update's sync, before the
+/// compositor has answered any frame. The native shell took that step one vsync after the
+/// start.
+///
+/// The second step follows the frame of the first with no frame callback to wait for, and the
+/// third comes with that frame's callback: three before the second frame callback. Under
+/// Quickshell the second step is at once only when its main thread asks for the next update
+/// before its render thread has asked for the frame callback (QWaylandWindow::requestUpdate
+/// against handleUpdate). Each step that waited for a callback is another go at that race,
+/// and once won the render thread stays a frame ahead: Quickshell has taken three steps by
+/// the second frame callback in most runs and two in the rest.
+#[test]
+#[cfg_attr(not(feature = "interp"), ignore = "temp tree; AOT-only refuses it")]
+fn an_animation_takes_its_first_step_as_it_starts_as_under_quickshell() {
+    let Some([(qt_first, qt_steps, qt), (our_first, our_steps, ours)]) = first_steps(true, 2)
+    else {
+        return;
+    };
+    assert!(
+        qt_first < 8.0,
+        "Quickshell: the first step came {qt_first} ms after the start; log:\n{qt}"
+    );
+    assert!(
+        (2..=3).contains(&qt_steps),
+        "Quickshell: {qt_steps} steps before the second frame callback after the start; \
+         log:\n{qt}"
+    );
+    assert!(
+        our_first < 8.0,
+        "the first step came {our_first} ms after the start; log:\n{ours}"
+    );
+    assert_eq!(
+        our_steps, 3,
+        "steps before the second frame callback after the start ({qt_steps} under \
+         Quickshell); log:\n{ours}"
+    );
+}
+
+/// The animation is started by the handler of the only Timer counting, one that does not
+/// repeat. A Timer is a QPauseAnimation: as its countdown ends none is left, so QUnifiedTimer
+/// starts the animation driver for that end (QQmlAnimationTimer::restart, localRestart),
+/// before the Timer's handler runs. The window is given its update, and the driver's step
+/// after that sync comes before the animation the handler started is in the driver's list
+/// (startAnimations is queued behind it): the animation takes its first step with the frame
+/// callback of that frame, one frame later than an animation started any other way, and ends
+/// one frame later. The native shell took two steps before the first frame callback here too.
+#[test]
+#[cfg_attr(not(feature = "interp"), ignore = "temp tree; AOT-only refuses it")]
+fn an_animation_started_as_the_only_timer_ends_steps_first_with_a_frame_callback() {
+    let Some([(_, qt_steps, qt), (_, our_steps, ours)]) = first_steps(false, 1) else {
+        return;
+    };
+    assert_eq!(
+        qt_steps, 0,
+        "Quickshell: no step before the first frame callback after the start; log:\n{qt}"
+    );
+    assert_eq!(
+        our_steps, qt_steps,
+        "steps before the first frame callback after the start: {our_steps} here, {qt_steps} \
+         under Quickshell; log:\n{ours}"
+    );
+}
+
+/// Two windows; an animation in the first, which draws it, is started by a Timer's handler
+/// while another Timer counts or (`OTHER`) none does. Logs what [`STEPS`] logs.
+const TWO: &str = r#"import QtQuick
+import Quickshell
+
+ShellRoot {
+    id: root
+    property real t0: 0
+    property var seen: []
+    FloatingWindow {
+        id: one
+        visible: true
+        implicitWidth: 200
+        implicitHeight: 200
+        property real v: 0
+        Rectangle { width: 10 + one.v / 10; height: 50; color: "red" }
+        NumberAnimation on v {
+            id: an
+            running: false
+            from: 0; to: 3000; duration: 300
+            onFinished: {
+                console.log("STEPS " + root.seen.join(" ") + " end=" + (Date.now() - root.t0))
+                Qt.quit()
+            }
+        }
+        onVChanged: root.seen.push((Date.now() - root.t0) + ":" + Math.round(v / 10))
+    }
+    FloatingWindow {
+        visible: true
+        implicitWidth: 200
+        implicitHeight: 200
+    }
+    Timer { interval: 600000; running: OTHER }
+    Timer {
+        interval: 1000
+        running: true
+        onTriggered: { root.t0 = Date.now(); an.start() }
+    }
+}
+"#;
+
+/// With two windows exposed QSGThreadedRenderLoop steps the animation driver by a timer of
+/// one vsync, not as a window syncs (startOrStopAnimationTimer: "with more than one window
+/// exposed ... polishAndSync() is now called potentially for multiple windows over time so it
+/// cannot take care of advancing the animation driver anymore"): the first step of an
+/// animation comes one interval after its start, whether or not the Timer that started it
+/// was the only one counting. Half an interval is the bound, on the fixture's own clock.
+#[test]
+#[cfg_attr(not(feature = "interp"), ignore = "temp tree; AOT-only refuses it")]
+fn with_two_windows_the_first_step_comes_one_vsync_after_the_start_as_under_quickshell() {
+    if !testenv::require("qs") {
+        return;
+    }
+    if std::env::var_os("WAYLAND_DISPLAY").is_none() {
+        testenv::unavailable("no Wayland compositor (WAYLAND_DISPLAY)");
+        return;
+    }
+    let base = tempfile::tempdir().unwrap();
+    let ours = env!("CARGO_BIN_EXE_rusty-impulse");
+    for other in [true, false] {
+        let qml = TWO.replace("OTHER", &other.to_string());
+        for (bin, dir) in [("qs", "orig"), (ours, "native")] {
+            let dir = base.path().join(format!("{dir}-{other}"));
+            let ((steps, end), log) = run_steps(bin, &dir, &qml, false);
+            let (first, _) = steps[0];
+            eprintln!("{bin}, another Timer counting: {other}: steps {steps:?}, end {end}");
+            assert!(
+                first >= 8.0,
+                "{bin}, another Timer counting: {other}: the first step came {first} ms \
+                 after the start; log:\n{log}"
+            );
+        }
+    }
 }

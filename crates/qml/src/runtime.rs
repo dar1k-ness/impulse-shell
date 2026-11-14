@@ -2640,6 +2640,11 @@ pub struct World {
     /// What registered with the animation timer since the host last looked (`Some` under a
     /// host whose animation clock stands between its frames): `Runtime::step_started`.
     pub started: Option<Vec<Started>>,
+    /// The handler of a Timer that does not repeat ran, and when its countdown ended no other
+    /// Timer was counting: with no animation running either, QUnifiedTimer started the
+    /// animation driver for that end, before the handler (see `Steppers::lone`). The host
+    /// takes it after the tick.
+    pub timer_started_driver: bool,
     /// Functions connected from JS (`item.sig.connect(this, f)`), by sender and handler name,
     /// in connection order.
     pub js_conns: HashMap<DKey, Vec<JsConn>>,
@@ -11071,6 +11076,7 @@ impl World {
             posted_yield: _,
             frame_wall: _,
             started: _,
+            timer_started_driver: _,
             js_conns: _,
             js_conn_seq: _,
             js_conns_of: _,
@@ -46414,6 +46420,45 @@ Item {
             assert_eq!(num(&rt, "fired"), if at.is_some() { 0.0 } else { 1.0 });
             rt.tick(260.0);
             assert_eq!(num(&rt, "fired"), 1.0);
+            assert!(rt.errors().is_empty(), "{:?}", rt.errors());
+        }
+    }
+
+    /// QUnifiedTimer::timerEvent of the pause timer, QQmlAnimationTimer::restart: the end of
+    /// the only Timer counting (no QPauseAnimation is left) resumes the animation timer, and
+    /// localRestart() starts the driver before the Timer's QEvent_Triggered is delivered.
+    /// With another Timer counting, or for a Timer that repeats, the pause timer is set again
+    /// and no driver starts.
+    #[test]
+    fn the_end_of_the_only_timer_counting_starts_the_driver_before_its_handler() {
+        let timer = |more: &str| {
+            format!(
+                "import QtQuick\nItem {{ id: root; property int fired: 0\n \
+                 Timer {{ interval: 100; running: true; {more}onTriggered: root.fired++ }}"
+            )
+        };
+        let cases = [
+            (timer("") + " }", true),
+            (timer("repeat: true; ") + " }", false),
+            (
+                timer("") + "\n Timer { interval: 60000; running: true } }",
+                false,
+            ),
+            (
+                timer("") + "\n Timer { interval: 100; running: true } }",
+                true,
+            ),
+        ];
+        for (src, lone) in cases {
+            let mut rt = Runtime::new(None);
+            let root = rt.load_str(&src).unwrap();
+            rt.tick(0.0);
+            rt.tick(50.0);
+            assert!(!rt.world.borrow().timer_started_driver, "{src}");
+            rt.tick(100.0);
+            rt.tick(100.0);
+            assert_eq!(rt.get(root, "fired").to_number(), 1.0, "{src}");
+            assert_eq!(rt.world.borrow().timer_started_driver, lone, "{src}");
             assert!(rt.errors().is_empty(), "{:?}", rt.errors());
         }
     }

@@ -527,54 +527,63 @@ fn concurrent_spinners_take_one_turn_per_frame() {
 
 /// An animation of a property nothing draws gets no frame callbacks: the driver falls back to
 /// a vsync timer (QUnifiedTimer) and the animation still finishes on time, in the 16 ms steps
-/// of `QSG_FIXED_ANIMATION_STEP`, each in a turn that timer woke.
+/// of `QSG_FIXED_ANIMATION_STEP`, each in a turn that timer woke. Started by the handler of
+/// the only Timer counting, its window sends the one frame Qt's sends for the driver that
+/// Timer's end started, and the first step is that frame's callback
+/// (docs/qt-differences.md, "The first step of an animation").
 #[test]
 fn undrawn_animation_steps_on_a_timer() {
     let Some(sway) = compositor() else {
         return;
     };
-    let dir = tempfile::tempdir().unwrap();
-    let sh = Shell::spawn_with(
-        &sway,
-        dir.path(),
-        &panel(
-            "  id: win\n  property real level\n  property int steps\n  \
-             onLevelChanged: steps++\n  \
-             NumberAnimation on level { id: a; running: false; from: 0; to: 1; duration: 500\n   \
-             onFinished: console.log(\"TXT done \" + win.steps) }\n  \
-             Timer { interval: 1000; running: true; onTriggered: { console.log(\"TXT go\"); a.start() } }",
-        ),
-        &[
-            ("RI_LOG", "ri::sched=debug,ri::frames=debug"),
-            ("QSG_FIXED_ANIMATION_STEP", "1"),
-        ],
-    );
-    sh.wait("the animation never started", |t| t == "go");
-    let at = sh.at();
-    let done = sh.wait("the animation never finished", |t| t.starts_with("done "));
-    let steps: usize = done["done ".len()..].parse().unwrap();
-    let log = sh.since(at);
-    let log = &log[..log.find("TXT done").unwrap()];
-    let timed = log
-        .lines()
-        .filter(|l| is_turn(l) && l.contains(", Frame))"))
-        .count();
-    let (cbs, draws) = (count(log, &["cb win"]), count(log, &["draw win"]));
-    eprintln!("undrawn animation: {steps} steps, {timed} turns waiting for the vsync timer");
-    // 500 ms in 16 ms steps.
-    assert!(
-        (31..=33).contains(&steps),
-        "a 500 ms animation took {steps} steps"
-    );
-    assert_eq!(
-        (cbs, draws),
-        (0, 0),
-        "the undrawn animation drew or waited for frame callbacks"
-    );
-    assert!(
-        timed + 2 >= steps,
-        "{timed} turns waited for the vsync timer for {steps} steps"
-    );
+    for (other, frames) in [(true, 0), (false, 1)] {
+        let dir = tempfile::tempdir().unwrap();
+        let sh = Shell::spawn_with(
+            &sway,
+            dir.path(),
+            &panel(&format!(
+                "  id: win\n  property real level\n  property int steps\n  \
+                 onLevelChanged: steps++\n  \
+                 NumberAnimation on level {{ id: a; running: false; from: 0; to: 1; duration: 500\n   \
+                 onFinished: console.log(\"TXT done \" + win.steps) }}\n  \
+                 Timer {{ interval: 600000; running: {other} }}\n  \
+                 Timer {{ interval: 1000; running: true; onTriggered: {{ console.log(\"TXT go\"); a.start() }} }}"
+            )),
+            &[
+                ("RI_LOG", "ri::sched=debug,ri::frames=debug"),
+                ("QSG_FIXED_ANIMATION_STEP", "1"),
+            ],
+        );
+        let done = sh.wait("the animation never finished", |t| t.starts_with("done "));
+        let steps: usize = done["done ".len()..].parse().unwrap();
+        // From the handler's own line: the frame of the only Timer's end is drawn in its turn.
+        let log = sh.since(0);
+        let log = &log[log.find("TXT go").unwrap()..log.find("TXT done").unwrap()];
+        let timed = log
+            .lines()
+            .filter(|l| is_turn(l) && l.contains(", Frame))"))
+            .count();
+        let (cbs, draws) = (count(log, &["cb win"]), count(log, &["draw win"]));
+        eprintln!(
+            "undrawn animation, another Timer counting: {other}: {steps} steps, {timed} turns \
+             waiting for the vsync timer"
+        );
+        // 500 ms in 16 ms steps.
+        assert!(
+            (31..=33).contains(&steps),
+            "a 500 ms animation took {steps} steps"
+        );
+        assert_eq!(
+            (cbs, draws),
+            (frames, frames),
+            "another Timer counting: {other}: frame callbacks and frames drawn while the \
+             undrawn animation ran"
+        );
+        assert!(
+            timed + 2 >= steps,
+            "{timed} turns waited for the vsync timer for {steps} steps"
+        );
+    }
 }
 
 /// An endless animation that shows nothing (one in a hidden window, one with nothing to animate)
