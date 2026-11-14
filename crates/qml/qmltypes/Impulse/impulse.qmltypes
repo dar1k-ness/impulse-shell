@@ -27,11 +27,19 @@ Module {
             index: 1
         }
         Property {
+            name: "gridSize"
+            type: "double"
+            read: "gridSize"
+            write: "setGridSize"
+            notify: "gridSizeChanged"
+            index: 2
+        }
+        Property {
             name: "valid"
             type: "bool"
             read: "valid"
             notify: "validChanged"
-            index: 2
+            index: 3
             isReadonly: true
         }
         Property {
@@ -39,7 +47,7 @@ Module {
             type: "QVariantList"
             read: "widgets"
             notify: "widgetsChanged"
-            index: 3
+            index: 4
             isReadonly: true
         }
         Property {
@@ -47,14 +55,41 @@ Module {
             type: "QVariantMap"
             read: "shown"
             notify: "shownChanged"
-            index: 4
+            index: 5
             isReadonly: true
         }
         Signal { name: "connectorChanged" }
         Signal { name: "containerIdChanged" }
+        Signal { name: "gridSizeChanged" }
         Signal { name: "validChanged" }
         Signal { name: "widgetsChanged" }
         Signal { name: "shownChanged" }
+        Method {
+            name: "placeWidget"
+            type: "bool"
+            Parameter { name: "id"; type: "QString" }
+            Parameter { name: "x"; type: "double" }
+            Parameter { name: "y"; type: "double" }
+        }
+        Method {
+            name: "resizeWidget"
+            type: "bool"
+            Parameter { name: "id"; type: "QString" }
+            Parameter { name: "width"; type: "double" }
+            Parameter { name: "height"; type: "double" }
+        }
+        Method {
+            name: "addWidget"
+            type: "QString"
+            Parameter { name: "widgetType"; type: "QString" }
+            Parameter { name: "x"; type: "double" }
+            Parameter { name: "y"; type: "double" }
+        }
+        Method {
+            name: "removeWidget"
+            type: "bool"
+            Parameter { name: "id"; type: "QString" }
+        }
         Method {
             name: "fitWidget"
             type: "QVariant"
@@ -86,6 +121,18 @@ Module {
             name: "setHidden"
             Parameter { name: "id"; type: "QString" }
             Parameter { name: "hidden"; type: "bool" }
+        }
+        Method {
+            name: "setPlacedAt"
+            Parameter { name: "id"; type: "QString" }
+            Parameter { name: "x"; type: "double" }
+            Parameter { name: "y"; type: "double" }
+            Parameter { name: "width"; type: "double" }
+            Parameter { name: "height"; type: "double" }
+        }
+        Method {
+            name: "clearPlacedAt"
+            Parameter { name: "id"; type: "QString" }
         }
     }
     Component {
@@ -156,6 +203,22 @@ Module {
             notify: "placementChanged"
             index: 6
         }
+        Property {
+            name: "layoutId"
+            type: "QString"
+            read: "layoutId"
+            write: "setLayoutId"
+            notify: "layoutIdChanged"
+            index: 7
+        }
+        Property {
+            name: "surface"
+            type: "QString"
+            read: "surface"
+            write: "setSurface"
+            notify: "surfaceChanged"
+            index: 8
+        }
         Signal { name: "widgetTypeChanged" }
         Signal { name: "settingsChanged" }
         Signal { name: "activeChanged" }
@@ -164,6 +227,8 @@ Module {
         Signal { name: "errorStringChanged" }
         Signal { name: "loaded" }
         Signal { name: "placementChanged" }
+        Signal { name: "layoutIdChanged" }
+        Signal { name: "surfaceChanged" }
     }
     Component {
         file: "runtime.rs"
@@ -204,10 +269,64 @@ Module {
             index: 3
             isReadonly: true
         }
+        Property {
+            name: "probes"
+            type: "QVariantList"
+            read: "probes"
+            notify: "probesChanged"
+            index: 4
+            isReadonly: true
+        }
+        Property {
+            name: "available"
+            type: "double"
+            read: "available"
+            write: "setAvailable"
+            notify: "availableChanged"
+            index: 5
+        }
+        Property {
+            name: "cellPadding"
+            type: "double"
+            read: "cellPadding"
+            write: "setCellPadding"
+            notify: "cellPaddingChanged"
+            index: 6
+        }
+        Property {
+            name: "cellSpacing"
+            type: "double"
+            read: "cellSpacing"
+            write: "setCellSpacing"
+            notify: "cellSpacingChanged"
+            index: 7
+        }
+        Property {
+            name: "sectionSpacing"
+            type: "double"
+            read: "sectionSpacing"
+            write: "setSectionSpacing"
+            notify: "sectionSpacingChanged"
+            index: 8
+        }
+        Property {
+            name: "sidebarHeights"
+            type: "QVariant"
+            read: "sidebarHeights"
+            write: "setSidebarHeights"
+            notify: "sidebarHeightsChanged"
+            index: 9
+        }
         Signal { name: "connectorChanged" }
         Signal { name: "containerIdChanged" }
         Signal { name: "columnsChanged" }
         Signal { name: "sectionsChanged" }
+        Signal { name: "probesChanged" }
+        Signal { name: "availableChanged" }
+        Signal { name: "cellPaddingChanged" }
+        Signal { name: "cellSpacingChanged" }
+        Signal { name: "sectionSpacingChanged" }
+        Signal { name: "sidebarHeightsChanged" }
     }
     Component {
         file: "panel.rs"
@@ -360,6 +479,46 @@ Module {
             notify: "rustyBarEdgeChanged"
             index: 17
         }
+        Property {
+            name: "startRoom"
+            type: "double"
+            read: "startRoom"
+            write: "setStartRoom"
+            notify: "startRoomChanged"
+            index: 18
+        }
+        Property {
+            name: "centerRoom"
+            type: "double"
+            read: "centerRoom"
+            write: "setCenterRoom"
+            notify: "centerRoomChanged"
+            index: 19
+        }
+        Property {
+            name: "endRoom"
+            type: "double"
+            read: "endRoom"
+            write: "setEndRoom"
+            notify: "endRoomChanged"
+            index: 20
+        }
+        Property {
+            name: "probes"
+            type: "QVariantList"
+            read: "probes"
+            notify: "probesChanged"
+            index: 21
+            isReadonly: true
+        }
+        Property {
+            name: "panelLengths"
+            type: "QVariant"
+            read: "panelLengths"
+            write: "setPanelLengths"
+            notify: "panelLengthsChanged"
+            index: 22
+        }
         Signal { name: "connectorChanged" }
         Signal { name: "containerIdChanged" }
         Signal { name: "presentChanged" }
@@ -378,5 +537,259 @@ Module {
         Signal { name: "centerStretchChanged" }
         Signal { name: "endStretchChanged" }
         Signal { name: "rustyBarEdgeChanged" }
+        Signal { name: "startRoomChanged" }
+        Signal { name: "centerRoomChanged" }
+        Signal { name: "endRoomChanged" }
+        Signal { name: "probesChanged" }
+        Signal { name: "panelLengthsChanged" }
+    }
+    Component {
+        file: "edit_mode.rs"
+        name: "ImpulseEditController"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/EditController 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "connector"
+            type: "QString"
+            read: "connector"
+            write: "setConnector"
+            notify: "connectorChanged"
+            index: 0
+        }
+        Property {
+            name: "active"
+            type: "bool"
+            read: "active"
+            notify: "activeChanged"
+            index: 1
+            isReadonly: true
+        }
+        Property {
+            name: "frames"
+            type: "QVariantList"
+            read: "frames"
+            notify: "framesChanged"
+            index: 2
+            isReadonly: true
+        }
+        Property {
+            name: "selectedId"
+            type: "QString"
+            read: "selectedId"
+            notify: "selectedIdChanged"
+            index: 3
+            isReadonly: true
+        }
+        Property {
+            name: "selectedKind"
+            type: "QString"
+            read: "selectedKind"
+            notify: "selectedKindChanged"
+            index: 4
+            isReadonly: true
+        }
+        Property {
+            name: "dragging"
+            type: "bool"
+            read: "dragging"
+            notify: "draggingChanged"
+            index: 5
+            isReadonly: true
+        }
+        Property {
+            name: "ghost"
+            type: "QVariant"
+            read: "ghost"
+            notify: "ghostChanged"
+            index: 6
+            isReadonly: true
+        }
+        Property {
+            name: "guides"
+            type: "QVariantList"
+            read: "guides"
+            notify: "guidesChanged"
+            index: 7
+            isReadonly: true
+        }
+        Property {
+            name: "marker"
+            type: "QVariant"
+            read: "marker"
+            notify: "markerChanged"
+            index: 8
+            isReadonly: true
+        }
+        Property {
+            name: "target"
+            type: "QVariant"
+            read: "target"
+            notify: "targetChanged"
+            index: 9
+            isReadonly: true
+        }
+        Property {
+            name: "canUndo"
+            type: "bool"
+            read: "canUndo"
+            notify: "canUndoChanged"
+            index: 10
+            isReadonly: true
+        }
+        Property {
+            name: "canRedo"
+            type: "bool"
+            read: "canRedo"
+            notify: "canRedoChanged"
+            index: 11
+            isReadonly: true
+        }
+        Property {
+            name: "catalog"
+            type: "QVariantList"
+            read: "catalog"
+            notify: "catalogChanged"
+            index: 12
+            isReadonly: true
+        }
+        Property {
+            name: "selectedPlace"
+            type: "QVariant"
+            read: "selectedPlace"
+            notify: "selectedPlaceChanged"
+            index: 13
+            isReadonly: true
+        }
+        Property {
+            name: "selectedFrame"
+            type: "QVariant"
+            read: "selectedFrame"
+            notify: "selectedFrameChanged"
+            index: 14
+            isReadonly: true
+        }
+        Property {
+            name: "hovered"
+            type: "QVariant"
+            read: "hovered"
+            notify: "hoveredChanged"
+            index: 15
+            isReadonly: true
+        }
+        Property {
+            name: "handle"
+            type: "QString"
+            read: "handle"
+            notify: "handleChanged"
+            index: 16
+            isReadonly: true
+        }
+        Property {
+            name: "sizeHint"
+            type: "QVariant"
+            read: "sizeHint"
+            notify: "sizeHintChanged"
+            index: 17
+            isReadonly: true
+        }
+        Signal { name: "connectorChanged" }
+        Signal { name: "activeChanged" }
+        Signal { name: "framesChanged" }
+        Signal { name: "selectedIdChanged" }
+        Signal { name: "selectedKindChanged" }
+        Signal { name: "draggingChanged" }
+        Signal { name: "ghostChanged" }
+        Signal { name: "guidesChanged" }
+        Signal { name: "markerChanged" }
+        Signal { name: "targetChanged" }
+        Signal { name: "canUndoChanged" }
+        Signal { name: "canRedoChanged" }
+        Signal { name: "catalogChanged" }
+        Signal { name: "selectedPlaceChanged" }
+        Signal { name: "selectedFrameChanged" }
+        Signal { name: "hoveredChanged" }
+        Signal { name: "handleChanged" }
+        Signal { name: "sizeHintChanged" }
+        Method {
+            name: "start"
+            type: "bool"
+        }
+        Method {
+            name: "finish"
+            type: "bool"
+        }
+        Method {
+            name: "toggle"
+            type: "bool"
+        }
+        Method {
+            name: "press"
+            type: "bool"
+            Parameter { name: "x"; type: "double" }
+            Parameter { name: "y"; type: "double" }
+        }
+        Method {
+            name: "move"
+            type: "bool"
+            Parameter { name: "x"; type: "double" }
+            Parameter { name: "y"; type: "double" }
+        }
+        Method {
+            name: "release"
+            type: "bool"
+            Parameter { name: "x"; type: "double" }
+            Parameter { name: "y"; type: "double" }
+        }
+        Method {
+            name: "cancel"
+            type: "bool"
+        }
+        Method {
+            name: "key"
+            type: "bool"
+            Parameter { name: "key"; type: "int" }
+            Parameter { name: "modifiers"; type: "int" }
+        }
+        Method {
+            name: "undo"
+            type: "bool"
+        }
+        Method {
+            name: "redo"
+            type: "bool"
+        }
+        Method {
+            name: "removeSelected"
+            type: "bool"
+        }
+        Method {
+            name: "setWidthMode"
+            type: "bool"
+            Parameter { name: "mode"; type: "QString" }
+        }
+        Method {
+            name: "addWidget"
+            type: "QString"
+            Parameter { name: "type"; type: "QString" }
+            Parameter { name: "kind"; type: "QString" }
+        }
+        Method {
+            name: "setZone"
+            type: "bool"
+            Parameter { name: "zone"; type: "QString" }
+        }
+        Method {
+            name: "setSpan"
+            type: "bool"
+            Parameter { name: "size"; type: "int" }
+        }
+        Method {
+            name: "setSize"
+            type: "bool"
+            Parameter { name: "width"; type: "double" }
+            Parameter { name: "height"; type: "double" }
+        }
     }
 }

@@ -253,6 +253,26 @@ SettingsPage {
                             }
                         }
                     }
+                    RippleButtonWithIcon {
+                        enabled: !Wallpick.busy
+                        materialIcon: "wallpaper_slideshow"
+                        mainText: Wallpick.busy ? Translation.tr("Looking...") : Translation.tr("Pick for me")
+                        buttonRadius: Appearance.rounding.full
+                        colBackground: Appearance.colors.colLayer3
+                        colBackgroundHover: Appearance.colors.colLayer3Hover
+                        onClicked: Wallpick.pick()
+                        StyledToolTip {
+                            text: Translation.tr("Find a wallpaper that matches your taste on Wallhaven or Konachan\nImage is saved to ~/Pictures/Wallpapers")
+                        }
+                    }
+                    StyledText {
+                        visible: Wallpick.status.length > 0
+                        Layout.maximumWidth: 268
+                        elide: Text.ElideRight
+                        text: Wallpick.status
+                        color: Wallpick.failed ? Appearance.colors.colError : Appearance.colors.colSubtext
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                    }
                 }
 
                 ColumnLayout {

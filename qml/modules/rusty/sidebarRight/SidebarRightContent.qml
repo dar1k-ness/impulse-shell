@@ -130,7 +130,6 @@ Item {
                 active: root.layoutPlaced
                 source: "SidebarLayoutContent.qml"
                 onLoaded: {
-                    layoutLoader.item.connector = root.QsWindow.window?.screen?.name ?? "";
                     layoutLoader.item.editMode = root.editMode;
                 }
                 Connections {

@@ -275,10 +275,12 @@ fn the_original_registers_every_sidebar_widget_with_its_component() {
     }
     for t in sidebar {
         assert!(
-            t.component.is_file(),
-            "{}: {} missing",
-            t.id,
-            t.component.display()
+            t.variant(qml::widgets::Placement::Sidebar)
+                .unwrap()
+                .component
+                .is_file(),
+            "{}: sidebar variant missing",
+            t.id
         );
     }
 }
@@ -339,4 +341,40 @@ fn cells_carry_resolved_settings_and_their_errors() {
         "{:?}",
         rt.errors()
     );
+}
+
+#[test]
+fn the_original_widgets_that_fit_several_surfaces_have_a_component_on_each() {
+    use qml::widgets::Placement::{Desktop, Panel, Sidebar};
+    let ri = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../qml");
+    let mut reg = qml::widgets::Registry::default();
+    let errors = reg.load_manifest_file(&ri.join("widgets.toml"));
+    assert!(errors.is_empty(), "{errors:?}");
+    for (ty, surfaces) in [
+        ("clock", &[Panel, Desktop, Sidebar][..]),
+        ("weather", &[Panel, Desktop, Sidebar]),
+        ("darkMode", &[Panel, Sidebar]),
+        ("network", &[Panel, Sidebar]),
+        ("bluetooth", &[Panel, Sidebar]),
+        ("media", &[Panel, Desktop, Sidebar]),
+        ("resources", &[Panel, Desktop, Sidebar]),
+        ("calendar", &[Desktop, Sidebar]),
+        ("notes", &[Desktop, Sidebar]),
+    ] {
+        let t = reg.get(ty).unwrap_or_else(|| panic!("{ty} missing"));
+        assert_eq!(t.placements().collect::<Vec<_>>(), surfaces, "{ty}");
+    }
+    // Every variant of every type names a component that ships.
+    for t in reg.iter() {
+        for (p, v) in &t.variants {
+            assert!(
+                v.component.is_file(),
+                "{} on {p:?}: {:?}",
+                t.id,
+                v.component
+            );
+        }
+    }
+    // The desktop's own clock and weather types are the clock's and weather's variants now.
+    assert!(reg.get("desktop-clock").is_none() && reg.get("desktop-weather").is_none());
 }

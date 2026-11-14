@@ -59,6 +59,51 @@ pub fn sections(c: &Container) -> Option<(u32, Vec<Section>)> {
     Some((columns, out))
 }
 
+/// The spacing a sidebar lays its sections out with, as SidebarLayoutContent reports it.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Metrics {
+    /// Around a grid section's rows.
+    pub cell_padding: f64,
+    /// Between a grid section's rows.
+    pub cell_spacing: f64,
+    /// Between sections.
+    pub section_spacing: f64,
+}
+
+/// The height `sections` take laid out top to bottom with `m`: a grid section its padding and
+/// its rows, each as tall as its tallest cell; a block what `height` gives for its cell (for a
+/// block that fills, the least it keeps). `None` while any cell has no height measured.
+pub fn height(
+    sections: &[Section],
+    height: impl Fn(&Cell) -> Option<f64>,
+    m: &Metrics,
+) -> Option<f64> {
+    let mut total = 0.0;
+    for (i, s) in sections.iter().enumerate() {
+        if i > 0 {
+            total += m.section_spacing;
+        }
+        total += match s {
+            Section::Block(c) => height(c)?,
+            Section::Grid(rows) => {
+                let mut h = m.cell_padding * 2.0;
+                for (r, row) in rows.iter().enumerate() {
+                    if r > 0 {
+                        h += m.cell_spacing;
+                    }
+                    let mut tallest: f64 = 0.0;
+                    for c in row {
+                        tallest = tallest.max(height(c)?);
+                    }
+                    h += tallest;
+                }
+                h
+            }
+        };
+    }
+    Some(total)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -98,6 +143,27 @@ mod tests {
 
     fn v(cells: &[(&str, u32)]) -> Vec<(String, u32)> {
         cells.iter().map(|&(t, s)| (t.to_string(), s)).collect()
+    }
+
+    #[test]
+    fn height_adds_rows_blocks_and_spacing() {
+        // 2 columns: [a b] [c] | [D] | [e]
+        let c = sidebar(2, &[("a", 1), ("b", 1), ("c", 1), ("D", 2), ("e", 1)]);
+        let (_, s) = sections(&c).unwrap();
+        let m = Metrics {
+            cell_padding: 6.0,
+            cell_spacing: 4.0,
+            section_spacing: 10.0,
+        };
+        let h = |c: &Cell| match c.r#type.as_str() {
+            "a" => Some(50.0),
+            "b" => Some(56.0),
+            "D" => Some(200.0),
+            _ => Some(56.0),
+        };
+        // (12 + 56 + 4 + 56) + 10 + 200 + 10 + (12 + 56)
+        assert_eq!(height(&s, h, &m), Some(416.0));
+        assert_eq!(height(&s, |c| (c.r#type != "e").then_some(1.0), &m), None);
     }
 
     #[test]

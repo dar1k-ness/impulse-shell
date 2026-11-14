@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import ri.services
 import ri.modules.common
 import ri.modules.common.widgets
+import ri.modules.rusty.bar as Bar
 
 SettingsPage {
     id: page
@@ -43,6 +44,20 @@ SettingsPage {
             options: [
                 { label: Translation.tr("Pills"), value: false },
                 { label: Translation.tr("Flat"), value: true }
+            ]
+        }
+        SettingsSegmentedRow {
+            title: Translation.tr("Group layout")
+            subtitle: Translation.tr("Where media, workspaces and the clock sit")
+            currentValue: JSON.stringify(Bar.BarGroupLayout.parts)
+            onSelected: value => {
+                const layout = JSON.parse(value);
+                Wallpick.arrange(layout.left, layout.center, layout.right);
+            }
+            options: [
+                { label: Translation.tr("Centered"), value: '{"left":[],"center":["media","workspaces","clock"],"right":[]}' },
+                { label: Translation.tr("Spread"), value: '{"left":["media"],"center":["workspaces"],"right":["clock"]}' },
+                { label: Translation.tr("Workspaces left"), value: '{"left":["workspaces"],"center":["media","clock"],"right":[]}' }
             ]
         }
         SettingsSwitchRow {

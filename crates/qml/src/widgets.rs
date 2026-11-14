@@ -1,4 +1,4 @@
-//! Compiled-in widget types of the widget layout: what a layout entry's `type` may name, where
+//! Compiled-in widget types for the edit mode: what a layout entry's `type` may name, where
 //! the widget may be placed, its size limits, and the typed schema its settings are checked
 //! against. A shell ships its registry as a `widgets.toml` manifest next to its root QML; each
 //! entry names the shell's own QML component, which is compiled with the rest of the shell, so
@@ -21,6 +21,23 @@ pub enum Placement {
     Panel,
     Desktop,
     Sidebar,
+}
+
+impl Placement {
+    pub const ALL: [Placement; 3] = [Placement::Panel, Placement::Desktop, Placement::Sidebar];
+
+    /// The name `widgets.toml` and a `WidgetHost`'s `surface` use.
+    pub fn name(self) -> &'static str {
+        match self {
+            Placement::Panel => "panel",
+            Placement::Desktop => "desktop",
+            Placement::Sidebar => "sidebar",
+        }
+    }
+
+    pub fn from_name(s: &str) -> Option<Placement> {
+        Placement::ALL.into_iter().find(|p| p.name() == s)
+    }
 }
 
 /// Width and height in logical pixels.
@@ -261,6 +278,28 @@ impl Resolved {
     }
 }
 
+/// How a widget type shows on one surface: the component drawing it there and its size
+/// limits on that surface (logical pixels on a panel or the desktop, grid cells in the
+/// sidebar), like a Plasma applet's compact and full representations.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Variant {
+    /// The shell's QML component that renders the widget on this surface.
+    pub component: PathBuf,
+    pub size: SizeLimits,
+    /// In a panel, shares one group background with the adjacent `pill` widgets of its zone
+    /// (the original's `BarGroup`).
+    pub pill: bool,
+    /// The config flag that turns the widget on and off on this surface, as a dotted path into
+    /// the original's `Config.options` (`background.widgets.clock.enable`): the widget shows
+    /// while it is not `false`. `None`: always shown.
+    pub enabled_by: Option<String>,
+    /// The config option by which the widget places itself on this surface, as a dotted path
+    /// into the original's `Config.options` (`background.widgets.clock.placementStrategy`):
+    /// anything but `"free"` there and the widget draws where it puts itself, not where the
+    /// layout has it. `None`: the layout places it.
+    pub placed_by: Option<String>,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct WidgetType {
     /// Stable id a layout entry's `type` names.
@@ -268,23 +307,46 @@ pub struct WidgetType {
     pub name: String,
     /// Material Symbols name, like the rest of the shell's icons.
     pub icon: String,
-    pub placements: Vec<Placement>,
-    pub size: SizeLimits,
+    /// The surfaces it may be placed on, each with its own presentation. One settings
+    /// schema serves them all, so a widget keeps its settings when it moves.
+    pub variants: BTreeMap<Placement, Variant>,
     pub settings: Vec<SettingSpec>,
-    /// The shell's QML component that renders the widget.
-    pub component: PathBuf,
-    /// In a panel, shares one group background with the adjacent `pill` widgets of its zone
-    /// (the original's `BarGroup`).
-    pub pill: bool,
-    /// The config flag that turns the widget on and off, as a dotted path into the original's
-    /// `Config.options` (`background.widgets.clock.enable`): the widget shows while it is not
-    /// `false`. `None`: always shown.
-    pub enabled_by: Option<String>,
 }
 
 impl WidgetType {
     pub fn allows(&self, p: Placement) -> bool {
-        self.placements.contains(&p)
+        self.variants.contains_key(&p)
+    }
+
+    pub fn placements(&self) -> impl Iterator<Item = Placement> + '_ {
+        self.variants.keys().copied()
+    }
+
+    pub fn variant(&self, p: Placement) -> Option<&Variant> {
+        self.variants.get(&p)
+    }
+
+    /// The variant a `WidgetHost` with `surface` loads: the named surface's, or with no
+    /// surface named any of them when they share one component. A type with a component per
+    /// surface needs the host to say which.
+    pub fn variant_for(&self, surface: &str) -> Result<&Variant, String> {
+        match Placement::from_name(surface) {
+            Some(p) => self
+                .variant(p)
+                .ok_or_else(|| format!("widget type \"{}\" has no {surface} variant", self.id)),
+            None if surface.is_empty() => {
+                let mut all = self.variants.values();
+                let first = all.next().expect("a type has a variant");
+                if all.all(|v| v.component == first.component) {
+                    return Ok(first);
+                }
+                Err(format!(
+                    "widget type \"{}\" has a component per surface: the host must set `surface`",
+                    self.id
+                ))
+            }
+            None => Err(format!("unknown surface \"{surface}\"")),
+        }
     }
 
     pub fn setting(&self, key: &str) -> Option<&SettingSpec> {
@@ -388,10 +450,10 @@ impl Registry {
         if self.types.contains_key(&t.id) {
             return Err(RegistryError::Duplicate(t.id));
         }
-        if t.placements.is_empty() {
+        if t.variants.is_empty() {
             return Err(RegistryError::NoPlacement(t.id));
         }
-        if !t.size.valid() {
+        if !t.variants.values().all(|v| v.size.valid()) {
             return Err(RegistryError::BadSize(t.id));
         }
         for (i, s) in t.settings.iter().enumerate() {
@@ -448,7 +510,7 @@ impl Registry {
         self.types.values()
     }
 
-    /// Types that may be placed in `p`, by id.
+    /// Types that may be added to `p`, by id: the edit mode's widget catalog.
     pub fn for_placement(&self, p: Placement) -> impl Iterator<Item = &WidgetType> {
         self.iter().filter(move |t| t.allows(p))
     }
@@ -493,15 +555,41 @@ struct ManifestWidget {
     name: String,
     #[serde(default)]
     icon: String,
+    /// The flat form: one component and size for every listed surface.
+    #[serde(default)]
     placements: Vec<Placement>,
-    component: PathBuf,
-    size: ManifestSize,
+    #[serde(default)]
+    component: Option<PathBuf>,
+    #[serde(default)]
+    size: Option<ManifestSize>,
+    #[serde(default)]
+    pill: Option<bool>,
+    #[serde(default, rename = "enabledBy")]
+    enabled_by: Option<String>,
+    #[serde(default, rename = "placedBy")]
+    placed_by: Option<String>,
+    /// The per-surface form: `[widget.panel]`, `[widget.desktop]`, `[widget.sidebar]`.
+    #[serde(default)]
+    panel: Option<ManifestVariant>,
+    #[serde(default)]
+    desktop: Option<ManifestVariant>,
+    #[serde(default)]
+    sidebar: Option<ManifestVariant>,
     #[serde(default)]
     setting: Vec<ManifestSetting>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManifestVariant {
+    component: PathBuf,
+    size: ManifestSize,
     #[serde(default)]
     pill: bool,
     #[serde(default, rename = "enabledBy")]
     enabled_by: Option<String>,
+    #[serde(default, rename = "placedBy")]
+    placed_by: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -534,19 +622,24 @@ impl ManifestWidget {
         let id = self.id;
         let bad = |e: String| RegistryError::Manifest(format!("widget \"{id}\": {e}"));
         let size = |[w, h]: [f64; 2]| Size { w, h };
-        if let Some(path) = &self.enabled_by {
-            let ident = |k: &str| {
-                k.chars()
-                    .next()
-                    .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
-                    && k.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-            };
-            if !path.split('.').all(ident) {
-                return Err(bad(format!(
-                    "enabledBy \"{path}\" is not a dotted path of config keys"
-                )));
+        let flag = |name: &str, path: Option<String>| match path {
+            Some(path) => {
+                let ident = |k: &str| {
+                    k.chars()
+                        .next()
+                        .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+                        && k.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+                };
+                if path.split('.').all(ident) {
+                    Ok(Some(path))
+                } else {
+                    Err(bad(format!(
+                        "{name} \"{path}\" is not a dotted path of config keys"
+                    )))
+                }
             }
-        }
+            None => Ok(None),
+        };
         let mut settings = vec![];
         for s in self.setting {
             let int = |v: &Option<toml::Value>| match v {
@@ -604,25 +697,70 @@ impl ManifestWidget {
                 default,
             });
         }
+        let limits = |m: ManifestSize| SizeLimits {
+            min: size(m.min),
+            max: m.max.map_or(
+                Size {
+                    w: f64::INFINITY,
+                    h: f64::INFINITY,
+                },
+                size,
+            ),
+            default: size(m.default),
+        };
+        let surfaces = [
+            (Placement::Panel, self.panel),
+            (Placement::Desktop, self.desktop),
+            (Placement::Sidebar, self.sidebar),
+        ];
+        let per_surface = surfaces.iter().any(|(_, v)| v.is_some());
+        let mut variants = BTreeMap::new();
+        if per_surface {
+            if !self.placements.is_empty()
+                || self.component.is_some()
+                || self.size.is_some()
+                || self.pill.is_some()
+                || self.enabled_by.is_some()
+                || self.placed_by.is_some()
+            {
+                return Err(bad(
+                    "placements, component, size, pill, enabledBy and placedBy belong in the \
+                     surface tables when it has any"
+                        .into(),
+                ));
+            }
+            for (p, v) in surfaces {
+                if let Some(v) = v {
+                    let variant = Variant {
+                        component: base.join(v.component),
+                        size: limits(v.size),
+                        pill: v.pill,
+                        enabled_by: flag("enabledBy", v.enabled_by)?,
+                        placed_by: flag("placedBy", v.placed_by)?,
+                    };
+                    variants.insert(p, variant);
+                }
+            }
+        } else {
+            let (Some(component), Some(m)) = (self.component, self.size) else {
+                return Err(bad("needs a component and a size".into()));
+            };
+            let variant = Variant {
+                component: base.join(component),
+                size: limits(m),
+                pill: self.pill.unwrap_or(false),
+                enabled_by: flag("enabledBy", self.enabled_by)?,
+                placed_by: flag("placedBy", self.placed_by)?,
+            };
+            for p in self.placements {
+                variants.insert(p, variant.clone());
+            }
+        }
         Ok(WidgetType {
             name: self.name,
             icon: self.icon,
-            placements: self.placements,
-            size: SizeLimits {
-                min: size(self.size.min),
-                max: self.size.max.map_or(
-                    Size {
-                        w: f64::INFINITY,
-                        h: f64::INFINITY,
-                    },
-                    size,
-                ),
-                default: size(self.size.default),
-            },
+            variants,
             settings,
-            component: base.join(self.component),
-            pill: self.pill,
-            enabled_by: self.enabled_by,
             id,
         })
     }
@@ -637,15 +775,26 @@ mod tests {
             id: "clock".into(),
             name: "Clock".into(),
             icon: "schedule".into(),
-            placements: vec![Placement::Panel, Placement::Desktop],
-            size: SizeLimits {
-                min: Size { w: 80.0, h: 24.0 },
-                max: Size {
-                    w: 400.0,
-                    h: f64::INFINITY,
-                },
-                default: Size { w: 120.0, h: 32.0 },
-            },
+            variants: [Placement::Panel, Placement::Desktop]
+                .into_iter()
+                .map(|p| {
+                    let v = Variant {
+                        component: "Clock.qml".into(),
+                        size: SizeLimits {
+                            min: Size { w: 80.0, h: 24.0 },
+                            max: Size {
+                                w: 400.0,
+                                h: f64::INFINITY,
+                            },
+                            default: Size { w: 120.0, h: 32.0 },
+                        },
+                        pill: false,
+                        enabled_by: None,
+                        placed_by: None,
+                    };
+                    (p, v)
+                })
+                .collect(),
             settings: vec![
                 SettingSpec {
                     key: "seconds".into(),
@@ -663,9 +812,6 @@ mod tests {
                     default: SettingValue::Int(2),
                 },
             ],
-            component: "Clock.qml".into(),
-            pill: false,
-            enabled_by: None,
         }
     }
 
@@ -692,13 +838,18 @@ mod tests {
     fn register_rejects_inconsistent_types() {
         let mut r = Registry::default();
         let mut t = clock();
-        t.placements.clear();
+        t.variants.clear();
         assert_eq!(
             r.register(t),
             Err(RegistryError::NoPlacement("clock".into()))
         );
         let mut t = clock();
-        t.size.default.w = 10.0;
+        t.variants
+            .get_mut(&Placement::Panel)
+            .unwrap()
+            .size
+            .default
+            .w = 10.0;
         assert_eq!(r.register(t), Err(RegistryError::BadSize("clock".into())));
         let mut t = clock();
         t.settings[1].default = SettingValue::Int(9);
@@ -893,7 +1044,7 @@ mod tests {
 
     #[test]
     fn size_clamps_to_limits() {
-        let l = clock().size;
+        let l = clock().variants[&Placement::Panel].size;
         assert_eq!(l.clamp(Size { w: 10.0, h: 1e6 }), Size { w: 80.0, h: 1e6 });
         assert_eq!(
             l.clamp(Size { w: 999.0, h: 0.0 }),
@@ -929,15 +1080,47 @@ mod tests {
         );
         assert!(errs.is_empty(), "{errs:?}");
         let t = r.get("media").unwrap();
-        assert_eq!(t.component, Path::new("/shell/widgets/Media.qml"));
-        assert_eq!(t.size.max.w, f64::INFINITY);
+        let v = t.variant(Placement::Panel).unwrap();
+        assert_eq!(v.component, Path::new("/shell/widgets/Media.qml"));
+        assert_eq!(v.size.max.w, f64::INFINITY);
+        assert_eq!(t.variant(Placement::Sidebar), Some(v));
         assert!(t.allows(Placement::Sidebar) && !t.allows(Placement::Desktop));
         assert_eq!(
             t.setting("opacity").unwrap().default,
             SettingValue::Real(0.8)
         );
         assert_eq!(t.setting("source").unwrap().label, "source");
-        assert_eq!(t.enabled_by, None, "no enabledBy: always shown");
+        assert_eq!(v.enabled_by, None, "no enabledBy: always shown");
+    }
+
+    #[test]
+    fn manifest_reads_the_option_a_type_places_itself_by() {
+        let entry = |path: &str| {
+            format!(
+                "[[widget]]\ntype = \"w\"\nname = \"W\"\nplacements = [\"desktop\"]\n\
+                 component = \"W.qml\"\nsize = {{ min = [1, 1], default = [1, 1] }}\n\
+                 placedBy = \"{path}\"\n"
+            )
+        };
+        let mut r = Registry::default();
+        let errs = r.load_manifest(
+            &entry("background.widgets.w.placementStrategy"),
+            Path::new("."),
+        );
+        assert!(errs.is_empty(), "{errs:?}");
+        let v = r.get("w").unwrap().variant(Placement::Desktop).unwrap();
+        assert_eq!(
+            v.placed_by.as_deref(),
+            Some("background.widgets.w.placementStrategy")
+        );
+        assert_eq!(v.enabled_by, None);
+        let mut r = Registry::default();
+        let errs = r.load_manifest(&entry("a..b"), Path::new("."));
+        assert!(
+            errs.iter().any(|e| format!("{e:?}").contains("placedBy")),
+            "{errs:?}"
+        );
+        assert!(r.get("w").is_none());
     }
 
     #[test]
@@ -953,7 +1136,12 @@ mod tests {
         let errs = r.load_manifest(&entry("background.widgets.w.enable"), Path::new("."));
         assert!(errs.is_empty(), "{errs:?}");
         assert_eq!(
-            r.get("w").unwrap().enabled_by.as_deref(),
+            r.get("w")
+                .unwrap()
+                .variant(Placement::Desktop)
+                .unwrap()
+                .enabled_by
+                .as_deref(),
             Some("background.widgets.w.enable")
         );
         for bad in [
@@ -1009,6 +1197,73 @@ mod tests {
         assert!(
             matches!(errs[..], [RegistryError::Manifest(_)]),
             "unknown keys are errors"
+        );
+    }
+
+    #[test]
+    fn manifest_surface_tables_give_each_surface_its_variant() {
+        let mut r = Registry::default();
+        let errs = r.load_manifest(
+            r#"
+            [[widget]]
+            type = "clock"
+            name = "Clock"
+            [widget.panel]
+            component = "bar/Clock.qml"
+            size = { min = [24, 24], default = [24, 24] }
+            pill = true
+            [widget.sidebar]
+            component = "sidebar/Clock.qml"
+            size = { min = [2, 1], max = [4, 1], default = [4, 1] }
+            [[widget.setting]]
+            key = "showDate"
+            kind = "bool"
+            default = true
+            [[widget]]
+            type = "mixed"
+            name = "Mixed"
+            placements = ["panel"]
+            [widget.desktop]
+            component = "D.qml"
+            size = { min = [1, 1], default = [1, 1] }
+            [[widget]]
+            type = "bare"
+            name = "Bare"
+            placements = ["panel"]
+            "#,
+            Path::new("/shell"),
+        );
+        assert_eq!(errs.len(), 2, "{errs:?}");
+        assert!(r.get("mixed").is_none() && r.get("bare").is_none());
+        let t = r.get("clock").unwrap();
+        assert_eq!(
+            t.placements().collect::<Vec<_>>(),
+            [Placement::Panel, Placement::Sidebar]
+        );
+        let bar = t.variant_for("panel").unwrap();
+        assert!(bar.pill);
+        assert_eq!(bar.component, Path::new("/shell/bar/Clock.qml"));
+        let side = t.variant_for("sidebar").unwrap();
+        assert!(!side.pill);
+        assert_eq!(side.size.default, Size { w: 4.0, h: 1.0 });
+        assert!(t.variant_for("desktop").is_err(), "not on the desktop");
+        assert!(
+            t.variant_for("").is_err(),
+            "two surfaces: the host must say which"
+        );
+        assert!(t.variant_for("wall").is_err());
+        let mut one = Registry::default();
+        assert!(
+            one.load_manifest(
+                "[[widget]]\ntype = \"a\"\nname = \"A\"\n[widget.sidebar]\n\
+                 component = \"A.qml\"\nsize = { min = [1, 1], default = [1, 1] }\n",
+                Path::new("."),
+            )
+            .is_empty()
+        );
+        assert!(
+            one.get("a").unwrap().variant_for("").is_ok(),
+            "the only variant"
         );
     }
 }

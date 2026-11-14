@@ -87,10 +87,11 @@ fn declared(qml: &str) -> Vec<String> {
 }
 
 /// #3709: `BarContent.qml` bound `padding` to `workspacesWidget.widgetPadding`, which
-/// `Workspaces.qml` (nor its `ButtonMouseArea`/`MouseArea` base) never declared.
+/// `Workspaces.qml` (nor its `ButtonMouseArea`/`MouseArea` base) never declared. The bar's
+/// groups now live in `BarGroups.qml`.
 #[test]
 fn bar_content_reads_only_declared_workspaces_members() {
-    let bar = std::fs::read_to_string(ri().join("modules/rusty/bar/BarContent.qml")).unwrap();
+    let bar = std::fs::read_to_string(ri().join("modules/rusty/bar/BarGroups.qml")).unwrap();
     let mut known =
         declared(&std::fs::read_to_string(ri().join("modules/rusty/bar/Workspaces.qml")).unwrap());
     known.extend(declared(

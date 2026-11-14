@@ -1,5 +1,5 @@
 //! The shell's widget layout: which panels, desktops and sidebars each monitor has and
-//! which widgets sit where in them, as read by the shell.
+//! which widgets sit where in them, as edited by the edit mode and read by the shell.
 //!
 //! The model is plain data. It is stored in `$XDG_CONFIG_HOME/rusty-impulse/layout.toml`
 //! ([`Store`]), versioned and migrated on load ([`migrate`]), kept per monitor and matched
@@ -32,6 +32,7 @@
 //! settings = { seconds = true }
 //! ```
 
+pub mod arrange;
 pub mod desktop;
 mod edit;
 mod format;
@@ -52,7 +53,7 @@ use std::fmt;
 use std::path::PathBuf;
 
 /// The schema version this build reads and writes.
-pub const VERSION: u32 = 4;
+pub const VERSION: u32 = 5;
 
 /// The largest size or offset, in logical pixels, a layout may give: well past any monitor,
 /// small enough that sums and products of them stay far from overflowing.
@@ -145,8 +146,8 @@ pub enum Place {
         zone: Zone,
         width: Width,
     },
-    /// Logical pixels, relative to the monitor's top-left corner. `size` is the box the
-    /// layout gives the widget (`w`, `h`); without one the widget takes its natural size,
+    /// Logical pixels, relative to the monitor's top-left corner. `size` is the box a resize
+    /// in edit mode gave the widget (`w`, `h`); without one the widget takes its natural size,
     /// as QML sizes an item by its `implicitWidth` / `implicitHeight`.
     Desktop {
         x: i32,

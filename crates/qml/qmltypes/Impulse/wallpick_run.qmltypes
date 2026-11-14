@@ -1,0 +1,25 @@
+import QtQuick.tooling 1.2
+
+// Runs the wallpaper picker's action `args` (`pick`, `like`, `dislike --next`, `style`,
+// `arrange <left> <center> <right>`, `reset-taste`: what `rusty-impulse wallpick` takes) in
+// process. Each line on `stdout` and `stderr` is a status of the run.
+// A Process whose work is native (crates/qml/src/procs.rs): `running`, `exited`, `stdout` as Process.
+Module {
+    Component {
+        file: "procs.rs"
+        name: "ImpulseWallpickRun"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/WallpickRun 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "args"
+            type: "QStringList"
+            read: "args"
+            write: "setArgs"
+            notify: "argsChanged"
+            index: 0
+        }
+        Signal { name: "argsChanged" }
+    }
+}

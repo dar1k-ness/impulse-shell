@@ -83,6 +83,38 @@ pub fn sync(w: &mut World) -> bool {
             },
         );
     }
+    for id in w.of_type("PanelContainer") {
+        let panel = w
+            .panel_synced
+            .get(&id)
+            .and_then(|s| s.content.0.as_ref())
+            .map_or(String::new(), |c| c.id.clone());
+        let key = (
+            generation,
+            str_prop(w, id, "connector"),
+            panel,
+            w.edit.active,
+        );
+        if w.panel_probes.get(&id).is_some_and(|p| p.0 == key) {
+            continue;
+        }
+        let list = if key.3 && !key.2.is_empty() {
+            probes(w, &key.1, &key.2)
+        } else {
+            Vec::new()
+        };
+        let prev = w.panel_probes.remove(&id);
+        if prev.as_ref().map_or(!list.is_empty(), |p| p.1 != list) {
+            let reg = w.widgets.clone();
+            let v = list
+                .iter()
+                .map(|wd| entry(wd, &Width::Auto, "", &reg).0)
+                .collect();
+            w.write(id, "probes", Value::array(v));
+            wrote = true;
+        }
+        w.panel_probes.insert(id, (key, list));
+    }
     wrote
 }
 
@@ -264,6 +296,59 @@ fn align_name(a: Align) -> &'static str {
 
 /// The runs of zone `z`, in layout order, and whether any of them stretches. Adjacent pills
 /// share a run only when they belong to the same monitor.
+/// A widget's entry as PanelWidget reads it, `from` the connector of the unplugged monitor it
+/// belongs to (`""`: this one's), and whether its panel variant is a pill.
+fn entry(wd: &Widget, width: &Width, from: &str, reg: &Registry) -> (Value, bool) {
+    let variant = reg
+        .get(&wd.r#type)
+        .and_then(|t| t.variant(crate::widgets::Placement::Panel));
+    let min = variant.map_or((0.0, 0.0), |v| (v.size.min.w, v.size.min.h));
+    let e = new_obj();
+    set_own(&e, "id", Value::str(&wd.id));
+    set_own(&e, "type", Value::str(&wd.r#type));
+    let (mode, px) = match width {
+        Width::Auto => ("auto", 0.0),
+        Width::Stretch => ("stretch", 0.0),
+        Width::Px(n) => ("px", f64::from(*n)),
+    };
+    set_own(&e, "width", Value::str(mode));
+    set_own(&e, "px", Value::Num(px));
+    // The registry's least size for the widget on a panel: what a stretching one keeps.
+    set_own(&e, "minWidth", Value::Num(min.0));
+    set_own(&e, "minHeight", Value::Num(min.1));
+    // The settings as the widget gets them: schema defaults applied, invalid overrides
+    // dropped and listed.
+    let settings = reg.resolve(&wd.r#type, &wd.settings);
+    set_own(&e, "settings", settings.to_qml());
+    set_own(&e, "settingErrors", settings.errors_qml());
+    set_own(&e, "guest", Value::str(from));
+    (Value::Obj(e), variant.is_some_and(|v| v.pill))
+}
+
+/// The widgets of the panel's monitor in its other containers that have a panel variant: what
+/// edit mode may drop onto it. PanelContent lays each out in its panel form off screen
+/// (`probes`) and reports the length its zones would charge for it (`panelLengths`).
+fn probes(w: &World, connector: &str, panel: &str) -> Vec<Widget> {
+    let Some(m) = w.layout.as_ref().and_then(|l| l.monitor(connector)) else {
+        return Vec::new();
+    };
+    m.containers
+        .iter()
+        .filter(|c| c.id != panel)
+        .flat_map(|c| &c.widgets)
+        .filter(|wd| {
+            w.widgets
+                .get(&wd.r#type)
+                .is_some_and(|t| t.variant(crate::widgets::Placement::Panel).is_some())
+        })
+        .cloned()
+        .collect()
+}
+
+/// What a PanelContainer's `probes` were last written from: the layout generation, its
+/// connector and panel, whether edit mode was on, and the widgets.
+pub type Probes = ((Option<u64>, String, String, bool), Vec<Widget>);
+
 fn zone(widgets: &[(&Widget, &str)], z: Zone, reg: &Registry) -> (Value, bool) {
     let mut runs: Vec<(bool, Vec<Value>, bool, &str)> = vec![];
     for &(wd, from) in widgets {
@@ -273,37 +358,25 @@ fn zone(widgets: &[(&Widget, &str)], z: Zone, reg: &Registry) -> (Value, bool) {
         if *zone != z {
             continue;
         }
-        let pill = reg.get(&wd.r#type).is_some_and(|t| t.pill);
+        let (e, pill) = entry(wd, width, from, reg);
         let stretch = matches!(width, Width::Stretch);
-        let e = new_obj();
-        set_own(&e, "id", Value::str(&wd.id));
-        set_own(&e, "type", Value::str(&wd.r#type));
-        let (mode, px) = match width {
-            Width::Auto => ("auto", 0.0),
-            Width::Stretch => ("stretch", 0.0),
-            Width::Px(n) => ("px", f64::from(*n)),
-        };
-        set_own(&e, "width", Value::str(mode));
-        set_own(&e, "px", Value::Num(px));
-        // The settings as the widget gets them: schema defaults applied, invalid overrides
-        // dropped and listed.
-        let settings = reg.resolve(&wd.r#type, &wd.settings);
-        set_own(&e, "settings", settings.to_qml());
-        set_own(&e, "settingErrors", settings.errors_qml());
-        set_own(&e, "guest", Value::str(from));
         match runs.last_mut() {
             Some((true, entries, s, f)) if pill && *f == from => {
-                entries.push(Value::Obj(e));
+                entries.push(e);
                 *s |= stretch;
             }
-            _ => runs.push((pill, vec![Value::Obj(e)], stretch, from)),
+            _ => runs.push((pill, vec![e], stretch, from)),
         }
     }
     let stretches = runs.iter().any(|r| r.2);
+    let mut first = 0;
     let runs = Value::array(
         runs.into_iter()
             .map(|(pill, entries, stretch, _)| {
                 let r = new_obj();
+                // The zone-wide position of the run's first widget.
+                set_own(&r, "first", Value::Num(first as f64));
+                first += entries.len();
                 set_own(&r, "pill", Value::Bool(pill));
                 set_own(&r, "stretch", Value::Bool(stretch));
                 set_own(&r, "entries", Value::array(entries));

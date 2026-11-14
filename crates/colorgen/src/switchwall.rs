@@ -96,6 +96,11 @@ pub fn jq_r(text: &str, path: &[&str]) -> Option<String> {
 /// `jq --arg v "$v" '.a.b = $v' file > file.tmp && mv file.tmp file`, as one read-modify-write
 /// under an exclusive lock on the file's directory, so concurrent edits never lose each other.
 pub fn jq_set(file: &Path, path: &[&str], value: &str) {
+    jq_set_value(file, path, Value::String(value.to_string()));
+}
+
+/// [`jq_set`] with any JSON value (`jq --argjson v`).
+pub fn jq_set_value(file: &Path, path: &[&str], value: Value) {
     let _lock = file
         .parent()
         .and_then(|d| std::fs::File::open(d).ok())
@@ -117,7 +122,7 @@ pub fn jq_set(file: &Path, path: &[&str], value: &str) {
         }
         let Value::Object(o) = cur else { return };
         if i + 1 == path.len() {
-            o.insert(k.to_string(), Value::String(value.to_string()));
+            o.insert(k.to_string(), value);
             break;
         }
         cur = o.entry(k.to_string()).or_insert(Value::Null);

@@ -77,6 +77,10 @@ size = 5
 "#;
 
 const SIZE: [f64; 2] = [460.0, 1000.0];
+/// The window of the layout's sidebar. It shows only the widgets it has room for (a widget that
+/// does not fit is hidden, not laid out past the screen's edge), and the four of `LAYOUT` with
+/// the quick toggles in their edit mode need more than the original's blocks do.
+const PLACED_SIZE: [f64; 2] = [460.0, 1400.0];
 
 /// Two seconds of the frame clock, past every animation of the sidebar.
 const FRAMES: usize = 125;
@@ -134,6 +138,7 @@ struct T {
     fonts: std::rc::Rc<std::cell::RefCell<scene::Fonts>>,
     wake: testenv::Wakeups,
     ep: Option<i32>,
+    size: [f64; 2],
     now: f64,
 }
 
@@ -173,6 +178,7 @@ impl T {
             fonts,
             wake,
             ep,
+            size: if layout { PLACED_SIZE } else { SIZE },
             now: 1000.0,
         };
         t.until(|t| t.truthy(t.main, "ready"));
@@ -192,7 +198,7 @@ impl T {
         self.rt.tick(self.now);
         self.rt.settle();
         let fonts = self.fonts.clone();
-        scene::layout_window(&mut self.rt, &mut fonts.borrow_mut(), self.main, SIZE);
+        scene::layout_window(&mut self.rt, &mut fonts.borrow_mut(), self.main, self.size);
         self.rt.settle();
         loop {
             let woke = self.wake.wait(self.ep, Some(std::time::Duration::ZERO));

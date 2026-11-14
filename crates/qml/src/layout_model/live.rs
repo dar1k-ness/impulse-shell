@@ -138,10 +138,34 @@ impl Live {
         })
     }
 
+    /// Steps back one undo step and writes the file; `Ok(false)` when there is none. As for
+    /// [`Live::apply`], a failed write keeps the step taken and is returned for the log.
+    pub fn undo(&mut self) -> Result<bool, String> {
+        let stepped = self.editor.undo();
+        self.saved_step(stepped)
+    }
+
+    /// Redoes one undone step and writes the file; `Ok(false)` when there is none.
+    pub fn redo(&mut self) -> Result<bool, String> {
+        let stepped = self.editor.redo();
+        self.saved_step(stepped)
+    }
+
+    fn saved_step(&mut self, stepped: bool) -> Result<bool, String> {
+        if !stepped {
+            return Ok(false);
+        }
+        self.generation += 1;
+        match self.store.save(self.editor.layout()) {
+            Ok(_) => Ok(true),
+            Err(e) => Err(format!("{}: {e}", self.store.path().display())),
+        }
+    }
+
     /// The monitor index edits for an output go to: a monitor without its own layout gets a
     /// copy of the primary one first ([`Editor::attach`]), so editing it leaves the others be.
     /// Attaching a monitor that already has its layout changes nothing, so the generation
-    /// stays.
+    /// stays: the edit controller attaches on every pointer motion of a drag.
     pub fn attach(&mut self, connector: &str) -> usize {
         let revision = self.editor.revision();
         let id = self.output(connector);

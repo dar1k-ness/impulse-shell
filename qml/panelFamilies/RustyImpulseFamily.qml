@@ -2,6 +2,7 @@ import QtQuick
 import Rustshell
 
 import ri.modules.common
+import ri.services
 import ri.modules.rusty.background
 import ri.modules.rusty.bar
 import ri.modules.rusty.cheatsheet
@@ -26,6 +27,10 @@ import ri.modules.rusty.wallpaperSelector
 Scope {
     PanelLoader { extraCondition: !Config.options.bar.vertical || LayoutState.hasContainer("panel"); component: Bar {} }
     PanelLoader { component: Background {} }
+    // Layout edit mode (rusty-impulse: a layout with containers; the file imports Impulse).
+    LazyLoader { active: Config.ready && LayoutState.containerKinds.length > 0; source: Qt.resolvedUrl("../modules/rusty/editMode/EditMode.qml") }
+    // The style review opens the edit mode once the wallpaper picker has put a style on the screen.
+    Component.onCompleted: StyleReview.load()
     PanelLoader { component: Cheatsheet {} }
     PanelLoader { extraCondition: Config.options.dock.enable; component: Dock {} }
     PanelLoader { component: Lock {} }

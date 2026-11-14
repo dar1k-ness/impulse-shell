@@ -2674,9 +2674,10 @@ pub struct World {
     /// `states_sync` is running: it does not re-enter itself, but the handlers it runs keep
     /// Qt's synchronous binding updates (unlike inside `flushing`).
     pub syncing_states: bool,
-    /// Loaders/Repeaters `delegators_sync` is building, innermost last: a handler their build
-    /// runs builds another one it writes at once (QQuickLoader::setActive re-enters), but not
-    /// one of these again (that write is handled once the build in progress returns).
+    /// Loaders/Repeaters `delegators_sync` is building and the Repeater the delegators pass is
+    /// building, innermost last: a handler their build runs builds another one it writes at
+    /// once (QQuickLoader::setActive re-enters), but not one of these again (that write is
+    /// handled once the build in progress returns).
     pub delegators_syncing: Vec<usize>,
     /// Loaders/Repeaters `delegators_sync` built while a delegators pass was running: built for
     /// their current state, the pass skips them instead of building its older view of them.
@@ -3047,13 +3048,28 @@ pub struct World {
     /// Per LayoutState: the container kinds and panel edges its outputs were last computed from.
     pub layout_state_synced: HashMap<usize, LayoutStateSynced>,
     /// Per SidebarContainer or DesktopContainer: its connector and container id (for a desktop
-    /// also its size and the revision of its natural sizes) and the container its outputs
-    /// were computed from.
+    /// also its size, the revision of its natural sizes and a widget mid-drag) and the
+    /// container its outputs were computed from.
     pub layout_synced: HashMap<usize, LayoutViewSynced>,
     /// Per DesktopContainer: the natural sizes its view reported (`setNaturalSize`).
     pub desktop_natural: HashMap<usize, crate::desktop_container::NaturalSizes>,
     /// Per PanelContainer: what its outputs were last computed from (panel.rs).
     pub panel_synced: HashMap<usize, crate::panel::Synced>,
+    /// Per PanelContainer: what its `probes` were last written from (panel.rs).
+    pub panel_probes: HashMap<usize, crate::panel::Probes>,
+    /// Per SidebarContainer: what its `probes` were last written from: the layout generation,
+    /// its connector and container, whether edit mode was on, and the cells.
+    pub sidebar_probes: HashMap<usize, SidebarProbes>,
+    /// Edit mode: selection and the gesture in progress (edit_mode.rs).
+    pub edit: crate::edit_mode::State,
+    /// Per EditController: what each of its outputs was last written from.
+    pub edit_synced: HashMap<usize, [String; 19]>,
+    /// Where the shell placed each shown window on its monitor (edit mode hit-testing).
+    pub window_rects: HashMap<usize, crate::edit_mode::WinRect>,
+    /// Per WidgetSettings: rejected inputs shown inline (widget_settings.rs).
+    pub widget_settings_drafts: HashMap<usize, crate::widget_settings::Drafts>,
+    /// Per WidgetSettings: the layout generation, connector and widget id it last showed.
+    pub widget_settings_synced: HashMap<usize, (u64, String, String)>,
     pub delegating: bool,
     /// Loaders whose `active`/`source`/`sourceComponent` and Repeaters whose `model` was
     /// written, each with the [`World::delegators_seq`] of its latest write: the JS assignment
@@ -3158,7 +3174,7 @@ pub struct World {
     pub fswatch: crate::fswatch::Watches,
     /// The `ClipboardHistory` singleton's jobs and database watch (see [`crate::ports::clip`]).
     pub cliphist: Option<crate::ports::clip::History>,
-    /// The widget layout (`layout.toml`), once the shell opened it ([`World::open_layout`]).
+    /// The edit-mode layout (`layout.toml`), once the shell opened it ([`World::open_layout`]).
     pub layout: Option<crate::layout_model::Live>,
     /// The connected outputs with their EDID identities ([`Runtime::set_outputs`]).
     pub outputs: Vec<crate::layout_model::MonitorId>,
@@ -3588,12 +3604,19 @@ impl WidgetHostSynced {
 /// What a `LayoutState` showed: the container kinds the layout has and its panel edges.
 pub type LayoutStateSynced = Shown<(), (Vec<&'static str>, Vec<(String, &'static str)>)>;
 /// What a `SidebarContainer` or `DesktopContainer` showed: connector, container id, for a
-/// desktop its size and the revision of its natural sizes, and the widget registry revision;
-/// the container they found and, for a desktop, the unplugged monitors' containers it shows
-/// meanwhile
+/// desktop its size and the revision of its natural sizes, the widget registry revision, and
+/// for a desktop the widget shown mid-drag ([`crate::edit_mode::live_desktop`]); the container
+/// they found and, for a desktop, the unplugged monitors' containers it shows meanwhile
 /// ([`crate::desktop_container::Guests`]).
 pub type LayoutViewSynced = Shown<
-    (String, String, (u32, u32), u64, u64),
+    (
+        String,
+        String,
+        (u32, u32),
+        u64,
+        u64,
+        Option<(String, crate::layout_model::desktop::Rect, bool)>,
+    ),
     (
         Option<crate::layout_model::Container>,
         crate::desktop_container::Guests,
@@ -11272,6 +11295,13 @@ impl World {
             synchronizers,
             sync_new,
             sync_ends,
+            panel_probes,
+            sidebar_probes,
+            edit: _,
+            edit_synced,
+            window_rects,
+            widget_settings_drafts,
+            widget_settings_synced,
         } = self;
         items.release(i);
         // A destroyed Synchronizer stops listening; a destroyed object's properties leave the
@@ -11446,6 +11476,12 @@ impl World {
         layout_synced.remove(&i);
         desktop_natural.remove(&i);
         panel_synced.remove(&i);
+        panel_probes.remove(&i);
+        sidebar_probes.remove(&i);
+        edit_synced.remove(&i);
+        window_rects.remove(&i);
+        widget_settings_drafts.remove(&i);
+        widget_settings_synced.remove(&i);
         flicks.remove(&i);
         flicks_x.remove(&i);
         if !flicks_live.is_empty() {
@@ -23050,6 +23086,12 @@ impl WorldHost {
         if let Some(v) = crate::impulse::call(&mut w, item, name, args) {
             return Some(v);
         }
+        if let Some(v) = crate::edit_mode::call(&mut w, item, name, args) {
+            return Some(v);
+        }
+        if let Some(v) = crate::widget_settings::call(&mut w, item, name, args) {
+            return Some(v);
+        }
         let has = |w: &World, t: &str| {
             w.items
                 .get(item)
@@ -33129,7 +33171,8 @@ impl Eng<'_> {
         let p = crate::panel::sync(&mut self.world.borrow_mut());
         let hosts = self.sync_widget_hosts();
         let views = self.sync_layout_views();
-        views || hosts || p || r
+        let edit = crate::edit_mode::sync(&mut self.world.borrow_mut());
+        views || edit || hosts || p || r
     }
 
     /// Layout-backed outputs: `LayoutState.containerKinds` (the container kinds the layout has
@@ -33188,6 +33231,7 @@ impl Eng<'_> {
                 (0, 0),
                 0,
                 w.widgets_revision,
+                None,
             );
             if Shown::fresh(w.layout_synced.get(&id), generation, &inputs) {
                 continue;
@@ -33234,6 +33278,41 @@ impl Eng<'_> {
                 },
             );
         }
+        // Edit mode: the widgets of the sidebar's monitor in its other containers that have a
+        // sidebar variant, as a drop would place them (SidebarLayoutContent lays each out off
+        // screen and reports its height in `sidebarHeights`).
+        for id in w.of_type("SidebarContainer") {
+            let Some((connector, container)) = w.layout_synced.get(&id).and_then(|s| {
+                s.content
+                    .0
+                    .as_ref()
+                    .map(|c| (s.inputs.0.clone(), c.clone()))
+            }) else {
+                continue;
+            };
+            let key = (generation, connector, container.id.clone(), w.edit.active);
+            if w.sidebar_probes.get(&id).is_some_and(|p| p.0 == key) {
+                continue;
+            }
+            let list = if key.3 {
+                sidebar_probes(&w, &key.1, &container)
+            } else {
+                Vec::new()
+            };
+            let prev = w.sidebar_probes.remove(&id);
+            if prev.as_ref().map_or(!list.is_empty(), |p| p.1 != list) {
+                if !w.items[id].props.contains_key("probes") {
+                    w.declare(id, "probes", "var");
+                }
+                let cells = list
+                    .iter()
+                    .map(|c| sidebar_cell_value(c, &w.widgets))
+                    .collect();
+                w.write(id, "probes", Value::array(cells));
+                wrote = true;
+            }
+            w.sidebar_probes.insert(id, (key, list));
+        }
         for id in w.of_type(crate::desktop_container::TYPE) {
             let text = |w: &mut World, k: &str| match w.read(id, k) {
                 Some(Value::Str(s)) => s.to_string(),
@@ -33242,6 +33321,7 @@ impl Eng<'_> {
             // The widgets show fitted to the container's size (the monitor's).
             let bounds = crate::desktop_container::bounds(&mut w, id);
             let (connector, cid) = (text(&mut w, "connector"), text(&mut w, "containerId"));
+            let live = crate::desktop_container::live(&w, &connector, &cid);
             let revision = w.desktop_natural.get(&id).map_or(0, |n| n.revision);
             let inputs = (
                 connector,
@@ -33249,6 +33329,7 @@ impl Eng<'_> {
                 (bounds.w, bounds.h),
                 revision,
                 w.widgets_revision,
+                live,
             );
             if Shown::fresh(w.layout_synced.get(&id), generation, &inputs) {
                 continue;
@@ -33318,6 +33399,9 @@ impl Eng<'_> {
             );
             wrote = true;
         }
+        for id in w.of_type(crate::widget_settings::TYPE) {
+            wrote |= crate::widget_settings::sync(&mut w, id, false);
+        }
         wrote
     }
 
@@ -33367,6 +33451,10 @@ impl Eng<'_> {
             let (status, error, values) = match reg.get(&name) {
                 _ if name.is_empty() => (0.0, String::new(), vec![]),
                 None => (2.0, format!("unknown widget type \"{name}\""), vec![]),
+                Some(t) if t.variant_for(&widget_host_surface(&w, h)).is_err() => {
+                    let e = t.variant_for(&widget_host_surface(&w, h)).err();
+                    (2.0, e.unwrap_or_default(), vec![])
+                }
                 Some(t) => {
                     let r = resolve_host_settings(&w, t, &now.settings);
                     let error = r
@@ -33526,7 +33614,7 @@ impl Eng<'_> {
                         None
                     }
                     3 | 4 => Self::loader_source(w, i),
-                    7 => widget_host_type(w, i).map(|t| widget_url(w, t)),
+                    7 => widget_host_component(w, i).map(|c| widget_url(w, &c)),
                     _ => None,
                 })
                 .filter(|u| {
@@ -33596,7 +33684,7 @@ impl Eng<'_> {
                     .or_else(|| {
                         let f = match k {
                             3 | 4 => Self::loader_source(w, i),
-                            7 => widget_host_type(w, i).map(|t| widget_url(w, t)),
+                            7 => widget_host_component(w, i).map(|c| widget_url(w, &c)),
                             _ => None,
                         }?;
                         w.source_templates.get(&f.to_string()).copied()
@@ -34083,7 +34171,12 @@ impl Eng<'_> {
             self.held_view_walk(id, t, &elems);
         }
         let mut loaded: Vec<Load> = Vec::new();
+        // The Repeater this pass is building, while it is in `delegators_syncing`.
+        let mut building = false;
         for (id, kind, tmpl, elems, sig, combo) in cands {
+            if std::mem::take(&mut building) {
+                self.world.borrow_mut().delegators_syncing.pop();
+            }
             // An earlier delegator of this pass may have destroyed or released this one (nested
             // views), or a handler it ran may have loaded this Loader already.
             {
@@ -34097,9 +34190,18 @@ impl Eng<'_> {
                 if first && matches!(kind.as_str(), "Repeater" | "Loader") {
                     self.images_complete(id + 1, Self::settle_bindings);
                 }
-                let w = self.world.borrow();
+                let mut w = self.world.borrow_mut();
                 if w.dead_or_doomed(id) || w.sync_built.contains(&id) {
                     continue;
+                }
+                // A delegate settles as it is made (`instantiate_made`): a model binding that
+                // changes there (a PanelZone's `runs`, when the PanelContainer's zone is
+                // delivered then) is not built inside this build, whose remaining rows would
+                // take the Repeater's slots and leave their delegates beside the new ones. It
+                // is built again after this build, as one a handler writes is.
+                if kind == "Repeater" && !w.delegators_syncing.contains(&id) {
+                    w.delegators_syncing.push(id);
+                    building = true;
                 }
             }
             // QQmlInstantiator::setActive: activeChanged, then the objects come or go.
@@ -35480,6 +35582,9 @@ impl Eng<'_> {
         }
         {
             let mut w = self.world.borrow_mut();
+            if building {
+                w.delegators_syncing.pop();
+            }
             w.delegating = outer_delegating;
             w.created_free = outer_free;
             // The enclosing pass skips what this one's handlers loaded too.
@@ -38109,7 +38214,7 @@ type Delegator = (usize, String, Option<usize>, Vec<Value>, String, bool);
 
 /// The widget type a WidgetHost's `widgetType` names, if registered.
 impl World {
-    /// Opens the widget layout at `path` and watches it; containers read it from here.
+    /// Opens the edit-mode layout at `path` and watches it; containers read it from here.
     /// The directory is created when missing (XDG: an application creates its own config
     /// directory), since inotify can only watch a directory that exists: a `layout.toml`
     /// written there later is picked up.
@@ -38218,31 +38323,77 @@ fn section_cells(
     }
 }
 
-/// A sidebar section as QML reads it: `{ grid, rows: [[cell]] }`, a block being one row of one
-/// cell; a cell is `{ id, type, size, settings, settingErrors }` with its settings resolved
+/// What a sidebar's `probes` were last written from (see World::sidebar_probes).
+pub type SidebarProbes = (
+    (Option<u64>, String, String, bool),
+    Vec<crate::layout_model::sidebar::Cell>,
+);
+
+/// The widgets of `connector`'s monitor outside `sidebar` that have a sidebar variant, each as
+/// the cell a drop into `sidebar` makes of it.
+fn sidebar_probes(
+    w: &World,
+    connector: &str,
+    sidebar: &crate::layout_model::Container,
+) -> Vec<crate::layout_model::sidebar::Cell> {
+    let crate::layout_model::ContainerKind::Sidebar(props) = &sidebar.kind else {
+        return Vec::new();
+    };
+    let Some(m) = w.layout.as_ref().and_then(|l| l.monitor(connector)) else {
+        return Vec::new();
+    };
+    let columns = props.columns.max(1);
+    m.containers
+        .iter()
+        .filter(|c| c.id != sidebar.id)
+        .flat_map(|c| &c.widgets)
+        .filter(|wd| {
+            w.widgets
+                .get(&wd.r#type)
+                .is_some_and(|t| t.variant(crate::widgets::Placement::Sidebar).is_some())
+        })
+        .map(|wd| crate::layout_model::sidebar::Cell {
+            id: wd.id.clone(),
+            r#type: wd.r#type.clone(),
+            size: crate::edit_mode::sidebar_drop_size(&w.widgets, wd, columns).clamp(1, columns),
+            settings: wd.settings.clone(),
+        })
+        .collect()
+}
+
+fn sidebar_obj(pairs: Vec<(&str, Value)>) -> Value {
+    let o = crate::eval::new_obj();
+    for (k, v) in pairs {
+        crate::eval::set_own(&o, k, v);
+    }
+    Value::Obj(o)
+}
+
+/// A sidebar cell: `{ id, type, size, settings, settingErrors }` with its settings resolved
 /// against its type's schema ([`crate::widgets::Registry::resolve`]).
+fn sidebar_cell_value(
+    c: &crate::layout_model::sidebar::Cell,
+    reg: &crate::widgets::Registry,
+) -> Value {
+    let settings = reg.resolve(&c.r#type, &c.settings);
+    sidebar_obj(vec![
+        ("id", Value::str(&c.id)),
+        ("type", Value::str(&c.r#type)),
+        ("size", Value::Num(c.size as f64)),
+        ("settings", settings.to_qml()),
+        ("settingErrors", settings.errors_qml()),
+    ])
+}
+
+/// A sidebar section as QML reads it: `{ grid, rows: [[cell]] }`, a block being one row of one
+/// cell ([`sidebar_cell_value`]).
 fn sidebar_section_value(
     s: &crate::layout_model::sidebar::Section,
     reg: &crate::widgets::Registry,
 ) -> Value {
-    use crate::layout_model::sidebar::{Cell, Section};
-    let obj = |pairs: Vec<(&str, Value)>| {
-        let o = crate::eval::new_obj();
-        for (k, v) in pairs {
-            crate::eval::set_own(&o, k, v);
-        }
-        Value::Obj(o)
-    };
-    let cell = |c: &Cell| {
-        let settings = reg.resolve(&c.r#type, &c.settings);
-        obj(vec![
-            ("id", Value::str(&c.id)),
-            ("type", Value::str(&c.r#type)),
-            ("size", Value::Num(c.size as f64)),
-            ("settings", settings.to_qml()),
-            ("settingErrors", settings.errors_qml()),
-        ])
-    };
+    use crate::layout_model::sidebar::Section;
+    let cell = |c: &crate::layout_model::sidebar::Cell| sidebar_cell_value(c, reg);
+    let obj = sidebar_obj;
     let (grid, rows) = match s {
         Section::Grid(rows) => (
             true,
@@ -38259,8 +38410,8 @@ fn sidebar_section_value(
 }
 
 /// The url of a widget's component file.
-fn widget_url(w: &World, t: &crate::widgets::WidgetType) -> crate::qurl::QUrl {
-    crate::qurl::document_url(&t.component, w.root_dir.as_deref(), None)
+fn widget_url(w: &World, component: &Path) -> crate::qurl::QUrl {
+    crate::qurl::document_url(component, w.root_dir.as_deref(), None)
 }
 
 fn widget_host_type(w: &World, i: usize) -> Option<&crate::widgets::WidgetType> {
@@ -38268,6 +38419,22 @@ fn widget_host_type(w: &World, i: usize) -> Option<&crate::widgets::WidgetType> 
         Some(Value::Str(s)) => w.widgets.get(s),
         _ => None,
     }
+}
+
+/// A WidgetHost's `surface`: the surface (panel, desktop, sidebar) its container is.
+fn widget_host_surface(w: &World, i: usize) -> String {
+    match w.items[i].props.get("surface").map(|p| &p.value) {
+        Some(Value::Str(s)) => s.to_string(),
+        _ => String::new(),
+    }
+}
+
+/// The component a WidgetHost loads: its type's variant for the host's surface.
+fn widget_host_component(w: &World, i: usize) -> Option<PathBuf> {
+    widget_host_type(w, i)?
+        .variant_for(&widget_host_surface(w, i))
+        .ok()
+        .map(|v| v.component.clone())
 }
 
 /// A WidgetHost's `settings` (an object, or an item's properties) resolved against widget
@@ -50079,6 +50246,8 @@ PanelWindow {
     Popup {}
     Button {}
     TabBar {}
+    EditController {}
+    WidgetSettings {}
 }
 "#;
 
@@ -50165,6 +50334,31 @@ PanelWindow {
                     "tightBoundingRect",
                     "elidedText",
                 ],
+            ),
+            (
+                "EditController",
+                &[
+                    "start",
+                    "finish",
+                    "toggle",
+                    "press",
+                    "move",
+                    "release",
+                    "cancel",
+                    "key",
+                    "undo",
+                    "redo",
+                    "removeSelected",
+                    "setWidthMode",
+                    "addWidget",
+                    "setZone",
+                    "setSpan",
+                    "setSize",
+                ],
+            ),
+            (
+                "WidgetSettings",
+                &["setValue", "resetValue", "undo", "redo"],
             ),
         ];
         let snapshot = |w: &World| {

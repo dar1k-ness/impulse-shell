@@ -517,6 +517,137 @@ fn widgets_follow_the_original_s_placement_setting_live() {
     std::fs::remove_dir_all(&d).unwrap();
 }
 
+const SELF_PLACED: &str = r#"version = 5
+
+[[monitor]]
+connector = "DP-1"
+primary = true
+
+[[monitor.container]]
+id = "desktop"
+kind = "desktop"
+
+[[monitor.container.widget]]
+id = "clock"
+type = "clock"
+x = 100
+y = 100
+w = 230
+h = 250
+
+[[monitor.container.widget]]
+id = "weather"
+type = "weather"
+x = 60
+y = 120
+"#;
+
+/// The original's clock placed by the wallpaper (leastBusy, the original's default) shows where it
+/// draws, not at its stored box: the container gives that place as the clock's (its cell, and so
+/// its edit-mode frame, is there), and the widget the layout puts under the clock's stored box
+/// stays where `layout.toml` says.
+#[test]
+fn a_wallpaper_placed_clock_shows_where_it_draws_and_its_neighbour_keeps_its_place() {
+    if !own_home("a_wallpaper_placed_clock_shows_where_it_draws_and_its_neighbour_keeps_its_place")
+    {
+        return;
+    }
+    let (w, h) = (1920.0, 1080.0);
+    let d = tree_with("selfplaced", w, h, SELF_PLACED, "");
+    let mut rt = Runtime::new(Some(d.clone()));
+    rt.load_singletons(&[
+        d.join("modules/common"),
+        d.join("modules/common/functions"),
+        d.join("services"),
+    ]);
+    rt.world.borrow_mut().open_layout(d.join("layout.toml"));
+    rt.settle();
+    let main = rt.load_file(&d.join("main.qml")).unwrap();
+    rt.settle();
+    let mut host = Host::new(&mut rt, main, [w, h]);
+    let item = |v: Value| match v {
+        Value::Item(i) => i,
+        v => panic!("{v:?}"),
+    };
+    let find = |rt: &Runtime, t: &str| {
+        let wd = rt.world.borrow();
+        (0..wd.items.len())
+            .find(|&i| !wd.dead.contains(&i) && wd.items[i].types.iter().any(|x| x == t))
+            .unwrap_or_else(|| panic!("no {t}"))
+    };
+    let config = *rt.world.borrow().singletons.get("Config").expect("Config");
+    for name in ["clock", "weather"] {
+        let mut wd = rt.world.borrow_mut();
+        let mut o = item(wd.read(config, "options").unwrap_or_default());
+        for k in ["background", "widgets", name] {
+            o = item(wd.read(o, k).unwrap_or_default());
+        }
+        wd.write(o, "enable", Value::Bool(true));
+    }
+    host.until(&mut rt, |rt| {
+        live(rt, "ClockWidget") && live(rt, "WeatherWidget")
+    });
+    host.frames(&mut rt, 300);
+    let shown = |rt: &Runtime, key: &str| {
+        let c = find(rt, "DesktopContainer");
+        let Value::Obj(o) = rt.world.borrow_mut().read(c, "shown").unwrap_or_default() else {
+            panic!("no shown")
+        };
+        let Some(Value::Obj(r)) = o.borrow().props.get(key).cloned() else {
+            panic!("{key} not shown")
+        };
+        let r = r.borrow();
+        let n = |k: &str| r.props[k].to_number().round() as i64;
+        (n("x"), n("y"), n("width"), n("height"))
+    };
+    // Where an item draws on the monitor.
+    let at = |rt: &Runtime, i: usize| {
+        let mut wd = rt.world.borrow_mut();
+        let (mut x, mut y) = (0.0, 0.0);
+        let mut k = Some(i);
+        while let Some(j) = k.filter(|&j| j != main) {
+            x += wd.read(j, "x").unwrap_or(Value::Num(0.0)).to_number();
+            y += wd.read(j, "y").unwrap_or(Value::Num(0.0)).to_number();
+            k = wd.items[j].parent;
+        }
+        (x.round() as i64, y.round() as i64)
+    };
+    let own = find(&rt, "ClockWidget");
+    let desktop_clock = rt.world.borrow().items[own].parent.expect("parent");
+    let placed = rt
+        .world
+        .borrow_mut()
+        .read(desktop_clock, "wallpaperPlaced")
+        .unwrap_or_default()
+        .truthy();
+    assert!(
+        placed,
+        "the original's default places the clock by the wallpaper"
+    );
+    let clock = shown(&rt, "clock");
+    assert_eq!(
+        (clock.0, clock.1),
+        at(&rt, own),
+        "the clock's place is where it draws"
+    );
+    assert_eq!(
+        at(&rt, desktop_clock),
+        at(&rt, own),
+        "its cell is there too"
+    );
+    assert!(
+        clock.0 >= 0 && clock.1 >= 0 && clock.0 + clock.2 <= 1920 && clock.1 + clock.3 <= 1080,
+        "{clock:?}"
+    );
+    let weather = shown(&rt, "weather");
+    assert_eq!(
+        (weather.0, weather.1),
+        (60, 120),
+        "the clock shows at {clock:?}"
+    );
+    std::fs::remove_dir_all(&d).unwrap();
+}
+
 const BTN_LEFT: u32 = 0x110;
 
 /// The original's "Draggable" placement (Settings > Background, `placementStrategy: "free"`): the pointer

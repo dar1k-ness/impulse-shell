@@ -86,14 +86,34 @@ fn text<'a>(o: &'a Json, path: &str, default: &'a str) -> &'a str {
 pub fn from_options(options: &Json, monitor: &Monitor) -> Layout {
     let mut containers = vec![panel(options), desktop(options)];
     containers.extend(sidebar(options));
-    Layout {
+    let mut layout = Layout {
         monitors: vec![MonitorLayout {
             connector: monitor.connector.clone(),
             edid: None,
             primary: true,
             containers,
         }],
+    };
+    if let Some(parts) = bar_layout(options) {
+        super::arrange::bar_groups(&mut layout, [&parts[0], &parts[1], &parts[2]]);
     }
+    layout
+}
+
+/// The original's `bar.layout` (`left`, `center`, `right` group lists), when the original's options set it.
+fn bar_layout(o: &Json) -> Option<[Vec<String>; 3]> {
+    at(o, "bar.layout")?.as_object()?;
+    Some(["left", "center", "right"].map(|side| {
+        at(o, &format!("bar.layout.{side}"))
+            .and_then(Json::as_array)
+            .map(|a| {
+                a.iter()
+                    .filter_map(Json::as_str)
+                    .map(str::to_string)
+                    .collect()
+            })
+            .unwrap_or_default()
+    }))
 }
 
 fn widget(id: &str, r#type: &str, place: Place, settings: toml::Table) -> Widget {
@@ -155,7 +175,7 @@ fn desktop(o: &Json) -> Container {
 /// (`placementStrategy`: by the wallpaper, or `free` at its position, which the layout keeps).
 pub(super) fn desktop_widgets(o: &Json) -> Vec<Widget> {
     let mut widgets: Vec<Widget> = vec![];
-    for (name, r#type, x, y) in [
+    for (name, id, x, y) in [
         ("weather", "desktop-weather", 400.0, 100.0),
         ("clock", "desktop-clock", 100.0, 100.0),
     ] {
@@ -168,7 +188,7 @@ pub(super) fn desktop_widgets(o: &Json) -> Vec<Widget> {
             size: None,
         };
         // Ids are unique on a monitor: the panel has a clock and a weather widget too.
-        widgets.push(widget(r#type, r#type, place, toml::Table::new()));
+        widgets.push(widget(id, name, place, toml::Table::new()));
     }
     widgets
 }
@@ -334,7 +354,7 @@ mod tests {
             vec![
                 (
                     "desktop-weather",
-                    "desktop-weather",
+                    "weather",
                     &Place::Desktop {
                         x: 400,
                         y: 100,
@@ -343,7 +363,7 @@ mod tests {
                 ),
                 (
                     "desktop-clock",
-                    "desktop-clock",
+                    "clock",
                     &Place::Desktop {
                         x: 100,
                         y: 100,
@@ -459,7 +479,7 @@ mod tests {
             vec![
                 (
                     "desktop-weather",
-                    "desktop-weather",
+                    "weather",
                     &Place::Desktop {
                         x: 50,
                         y: 700,
@@ -470,7 +490,7 @@ mod tests {
                 // natural size, which only the clock knows.
                 (
                     "desktop-clock",
-                    "desktop-clock",
+                    "clock",
                     &Place::Desktop {
                         x: 1700,
                         y: 20,

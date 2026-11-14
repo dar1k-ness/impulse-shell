@@ -1,6 +1,7 @@
 //! The tree's `SidebarLayoutContent`: sections keep their natural height packed to the top, and
-//! only a block without an implicit height (notifications) takes the height left over. The original's
-//! quick sliders show as the original's settings say, live.
+//! only a block without an implicit height (notifications) takes the height left over; sections
+//! taller than the sidebar are hidden from the bottom up, the filling block keeping its minimum
+//! height. The original's quick sliders show as the original's settings say, live.
 
 use qml::runtime::Runtime;
 use qml::value::Value;
@@ -121,6 +122,9 @@ fn laid_out(rt: &mut Runtime, main: usize) -> Vec<(f64, f64)> {
     let Some(Value::Item(c)) = w.read(main, "content") else {
         panic!("no content")
     };
+    let Some(Value::Item(c)) = w.read(c, "column") else {
+        panic!("no column")
+    };
     let kids = w.items[c].children.clone();
     let mut out = vec![];
     for k in kids {
@@ -137,7 +141,11 @@ fn laid_out(rt: &mut Runtime, main: usize) -> Vec<(f64, f64)> {
 /// `(y, height)` of each visible child of the content column, in order.
 fn rows(widgets: &[(&str, i32)]) -> Vec<(f64, f64)> {
     let d = tree(
-        &widgets.iter().map(|w| w.0).collect::<Vec<_>>().join("-"),
+        &widgets
+            .iter()
+            .map(|w| format!("{}{}", w.0, w.1))
+            .collect::<Vec<_>>()
+            .join("-"),
         &layout(widgets),
     );
     let (mut rt, main) = start(&d);
@@ -172,21 +180,18 @@ fn the_sliders_follow_the_original_s_settings_live() {
         [[monitor.container.widget]]\nid = \"block\"\ntype = \"block\"\nsize = 4\nsettings = { h = 120 }\n";
     let d = tree("sliders", layout);
     let (mut rt, main) = start(&d);
-    // 1000 tall, 10 between sections: the block, then the spacer.
-    let without = vec![(0.0, 120.0), (130.0, 870.0)];
+    // The block alone; what is left of the 1000 stays empty below it.
+    let without = vec![(0.0, 120.0)];
     assert_eq!(laid_out(&mut rt, main), without, "sliders off");
 
-    // The sliders above the block: `[sliders, block, spacer]`, the sliders' height returned.
+    // The sliders above the block, 10 between them: `[sliders, block]`, the sliders' height
+    // returned.
     let with = |rt: &mut Runtime, what: &str| {
         let rows = laid_out(rt, main);
-        assert_eq!(rows.len(), 3, "{what}: {rows:?}");
+        assert_eq!(rows.len(), 2, "{what}: {rows:?}");
         let h = rows[0].1;
         assert!(h > 0.0, "{what}: {rows:?}");
-        assert_eq!(
-            rows,
-            vec![(0.0, h), (h + 10.0, 120.0), (h + 140.0, 860.0 - h)],
-            "{what}"
-        );
+        assert_eq!(rows, vec![(0.0, h), (h + 10.0, 120.0)], "{what}");
         h
     };
     set_quick_sliders(&mut rt, "enable", true);
@@ -215,10 +220,10 @@ fn the_sliders_follow_the_original_s_settings_live() {
 
 #[test]
 fn without_a_filling_block_sections_pack_to_the_top() {
-    // 1000 tall, 10 between sections: the spacer takes 1000 - 120 - 80 - 2 * 10.
+    // 1000 tall, 10 between sections: what is left stays empty below them.
     assert_eq!(
         rows(&[("block", 120), ("block", 80)]),
-        vec![(0.0, 120.0), (130.0, 80.0), (220.0, 780.0)]
+        vec![(0.0, 120.0), (130.0, 80.0)]
     );
 }
 
@@ -227,5 +232,15 @@ fn a_filling_block_takes_the_height_left_over() {
     assert_eq!(
         rows(&[("block", 120), ("filler", 0), ("block", 80)]),
         vec![(0.0, 120.0), (130.0, 780.0), (920.0, 80.0)]
+    );
+}
+
+#[test]
+fn sections_taller_than_the_sidebar_hide_from_the_bottom_and_the_filling_block_keeps_the_rest() {
+    // 600 + 80 (fill minimum) + 400 + 2 * 10 = 1100 > 1000: the last block has no room and is
+    // hidden; the filling block takes what is left, nothing reaches past the sidebar.
+    assert_eq!(
+        rows(&[("block", 600), ("filler", 0), ("block", 400)]),
+        vec![(0.0, 600.0), (610.0, 390.0)]
     );
 }

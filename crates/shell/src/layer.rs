@@ -187,6 +187,49 @@ pub fn reserved(g: &Geometry) -> (f64, f64, f64, f64) {
     r
 }
 
+/// Where a layer surface of `size` sits in `area` (x, y, width, height on its output), as
+/// wlr-layer-shell places it: against each anchored edge plus its margin, centred between
+/// two opposite anchors, centred on an axis with neither.
+pub fn place(
+    anchor: u32,
+    margins: (i32, i32, i32, i32),
+    size: (u32, u32),
+    area: (f64, f64, f64, f64),
+) -> (f64, f64) {
+    let (t, r, b, l) = (
+        margins.0 as f64,
+        margins.1 as f64,
+        margins.2 as f64,
+        margins.3 as f64,
+    );
+    let axis = |lo: bool, hi: bool, start: f64, len: f64, m0: f64, m1: f64, s: f64| match (lo, hi) {
+        (true, false) => start + m0,
+        (false, true) => start + len - m1 - s,
+        (true, true) => start + m0 + ((len - m0 - m1 - s) / 2.0).max(0.0),
+        (false, false) => start + (len - s) / 2.0,
+    };
+    (
+        axis(
+            anchor & LEFT != 0,
+            anchor & RIGHT != 0,
+            area.0,
+            area.2,
+            l,
+            r,
+            size.0 as f64,
+        ),
+        axis(
+            anchor & TOP != 0,
+            anchor & BOTTOM != 0,
+            area.1,
+            area.3,
+            t,
+            b,
+            size.1 as f64,
+        ),
+    )
+}
+
 /// The bound `zwlr_layer_shell_v1` (version 1 to 5).
 #[derive(Debug)]
 pub struct LayerShell(ZwlrLayerShellV1);
@@ -395,5 +438,32 @@ mod tests {
         assert_eq!(Exclusion::from_qml(Some(1.0)), Exclusion::Ignore);
         assert_eq!(Exclusion::from_qml(Some(2.0)), Exclusion::Auto);
         assert_eq!(Exclusion::from_qml(None), Exclusion::Auto);
+    }
+
+    #[test]
+    fn place_follows_anchors_margins_and_area() {
+        let out = (0.0, 0.0, 1920.0, 1080.0);
+        // A top bar across the output.
+        assert_eq!(
+            place(TOP | LEFT | RIGHT, (0, 0, 0, 0), (1920, 40), out),
+            (0.0, 0.0)
+        );
+        // A right sidebar below that bar's exclusive zone, with a margin.
+        let below = (0.0, 40.0, 1920.0, 1040.0);
+        assert_eq!(
+            place(TOP | BOTTOM | RIGHT, (0, 8, 0, 0), (440, 1040), below),
+            (1472.0, 40.0)
+        );
+        // A bottom-left corner panel, and a centred floating one.
+        assert_eq!(
+            place(BOTTOM | LEFT, (0, 0, 10, 10), (200, 50), out),
+            (10.0, 1020.0)
+        );
+        assert_eq!(place(0, (0, 0, 0, 0), (200, 100), out), (860.0, 490.0));
+        // Anchored to both sides but narrower than the space: centred between the margins.
+        assert_eq!(
+            place(LEFT | RIGHT | TOP, (0, 0, 0, 0), (1000, 40), out),
+            (460.0, 0.0)
+        );
     }
 }

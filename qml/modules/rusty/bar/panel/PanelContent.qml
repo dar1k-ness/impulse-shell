@@ -26,6 +26,46 @@ Item {
         // the original's bar edge, for a panel the layout puts there: the original's settings keep choosing it.
         rustyBarEdge: Config.options.bar.vertical ? (Config.options.bar.bottom ? "right" : "left")
             : (Config.options.bar.bottom ? "bottom" : "top")
+        // Where edit mode may drop one more widget. The center zone grows to both sides, out
+        // of the free length the start and end zones keep.
+        startRoom: startZone.room
+        centerRoom: Math.max(0, Math.min(centerZone.freeLength, 2 * Math.min(startZone.freeLength, endZone.freeLength)) - centerZone.overhead)
+        endRoom: endZone.room
+        // What a drop of each of the monitor's widgets charges a zone, as PanelZone.fit
+        // charges the widget once it is there: its least length, with its leading margin on a
+        // vertical bar; nothing for one that does not show. The panel's own from its zones,
+        // the others from their probes.
+        panelLengths: {
+            const lengths = {};
+            for (const zone of [startZone, centerZone, endZone]) {
+                const own = zone.lengths;
+                for (const id in own)
+                    lengths[id] = own[id];
+            }
+            for (let i = 0; i < probeHosts.count; i++) {
+                const host = probeHosts.itemAt(i);
+                if (host?.item)
+                    lengths[host.entry.id] = (host.item.shown ?? true)
+                        ? host.minimumLength + (root.vertical ? host.leadingSpace : 0) : 0;
+            }
+            return lengths;
+        }
+    }
+
+    // While edit mode is on, the monitor's other widgets that may go onto this panel, laid out
+    // in their panel form but not shown, for their lengths.
+    Item {
+        visible: false
+        Repeater {
+            id: probeHosts
+            model: panel.probes
+            PanelWidget {
+                probe: true
+                vertical: root.vertical
+                edge: panel.edge
+                shortened: root.shortened
+            }
+        }
     }
 
     // Background shadow. `bar.floatStyleShadow` turns it off on a horizontal bar only, as in
@@ -90,6 +130,7 @@ Item {
             }
             spacing: root.vertical ? 10 : 0
             runs: panel.start
+            label: (root.screen?.name ?? "") + " start"
             fillAfter: true
             vertical: root.vertical
             edge: panel.edge
@@ -101,8 +142,14 @@ Item {
     PanelZone {
         id: centerZone
         anchors.centerIn: parent
+        // Sized to its runs, within the bar's length between its rounded ends, leaving either
+        // side zone its widget at the bar's edge: when the bar is short, the center gives way.
+        available: (root.vertical ? root.height : root.width) - 2 * Math.max(root.edgePadding, (root.vertical ? Appearance.sizes.hyprlandGapsOut : root.edgePadding) + startZone.edgeLength, root.edgePadding + endZone.edgeLength)
+        width: root.vertical ? implicitWidth : Math.min(implicitWidth, available)
+        height: root.vertical ? Math.min(implicitHeight, available) : implicitHeight
         spacing: 4
         runs: panel.center
+        label: (root.screen?.name ?? "") + " center"
         center: true
         vertical: root.vertical
         edge: panel.edge
@@ -147,6 +194,7 @@ Item {
             }
             spacing: root.vertical ? 4 : 5
             runs: panel.end
+            label: (root.screen?.name ?? "") + " end"
             fillBefore: true
             vertical: root.vertical
             edge: panel.edge

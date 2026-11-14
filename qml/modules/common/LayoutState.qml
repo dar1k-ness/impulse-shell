@@ -4,7 +4,7 @@ import QtQuick
 import Rustshell
 
 /**
- * The container kinds ("panel", "desktop", "sidebar") the widget layout
+ * The container kinds ("panel", "desktop", "sidebar") the edit-mode layout
  * (~/.config/rusty-impulse/layout.toml) defines. rusty-impulse fills containerKinds from its layout
  * model; with no layout the surfaces render their built-in the original content.
  */

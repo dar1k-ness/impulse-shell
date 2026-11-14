@@ -413,7 +413,7 @@ Item {
 
 /// The layout made from the original's options keeps the bar where the original's settings put it: toggling
 /// `bar.vertical` and `bar.bottom` moves the panel live, after a restart, and after the layout
-/// was edited (a layout change, saved to `layout.toml`).
+/// was edited (an edit-mode step, saved to `layout.toml`).
 #[test]
 fn a_layout_made_from_the_original_keeps_following_the_original_s_bar_edge() {
     use qml::layout_model::{Edit, rusty};

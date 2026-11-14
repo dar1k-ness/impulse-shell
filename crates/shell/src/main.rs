@@ -6268,6 +6268,7 @@ impl App {
             });
             self.ensure_scaler(self.wins.len() - 1);
         }
+        self.publish_window_rects();
         self.release_retiring();
     }
 
@@ -8230,7 +8231,69 @@ impl App {
                 s.commit();
                 return;
             }
+            self.publish_window_rects();
             self.draw(k);
+        }
+    }
+
+    /// Where each shown layer surface sits on its output, for edit-mode hit-testing
+    /// (`World::window_rects`): wlroots/Hyprland arrange_layers places exclusive surfaces in
+    /// mapping order, each inside the space the earlier ones left, then the others inside the
+    /// space all exclusive zones leave; a surface ignoring exclusive zones gets the whole output.
+    fn publish_window_rects(&mut self) {
+        let outputs: Vec<(String, (f64, f64))> = self
+            .outputs
+            .outputs()
+            .filter_map(|o| {
+                let i = self.outputs.info(&o)?;
+                let (w, h) = i.logical_size.unwrap_or((1920, 1080));
+                Some((i.name.clone().unwrap_or_default(), (w as f64, h as f64)))
+            })
+            .collect();
+        let panels: Vec<(usize, &PanelKey, (u32, u32))> = self
+            .wins
+            .iter()
+            .filter(|w| w.configured)
+            .filter_map(|w| match &w.surf {
+                Surf::Panel { key, .. } => Some((w.item, key, w.size)),
+                _ => None,
+            })
+            .collect();
+        let mut rects: std::collections::HashMap<usize, qml::edit_mode::WinRect, _> =
+            Default::default();
+        for (n, &(item, key, size)) in panels.iter().enumerate() {
+            let Some((name, (ow, oh))) = (match &key.output {
+                Some(o) => outputs.iter().find(|(n, _)| n == o),
+                None => outputs.first(),
+            }) else {
+                continue;
+            };
+            let mut area = (0.0, 0.0, *ow, *oh);
+            if key.geom.zone >= 0 {
+                for (m, &(_, other, _)) in panels.iter().enumerate() {
+                    let before = other.geom.zone > 0 && (key.geom.zone <= 0 || m < n);
+                    if m == n || !before || other.output.as_ref().is_some_and(|o| o != name) {
+                        continue;
+                    }
+                    let (t, r, b, l) = shell::layer::reserved(&other.geom);
+                    area = (area.0 + l, area.1 + t, area.2 - l - r, area.3 - t - b);
+                }
+            }
+            let (x, y) = shell::layer::place(key.geom.anchor, key.geom.margins, size, area);
+            rects.insert(
+                item,
+                qml::edit_mode::WinRect {
+                    connector: name.clone(),
+                    x,
+                    y,
+                    w: size.0 as f64,
+                    h: size.1 as f64,
+                },
+            );
+        }
+        let mut w = self.rt.world.borrow_mut();
+        if w.window_rects != rects {
+            w.window_rects = rects;
         }
     }
 }

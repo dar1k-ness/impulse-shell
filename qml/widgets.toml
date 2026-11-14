@@ -1,6 +1,9 @@
-# Widget types of the widget layout (Impulse widget registry): one section per container
-# kind, in the order panel / desktop / sidebar. Sizes are logical pixels [width, height], except
-# in the sidebar section, where width is cells of the sidebar grid's `columns`.
+# Widget types of the edit-mode layout (Impulse widget registry), grouped by the surface they
+# first belong to, in the order panel / sidebar. A type on one surface lists it in `placements`;
+# a type on several has a `[widget.panel]` / `[widget.desktop]` / `[widget.sidebar]` table each,
+# with that surface's component and size, and one settings schema for all of them. Sizes are
+# logical pixels [width, height], except on the sidebar, where width is cells of its grid's
+# `columns`.
 
 # --- panel -----------------------------------------------------------------------------------
 
@@ -24,19 +27,37 @@ size = { min = [80, 24], default = [80, 24] }
 type = "resources"
 name = "Resources"
 icon = "memory"
-placements = ["panel"]
+
+[widget.panel]
 component = "modules/rusty/bar/panel/ResourcesWidget.qml"
-size = { min = [24, 24], default = [24, 24] }
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
 pill = true
+
+[widget.desktop]
+component = "modules/rusty/background/widgets/resources/DesktopResources.qml"
+size = { min = [160, 80], max = [1600, 800], default = [400, 180] }
+
+[widget.sidebar]
+component = "modules/rusty/sidebarRight/widgets/ResourcesWidget.qml"
+size = { min = [1, 1], default = [5, 1] }
 
 [[widget]]
 type = "media"
 name = "Media"
 icon = "music_note"
-placements = ["panel"]
+
+[widget.panel]
 component = "modules/rusty/bar/panel/MediaWidget.qml"
-size = { min = [24, 24], default = [24, 24] }
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
 pill = true
+
+[widget.desktop]
+component = "modules/rusty/background/widgets/media/DesktopMedia.qml"
+size = { min = [64, 64], max = [1200, 400], default = [420, 140] }
+
+[widget.sidebar]
+component = "modules/rusty/sidebarRight/widgets/MediaWidget.qml"
+size = { min = [1, 1], default = [5, 1] }
 
 [[widget]]
 type = "workspaces"
@@ -51,10 +72,21 @@ pill = true
 type = "clock"
 name = "Clock"
 icon = "schedule"
-placements = ["panel"]
+
+[widget.panel]
 component = "modules/rusty/bar/panel/ClockWidget.qml"
-size = { min = [24, 24], default = [24, 24] }
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
 pill = true
+
+[widget.desktop]
+component = "modules/rusty/background/widgets/clock/DesktopClock.qml"
+size = { min = [120, 80], max = [1600, 1000], default = [320, 200] }
+enabledBy = "background.widgets.clock.enable"
+placedBy = "background.widgets.clock.placementStrategy"
+
+[widget.sidebar]
+component = "modules/rusty/sidebarRight/widgets/ClockCardWidget.qml"
+size = { min = [2, 1], default = [5, 1] }
 
 [[widget.setting]]
 key = "showDate"
@@ -100,9 +132,20 @@ size = { min = [24, 24], default = [24, 24] }
 type = "weather"
 name = "Weather"
 icon = "partly_cloudy_day"
-placements = ["panel"]
+
+[widget.panel]
 component = "modules/rusty/bar/panel/WeatherWidget.qml"
-size = { min = [24, 24], default = [24, 24] }
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+
+[widget.desktop]
+component = "modules/rusty/background/widgets/weather/DesktopWeather.qml"
+size = { min = [100, 100], max = [800, 800], default = [200, 200] }
+enabledBy = "background.widgets.weather.enable"
+placedBy = "background.widgets.weather.placementStrategy"
+
+[widget.sidebar]
+component = "modules/rusty/sidebarRight/widgets/WeatherCardWidget.qml"
+size = { min = [2, 1], default = [5, 1] }
 
 [[widget]]
 type = "spacer"
@@ -120,33 +163,19 @@ placements = ["panel"]
 component = "modules/rusty/bar/panel/SeparatorWidget.qml"
 size = { min = [1, 1], default = [24, 24] }
 
-# --- desktop ---------------------------------------------------------------------------------
-
-[[widget]]
-type = "desktop-clock"
-name = "Clock"
-icon = "schedule"
-placements = ["desktop"]
-component = "modules/rusty/background/widgets/clock/DesktopClock.qml"
-enabledBy = "background.widgets.clock.enable"
-size = { min = [120, 80], max = [1600, 1000], default = [320, 200] }
-
-[[widget]]
-type = "desktop-weather"
-name = "Weather"
-icon = "partly_cloudy_day"
-placements = ["desktop"]
-component = "modules/rusty/background/widgets/weather/DesktopWeather.qml"
-enabledBy = "background.widgets.weather.enable"
-size = { min = [100, 100], max = [800, 800], default = [200, 200] }
-
 # --- sidebar ---------------------------------------------------------------------------------
 
 [[widget]]
 type = "antiFlashbang"
 name = "Anti-flashbang"
 icon = "flash_off"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelAntiFlashbangToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/AntiFlashbangToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -154,7 +183,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "audio"
 name = "Audio"
 icon = "volume_up"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelAudioToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/AudioToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -162,7 +197,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "bluetooth"
 name = "Bluetooth"
 icon = "bluetooth"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelBluetoothToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/BluetoothToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -170,7 +211,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "cloudflareWarp"
 name = "Cloudflare WARP"
 icon = "cloud_lock"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelCloudflareWarpToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/CloudflareWarpToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -178,7 +225,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "colorPicker"
 name = "Color picker"
 icon = "colorize"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelColorPickerToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/ColorPickerToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -186,7 +239,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "darkMode"
 name = "Dark mode"
 icon = "contrast"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelDarkModeToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/DarkModeToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -194,7 +253,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "easyEffects"
 name = "EasyEffects"
 icon = "graphic_eq"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelEasyEffectsToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/EasyEffectsToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -202,7 +267,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "gameMode"
 name = "Game mode"
 icon = "gamepad"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelGameModeToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/GameModeToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -210,7 +281,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "idleInhibitor"
 name = "Keep awake"
 icon = "coffee"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelIdleInhibitorToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/IdleInhibitorToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -218,7 +295,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "mic"
 name = "Microphone"
 icon = "mic"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelMicToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/MicToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -226,7 +309,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "musicRecognition"
 name = "Identify music"
 icon = "music_cast"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelMusicRecognitionToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/MusicRecognitionToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -234,7 +323,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "network"
 name = "Internet"
 icon = "wifi"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelNetworkToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/NetworkToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -242,7 +337,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "nightLight"
 name = "Night light"
 icon = "nightlight"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelNightLightToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/NightLightToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -250,7 +351,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "notifications"
 name = "Do not disturb"
 icon = "notifications_paused"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelNotificationToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/NotificationsToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -258,7 +365,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "onScreenKeyboard"
 name = "On-screen keyboard"
 icon = "keyboard"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelOnScreenKeyboardToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/OnScreenKeyboardToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -266,7 +379,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "powerProfile"
 name = "Power profile"
 icon = "energy_savings_leaf"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelPowerProfilesToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/PowerProfileToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -274,7 +393,13 @@ size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 type = "screenSnip"
 name = "Screen snip"
 icon = "screenshot_region"
-placements = ["sidebar"]
+
+[widget.panel]
+component = "modules/rusty/bar/panel/PanelScreenSnipToggle.qml"
+size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+pill = true
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/ScreenSnipToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
 
@@ -314,7 +439,12 @@ size = { min = [1, 1], default = [5, 1] }
 type = "calendar"
 name = "Calendar"
 icon = "calendar_month"
-placements = ["sidebar"]
+
+[widget.desktop]
+component = "modules/rusty/background/widgets/calendar/DesktopCalendar.qml"
+size = { min = [160, 160], max = [1200, 1200], default = [340, 340] }
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/CalendarWidget.qml"
 size = { min = [1, 1], default = [5, 1] }
 
@@ -322,7 +452,12 @@ size = { min = [1, 1], default = [5, 1] }
 type = "notes"
 name = "To do"
 icon = "done_outline"
-placements = ["sidebar"]
+
+[widget.desktop]
+component = "modules/rusty/background/widgets/notes/DesktopNotes.qml"
+size = { min = [200, 200], max = [1200, 1400], default = [320, 350] }
+
+[widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/NotesWidget.qml"
 size = { min = [1, 1], default = [5, 1] }
 

@@ -884,6 +884,34 @@ status() {
     [ -e "$lib/releases/$cur/unverified" ] || launches "$lib/releases/$cur/rusty-impulse"
 }
 
+# Edit mode's shortcut, bound as end-4's dots bind the shell: Hyprland dispatches the shell's
+# global shortcut (hyprland-global-shortcuts-v1, `editModeToggle` in EditMode.qml), so no
+# command is looked up in PATH. It goes once into the user's own keybinds file (the dots'
+# custom/keybinds.lua, which their updates leave alone); a bind of the shortcut the user
+# already has, under any keys, is kept as it is. Hyprland reloads its config by itself.
+hypr_dir=${XDG_CONFIG_HOME:-$HOME/.config}/hypr
+user_binds=$hypr_dir/custom/keybinds.lua
+edit_bind='hl.bind("SUPER + ALT + E", hl.dsp.global("rustshell:editModeToggle"), { description = "Shell: Toggle edit mode" })'
+add_edit_bind() {
+    if [ ! -f "$hypr_dir/hyprland.lua" ]; then
+        echo "no Lua Hyprland config in $hypr_dir: bind edit mode yourself to hl.dsp.global(\"rustshell:editModeToggle\")"
+        return
+    fi
+    if grep -rqsF --include='*.lua' 'rustshell:editModeToggle' "$hypr_dir"; then
+        return
+    fi
+    mkdir -p "${user_binds%/*}"
+    # A file whose last line has no newline gets one first: the bind is a line of its own.
+    if [ -s "$user_binds" ] && [ -n "$(tail -c1 "$user_binds")" ]; then echo >> "$user_binds"; fi
+    printf '%s\n' "$edit_bind" >> "$user_binds"
+    echo "bound Super+Alt+E to edit mode in $user_binds"
+}
+drop_edit_bind() {
+    [ -f "$user_binds" ] && grep -qxF "$edit_bind" "$user_binds" || return 0
+    grep -vxF "$edit_bind" "$user_binds" > "$user_binds.new" || true
+    mv -f "$user_binds.new" "$user_binds"
+}
+
 uninstall() {
     local name=$bin_dir/rusty-impulse ours=
     as_the_user
@@ -899,6 +927,7 @@ uninstall() {
     unlink_bin
     $SUDO rm -rf "$lib"
     drop_app_icon
+    drop_edit_bind
     if [ -n "$ours" ]; then
         echo "removed $name and $lib"
     else
@@ -980,3 +1009,4 @@ fi
 case $bin in /*) ;; *) bin=$PWD/$bin ;; esac
 [ -x "$bin" ] || die "no rusty-impulse binary at '$bin'"
 install_release "$bin" "$RI_ROOT"
+add_edit_bind

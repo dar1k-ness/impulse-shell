@@ -142,6 +142,7 @@ pub const ELEMENTS: &[&Element] = &[
     &crate::procs::UPDATES_PROBE,
     &crate::procs::WALLPAPER_PICKER,
     &crate::procs::WALLPAPER_SWITCH,
+    &crate::procs::WALLPICK_RUN,
     &crate::procs::WEATHER_FETCH,
 ];
 

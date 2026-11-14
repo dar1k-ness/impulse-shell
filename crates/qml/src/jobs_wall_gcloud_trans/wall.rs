@@ -117,6 +117,11 @@ fn job(site: Site, ctx: Ctx) -> Job {
     Box::new(move |io, _| run(site, &ctx, &|s| io.out(s), &|s| io.err(s)))
 }
 
+/// The user's pictures directory, found like the scripts' `get_pictures_dir`.
+pub(crate) fn user_pictures_dir() -> String {
+    pictures_dir(&Ctx::new(String::new()))
+}
+
 /// `get_pictures_dir` (xdg-user-dir PICTURES, else the user-dirs.dirs fallback).
 pub(super) fn pictures_dir(c: &Ctx) -> String {
     let cfg = if c.xdg_config_home.is_empty() {

@@ -1,16 +1,20 @@
-//! `Impulse/DesktopContainer`: the desktop container of the widget layout on one monitor.
+//! `Impulse/DesktopContainer`: the desktop container of the edit-mode layout on one monitor.
 //! It publishes the container's widgets (`widgets`: `{ id, type, x, y, width, height,
 //! settings, settingErrors, guest }` in logical pixels, relative to the monitor; `settings`
 //! are resolved against the type's schema; `guest` is the connector of an
 //! unplugged monitor whose widget shows here until it comes back) and where each shows
 //! (`shown`), fitted through [`crate::layout_model::desktop`] so widgets stay on the monitor and
-//! off each other.
+//! off each other. It takes edits from the desktop surface in edit mode: `placeWidget`,
+//! `resizeWidget`, `addWidget`, `removeWidget`. Those go through
+//! [`crate::layout_model::desktop`] too, so widgets stay on the monitor, off each other, and on
+//! the grid when `gridSize` is set; every accepted edit is one undo step written to
+//! `layout.toml`.
 
-use crate::layout_model::desktop::{self, Bounds, Natural, Rect};
-use crate::layout_model::{Container, Edit, MonitorId, Place, Widget};
+use crate::layout_model::desktop::{self, Bounds, Limits, Natural, Rect, Shows, Snap};
+use crate::layout_model::{Container, ContainerKind, Edit, MonitorId, Place, Widget};
 use crate::runtime::World;
 use crate::value::Value;
-use crate::widgets::Registry;
+use crate::widgets::{Placement, Registry};
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
@@ -67,7 +71,10 @@ fn widget_value(
     };
     let (w, h) = size.unwrap_or_else(|| natural(wd));
     let settings = reg.resolve(&wd.r#type, &wd.settings);
-    let enabled_by = reg.get(&wd.r#type).and_then(|t| t.enabled_by.as_deref());
+    let enabled_by = reg
+        .get(&wd.r#type)
+        .and_then(|t| t.variant(Placement::Desktop))
+        .and_then(|v| v.enabled_by.as_deref());
     Some(obj(vec![
         ("id", Value::str(&wd.id)),
         ("key", Value::str(key)),
@@ -162,6 +169,7 @@ pub(crate) fn forget_replaced(w: &mut World, item: usize, kept: &HashSet<String>
         n.changed.retain(|key, _| kept.contains(key));
         n.self_placed.retain(|key| kept.contains(key));
         n.hidden.retain(|key| kept.contains(key));
+        n.placed_at.retain(|key, _| kept.contains(key));
     }
 }
 
@@ -173,6 +181,9 @@ type KeyedChanged<'a> = &'a dyn Fn(&str) -> u64;
 
 /// Whether a widget places itself, or is hidden, by its key ([`self_placed`], [`hidden`]).
 type KeyedPlaced<'a> = &'a dyn Fn(&str) -> bool;
+
+/// Where a widget that places itself draws, by its key ([`placed_at`]).
+type KeyedAt<'a> = &'a dyn Fn(&str) -> Option<Rect>;
 
 /// `widgets` for a container (empty without one): the layout's entries, as laid out, then
 /// those of its `guests`. A monitor size change leaves it alone (views keep their
@@ -215,7 +226,9 @@ pub(crate) fn report_settings(
 /// hidden ones ([`set_hidden`]), which show nowhere and so take no place: the container's own ([`desktop::fit_all`]: on the monitor and off each other after a
 /// resolution or scale change or a natural size change, unchanged where the layout fits), then
 /// its guests', each as near its own place as it fits off all of those
-/// ([`desktop::guest_places`]).
+/// ([`desktop::guest_places`]). `live`: a widget mid-drag in edit mode, where the drag would
+/// put it.
+#[allow(clippy::too_many_arguments)]
 fn shown_rects(
     c: Option<&Container>,
     guests: &[(MonitorId, Container)],
@@ -223,11 +236,14 @@ fn shown_rects(
     natural: Keyed,
     changed: KeyedChanged,
     placed: KeyedPlaced,
+    at: KeyedAt,
     hidden: KeyedPlaced,
+    live: Option<&(String, Rect, bool)>,
 ) -> Vec<(String, Rect)> {
     let mut out = vec![];
     // A widget that places itself ([`set_self_placed`]) is not where the layout puts it: the
-    // others do not keep off that place, and it shows there only kept on the monitor.
+    // others do not keep off that place. It shows where its view said it draws
+    // ([`set_placed_at`]); until it has, at its place in the layout kept on the monitor.
     let on_monitor = |want: Rect| desktop::fit(want, &[], bounds);
     if let Some(c) = c {
         let own = |wd: &Widget| natural(&wd.id, wd);
@@ -239,14 +255,16 @@ fn shown_rects(
             .partition(|wd| placed(&wd.id));
         let laid: Vec<Widget> = laid.into_iter().cloned().collect();
         let fitted = desktop::fit_all(&laid, bounds, &own, &own_changed);
+        let dragged = |wd: &Widget| live.filter(|(id, ..)| *id == wd.id).map(|(_, r, _)| *r);
         for (wd, r) in laid.iter().zip(fitted) {
-            if let Some(r) = r {
+            if let Some(r) = dragged(wd).or(r) {
                 out.push((wd.id.clone(), r));
             }
         }
         for wd in selves {
-            if let Some(r) = Rect::of(wd, &own) {
-                out.push((wd.id.clone(), on_monitor(r)));
+            let drawn = || Rect::of(wd, &own).map(|r| at(&wd.id).unwrap_or_else(|| on_monitor(r)));
+            if let Some(r) = dragged(wd).or_else(drawn) {
+                out.push((wd.id.clone(), r));
             }
         }
     }
@@ -264,7 +282,8 @@ fn shown_rects(
             }
             if let Some(r) = Rect::of(wd, &|wd| natural(&key, wd)) {
                 if placed(&key) {
-                    out.push((key, on_monitor(r)));
+                    let r = at(&key).unwrap_or_else(|| on_monitor(r));
+                    out.push((key, r));
                 } else {
                     wanted.push(r);
                     keys.push(key);
@@ -283,7 +302,8 @@ fn shown_rects(
     out
 }
 
-/// `shown`: widget key -> `{x, y, width, height}` where it shows ([`fitted`]).
+/// `shown`: widget key -> `{x, y, width, height}` where it shows ([`fitted`]); the widget shown
+/// mid-resize in edit mode has `sized` too.
 pub(crate) fn shown_value(
     w: &mut World,
     item: usize,
@@ -292,19 +312,27 @@ pub(crate) fn shown_value(
     bounds: Bounds,
 ) -> Value {
     let o = crate::eval::new_obj();
+    let sized = live(w, connector, id).filter(|l| l.2).map(|l| l.0);
     for (key, r) in fitted(w, item, connector, id, bounds).iter() {
-        crate::eval::set_own(
-            &o,
-            key,
-            obj(vec![
-                ("x", Value::Num(r.x as f64)),
-                ("y", Value::Num(r.y as f64)),
-                ("width", Value::Num(r.w as f64)),
-                ("height", Value::Num(r.h as f64)),
-            ]),
-        );
+        let mut shown = vec![
+            ("x", Value::Num(r.x as f64)),
+            ("y", Value::Num(r.y as f64)),
+            ("width", Value::Num(r.w as f64)),
+            ("height", Value::Num(r.h as f64)),
+        ];
+        if sized.as_deref() == Some(key.as_str()) {
+            // Mid-resize in edit mode: shown at this size, not its natural one.
+            shown.push(("sized", Value::Bool(true)));
+        }
+        crate::eval::set_own(&o, key, obj(shown));
     }
     Value::Obj(o)
+}
+
+/// The container's own widget shown mid-drag in edit mode: its id, where the drag would put
+/// it, and whether it is a resize ([`crate::edit_mode::live_desktop`]).
+pub(crate) fn live(w: &World, connector: &str, id: &str) -> Option<(String, Rect, bool)> {
+    resolve(w, connector, id).and_then(|c| crate::edit_mode::live_desktop(w, c))
 }
 
 /// What [`fitted`] last computed for a container, with everything it was computed from.
@@ -316,12 +344,13 @@ struct Fitted {
     revision: u64,
     guests: Guests,
     widgets: u64,
+    live: Option<(String, Rect, bool)>,
     rects: Rc<[(String, Rect)]>,
 }
 
 /// Where each widget of the DesktopContainer for `connector` and container `id` shows on
-/// `bounds` ([`shown_rects`]), computed once per layout generation, size, natural sizes and
-/// guests: `shown` and every `fitWidget` call of its view read the same result.
+/// `bounds` ([`shown_rects`]), computed once per layout generation, size, natural sizes,
+/// guests and edit-mode drag: `shown` and every `fitWidget` call of its view read the same result.
 fn fitted(
     w: &mut World,
     item: usize,
@@ -332,6 +361,7 @@ fn fitted(
     let generation = w.layout.as_ref().map(|l| l.generation());
     let revision = w.desktop_natural.get(&item).map_or(0, |n| n.revision);
     let guests = guests(w, connector, id);
+    let live = live(w, connector, id);
     let cached = w.desktop_natural.get(&item).and_then(|n| n.fitted.as_ref());
     if let Some(f) = cached.filter(|f| {
         f.generation == generation
@@ -341,12 +371,14 @@ fn fitted(
             && f.revision == revision
             && f.guests == guests
             && f.widgets == w.widgets_revision
+            && f.live == live
     }) {
         return f.rects.clone();
     }
     let natural = natural(w, item);
     let changed = changed(w, item);
     let placed = self_placed(w, item);
+    let at = placed_at(w, item);
     let hidden = hidden(w, item);
     let rects: Rc<[(String, Rect)]> = shown_rects(
         resolve(w, connector, id),
@@ -355,10 +387,12 @@ fn fitted(
         &natural,
         &changed,
         &placed,
+        &at,
         &hidden,
+        live.as_ref(),
     )
     .into();
-    drop((natural, changed, placed, hidden));
+    drop((natural, changed, placed, at, hidden));
     let widgets = w.widgets_revision;
     w.desktop_natural.entry(item).or_default().fitted = Some(Fitted {
         generation,
@@ -368,6 +402,7 @@ fn fitted(
         revision,
         guests,
         widgets,
+        live,
         rects: rects.clone(),
     });
     rects
@@ -386,9 +421,16 @@ pub(crate) fn natural(w: &World, item: usize) -> impl Fn(&str, &Widget) -> (u32,
                 let px = |v: f64| v.round().clamp(1.0, u32::MAX as f64) as u32;
                 w.widgets
                     .get(&wd.r#type)
-                    .map_or((1, 1), |t| (px(t.size.default.w), px(t.size.default.h)))
+                    .and_then(|t| t.variant(Placement::Desktop))
+                    .map_or((1, 1), |v| (px(v.size.default.w), px(v.size.default.h)))
             })
     }
+}
+
+/// [`natural`] for the container's own widgets, by their ids.
+fn own_natural(w: &World, item: usize) -> impl Fn(&Widget) -> (u32, u32) + '_ {
+    let natural = natural(w, item);
+    move |wd| natural(&wd.id, wd)
 }
 
 /// When each widget's natural size last changed, by key: the [`NaturalSizes::revision`] its
@@ -402,6 +444,19 @@ fn changed(w: &World, item: usize) -> impl Fn(&str) -> u64 + '_ {
 fn self_placed(w: &World, item: usize) -> impl Fn(&str) -> bool + '_ {
     let placed = w.desktop_natural.get(&item).map(|n| &n.self_placed);
     move |key| placed.is_some_and(|p| p.contains(key))
+}
+
+/// Where a widget that places itself draws, by key: where its view said ([`set_placed_at`]).
+fn placed_at(w: &World, item: usize) -> impl Fn(&str) -> Option<Rect> + '_ {
+    let at = w.desktop_natural.get(&item).map(|n| &n.placed_at);
+    move |key| at.and_then(|m| m.get(key)).copied()
+}
+
+/// Where each of the container's own widgets shows, for an edit that must keep off it
+/// ([`NaturalSizes::shows`]).
+fn own_shows(w: &World, item: usize) -> impl Fn(&Widget) -> Shows + '_ {
+    let n = w.desktop_natural.get(&item);
+    move |wd| n.map_or(Shows::Laid, |n| n.shows(&wd.id))
 }
 
 /// Whether a widget is hidden, by key: its view said so ([`set_hidden`]).
@@ -419,8 +474,31 @@ pub struct NaturalSizes {
     pub sizes: HashMap<String, (u32, u32)>,
     changed: HashMap<String, u64>,
     self_placed: HashSet<String>,
+    placed_at: HashMap<String, Rect>,
     hidden: HashSet<String>,
     fitted: Option<Fitted>,
+}
+
+impl NaturalSizes {
+    /// Where the view's widget `key` shows ([`Shows`]): nowhere when hidden, where it draws
+    /// when it places itself and said where, else as laid out.
+    pub(crate) fn shows(&self, key: &str) -> Shows {
+        if self.hidden.contains(key) {
+            return Shows::Nowhere;
+        }
+        match self.placed_at.get(key) {
+            Some(r) if self.self_placed.contains(key) => Shows::At(*r),
+            _ => Shows::Laid,
+        }
+    }
+
+    /// The widgets that do not show as laid out, each with where it shows ([`Self::shows`]).
+    pub(crate) fn shown_elsewhere(&self) -> impl Iterator<Item = (&String, Shows)> {
+        self.hidden
+            .iter()
+            .chain(self.self_placed.iter())
+            .map(|key| (key, self.shows(key)))
+    }
 }
 
 /// `setNaturalSize(key, width, height)`: the view's widget `key` ([`widget_value`]) measured
@@ -452,6 +530,43 @@ fn set_self_placed(w: &mut World, item: usize, args: &[Value]) -> Value {
     let id = args.first().map(|v| v.to_js_string()).unwrap_or_default();
     let placed = args.get(1).is_some_and(|v| v.truthy());
     mark(w, item, id, placed, |n| &mut n.self_placed);
+    Value::Undefined
+}
+
+/// `setPlacedAt(key, x, y, width, height)`: the view's widget `key`, which places itself
+/// ([`set_self_placed`]), draws there on the monitor: `shown` has it there, so its cell and
+/// its edit-mode frame follow it, and an edit-mode drop keeps off it there.
+/// `clearPlacedAt(key)`: it no longer says where (it is laid out again, or gone).
+fn set_placed_at(w: &mut World, item: usize, args: &[Value], clear: bool) -> Value {
+    let key = args.first().map(|v| v.to_js_string()).unwrap_or_default();
+    let n = |i: usize| args.get(i).map_or(f64::NAN, |v| v.to_number());
+    let at = (!clear)
+        .then(|| (n(1), n(2), n(3), n(4)))
+        .filter(|(x, y, ww, h)| {
+            [*x, *y, *ww, *h].iter().all(|v| v.is_finite()) && *ww > 0.0 && *h > 0.0
+        })
+        .map(|(x, y, ww, h)| Rect {
+            x: x.round().clamp(i32::MIN as f64, i32::MAX as f64) as i32,
+            y: y.round().clamp(i32::MIN as f64, i32::MAX as f64) as i32,
+            w: ww.ceil().min(u32::MAX as f64) as u32,
+            h: h.ceil().min(u32::MAX as f64) as u32,
+        });
+    if !clear && at.is_none() {
+        return Value::Undefined;
+    }
+    let Some(s) = (match at {
+        Some(_) => Some(w.desktop_natural.entry(item).or_default()),
+        None => w.desktop_natural.get_mut(&item),
+    }) else {
+        return Value::Undefined;
+    };
+    let changed = match at {
+        Some(r) => s.placed_at.insert(key, r) != Some(r),
+        None => s.placed_at.remove(&key).is_some(),
+    };
+    if changed {
+        s.revision += 1;
+    }
     Value::Undefined
 }
 
@@ -504,7 +619,8 @@ pub(crate) fn bounds(w: &mut World, item: usize) -> Bounds {
 /// wallpaper), shows when it wants (x, y) at that size: there when that is on the monitor and
 /// off the other widgets as they show, otherwise the nearest such place ([`desktop::fit`]).
 /// The other widgets that place themselves ([`set_self_placed`]) do not count: where the
-/// layout puts them is not where they show. Asks only; nothing is written. Returns `{x, y}`.
+/// layout puts them is not where they show. Asks only; nothing is written. Returns
+/// `{x, y, width, height}`.
 fn fit_widget(w: &mut World, item: usize, args: &[Value]) -> Value {
     let n = |i: usize| args.get(i).map_or(0.0, |v| v.to_number());
     let id = args.first().map(|v| v.to_js_string()).unwrap_or_default();
@@ -528,6 +644,8 @@ fn fit_widget(w: &mut World, item: usize, args: &[Value]) -> Value {
     obj(vec![
         ("x", Value::Num(r.x as f64)),
         ("y", Value::Num(r.y as f64)),
+        ("width", Value::Num(r.w as f64)),
+        ("height", Value::Num(r.h as f64)),
     ])
 }
 
@@ -581,8 +699,102 @@ fn move_widget(w: &mut World, item: usize, args: &[Value]) -> Value {
     })
 }
 
-/// The container's methods: `fitWidget`, `moveWidget`, `setNaturalSize`, `setSelfPlaced` and
-/// `setHidden`.
+/// What an edit needs: the monitor index (attached), the container id, the monitor area and
+/// the snapping.
+struct Target {
+    monitor: usize,
+    container: String,
+    bounds: Bounds,
+    snap: Snap,
+}
+
+fn target(w: &mut World, item: usize) -> Option<Target> {
+    let connector = text(w, item, "connector");
+    let cid = text(w, item, "containerId");
+    let container = resolve(w, &connector, &cid)?.id.clone();
+    let bounds = bounds(w, item);
+    let grid = num(w, item, "gridSize");
+    let snap = if grid >= 1.0 {
+        Snap::Grid {
+            cell: grid.round() as u32,
+        }
+    } else {
+        Snap::Free
+    };
+    let monitor = w.layout.as_mut()?.attach(&connector);
+    Some(Target {
+        monitor,
+        container,
+        bounds,
+        snap,
+    })
+}
+
+fn limits(w: &World, ty: &str) -> Limits {
+    let px = |v: f64| v.max(1.0).min(u32::MAX as f64) as u32;
+    w.widgets
+        .get(ty)
+        .and_then(|t| t.variant(Placement::Desktop))
+        .map_or(Limits::ANY, |v| Limits {
+            min: (px(v.size.min.w), px(v.size.min.h)),
+            max: (px(v.size.max.w), px(v.size.max.h)),
+        })
+}
+
+fn widget_type(w: &World, monitor: usize, id: &str) -> Option<String> {
+    let l = w.layout.as_ref()?.editor().layout();
+    l.monitors.get(monitor)?.containers.iter().find_map(|c| {
+        c.widgets
+            .iter()
+            .find(|wd| wd.id == id)
+            .map(|wd| wd.r#type.clone())
+    })
+}
+
+/// A widget id not used on the monitor yet: the type name, numbered from 2 on collision.
+fn fresh_id(w: &World, monitor: usize, ty: &str) -> String {
+    let Some(m) = w
+        .layout
+        .as_ref()
+        .and_then(|l| l.editor().layout().monitors.get(monitor))
+    else {
+        return ty.to_string();
+    };
+    let taken = |id: &str| {
+        m.containers
+            .iter()
+            .any(|c| c.id == id || c.widgets.iter().any(|wd| wd.id == id))
+    };
+    let mut id = ty.to_string();
+    let mut n = 2;
+    while taken(&id) {
+        id = format!("{ty}-{n}");
+        n += 1;
+    }
+    id
+}
+
+fn commit(w: &mut World, edit: Edit) -> bool {
+    let Some(live) = w.layout.as_mut() else {
+        return false;
+    };
+    match live.apply(&[edit]) {
+        Ok(Ok(changed)) => changed,
+        Ok(Err(save)) => {
+            w.errors.push(format!("DesktopContainer: {save}"));
+            true
+        }
+        Err(e) => {
+            w.errors.push(format!("DesktopContainer: {e}"));
+            false
+        }
+    }
+}
+
+/// The container's methods: `fitWidget`, `moveWidget`, `setNaturalSize`, `setSelfPlaced`,
+/// `setPlacedAt`, `clearPlacedAt`, `setHidden`, and edit mode's `placeWidget`, `resizeWidget`, `addWidget`, `removeWidget`.
+/// Each edit returns whether the layout changed; `addWidget` returns the new widget's id (""
+/// when it fits nowhere or the type is not a desktop widget).
 /// `args: None` only probes for the method ([`crate::eval::Host::native`]).
 pub(crate) fn call(
     w: &mut World,
@@ -602,8 +814,154 @@ pub(crate) fn call(
     if name == "setSelfPlaced" && is_container(w, item) {
         return Some(set_self_placed(w, item, args.unwrap_or_default()));
     }
+    if matches!(name, "setPlacedAt" | "clearPlacedAt") && is_container(w, item) {
+        return Some(set_placed_at(
+            w,
+            item,
+            args.unwrap_or_default(),
+            name == "clearPlacedAt",
+        ));
+    }
     if name == "setHidden" && is_container(w, item) {
         return Some(set_hidden(w, item, args.unwrap_or_default()));
     }
-    None
+    if !matches!(
+        name,
+        "placeWidget" | "resizeWidget" | "addWidget" | "removeWidget"
+    ) || !is_container(w, item)
+    {
+        return None;
+    }
+    let Some(args) = args else {
+        return Some(Value::Undefined);
+    };
+    let arg_s = |i: usize| match args.get(i) {
+        Some(Value::Str(s)) => s.to_string(),
+        Some(v) => v.to_js_string(),
+        None => String::new(),
+    };
+    let arg_n = |i: usize| args.get(i).map_or(0.0, |v| v.to_number());
+    let px = |v: f64| v.round().clamp(i32::MIN as f64, i32::MAX as f64) as i32;
+    let size = |v: f64| v.round().clamp(1.0, u32::MAX as f64) as u32;
+    let Some(t) = target(w, item) else {
+        return Some(if name == "addWidget" {
+            Value::str("")
+        } else {
+            Value::Bool(false)
+        });
+    };
+    let layout = || w.layout.as_ref().unwrap().editor().layout();
+    let r = match name {
+        // The edit-mode drop: the nearest free place, on the grid.
+        "placeWidget" => {
+            let id = arg_s(0);
+            let edit = desktop::move_to(
+                layout(),
+                t.monitor,
+                &id,
+                px(arg_n(1)),
+                px(arg_n(2)),
+                t.bounds,
+                t.snap,
+                &own_natural(w, item),
+                &own_shows(w, item),
+            );
+            match edit {
+                Ok(e) => Value::Bool(commit(w, e)),
+                Err(_) => Value::Bool(false),
+            }
+        }
+        "resizeWidget" => {
+            let id = arg_s(0);
+            let lim = widget_type(w, t.monitor, &id).map_or(Limits::ANY, |ty| limits(w, &ty));
+            let edit = desktop::resize_to(
+                layout(),
+                t.monitor,
+                &id,
+                size(arg_n(1)),
+                size(arg_n(2)),
+                lim,
+                t.bounds,
+                t.snap,
+                &own_natural(w, item),
+                &own_shows(w, item),
+            );
+            match edit {
+                Ok(e) => Value::Bool(commit(w, e)),
+                Err(_) => Value::Bool(false),
+            }
+        }
+        "removeWidget" => {
+            let id = arg_s(0);
+            let here = layout().monitors[t.monitor]
+                .containers
+                .iter()
+                .any(|c| c.id == t.container && c.widgets.iter().any(|wd| wd.id == id));
+            Value::Bool(
+                here && commit(
+                    w,
+                    Edit::RemoveWidget {
+                        monitor: t.monitor,
+                        id,
+                    },
+                ),
+            )
+        }
+        _ => {
+            let ty = arg_s(0);
+            let Some(def) = w
+                .widgets
+                .get(&ty)
+                .and_then(|d| d.variant(Placement::Desktop))
+            else {
+                w.errors.push(format!(
+                    "DesktopContainer: \"{ty}\" is not a desktop widget"
+                ));
+                return Some(Value::str(""));
+            };
+            let (dw, dh) = (def.size.default.w, def.size.default.h);
+            let lim = limits(w, &ty);
+            let wanted = (
+                size(dw).clamp(lim.min.0, lim.max.0.max(lim.min.0)),
+                size(dh).clamp(lim.min.1, lim.max.1.max(lim.min.1)),
+            );
+            let widgets = &layout().monitors[t.monitor]
+                .containers
+                .iter()
+                .find(|c| c.id == t.container && matches!(c.kind, ContainerKind::Desktop))
+                .map(|c| c.widgets.clone())
+                .unwrap_or_default();
+            let Some(place) = desktop::place_new(
+                widgets,
+                px(arg_n(1)),
+                px(arg_n(2)),
+                wanted.0,
+                wanted.1,
+                t.bounds,
+                t.snap,
+                &own_natural(w, item),
+                &own_shows(w, item),
+            ) else {
+                return Some(Value::str(""));
+            };
+            let id = fresh_id(w, t.monitor, &ty);
+            let edit = Edit::AddWidget {
+                monitor: t.monitor,
+                container: t.container,
+                widget: Widget {
+                    id: id.clone(),
+                    r#type: ty,
+                    place,
+                    settings: toml::Table::new(),
+                },
+                index: None,
+            };
+            if commit(w, edit) {
+                Value::str(&id)
+            } else {
+                Value::str("")
+            }
+        }
+    };
+    Some(r)
 }

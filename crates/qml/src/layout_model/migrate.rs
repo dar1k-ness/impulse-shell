@@ -50,6 +50,10 @@ pub const MIGRATIONS: &[Migration] = &[
         from: 3,
         run: add_the_original_sidebar_sliders,
     },
+    Migration {
+        from: 4,
+        run: one_type_per_widget,
+    },
 ];
 
 /// Version 1 to 2: every desktop container gets each of the original's background widgets
@@ -61,7 +65,11 @@ pub const MIGRATIONS: &[Migration] = &[
 /// are; a new one goes where the first layout puts it among them (weather under the clock).
 /// Anything not shaped like a layout is left to the reader, which names the error.
 fn add_the_original_desktop_widgets(t: &mut toml::Table, inputs: &Inputs) -> Result<(), String> {
-    let ri_defaults = rusty::desktop_widgets(&inputs.ri_options());
+    // By the names version 1 knows them under ([`one_type_per_widget`] renames them later).
+    let mut ri_defaults = rusty::desktop_widgets(&inputs.ri_options());
+    for w in &mut ri_defaults {
+        w.r#type = format!("desktop-{}", w.r#type);
+    }
     for monitor in tables(t.get_mut("monitor")) {
         // Ids are unique among the containers and widgets of a monitor.
         let mut taken: Vec<String> = vec![];
@@ -200,6 +208,26 @@ fn add_the_original_sidebar_sliders(t: &mut toml::Table, _: &Inputs) -> Result<(
                 .expect("some id is free");
             taken.push(entry.id.clone());
             widgets.insert(0, format::widget_value(&entry));
+        }
+    }
+    Ok(())
+}
+
+/// Version 4 to 5: a widget type has a variant per surface, so the desktop's own clock and
+/// weather types became the `clock` and `weather` types' desktop variants. The original's
+/// settings turn them on and off as before (the variants' `enabledBy` flags).
+fn one_type_per_widget(t: &mut toml::Table, _: &Inputs) -> Result<(), String> {
+    const RENAMED: [(&str, &str); 2] = [("desktop-clock", "clock"), ("desktop-weather", "weather")];
+    for monitor in tables(t.get_mut("monitor")) {
+        for c in tables(monitor.get_mut("container")) {
+            for w in tables(c.get_mut("widget")) {
+                let Some(toml::Value::String(ty)) = w.get_mut("type") else {
+                    continue;
+                };
+                if let Some((_, new)) = RENAMED.iter().find(|(old, _)| old == ty) {
+                    *ty = (*new).into();
+                }
+            }
         }
     }
     Ok(())

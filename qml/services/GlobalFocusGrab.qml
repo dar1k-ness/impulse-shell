@@ -16,6 +16,8 @@ Singleton {
 
     property list<var> persistent: []
     property list<var> dismissable: []
+    // Always in the grab while the grab is active (the edit overlay above a sidebar).
+    property list<var> pinned: []
 
     function dismiss() {
         root.dismissable = [];
@@ -39,6 +41,17 @@ Singleton {
         }
     }
 
+    function addPinned(window) {
+        if (root.pinned.indexOf(window) === -1) {
+            root.pinned.push(window);
+        }
+    }
+    function removePinned(window) {
+        var index = root.pinned.indexOf(window);
+        if (index !== -1) {
+            root.pinned.splice(index, 1);
+        }
+    }
     function addDismissable(window) {
         if (root.dismissable.indexOf(window) === -1) {
             root.dismissable.push(window);
@@ -62,7 +75,7 @@ Singleton {
 
     HyprlandFocusGrab {
         id: grab
-        windows: root.dismissable.every(w => !w?.focusable) || root.dismissable.some(w => hasActive(w?.contentItem)) ? [...root.dismissable, ...root.persistent] : [...root.dismissable]
+        windows: root.dismissable.every(w => !w?.focusable) || root.dismissable.some(w => hasActive(w?.contentItem)) ? [...root.dismissable, ...root.persistent, ...root.pinned] : [...root.dismissable, ...root.pinned]
         active: root.dismissable.length > 0
         onCleared: () => {
             root.dismiss();

@@ -1,5 +1,5 @@
 //! Quickshell's `LazyLoader.source`: a LazyLoader loads the file its `source` names (relative
-//! to the file declaring it) once `active`, as the original's family loads ri-only files.
+//! to the file declaring it) once `active`, as the original's family loads ri-only files (EditMode.qml).
 use qml::runtime::Runtime;
 use qml::value::Value;
 

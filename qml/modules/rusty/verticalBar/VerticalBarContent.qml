@@ -17,14 +17,6 @@ Item { // Bar content region
     property var screen: root.QsWindow.window?.screen
     property var brightnessMonitor: Brightness.getMonitorForScreen(screen)
 
-    component HorizontalBarSeparator: Rectangle {
-        Layout.leftMargin: Appearance.sizes.baseBarHeight / 3
-        Layout.rightMargin: Appearance.sizes.baseBarHeight / 3
-        Layout.fillWidth: true
-        implicitHeight: 1
-        color: Appearance.colors.colOutlineVariant
-    }
-
     // the original's own bar content. Not created while a panel of the layout replaces it.
     Loader {
         anchors.fill: parent
@@ -79,6 +71,12 @@ Item { // Bar content region
                         colBackground: barTopSectionMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
                     }
 
+                    VerticalBarGroups { // Groups that bar.layout puts at the top
+                        visible: groups.length > 0
+                        Layout.alignment: Qt.AlignHCenter
+                        groups: Bar.BarGroupLayout.left
+                    }
+
                     Item {
                         Layout.fillHeight: true
                     }
@@ -86,77 +84,10 @@ Item { // Bar content region
                 }
             }
 
-            Column { // Middle section
+            VerticalBarGroups { // Middle section
                 id: middleSection
                 anchors.centerIn: parent
-                spacing: 4
-
-                Bar.BarGroup {
-                    vertical: true
-                    padding: 8
-                    Resources {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: false
-                    }
-            
-                    HorizontalBarSeparator {}
-
-                    VerticalMedia {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: false
-                    }
-                }
-
-                HorizontalBarSeparator {
-                    visible: Config.options?.bar.borderless
-                }
-
-                Bar.BarGroup {
-                    id: middleCenterGroup
-                    vertical: true
-                    padding: 6
-
-                    Bar.Workspaces {
-                        id: workspacesWidget
-                        vertical: true
-                        MouseArea {
-                            // Right-click to toggle overview
-                            anchors.fill: parent
-                            acceptedButtons: Qt.RightButton
-
-                            onPressed: event => {
-                                if (event.button === Qt.RightButton) {
-                                    GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                HorizontalBarSeparator {
-                    visible: Config.options?.bar.borderless
-                }
-
-                Bar.BarGroup {
-                    vertical: true
-                    padding: 8
-            
-                    VerticalClockWidget {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: false
-                    }
-
-                    HorizontalBarSeparator {
-                        visible: Battery.available
-                    }
-
-                    BatteryIndicator {
-                        visible: Battery.available
-                        Layout.fillWidth: true
-                        Layout.fillHeight: false
-                    }
-            
-                }
+                groups: Bar.BarGroupLayout.center
             }
 
             FocusedScrollMouseArea { // Bottom section | scroll to change volume
@@ -187,6 +118,12 @@ Item { // Bar content region
                     Item { 
                         Layout.fillWidth: true
                         Layout.fillHeight: true 
+                    }
+
+                    VerticalBarGroups { // Groups that bar.layout puts at the bottom
+                        visible: groups.length > 0
+                        Layout.alignment: Qt.AlignHCenter
+                        groups: Bar.BarGroupLayout.right
                     }
 
                     Bar.SysTray {

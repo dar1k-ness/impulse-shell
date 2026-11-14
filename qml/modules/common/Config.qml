@@ -202,6 +202,27 @@ Singleton {
                     property bool enableSidebar: false
                     property real widgetsFactor: 1.2
                 }
+                property JsonObject wallpick: JsonObject {
+                    property list<string> sources: ["wallhaven"] // "wallhaven", "konachan"
+                    // Plain descriptions the image model compares candidates against
+                    property list<string> like: ["dark minimalist wallpaper", "night landscape with mountains", "calm nature scenery with soft colors"]
+                    property list<string> dislike: ["people and faces", "text, logos and watermarks", "bright cluttered busy image"]
+                    property int candidates: 48
+                    property real randomness: 0.35 // 0: always the best match, 1: any good one
+                    property list<string> wallhavenQueries: ["landscape", "minimalism", "night", "mountains", "space", ""]
+                    property string wallhavenCategories: "100" // general/anime/people, Wallhaven's bit string
+                    property list<string> konachanTags: ["scenic", "landscape", "sky", ""]
+                    property int minWidth: 1920
+                    property int minHeight: 1080
+                    property bool landscape: true
+                    property bool fullScene: true // Skip flat images such as a lone object on a plain background
+                    property bool subjectSide: false // Prefer the subject off to one side, leaving room for widgets
+                    property bool pickAccent: true
+                    property list<string> accentLike: ["cold blue", "teal", "purple"]
+                    property list<string> accentDislike: ["brown", "muddy olive"]
+                    property int keep: 30 // Downloaded wallpapers to keep
+                    property string layoutWish: "" // Free text, e.g. "clock on the left, music in the middle"
+                }
             }
 
             property JsonObject bar: JsonObject {
@@ -220,6 +241,12 @@ Singleton {
                 property bool borderless: false // true for no grouping of items
                 property string topLeftIcon: "spark" // Options: "distro" or any icon name in ~/.config/rustshell/rusty-impulse/assets/icons
                 property bool showBackground: true
+                // Where the media, workspaces and clock groups sit, in order within each part
+                property JsonObject layout: JsonObject {
+                    property list<string> left: []
+                    property list<string> center: ["media", "workspaces", "clock"]
+                    property list<string> right: []
+                }
                 property bool verbose: true
                 property bool vertical: false
                 property JsonObject resources: JsonObject {

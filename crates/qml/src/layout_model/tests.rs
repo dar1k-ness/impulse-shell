@@ -2,7 +2,7 @@ use super::migrate::{self, Migration};
 use super::*;
 
 const SAMPLE: &str = r##"
-version = 4
+version = 5
 
 [[monitor]]
 connector = "DP-1"
@@ -338,7 +338,7 @@ fn rename_kind(t: &mut toml::Table, from: &str, to: &str) {
 
 #[test]
 fn migrations_run_in_order_from_any_old_version() {
-    // A schema history where v1 used `type` for containers and v2 used `role`; v3 to v4
+    // A schema history where v1 used `type` for containers and v2 used `role`; v3 to v5
     // changed nothing a desktop container has.
     const STEPS: &[Migration] = &[
         Migration {
@@ -359,10 +359,14 @@ fn migrations_run_in_order_from_any_old_version() {
             from: 3,
             run: |_, _| Ok(()),
         },
+        Migration {
+            from: 4,
+            run: |_, _| Ok(()),
+        },
     ];
     let body = "[[monitor]]\nconnector = \"DP-1\"\n[[monitor.container]]\nid = \"desk\"\n";
     let want =
-        migrate::parse_with(&format!("version = 4\n{body}kind = \"desktop\"\n"), STEPS).unwrap();
+        migrate::parse_with(&format!("version = 5\n{body}kind = \"desktop\"\n"), STEPS).unwrap();
     assert_eq!(want.monitors[0].containers[0].kind, ContainerKind::Desktop);
     for (v, key) in [(1, "type"), (2, "role"), (3, "kind")] {
         let got = migrate::parse_with(
@@ -372,10 +376,10 @@ fn migrations_run_in_order_from_any_old_version() {
         assert_eq!(got, Ok(want.clone()), "from v{v}");
     }
     assert!(matches!(
-        migrate::parse_with("version = 5", STEPS),
+        migrate::parse_with("version = 6", STEPS),
         Err(LoadError::FutureVersion {
-            found: 5,
-            supported: 4
+            found: 6,
+            supported: 5
         })
     ));
 }
@@ -1189,7 +1193,7 @@ fn version_1_desktops_get_the_original_widgets_they_lack() {
     // The weather goes under the clock, as the original stacks them; the clock stays exactly as it was.
     assert_eq!(
         l.monitors[0].containers[1].widgets,
-        vec![ri_default("desktop-weather"), clock]
+        vec![ri_default("weather"), clock]
     );
     assert_eq!(
         l.monitors[0].containers[1].widgets[0].place,
@@ -1202,7 +1206,7 @@ fn version_1_desktops_get_the_original_widgets_they_lack() {
     // A desktop with nothing on it gets both, the panel nothing.
     assert_eq!(
         l.monitors[1].containers[0].widgets,
-        vec![ri_default("desktop-weather"), ri_default("desktop-clock")]
+        vec![ri_default("weather"), ri_default("clock")]
     );
     assert_eq!(l.monitors[0].containers[0], v2.monitors[0].containers[0]);
     // Migrated once, it stays as it is.
@@ -1233,13 +1237,10 @@ fn the_migration_keeps_entries_and_their_order_and_finds_a_free_id() {
         w.iter()
             .map(|w| (w.id.as_str(), w.r#type.as_str()))
             .collect::<Vec<_>>(),
-        [
-            ("desktop-clock", "desktop-weather"),
-            ("desktop-clock-3", "desktop-clock")
-        ]
+        [("desktop-clock", "weather"), ("desktop-clock-3", "clock")]
     );
-    assert_eq!(w[1].place, ri_default("desktop-clock").place);
-    assert_eq!(w[1].settings, ri_default("desktop-clock").settings);
+    assert_eq!(w[1].place, ri_default("clock").place);
+    assert_eq!(w[1].settings, ri_default("clock").settings);
 }
 
 /// The migration adds only widgets whose type shows while its widgets.toml `enabledBy` flag
@@ -1251,7 +1252,8 @@ fn the_migration_adds_only_types_the_original_settings_turn_on() {
     assert!(reg.load_manifest_file(&manifest).is_empty());
     for w in rusty::desktop_widgets(&serde_json::json!({})) {
         let t = reg.get(&w.r#type).unwrap();
-        assert!(t.enabled_by.is_some(), "{}", w.r#type);
+        let desktop = t.variant(crate::widgets::Placement::Desktop).unwrap();
+        assert!(desktop.enabled_by.is_some(), "{}", w.r#type);
         assert!(
             t.resolve_settings(&w.settings).errors.is_empty(),
             "{}",
@@ -1421,7 +1423,7 @@ settings = { placementStrategy = "leastBusy" }
         [
             (
                 "my-weather",
-                "desktop-weather",
+                "weather",
                 &Place::Desktop {
                     x: 11,
                     y: 22,
@@ -1441,7 +1443,7 @@ settings = { placementStrategy = "leastBusy" }
             ),
             (
                 "my-clock",
-                "desktop-clock",
+                "clock",
                 &Place::Desktop {
                     x: 1500,
                     y: 30,
@@ -1552,4 +1554,41 @@ fn version_3_sidebars_get_the_original_s_sliders_and_lose_their_copy_of_its_choi
             .is_empty()
     );
     assert_eq!(Layout::parse(&l.to_toml()).unwrap(), l);
+}
+
+#[test]
+fn version_4_desktop_types_become_the_clock_and_weather_types() {
+    let v1 = r#"
+version = 4
+
+[[monitor]]
+connector = "DP-1"
+
+[[monitor.container]]
+id = "desktop"
+kind = "desktop"
+
+[[monitor.container.widget]]
+id = "clock"
+type = "desktop-clock"
+x = 10
+y = 20
+settings = { style = "digital" }
+
+[[monitor.container.widget]]
+id = "weather"
+type = "desktop-weather"
+x = 400
+y = 20
+"#;
+    let l = Layout::parse(v1).unwrap();
+    let w = &l.monitors[0].containers[0].widgets;
+    assert_eq!(
+        w.iter()
+            .map(|w| (w.id.as_str(), w.r#type.as_str()))
+            .collect::<Vec<_>>(),
+        [("clock", "clock"), ("weather", "weather")]
+    );
+    assert_eq!(w[0].settings["style"].as_str(), Some("digital"));
+    assert!(matches!(w[0].place, Place::Desktop { x: 10, y: 20, .. }));
 }

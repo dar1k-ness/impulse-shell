@@ -38,6 +38,25 @@ max = 3
 default = 1
 
 [[widget]]
+type = "media"
+name = "Media"
+icon = "music_note"
+
+[widget.panel]
+component = "widgets/MediaPill.qml"
+size = { min = [24, 24], default = [120, 24] }
+pill = true
+
+[widget.sidebar]
+component = "widgets/MediaCard.qml"
+size = { min = [2, 1], default = [4, 1] }
+
+[[widget.setting]]
+key = "showArtist"
+kind = "bool"
+default = true
+
+[[widget]]
 type = "battery"
 name = "Battery"
 icon = "battery_full"
@@ -60,6 +79,20 @@ const BATTERY: &str = r#"import QtQuick
 Item { property string kind: "battery" }
 "#;
 
+const MEDIA_PILL: &str = r#"import QtQuick
+Item {
+    property bool showArtist: false
+    property string kind: "pill"
+}
+"#;
+
+const MEDIA_CARD: &str = r#"import QtQuick
+Item {
+    property bool showArtist: false
+    property string kind: "card"
+}
+"#;
+
 fn root(tag: &str, main: &str) -> PathBuf {
     let d = std::env::temp_dir().join(format!("widget-host-{tag}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&d);
@@ -67,6 +100,8 @@ fn root(tag: &str, main: &str) -> PathBuf {
     std::fs::write(d.join("widgets.toml"), MANIFEST).unwrap();
     std::fs::write(d.join("widgets/Clock.qml"), CLOCK).unwrap();
     std::fs::write(d.join("widgets/Battery.qml"), BATTERY).unwrap();
+    std::fs::write(d.join("widgets/MediaPill.qml"), MEDIA_PILL).unwrap();
+    std::fs::write(d.join("widgets/MediaCard.qml"), MEDIA_CARD).unwrap();
     std::fs::write(d.join("main.qml"), main).unwrap();
     d
 }
@@ -256,7 +291,7 @@ fn bad_manifest_entries_are_reported_and_skipped() {
     )
     .unwrap();
     let rt = Runtime::new(Some(d));
-    assert_eq!(rt.widgets().iter().count(), 2);
+    assert_eq!(rt.widgets().iter().count(), 3);
     assert!(
         rt.errors()
             .iter()
@@ -264,4 +299,53 @@ fn bad_manifest_entries_are_reported_and_skipped() {
         "{:?}",
         rt.errors()
     );
+}
+
+const MEDIA_HOST: &str = r#"import QtQuick
+import Impulse
+WidgetHost {
+    widgetType: "media"
+    surface: "sidebar"
+    settings: ({ showArtist: false })
+}
+"#;
+
+#[test]
+fn the_host_loads_its_surfaces_variant_with_the_same_settings() {
+    let (mut rt, h) = start("surface", MEDIA_HOST);
+    let card = item(&rt, h).expect("sidebar variant loaded");
+    assert_eq!(s(&rt, card, "kind"), "card");
+    assert_eq!(s(&rt, card, "showArtist"), "false");
+    assert_eq!(s(&rt, h, "status"), "1");
+    // Moved to a panel, the widget becomes the panel variant and keeps its settings.
+    set(&mut rt, h, "surface", Value::str("panel"));
+    let pill = item(&rt, h).expect("panel variant loaded");
+    assert_ne!(pill, card);
+    assert_eq!(s(&rt, pill, "kind"), "pill");
+    assert_eq!(s(&rt, pill, "showArtist"), "false");
+    assert!(
+        rt.world.borrow().dead.contains(&card),
+        "old variant destroyed"
+    );
+    assert!(rt.errors().is_empty(), "{:?}", rt.errors());
+}
+
+#[test]
+fn a_surface_the_type_has_no_variant_for_is_reported() {
+    let (mut rt, h) = start("no-variant", MEDIA_HOST);
+    set(&mut rt, h, "surface", Value::str("desktop"));
+    assert_eq!(item(&rt, h), None);
+    assert_eq!(s(&rt, h, "status"), "2");
+    assert_eq!(
+        s(&rt, h, "errorString"),
+        "widget type \"media\" has no desktop variant"
+    );
+    // A host that does not say where it is cannot pick between several variants.
+    set(&mut rt, h, "surface", Value::str(""));
+    assert_eq!(item(&rt, h), None);
+    assert_eq!(s(&rt, h, "status"), "2");
+    // A type with one component on all its surfaces needs no `surface`, as HOST's clock.
+    set(&mut rt, h, "surface", Value::str("sidebar"));
+    assert!(item(&rt, h).is_some());
+    assert_eq!(s(&rt, h, "status"), "1");
 }

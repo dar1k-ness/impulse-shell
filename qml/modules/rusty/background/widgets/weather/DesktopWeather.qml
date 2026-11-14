@@ -3,7 +3,7 @@ import ri.modules.common
 
 /**
  * the original's background weather widget as a desktop-container widget: the container places it, at
- * the widget's own size as the original draws it; a box the layout sizes has the widget fill it
+ * the widget's own size as the original draws it; a box resized in edit mode has the widget fill it
  * scaled to fit. When the original's weather placement setting is "leastBusy" or "mostBusy" it goes
  * where the original puts it, by the wallpaper, at its own size. With "free" ("Draggable" in the
  * settings) the pointer drags it, as in the original, and the layout keeps where it was dropped.
@@ -32,6 +32,9 @@ Item {
     readonly property real restY: root.wallpaperPlaced ? root.fitted.y - root.screenY : (root.height - weather.height) / 2
     implicitWidth: weather.implicitWidth
     implicitHeight: weather.implicitHeight
+    // Where the widget draws on the monitor when it places itself (null when the layout does):
+    // the container's cell, and so its edit-mode frame, follows it.
+    readonly property var placedAt: root.wallpaperPlaced ? root.fitted : null
     readonly property var fitted: {
         const c = root.container;
         const want = { "x": weather.targetX, "y": weather.targetY };

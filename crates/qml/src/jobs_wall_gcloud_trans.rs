@@ -5,6 +5,7 @@ pub(crate) mod gcloud_api;
 mod langs;
 pub(crate) mod trans;
 pub(crate) mod wall;
+pub(crate) use wall::user_pictures_dir;
 pub use wall::{SWITCHWALL_ARG, switchwall_serve};
 pub(crate) use wall::{switchwall_picker, switchwall_proc};
 

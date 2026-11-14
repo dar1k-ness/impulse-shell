@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex};
 pub struct Edit {
     pub file: PathBuf,
     pub path: Vec<String>,
-    pub value: String,
+    pub value: serde_json::Value,
 }
 
 static SINK: Mutex<Option<crate::svc::Sender<Edit>>> = Mutex::new(None);
@@ -29,10 +29,15 @@ pub(crate) fn install(h: &crate::svc::Handle) -> std::sync::mpsc::Receiver<Edit>
 /// Sets the string at `path` in the shell config `file`, through the shell's Config if one
 /// is running.
 pub fn set(file: &Path, path: &[&str], value: &str) {
+    set_json(file, path, serde_json::Value::String(value.to_string()));
+}
+
+/// [`set`] with any JSON value: a number, a bool or a list stays one in the config.
+pub fn set_json(file: &Path, path: &[&str], value: serde_json::Value) {
     let e = Edit {
         file: file.to_path_buf(),
         path: path.iter().map(|s| s.to_string()).collect(),
-        value: value.to_string(),
+        value,
     };
     let sink = SINK.lock().unwrap_or_else(|e| e.into_inner()).clone();
     let e = match sink {
@@ -47,7 +52,7 @@ pub fn set(file: &Path, path: &[&str], value: &str) {
 
 fn write_file(e: &Edit) {
     let path: Vec<&str> = e.path.iter().map(String::as_str).collect();
-    colorgen::switchwall::jq_set(&e.file, &path, &e.value);
+    colorgen::switchwall::jq_set_value(&e.file, &path, e.value.clone());
 }
 
 /// The live session for the colors scripts, with config edits routed through [`set`].
@@ -153,7 +158,7 @@ impl crate::runtime::Runtime {
     }
 
     /// `Config.options.a.b = value`, creating missing objects like `jq` does.
-    fn set_option(&mut self, cfg: usize, path: &[String], value: &str) -> bool {
+    fn set_option(&mut self, cfg: usize, path: &[String], value: &serde_json::Value) -> bool {
         use crate::value::Value;
         let mut e = self.eng();
         let Ok(mut cur) = e.it.get(&Value::Item(cfg), "options") else {
@@ -172,10 +177,43 @@ impl crate::runtime::Runtime {
             };
             cur = next;
         }
-        let ok =
-            e.it.put(&cur, path.last().unwrap(), Value::str(value))
-                .is_ok();
+        let value = match value {
+            serde_json::Value::String(s) => Value::str(s),
+            v => match crate::json::parse(&v.to_string()) {
+                Ok(v) => v,
+                Err(_) => return false,
+            },
+        };
+        let ok = e.it.put(&cur, path.last().unwrap(), value).is_ok();
         e.settle();
         ok
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    #[test]
+    fn set_json_without_a_config_keeps_the_value_type_in_the_file() {
+        let t = tempfile::tempdir().unwrap();
+        let file = t.path().join("config.json");
+        std::fs::write(&file, r#"{"bar": {"vertical": false}}"#).unwrap();
+        super::set_json(&file, &["bar", "layout", "left"], json!(["clock", "media"]));
+        super::set_json(
+            &file,
+            &["background", "widgets", "clock", "x"],
+            json!(120.0),
+        );
+        super::set(&file, &["background", "wallpaperPath"], "/w.png");
+        let v: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(&file).unwrap()).unwrap();
+        assert_eq!(
+            v,
+            json!({
+                "bar": {"vertical": false, "layout": {"left": ["clock", "media"]}},
+                "background": {"widgets": {"clock": {"x": 120.0}}, "wallpaperPath": "/w.png"}
+            })
+        );
     }
 }

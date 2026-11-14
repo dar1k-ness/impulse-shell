@@ -8,6 +8,10 @@ SettingsPage {
     id: page
 
     readonly property var clock: Config.options.background.widgets.clock
+    readonly property var wallpick: Config.options.background.wallpick
+    function phrases(text) {
+        return text.split(";").map(p => p.trim()).filter(p => p.length > 0);
+    }
     function stylePresent(styleName) {
         if (!page.clock.showOnlyWhenLocked && page.clock.style === styleName)
             return true;
@@ -388,6 +392,113 @@ SettingsPage {
             stepSize: 5
             unit: "%"
             onUserChanged: value => Config.options.background.parallax.workspaceZoom = value / 100
+        }
+    }
+
+    SettingsGroup {
+        title: Translation.tr("Wallpaper picker")
+
+        SettingsSegmentedRow {
+            title: Translation.tr("Source")
+            currentValue: page.wallpick.sources.join("+")
+            onSelected: value => Config.options.background.wallpick.sources = value.split("+")
+            options: [
+                { label: "Wallhaven", value: "wallhaven" },
+                { label: "Konachan", value: "konachan" },
+                { label: Translation.tr("Both"), value: "wallhaven+konachan" }
+            ]
+        }
+        SettingsTextRow {
+            title: Translation.tr("I like")
+            subtitle: Translation.tr("Short descriptions, separated by semicolons")
+            text: page.wallpick.like.join("; ")
+            onEdited: value => Config.options.background.wallpick.like = page.phrases(value)
+        }
+        SettingsTextRow {
+            title: Translation.tr("I don't like")
+            text: page.wallpick.dislike.join("; ")
+            onEdited: value => Config.options.background.wallpick.dislike = page.phrases(value)
+        }
+        SettingsSwitchRow {
+            title: Translation.tr("Whole scenes only")
+            subtitle: Translation.tr("Skip a lone object on a plain background")
+            checked: page.wallpick.fullScene
+            onUserToggled: value => Config.options.background.wallpick.fullScene = value
+        }
+        SettingsSwitchRow {
+            title: Translation.tr("Subject to one side")
+            subtitle: Translation.tr("Leaves room for the clock and widgets")
+            checked: page.wallpick.subjectSide
+            onUserToggled: value => Config.options.background.wallpick.subjectSide = value
+        }
+        SettingsSwitchRow {
+            id: wallpickAccentRow
+            title: Translation.tr("Accent from the wallpaper")
+            checked: page.wallpick.pickAccent
+            onUserToggled: value => Config.options.background.wallpick.pickAccent = value
+        }
+        SettingsTextRow {
+            parentRow: wallpickAccentRow
+            shown: page.wallpick.pickAccent
+            title: Translation.tr("Preferred accents")
+            text: page.wallpick.accentLike.join("; ")
+            onEdited: value => Config.options.background.wallpick.accentLike = page.phrases(value)
+        }
+        SettingsTextRow {
+            parentRow: wallpickAccentRow
+            shown: page.wallpick.pickAccent
+            title: Translation.tr("Avoided accents")
+            text: page.wallpick.accentDislike.join("; ")
+            onEdited: value => Config.options.background.wallpick.accentDislike = page.phrases(value)
+        }
+        SettingsSpinRow {
+            title: Translation.tr("Candidates per pick")
+            subtitle: Translation.tr("More finds a better match but takes longer")
+            value: page.wallpick.candidates
+            from: 8
+            to: 120
+            stepSize: 8
+            onUserChanged: value => Config.options.background.wallpick.candidates = value
+        }
+        SettingsSpinRow {
+            title: Translation.tr("Variety")
+            value: Math.round(page.wallpick.randomness * 100)
+            from: 0
+            to: 100
+            stepSize: 5
+            unit: "%"
+            onUserChanged: value => Config.options.background.wallpick.randomness = value / 100
+        }
+        SettingsTextRow {
+            title: Translation.tr("Layout wish")
+            subtitle: Translation.tr("For example: clock on the left, music in the middle")
+            text: page.wallpick.layoutWish
+            onEdited: value => Config.options.background.wallpick.layoutWish = value
+        }
+        SettingsRow {
+            title: Translation.tr("Arrange the bar and clock")
+            subtitle: Wallpick.busy ? Wallpick.status : Translation.tr("Uses the layout wish and the current wallpaper")
+            RippleButtonWithIcon {
+                enabled: !Wallpick.busy
+                materialIcon: "dashboard_customize"
+                mainText: Translation.tr("Arrange")
+                buttonRadius: Appearance.rounding.full
+                colBackground: Appearance.colors.colLayer3
+                colBackgroundHover: Appearance.colors.colLayer3Hover
+                onClicked: Wallpick.restyle()
+            }
+        }
+        SettingsRow {
+            title: Translation.tr("Forget likes and dislikes")
+            RippleButtonWithIcon {
+                enabled: !Wallpick.busy
+                materialIcon: "restart_alt"
+                mainText: Translation.tr("Reset")
+                buttonRadius: Appearance.rounding.full
+                colBackground: Appearance.colors.colLayer3
+                colBackgroundHover: Appearance.colors.colLayer3Hover
+                onClicked: Wallpick.resetTaste()
+            }
         }
     }
 }

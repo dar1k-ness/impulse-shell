@@ -18,14 +18,6 @@ Item { // Bar content region
     property real useShortenedForm: (Appearance.sizes.barHellaShortenScreenWidthThreshold >= screen?.width) ? 2 : (Appearance.sizes.barShortenScreenWidthThreshold >= screen?.width) ? 1 : 0
     readonly property int centerSideModuleWidth: (useShortenedForm == 2) ? Appearance.sizes.barCenterSideModuleWidthHellaShortened : (useShortenedForm == 1) ? Appearance.sizes.barCenterSideModuleWidthShortened : Appearance.sizes.barCenterSideModuleWidth
 
-    component VerticalBarSeparator: Rectangle {
-        Layout.topMargin: Appearance.sizes.baseBarHeight / 3
-        Layout.bottomMargin: Appearance.sizes.baseBarHeight / 3
-        Layout.fillHeight: true
-        implicitWidth: 1
-        color: Appearance.colors.colOutlineVariant
-    }
-
     // the original's own bar content. Not created while a panel of the layout replaces it.
     Loader {
         anchors.fill: parent
@@ -95,8 +87,17 @@ Item { // Bar content region
                         colBackground: barLeftSideMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
                     }
 
+                    BarGroups { // Groups that bar.layout puts on the left
+                        id: leftGroups
+                        visible: groups.length > 0
+                        Layout.leftMargin: leftSidebarButton.visible ? 10 : Appearance.rounding.screenRounding
+                        Layout.fillHeight: true
+                        groups: BarGroupLayout.left
+                        shortened: root.useShortenedForm
+                    }
+
                     ActiveWindow {
-                        Layout.leftMargin: 10 + (leftSidebarButton.visible ? 0 : Appearance.rounding.screenRounding)
+                        Layout.leftMargin: 10 + (leftSidebarButton.visible || leftGroups.visible ? 0 : Appearance.rounding.screenRounding)
                         Layout.rightMargin: Appearance.rounding.screenRounding
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -105,91 +106,15 @@ Item { // Bar content region
                 }
             }
 
-            Row { // Middle section
+            BarGroups { // Middle section
                 id: middleSection
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
                     horizontalCenter: parent.horizontalCenter
                 }
-                spacing: 4
-
-                BarGroup {
-                    id: leftCenterGroup
-                    anchors.verticalCenter: parent.verticalCenter
-                    implicitWidth: root.centerSideModuleWidth
-
-                    Resources {
-                        alwaysShowAllResources: root.useShortenedForm === 2
-                        Layout.fillWidth: root.useShortenedForm === 2
-                    }
-
-                    Media {
-                        visible: root.useShortenedForm < 2
-                        Layout.fillWidth: true
-                    }
-                }
-
-                VerticalBarSeparator {
-                    visible: Config.options?.bar.borderless
-                }
-
-                BarGroup {
-                    id: middleCenterGroup
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    Workspaces {
-                        id: workspacesWidget
-                        Layout.fillHeight: true
-                        MouseArea {
-                            // Right-click to toggle overview
-                            anchors.fill: parent
-                            acceptedButtons: Qt.RightButton
-
-                            onPressed: event => {
-                                if (event.button === Qt.RightButton) {
-                                    GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                VerticalBarSeparator {
-                    visible: Config.options?.bar.borderless
-                }
-
-                MouseArea {
-                    id: rightCenterGroup
-                    anchors.verticalCenter: parent.verticalCenter
-                    implicitWidth: root.centerSideModuleWidth
-                    implicitHeight: rightCenterGroupContent.implicitHeight
-
-                    onPressed: {
-                        GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
-                    }
-
-                    BarGroup {
-                        id: rightCenterGroupContent
-                        anchors.fill: parent
-
-                        ClockWidget {
-                            showDate: (Config.options.bar.verbose && root.useShortenedForm < 2)
-                            Layout.alignment: Qt.AlignVCenter
-                            Layout.fillWidth: true
-                        }
-
-                        UtilButtons {
-                            visible: (Config.options.bar.verbose && root.useShortenedForm === 0)
-                            Layout.alignment: Qt.AlignVCenter
-                        }
-
-                        BatteryIndicator {
-                            visible: (root.useShortenedForm < 2 && Battery.available)
-                            Layout.alignment: Qt.AlignVCenter
-                        }
-                    }
-                }
+                groups: BarGroupLayout.center
+                shortened: root.useShortenedForm
             }
 
             FocusedScrollMouseArea { // Right side | scroll to change volume
@@ -327,6 +252,13 @@ Item { // Bar content region
                         Layout.fillWidth: false
                         Layout.fillHeight: true
                         invertSide: Config?.options.bar.bottom
+                    }
+
+                    BarGroups { // Groups that bar.layout puts on the right
+                        visible: groups.length > 0
+                        Layout.fillHeight: true
+                        groups: BarGroupLayout.right
+                        shortened: root.useShortenedForm
                     }
 
                     Item {

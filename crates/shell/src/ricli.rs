@@ -85,6 +85,11 @@ pub fn dispatch() -> (PathBuf, Option<PathBuf>) {
         }
         Some("list") => std::process::exit(list(&o)),
         Some("log") => std::process::exit(log(&o)),
+        Some("wallpick") if native => std::process::exit(qml::jobs_wallpick::cli(
+            &o.words[1..],
+            &PathBuf::from(std::env::var("HOME").unwrap_or_default())
+                .join(".config/rustshell/rusty-impulse"),
+        )),
         _ => {}
     }
     let (root, app_file) = launch_target(&o);
@@ -187,6 +192,7 @@ Usage: rusty-impulse [-c NAME | -p PATH]                 run the shell (default 
        rusty-impulse [SELECT] kill
        rusty-impulse list [-a | -c NAME | -p PATH] [-j] [--show-dead]
        rusty-impulse log [FILE | SELECT] [-t N] [-f] [-r RULES]
+       rusty-impulse wallpick pick | like | dislike [--next] | style | reset-taste
 SELECT: -c,--config NAME | -p,--path PATH | -i,--id ID | --pid PID, -n,--newest, --any-display
 ";
 

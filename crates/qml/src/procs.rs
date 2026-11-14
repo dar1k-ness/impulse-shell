@@ -54,6 +54,12 @@ pub static WALLPAPER_SWITCH: Element = Element {
     ..Element::new("WallpaperSwitch")
 };
 
+pub static WALLPICK_RUN: Element = Element {
+    job: Some(crate::jobs_wallpick::job),
+    created: Some(init),
+    ..Element::new("WallpickRun")
+};
+
 pub static WEATHER_FETCH: Element = Element {
     job: Some(weather_fetch),
     created: Some(init),

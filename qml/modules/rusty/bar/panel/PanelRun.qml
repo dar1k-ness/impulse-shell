@@ -30,9 +30,33 @@ Item {
         }
         return false;
     }
+    // The zone-wide position before which (`keepAfter`: after which) its widgets have room.
+    property int cut: -1
+    property bool keepAfter: false
+    readonly property int count: widgets.count
+    readonly property real spacing: vertical ? grid.rowSpacing : grid.columnSpacing
+    function host(i) {
+        return widgets.itemAt(i);
+    }
+    // The length the run cannot give up along the panel: its shown widgets' minimum lengths
+    // with the spacing between them and its padding.
+    readonly property real minimumLength: {
+        let length = 0;
+        let shown = 0;
+        for (let i = 0; i < widgets.count; i++) {
+            const host = widgets.itemAt(i);
+            if (host?.item && (host.item.shown ?? true) && host.kept) {
+                length += host.minimumLength + (vertical ? host.leadingSpace : 0);
+                shown++;
+            }
+        }
+        return shown > 0 ? length + (shown - 1) * spacing + padding * 2 : 0;
+    }
     visible: (vertical ? grid.implicitHeight > 0 : grid.implicitWidth > 0) || (!center && modelData.stretch && anyShown)
     implicitWidth: vertical ? Appearance.sizes.baseVerticalBarWidth : center && modelData.stretch ? centerSideLength : grid.implicitWidth + padding * 2
     implicitHeight: vertical ? (grid.implicitHeight + padding * 2) : Appearance.sizes.baseBarHeight
+    Layout.minimumWidth: vertical ? -1 : minimumLength
+    Layout.minimumHeight: vertical ? minimumLength : -1
     Layout.fillWidth: !vertical && !center && modelData.stretch
     Layout.fillHeight: vertical && !center && modelData.stretch
     Layout.alignment: vertical ? Qt.AlignHCenter : Qt.AlignVCenter
@@ -93,6 +117,7 @@ Item {
                 dividerGap: grid.rowSpacing
                 dividerInset: Appearance.sizes.baseBarHeight / 3
                 dividerColor: Appearance.colors.colOutlineVariant
+                kept: root.cut < 0 || (root.keepAfter ? root.modelData.first + index > root.cut : root.modelData.first + index < root.cut)
             }
         }
     }

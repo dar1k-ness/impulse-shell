@@ -1,6 +1,7 @@
-//! `Impulse/DesktopContainer` publishes the desktop container of the widget layout: widgets show
-//! where `layout.toml` puts them (or on the nearest free spot, never overlapping, never off the
-//! monitor), and follow the file when it changes.
+//! `Impulse/DesktopContainer` publishes the desktop container of the edit-mode layout and edits
+//! it: widgets land where they are dropped (or on the nearest free spot, never overlapping,
+//! never off the monitor, on the grid when `gridSize` is set), resize within their type's size
+//! limits, and every accepted edit is written to `layout.toml` and survives a restart.
 mod event_loop;
 use event_loop::Loop;
 use qml::runtime::Runtime;
@@ -9,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 const MANIFEST: &str = r##"
 [[widget]]
-type = "desktop-clock"
+type = "clock"
 name = "Clock"
 icon = "schedule"
 placements = ["desktop"]
@@ -49,7 +50,7 @@ kind = "desktop"
 
 [[monitor.container.widget]]
 id = "clock"
-type = "desktop-clock"
+type = "clock"
 x = 100
 y = 100
 w = 300
@@ -58,7 +59,7 @@ settings = { style = "digital" }
 
 [[monitor.container.widget]]
 id = "weather"
-type = "desktop-clock"
+type = "clock"
 x = 1000
 y = 600
 w = 200
@@ -71,11 +72,17 @@ DesktopContainer {
     width: 1920
     height: 1080
     connector: "DP-1"
+    function mv(id: string, x: real, y: real): bool { return placeWidget(id, x, y) }
+    function rs(id: string, w: real, h: real): bool { return resizeWidget(id, w, h) }
+    function add(t: string, x: real, y: real): string { return addWidget(t, x, y) }
+    function rm(id: string): bool { return removeWidget(id) }
     function fit(id: string, x: real, y: real, w: real, h: real): var { return fitWidget(id, x, y, w, h) }
     function natural(id: string, w: real, h: real) { setNaturalSize(id, w, h) }
     function placed(id: string, p: bool) { setSelfPlaced(id, p) }
     function hide(id: string, h: bool) { setHidden(id, h) }
     function move(id: string, x: real, y: real): bool { return moveWidget(id, x, y) }
+    function placedAt(id: string, x: real, y: real, w: real, h: real) { setPlacedAt(id, x, y, w, h) }
+    function unplacedAt(id: string) { clearPlacedAt(id) }
 }
 "#;
 
@@ -189,15 +196,8 @@ fn publishes_the_layouts_desktop_widgets() {
     assert_eq!(
         widgets(&rt, id),
         vec![
-            ("clock".into(), "desktop-clock".into(), 100, 100, 300, 150),
-            (
-                "weather".into(),
-                "desktop-clock".into(),
-                1000,
-                600,
-                200,
-                100
-            ),
+            ("clock".into(), "clock".into(), 100, 100, 300, 150),
+            ("weather".into(), "clock".into(), 1000, 600, 200, 100),
         ]
     );
     let v = rt.world.borrow_mut().read(id, "widgets").unwrap();
@@ -215,13 +215,134 @@ fn publishes_the_layouts_desktop_widgets() {
 #[test]
 fn no_layout_means_no_container() {
     let d = root("none", None);
-    let (rt, id) = start(&d);
+    let (mut rt, id) = start(&d);
     assert!(!valid(&rt, id));
     assert!(widgets(&rt, id).is_empty());
+    assert_eq!(
+        call(&mut rt, id, "mv", vec![s("clock"), n(1.0), n(1.0)]).to_js_string(),
+        "false"
+    );
     assert!(
         !d.join("layout.toml").exists(),
         "nothing to save without a container"
     );
+}
+
+#[test]
+fn free_move_lands_where_dropped_and_is_saved() {
+    let d = root("move", Some(LAYOUT));
+    let (mut rt, id) = start(&d);
+    assert_eq!(
+        call(&mut rt, id, "mv", vec![s("clock"), n(412.4), n(287.6)]).to_js_string(),
+        "true"
+    );
+    assert_eq!(rect(&rt, id, "clock"), (412, 288, 300, 150));
+    let saved = std::fs::read_to_string(d.join("layout.toml")).unwrap();
+    assert!(
+        saved.contains("x = 412") && saved.contains("y = 288"),
+        "{saved}"
+    );
+    // A restart reads the saved layout.
+    drop(rt);
+    let (rt, id) = start(&d);
+    assert_eq!(rect(&rt, id, "clock"), (412, 288, 300, 150));
+}
+
+#[test]
+fn drop_onto_a_widget_lands_beside_it() {
+    let d = root("collide", Some(LAYOUT));
+    let (mut rt, id) = start(&d);
+    // Dropped over weather: weather spans y 600..700, so the clock (150 high) fits below it
+    // 120 px away (y 700), nearer than above it 130 px away (y 450).
+    call(&mut rt, id, "mv", vec![s("clock"), n(1050.0), n(580.0)]).to_js_string();
+    let (c, w) = (rect(&rt, id, "clock"), rect(&rt, id, "weather"));
+    assert!(!overlap(c, w), "{c:?} {w:?}");
+    assert_eq!(c, (1050, 700, 300, 150));
+}
+
+#[test]
+fn drop_past_the_edge_stays_on_the_monitor() {
+    let d = root("edge", Some(LAYOUT));
+    let (mut rt, id) = start(&d);
+    call(&mut rt, id, "mv", vec![s("clock"), n(1850.0), n(-90.0)]).to_js_string();
+    assert_eq!(rect(&rt, id, "clock"), (1620, 0, 300, 150));
+}
+
+#[test]
+fn grid_snaps_moves_and_resizes() {
+    let d = root("grid", Some(LAYOUT));
+    let (mut rt, id) = start(&d);
+    rt.world.borrow_mut().write(id, "gridSize", n(40.0));
+    rt.settle();
+    call(&mut rt, id, "mv", vec![s("clock"), n(133.0), n(219.0)]).to_js_string();
+    assert_eq!(rect(&rt, id, "clock"), (120, 200, 300, 150));
+    call(&mut rt, id, "rs", vec![s("clock"), n(333.0), n(171.0)]);
+    assert_eq!(rect(&rt, id, "clock"), (120, 200, 320, 160));
+}
+
+#[test]
+fn resize_respects_type_limits_and_neighbours() {
+    let d = root("resize", Some(LAYOUT));
+    let (mut rt, id) = start(&d);
+    // Type max is 800x400.
+    call(&mut rt, id, "rs", vec![s("clock"), n(5000.0), n(5000.0)]);
+    assert_eq!(rect(&rt, id, "clock"), (100, 100, 800, 400));
+    // Type min is 100x50.
+    call(&mut rt, id, "rs", vec![s("clock"), n(1.0), n(1.0)]);
+    assert_eq!(rect(&rt, id, "clock"), (100, 100, 100, 50));
+    // Growing into weather stops at its edge.
+    call(&mut rt, id, "mv", vec![s("clock"), n(600.0), n(600.0)]).to_js_string();
+    call(&mut rt, id, "rs", vec![s("clock"), n(700.0), n(100.0)]);
+    let (c, w) = (rect(&rt, id, "clock"), rect(&rt, id, "weather"));
+    assert!(!overlap(c, w), "{c:?} {w:?}");
+    assert_eq!(c, (600, 600, 400, 100));
+}
+
+#[test]
+fn add_and_remove_widgets() {
+    let d = root("add", Some(LAYOUT));
+    let (mut rt, id) = start(&d);
+    // Dropped onto the clock: placed free, default size, fresh id.
+    let new = call(&mut rt, id, "add", vec![s("clock"), n(150.0), n(120.0)]);
+    assert_eq!(new.to_js_string(), "clock-2");
+    let r = rect(&rt, id, "clock-2");
+    assert_eq!((r.2, r.3), (300, 150));
+    assert!(!overlap(r, rect(&rt, id, "clock")));
+    // A panel-only type is not accepted on the desktop.
+    let bad = call(&mut rt, id, "add", vec![s("bar-only"), n(0.0), n(0.0)]);
+    assert_eq!(bad.to_js_string(), "");
+    assert_eq!(
+        call(&mut rt, id, "rm", vec![s("clock")]).to_js_string(),
+        "true"
+    );
+    let ids: Vec<_> = widgets(&rt, id).into_iter().map(|w| w.0).collect();
+    assert_eq!(ids, vec!["weather", "clock-2"]);
+    assert_eq!(
+        call(&mut rt, id, "rm", vec![s("nope")]).to_js_string(),
+        "false"
+    );
+}
+
+#[test]
+fn edits_are_undoable_and_own_saves_keep_history() {
+    let d = root("undo", Some(LAYOUT));
+    let (mut rt, id) = start(&d);
+    call(&mut rt, id, "mv", vec![s("clock"), n(500.0), n(100.0)]).to_js_string();
+    // The inotify event of our own save must not reset the editor.
+    Loop::new(&mut rt).drain(&mut rt);
+    let can_undo = rt
+        .world
+        .borrow()
+        .layout
+        .as_ref()
+        .unwrap()
+        .editor()
+        .can_undo();
+    assert!(can_undo);
+    let undone = rt.world.borrow_mut().layout.as_mut().unwrap().undo();
+    assert_eq!(undone, Ok(true));
+    rt.settle();
+    assert_eq!(rect(&rt, id, "clock"), (100, 100, 300, 150));
 }
 
 #[test]
@@ -306,7 +427,7 @@ kind = "desktop"
 
 [[monitor.container.widget]]
 id = "clock"
-type = "desktop-clock"
+type = "clock"
 x = 100
 y = 800
 w = 300
@@ -314,7 +435,7 @@ h = 150
 
 [[monitor.container.widget]]
 id = "weather"
-type = "desktop-clock"
+type = "clock"
 x = 100
 y = 500
 w = 200
@@ -512,7 +633,7 @@ kind = "desktop"
 
 [[monitor.container.widget]]
 id = "clock"
-type = "desktop-clock"
+type = "clock"
 x = 1800
 y = 900
 settings = { placementStrategy = "free" }
@@ -533,9 +654,19 @@ fn a_widget_without_a_size_takes_its_natural_size() {
         matches!((delegates, rt.world.borrow_mut().read(id, "widgets")), (Some(Value::Obj(a)), Some(Value::Obj(b))) if std::rc::Rc::ptr_eq(&a, &b)),
         "a measured size keeps the views' delegates"
     );
-    // Only shown at it: nothing is written for its size.
+    // A move keeps it natural (nothing to save for its size); a resize in edit mode sets one.
+    assert!(call(&mut rt, id, "mv", vec![s("clock"), n(1000.0), n(100.0)]).truthy());
+    assert_eq!(shown(&rt, id, "clock"), (1000, 100, 230, 255));
     let saved = std::fs::read_to_string(d.join("layout.toml")).unwrap();
     assert!(!saved.contains("w =") && !saved.contains("h ="), "{saved}");
+    assert!(call(&mut rt, id, "rs", vec![s("clock"), n(400.0), n(300.0)]).truthy());
+    assert_eq!(rect(&rt, id, "clock"), (1000, 100, 400, 300));
+    call(&mut rt, id, "natural", vec![s("clock"), n(240.0), n(260.0)]);
+    assert_eq!(
+        shown(&rt, id, "clock"),
+        (1000, 100, 400, 300),
+        "a set size stays"
+    );
     assert!(rt.errors().is_empty(), "{:?}", rt.errors());
     std::fs::remove_dir_all(&d).unwrap();
 }
@@ -929,7 +1060,7 @@ settings = { style = "digital", placementStrategy = "free" }
 
 const WEATHER_TYPE: &str = r#"
 [[widget]]
-type = "desktop-weather"
+type = "weather"
 name = "Weather"
 icon = "partly_cloudy_day"
 placements = ["desktop"]
@@ -957,20 +1088,13 @@ fn an_old_layout_gets_the_weather_its_setting_shows() {
         vec![
             (
                 "desktop-weather".into(),
-                "desktop-weather".into(),
+                "weather".into(),
                 400,
                 100,
                 200,
                 200
             ),
-            (
-                "desktop-clock".into(),
-                "desktop-clock".into(),
-                235,
-                545,
-                300,
-                150
-            ),
+            ("desktop-clock".into(), "clock".into(), 235, 545, 300, 150),
         ]
     );
     let enabled_by = match rt.world.borrow_mut().read(id, "widgets") {
@@ -987,6 +1111,85 @@ fn an_old_layout_gets_the_weather_its_setting_shows() {
         std::fs::read_to_string(d.join("layout.toml")).unwrap(),
         V1_WITHOUT_WEATHER
     );
+    assert!(rt.errors().is_empty(), "{:?}", rt.errors());
+    std::fs::remove_dir_all(&d).unwrap();
+}
+
+const SELF_PLACED: &str = r#"version = 2
+
+[[monitor]]
+connector = "DP-1"
+primary = true
+
+[[monitor.container]]
+id = "desktop"
+kind = "desktop"
+
+[[monitor.container.widget]]
+id = "clock"
+type = "clock"
+x = 100
+y = 100
+w = 230
+h = 250
+settings = { placementStrategy = "leastBusy" }
+
+[[monitor.container.widget]]
+id = "calendar"
+type = "clock"
+x = 60
+y = 120
+w = 300
+h = 200
+"#;
+
+/// A widget that places itself (the original's clock by the wallpaper's least busy region) shows
+/// where its view says it draws, and its place in the layout, which it does not use, is in
+/// nobody's way: a widget the layout places there stays where `layout.toml` puts it, on every
+/// load, and an edit-mode drop keeps off the clock where it shows.
+#[test]
+fn a_self_placed_widget_shows_where_it_draws_and_a_drop_keeps_off_it_there() {
+    let d = root("selfplaced", Some(SELF_PLACED));
+    let (mut rt, id) = start(&d);
+    // Its stored box would push the calendar off (100,100 230x250 covers 60,120).
+    assert_ne!(shown(&rt, id, "calendar"), (60, 120, 300, 200));
+    call(&mut rt, id, "placed", vec![s("clock"), Value::Bool(true)]);
+    call(
+        &mut rt,
+        id,
+        "placedAt",
+        vec![s("clock"), n(905.0), n(305.0), n(230.0), n(250.0)],
+    );
+    assert_eq!(shown(&rt, id, "clock"), (905, 305, 230, 250));
+    assert_eq!(shown(&rt, id, "calendar"), (60, 120, 300, 200));
+    // A drop collides with it where it shows: onto its stored box lands as dropped...
+    assert!(call(&mut rt, id, "mv", vec![s("calendar"), n(110.0), n(110.0)]).truthy());
+    assert_eq!(rect(&rt, id, "calendar"), (110, 110, 300, 200));
+    // ...and onto where it shows lands beside it.
+    assert!(call(&mut rt, id, "mv", vec![s("calendar"), n(905.0), n(305.0)]).truthy());
+    let at = rect(&rt, id, "calendar");
+    assert!(!overlap(at, (905, 305, 230, 250)), "{at:?}");
+    assert!(call(&mut rt, id, "mv", vec![s("calendar"), n(60.0), n(120.0)]).truthy());
+    // A fresh load: still where the layout says once the clock reported where it shows.
+    let saved = std::fs::read_to_string(d.join("layout.toml")).unwrap();
+    assert!(
+        saved.contains("x = 60") && saved.contains("y = 120"),
+        "{saved}"
+    );
+    drop(rt);
+    let (mut rt, id) = start(&d);
+    call(&mut rt, id, "placed", vec![s("clock"), Value::Bool(true)]);
+    call(
+        &mut rt,
+        id,
+        "placedAt",
+        vec![s("clock"), n(905.0), n(305.0), n(230.0), n(250.0)],
+    );
+    assert_eq!(shown(&rt, id, "calendar"), (60, 120, 300, 200));
+    // No longer self-placed: the stored box counts again.
+    call(&mut rt, id, "unplacedAt", vec![s("clock")]);
+    call(&mut rt, id, "placed", vec![s("clock"), Value::Bool(false)]);
+    assert_ne!(shown(&rt, id, "calendar"), (60, 120, 300, 200));
     assert!(rt.errors().is_empty(), "{:?}", rt.errors());
     std::fs::remove_dir_all(&d).unwrap();
 }

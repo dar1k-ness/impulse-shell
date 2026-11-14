@@ -26,12 +26,20 @@ Item { // Player instance
     property real maxVisualizerValue: 1000 // Max value in the data points
     property int visualizerSmoothing: 2 // Number of points to average for smoothing
     property real radius
+    // The layout the card takes and how much larger than the original's it draws its content
+    // (MediaCard picks both by the card's size); the original's own are "full" at 1.
+    property string form: "full"
+    property real zoom: 1
+    readonly property real cardWidth: Math.max(0, root.width - Appearance.sizes.elevationMargin * 2)
+    readonly property real cardHeight: Math.max(0, root.height - Appearance.sizes.elevationMargin * 2)
+    readonly property bool circle: root.form === "circle"
+    readonly property real circleSize: Math.min(root.cardWidth, root.cardHeight)
 
     property string displayedArtFilePath: root.downloaded ? Qt.resolvedUrl(artFilePath) : ""
 
     component TrackChangeButton: RippleButton {
-        implicitWidth: 24
-        implicitHeight: 24
+        implicitWidth: Math.round(24 * root.zoom)
+        implicitHeight: Math.round(24 * root.zoom)
 
         property var iconName
         colBackground: ColorUtils.transparentize(blendedColors.colSecondaryContainer, 1)
@@ -39,7 +47,7 @@ Item { // Player instance
         colRipple: blendedColors.colSecondaryContainerActive
 
         contentItem: MaterialSymbol {
-            iconSize: Appearance.font.pixelSize.huge
+            iconSize: Math.round(Appearance.font.pixelSize.huge * root.zoom)
             fill: 1
             horizontalAlignment: Text.AlignHCenter
             color: blendedColors.colOnSecondaryContainer
@@ -49,6 +57,112 @@ Item { // Player instance
                 animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
             }
         }
+    }
+
+    component PlayPauseButton: RippleButton {
+        id: playPause
+        property real size: 44
+        implicitWidth: size
+        implicitHeight: size
+        downAction: () => root.player.togglePlaying();
+
+        buttonRadius: root.player?.isPlaying ? Math.min(Appearance?.rounding.normal, size / 2) : size / 2
+        colBackground: root.player?.isPlaying ? blendedColors.colPrimary : blendedColors.colSecondaryContainer
+        colBackgroundHover: root.player?.isPlaying ? blendedColors.colPrimaryHover : blendedColors.colSecondaryContainerHover
+        colRipple: root.player?.isPlaying ? blendedColors.colPrimaryActive : blendedColors.colSecondaryContainerActive
+
+        contentItem: MaterialSymbol {
+            iconSize: Math.round(Math.min(Appearance.font.pixelSize.huge * root.zoom, playPause.size * 0.6))
+            fill: 1
+            horizontalAlignment: Text.AlignHCenter
+            color: root.player?.isPlaying ? blendedColors.colOnPrimary : blendedColors.colOnSecondaryContainer
+            text: root.player?.isPlaying ? "pause" : "play_arrow"
+
+            Behavior on color {
+                animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
+            }
+        }
+    }
+
+    // The cover in a rounded box of its own.
+    component ArtBox: Rectangle {
+        id: artBox
+        radius: Appearance.rounding.verysmall
+        color: ColorUtils.transparentize(blendedColors.colLayer1, 0.5)
+
+        layer.enabled: true
+        layer.effect: OpacityMask {
+            maskSource: Rectangle {
+                width: artBox.width
+                height: artBox.height
+                radius: artBox.radius
+            }
+        }
+
+        StyledImage {
+            anchors.fill: parent
+            source: root.displayedArtFilePath
+            fillMode: Image.PreserveAspectCrop
+            cache: false
+            antialiasing: true
+        }
+    }
+
+    // The seek slider of a player that can seek, the progress bar of one that cannot.
+    component SeekBar: Item {
+        implicitHeight: Math.max(seekSlider.implicitHeight, seekProgress.implicitHeight)
+
+        Loader {
+            id: seekSlider
+            anchors.fill: parent
+            active: root.player?.canSeek ?? false
+            sourceComponent: StyledSlider {
+                configuration: StyledSlider.Configuration.Wavy
+                highlightColor: blendedColors.colPrimary
+                trackColor: blendedColors.colSecondaryContainer
+                handleColor: blendedColors.colPrimary
+                value: root.player?.position / root.player?.length
+                onMoved: {
+                    root.player.position = value * root.player.length;
+                }
+            }
+        }
+
+        Loader {
+            id: seekProgress
+            anchors {
+                verticalCenter: parent.verticalCenter
+                left: parent.left
+                right: parent.right
+            }
+            active: !(root.player?.canSeek ?? false)
+            sourceComponent: StyledProgressBar {
+                wavy: root.player?.isPlaying
+                highlightColor: blendedColors.colPrimary
+                trackColor: blendedColors.colSecondaryContainer
+                value: root.player?.position / root.player?.length
+            }
+        }
+    }
+
+    component TrackTitle: StyledText {
+        font.pixelSize: Math.round(Appearance.font.pixelSize.large * root.zoom)
+        color: blendedColors.colOnLayer0
+        elide: Text.ElideRight
+        text: StringUtils.cleanMusicTitle(root.player?.trackTitle) || "Untitled"
+        animateChange: true
+        animationDistanceX: 6
+        animationDistanceY: 0
+    }
+
+    component TrackArtist: StyledText {
+        font.pixelSize: Math.round(Appearance.font.pixelSize.smaller * root.zoom)
+        color: blendedColors.colSubtext
+        elide: Text.ElideRight
+        text: root.player?.trackArtist
+        animateChange: true
+        animationDistanceX: 6
+        animationDistanceY: 0
     }
 
     UpdateTimer { // Force update for revision
@@ -98,10 +212,11 @@ Item { // Player instance
     }
     Rectangle { // Background
         id: background
-        anchors.fill: parent
-        anchors.margins: Appearance.sizes.elevationMargin
+        anchors.centerIn: parent
+        width: root.circle ? root.circleSize : root.cardWidth
+        height: root.circle ? root.circleSize : root.cardHeight
         color: ColorUtils.applyAlpha(blendedColors.colLayer0, 1)
-        radius: root.radius
+        radius: root.circle ? root.circleSize / 2 : root.radius
 
         layer.enabled: true
         layer.effect: OpacityMask {
@@ -135,6 +250,7 @@ Item { // Player instance
 
         WaveVisualizer {
             id: visualizerCanvas
+            visible: !root.circle
             anchors.fill: parent
             live: root.player?.isPlaying
             points: root.visualizerPoints
@@ -144,66 +260,36 @@ Item { // Player instance
         }
 
         RowLayout {
+            id: fullLayout
+            // The title and the artist stop short of the play button where the card is too
+            // low for them to pass above it.
+            readonly property real textInset: root.cardHeight < Appearance.sizes.mediaControlsHeight - Appearance.sizes.elevationMargin * 2 ? playPauseButton.width + 6 : 0
+            visible: root.form === "full"
             anchors.fill: parent
-            anchors.margins: 13
-            spacing: 15
+            anchors.margins: Math.round(13 * root.zoom)
+            spacing: Math.round(15 * root.zoom)
 
-            Rectangle { // Art background
-                id: artBackground
-                Layout.fillHeight: true
-                implicitWidth: height
-                radius: Appearance.rounding.verysmall
-                color: ColorUtils.transparentize(blendedColors.colLayer1, 0.5)
-
-                layer.enabled: true
-                layer.effect: OpacityMask {
-                    maskSource: Rectangle {
-                        width: artBackground.width
-                        height: artBackground.height
-                        radius: artBackground.radius
-                    }
-                }
-
-                StyledImage { // Art image
-                    id: mediaArt
-                    property int size: parent.height
-                    anchors.fill: parent
-
-                    source: root.displayedArtFilePath
-                    fillMode: Image.PreserveAspectCrop
-                    cache: false
-                    antialiasing: true
-
-                    width: size
-                    height: size
-                }
+            ArtBox { // Art background
+                // As high as the card lets it, less where the text beside it would be left no room.
+                readonly property real side: Math.max(0, Math.min(fullLayout.height, fullLayout.width - fullLayout.spacing - Math.round(135 * root.zoom)))
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: side
+                Layout.preferredHeight: side
             }
 
             ColumnLayout { // Info & controls
                 Layout.fillHeight: true
                 spacing: 2
 
-                StyledText {
+                TrackTitle {
                     id: trackTitle
                     Layout.fillWidth: true
-                    font.pixelSize: Appearance.font.pixelSize.large
-                    color: blendedColors.colOnLayer0
-                    elide: Text.ElideRight
-                    text: StringUtils.cleanMusicTitle(root.player?.trackTitle) || "Untitled"
-                    animateChange: true
-                    animationDistanceX: 6
-                    animationDistanceY: 0
+                    Layout.rightMargin: fullLayout.textInset
                 }
-                StyledText {
+                TrackArtist {
                     id: trackArtist
                     Layout.fillWidth: true
-                    font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: blendedColors.colSubtext
-                    elide: Text.ElideRight
-                    text: root.player?.trackArtist
-                    animateChange: true
-                    animationDistanceX: 6
-                    animationDistanceY: 0
+                    Layout.rightMargin: fullLayout.textInset
                 }
                 Item { Layout.fillHeight: true }
                 Item {
@@ -215,7 +301,8 @@ Item { // Player instance
                         anchors.bottom: sliderRow.top
                         anchors.bottomMargin: 5
                         anchors.left: parent.left
-                        font.pixelSize: Appearance.font.pixelSize.small
+                        anchors.right: playPauseButton.left
+                        font.pixelSize: Math.round(Appearance.font.pixelSize.small * root.zoom)
                         color: blendedColors.colSubtext
                         elide: Text.ElideRight
                         text: `${StringUtils.friendlyTimeForSeconds(root.player?.position)} / ${StringUtils.friendlyTimeForSeconds(root.player?.length)}`
@@ -231,44 +318,8 @@ Item { // Player instance
                             iconName: "skip_previous"
                             downAction: () => root.player?.previous()
                         }
-                        Item {
-                            id: progressBarContainer
+                        SeekBar {
                             Layout.fillWidth: true
-                            implicitHeight: Math.max(sliderLoader.implicitHeight, progressBarLoader.implicitHeight)
-
-                            Loader {
-                                id: sliderLoader
-                                anchors.fill: parent
-                                active: root.player?.canSeek ?? false
-                                sourceComponent: StyledSlider { 
-                                    configuration: StyledSlider.Configuration.Wavy
-                                    highlightColor: blendedColors.colPrimary
-                                    trackColor: blendedColors.colSecondaryContainer
-                                    handleColor: blendedColors.colPrimary
-                                    value: root.player?.position / root.player?.length
-                                    onMoved: {
-                                        root.player.position = value * root.player.length;
-                                    }
-                                }
-                            }
-
-                            Loader {
-                                id: progressBarLoader
-                                anchors {
-                                    verticalCenter: parent.verticalCenter
-                                    left: parent.left
-                                    right: parent.right
-                                }
-                                active: !(root.player?.canSeek ?? false)
-                                sourceComponent: StyledProgressBar { 
-                                    wavy: root.player?.isPlaying
-                                    highlightColor: blendedColors.colPrimary
-                                    trackColor: blendedColors.colSecondaryContainer
-                                    value: root.player?.position / root.player?.length
-                                }
-                            }
-
-                            
                         }
                         TrackChangeButton {
                             iconName: "skip_next"
@@ -276,33 +327,158 @@ Item { // Player instance
                         }
                     }
 
-                    RippleButton {
+                    PlayPauseButton {
                         id: playPauseButton
                         anchors.right: parent.right
                         anchors.bottom: sliderRow.top
                         anchors.bottomMargin: 5
-                        property real size: 44
-                        implicitWidth: size
-                        implicitHeight: size
-                        downAction: () => root.player.togglePlaying();
+                        size: Math.round(44 * root.zoom)
+                    }
+                }
+            }
+        }
 
-                        buttonRadius: root.player?.isPlaying ? Appearance?.rounding.normal : size / 2
-                        colBackground: root.player?.isPlaying ? blendedColors.colPrimary : blendedColors.colSecondaryContainer
-                        colBackgroundHover: root.player?.isPlaying ? blendedColors.colPrimaryHover : blendedColors.colSecondaryContainerHover
-                        colRipple: root.player?.isPlaying ? blendedColors.colPrimaryActive : blendedColors.colSecondaryContainerActive
+        // A narrow high card: the cover above the title, the play button and the seek bar.
+        Loader {
+            id: tallLoader
+            active: root.form === "tall"
+            anchors.fill: parent
+            anchors.margins: 13
+            sourceComponent: ColumnLayout {
+                id: tallLayout
+                readonly property real controlsHeight: Math.round(44 * root.zoom) + Math.round(24 * root.zoom) + tallLayout.spacing * 2
+                spacing: 8
 
-                        contentItem: MaterialSymbol {
-                            iconSize: Appearance.font.pixelSize.huge
-                            fill: 1
-                            horizontalAlignment: Text.AlignHCenter
-                            color: root.player?.isPlaying ? blendedColors.colOnPrimary : blendedColors.colOnSecondaryContainer
-                            text: root.player?.isPlaying ? "pause" : "play_arrow"
+                ArtBox {
+                    readonly property real side: Math.max(0, Math.min(tallLoader.width, tallLoader.height - tallLayout.controlsHeight))
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: side
+                    Layout.preferredHeight: side
+                }
+                Item { Layout.fillHeight: true }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
 
-                            Behavior on color {
-                                animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-                            }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                        spacing: 2
+
+                        TrackTitle {
+                            Layout.fillWidth: true
+                        }
+                        TrackArtist {
+                            Layout.fillWidth: true
                         }
                     }
+                    PlayPauseButton {
+                        size: Math.round(44 * root.zoom)
+                    }
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    TrackChangeButton {
+                        iconName: "skip_previous"
+                        downAction: () => root.player?.previous()
+                    }
+                    SeekBar {
+                        Layout.fillWidth: true
+                    }
+                    TrackChangeButton {
+                        iconName: "skip_next"
+                        downAction: () => root.player?.next()
+                    }
+                }
+            }
+        }
+
+        // A low card: the cover, the title and the artist beside it, and the buttons there is
+        // room for; without a play button a click anywhere on the card plays and pauses.
+        Loader {
+            id: rowLoader
+            readonly property real pad: Math.min(13, Math.round(root.cardHeight * 0.16))
+            active: root.form === "row"
+            anchors.fill: parent
+            sourceComponent: Item {
+                id: rowForm
+                readonly property real inner: Math.max(0, rowForm.height - rowLoader.pad * 2)
+                readonly property real artSide: Math.max(0, Math.min(rowForm.inner, rowForm.width - rowLoader.pad * 2 - rowLayout.spacing - 96))
+                readonly property real buttonSide: Math.min(44, rowForm.inner)
+                // What is left for the text once the cover has its place.
+                readonly property real textRoom: rowForm.width - rowLoader.pad * 2 - rowForm.artSide - rowLayout.spacing
+                readonly property bool hasPlayButton: rowForm.textRoom - rowForm.buttonSide - rowLayout.spacing >= 90
+                readonly property bool hasSkipButtons: rowForm.textRoom - rowForm.buttonSide - 48 - rowLayout.spacing * 3 >= 180
+
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: !rowForm.hasPlayButton
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.player.togglePlaying()
+                }
+
+                RowLayout {
+                    id: rowLayout
+                    anchors.fill: parent
+                    anchors.margins: rowLoader.pad
+                    spacing: 10
+
+                    ArtBox {
+                        Layout.alignment: Qt.AlignVCenter
+                        Layout.preferredWidth: rowForm.artSide
+                        Layout.preferredHeight: rowForm.artSide
+                    }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                        spacing: 0
+
+                        TrackTitle {
+                            Layout.fillWidth: true
+                            font.pixelSize: rowForm.inner < 44 ? Appearance.font.pixelSize.small : Appearance.font.pixelSize.large
+                        }
+                        TrackArtist {
+                            visible: rowForm.inner >= 36 && text.length > 0
+                            Layout.fillWidth: true
+                        }
+                    }
+                    TrackChangeButton {
+                        visible: rowForm.hasSkipButtons
+                        Layout.alignment: Qt.AlignVCenter
+                        iconName: "skip_previous"
+                        downAction: () => root.player?.previous()
+                    }
+                    PlayPauseButton {
+                        visible: rowForm.hasPlayButton
+                        Layout.alignment: Qt.AlignVCenter
+                        size: rowForm.buttonSide
+                    }
+                    TrackChangeButton {
+                        visible: rowForm.hasSkipButtons
+                        Layout.alignment: Qt.AlignVCenter
+                        iconName: "skip_next"
+                        downAction: () => root.player?.next()
+                    }
+                }
+            }
+        }
+
+        // No room for text: the cover alone, round, with the play button in its middle.
+        Loader {
+            active: root.circle
+            anchors.fill: parent
+            sourceComponent: Item {
+                StyledImage {
+                    anchors.fill: parent
+                    source: root.displayedArtFilePath
+                    fillMode: Image.PreserveAspectCrop
+                    cache: false
+                    antialiasing: true
+                }
+                PlayPauseButton {
+                    anchors.centerIn: parent
+                    size: Math.round(Math.min(44, root.circleSize * 0.55))
                 }
             }
         }

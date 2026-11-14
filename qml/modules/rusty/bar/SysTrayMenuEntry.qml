@@ -37,7 +37,7 @@ RippleButton {
         }
     }
 
-    releaseAction: () => { 
+    onClicked: {
         if (menuEntry.hasChildren) {
             root.openSubmenu(root.menuEntry);
             return;
