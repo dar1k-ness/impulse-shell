@@ -116,6 +116,14 @@ name = "turned_rect_qt"
 required-features = ["interp"]
 
 [[test]]
+name = "turned_layer_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "scaled_item_qt"
+required-features = ["interp"]
+
+[[test]]
 name = "transform_pixels_qt"
 required-features = ["interp"]
 
