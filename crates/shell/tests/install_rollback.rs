@@ -3862,3 +3862,124 @@ ShellRoot {
         "the shell's own window and its reload run the installed name"
     );
 }
+
+/// The id of the release the link `name` points at.
+fn id_of(s: &Sandbox, name: &str) -> Option<String> {
+    let target = std::fs::read_link(s.lib().join(name)).ok()?;
+    Some(target.file_name()?.to_string_lossy().into_owned())
+}
+
+/// Two releases are kept, so after two installs in a row the release that ran before both is
+/// gone and `--rollback` goes to the one between them, which nobody has seen run for long.
+/// A release marked good (`--mark-good`: tools/pc/rollback-watch does it once the shell has
+/// run long enough) is kept beside the two, and `--rollback-good` switches to it with its
+/// tree.
+#[test]
+fn a_release_marked_good_outlives_two_installs_and_is_rolled_back_to() {
+    let s = Sandbox::new("good");
+    write_tree(&s.source(), "A");
+    let a = s.fake("rusty-impulse-a", "A");
+    ok(&s.install(&a));
+    let tree_a = listing(&s.config());
+    let id_a = id_of(&s, "current").unwrap();
+    refused(
+        &s.script(&["--rollback-good"], None),
+        "no release marked good other than the current one",
+    );
+    let out = s.script(&["--mark-good"], None);
+    ok(&out);
+    assert!(
+        text(&out.stdout).contains(&format!("marked {id_a} as the release that proved good")),
+        "{}",
+        text(&out.stdout)
+    );
+    assert_eq!(id_of(&s, "good").as_deref(), Some(id_a.as_str()));
+    // It is the current one: there is nothing to go back to yet.
+    refused(
+        &s.script(&["--rollback-good"], None),
+        "no release marked good other than the current one",
+    );
+
+    write_tree(&s.source(), "B");
+    ok(&s.install(&s.fake("rusty-impulse-b", "B")));
+    let id_b = id_of(&s, "current").unwrap();
+    write_tree(&s.source(), "C");
+    let c = s.fake("rusty-impulse-c", "C");
+    ok(&s.install(&c));
+    let id_c = id_of(&s, "current").unwrap();
+    // The pair is C and B; A is neither and is still there.
+    assert_eq!(id_of(&s, "previous").as_deref(), Some(id_b.as_str()));
+    assert_eq!(id_of(&s, "good").as_deref(), Some(id_a.as_str()));
+    let mut all = vec![id_a.clone(), id_b.clone(), id_c.clone()];
+    all.sort();
+    assert_eq!(s.releases(), all);
+    let status = text(&s.script(&["--status"], None).stdout);
+    assert!(status.contains(&format!("good:     {id_a}")), "{status}");
+
+    let out = s.script(&["--rollback-good"], None);
+    ok(&out);
+    assert!(
+        text(&out.stdout).contains(&format!("to {id_a} (was {id_c})")),
+        "{}",
+        text(&out.stdout)
+    );
+    assert_eq!(s.installed(), std::fs::read(&a).unwrap());
+    assert_eq!(listing(&s.config()), tree_a);
+    assert!(s.starts());
+    assert_eq!(id_of(&s, "current").as_deref(), Some(id_a.as_str()));
+    assert_eq!(id_of(&s, "previous").as_deref(), Some(id_c.as_str()));
+    assert_eq!(id_of(&s, "good").as_deref(), Some(id_a.as_str()));
+    // B is neither the current, the previous nor the good one any more.
+    let mut left = vec![id_a.clone(), id_c.clone()];
+    left.sort();
+    assert_eq!(s.releases(), left);
+    // Forward again to the release that was switched from.
+    ok(&s.rollback());
+    assert_eq!(s.installed(), std::fs::read(&c).unwrap());
+    assert_eq!(id_of(&s, "good").as_deref(), Some(id_a.as_str()));
+}
+
+/// Whoever marks a release names the binary it saw run: an install made since is not marked
+/// in its place. A later mark moves the mark, and the release marked before goes with the
+/// next install.
+#[test]
+fn mark_good_refuses_another_binary_and_a_later_mark_replaces_the_first() {
+    let s = Sandbox::new("mark");
+    refused(&s.script(&["--mark-good"], None), "nothing is installed");
+    write_tree(&s.source(), "A");
+    let a = s.fake("rusty-impulse-a", "A");
+    ok(&s.install(&a));
+    let id_a = id_of(&s, "current").unwrap();
+    let sha = |p: &Path| {
+        let out = Command::new("sha256sum").arg(p).output().unwrap();
+        text(&out.stdout)[..64].to_string()
+    };
+    write_tree(&s.source(), "B");
+    let b = s.fake("rusty-impulse-b", "B");
+    ok(&s.install(&b));
+    let id_b = id_of(&s, "current").unwrap();
+    let before = listing(&s.dir);
+    let mut cmd = s.command(&["--mark-good"]);
+    refused(
+        &cmd.env("SHA256", sha(&a)).output().unwrap(),
+        "nothing was marked",
+    );
+    assert_eq!(
+        listing(&s.dir)
+            .into_iter()
+            .filter(|(p, _)| !p.ends_with(".lock"))
+            .collect::<Vec<_>>(),
+        before
+            .into_iter()
+            .filter(|(p, _)| !p.ends_with(".lock"))
+            .collect::<Vec<_>>()
+    );
+    let mut cmd = s.command(&["--mark-good"]);
+    ok(&cmd.env("SHA256", sha(&b)).output().unwrap());
+    assert_eq!(id_of(&s, "good").as_deref(), Some(id_b.as_str()));
+    write_tree(&s.source(), "C");
+    ok(&s.install(&s.fake("rusty-impulse-c", "C")));
+    assert_eq!(id_of(&s, "good").as_deref(), Some(id_b.as_str()));
+    assert_eq!(id_of(&s, "previous").as_deref(), Some(id_b.as_str()));
+    assert!(!s.releases().contains(&id_a), "{:?}", s.releases());
+}

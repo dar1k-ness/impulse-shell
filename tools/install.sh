@@ -5,6 +5,10 @@
 # checks (hypridle lock_cmd) must also accept `pidof rusty-impulse`.
 #   tools/install.sh              build and install, keeping the release it replaces
 #   tools/install.sh --rollback   switch back to that release (again: forward to the newer one)
+#   tools/install.sh --mark-good  the current release has proved good here: it is kept until
+#                                 another one is marked, however many installs follow
+#                                 (SHA256=<hex>: only if that is its binary's sha256)
+#   tools/install.sh --rollback-good  switch back to the release marked good
 #   tools/install.sh --status     the current and the previous release, the rusty-impulse config, and
 #                                 how many replaced configs are kept
 #   tools/install.sh --uninstall  removes the releases and the link to them; the rusty-impulse config, the
@@ -26,6 +30,7 @@
 # The binary and the QML tree it was compiled from are one release:
 #   $PREFIX/bin/rusty-impulse                    -> ../lib/rusty-impulse/current/rusty-impulse
 #   $PREFIX/lib/rusty-impulse/current, previous  -> releases/<id>
+#   $PREFIX/lib/rusty-impulse/good               -> releases/<id>, the release marked good, if one is
 #   $PREFIX/lib/rusty-impulse/releases/<id>/     rusty-impulse and tree/, a copy of the tree it runs (files
 #                                        through links copied as files, without .git)
 # An install first asks the new binary whether it has a JavaScript interpreter
@@ -43,6 +48,12 @@
 # the config's place if the two releases' trees differ, the older binary does not run the
 # config as it is now, or there is no config. An install or a rollback that fails at a step
 # puts back what it replaced: the release that was installed stays, with the config it runs.
+# Two releases are kept, the current and the previous one: each install removes the others.
+# After two installs in a row the previous release is the one the first of them made, and
+# the release that ran before both is gone. So a release that has proved good on this machine
+# is marked (--mark-good, by tools/pc/rollback-watch once the shell has run long enough): it
+# is kept beside those two, and --rollback-good switches to it, with its tree, as --rollback
+# does to the previous one; the release switched from becomes the previous one.
 # One that is killed between its steps (SIGKILL, the power) leaves a shell that starts: while
 # the config and the links are switched, `current` names releases/.switch, whose rusty-impulse starts
 # the release that runs the config as it is. Each of these steps is written to the disk before
@@ -392,11 +403,12 @@ recover() {
         [ ! -d "$d" ] || rm -rf "$d"
     done
 }
-# Removes the releases other than `$1` and `$2`.
+# Removes the releases other than `$1`, `$2` and the one marked good.
 prune() {
-    local d
+    local d good
+    good=$(release good) || good=
     for d in "$lib"/releases/*/; do
-        case $(basename "$d") in "$1" | "$2") ;; *) $SUDO rm -rf "$d" ;; esac
+        case $(basename "$d") in "$1" | "$2" | "$good") ;; *) $SUDO rm -rf "$d" ;; esac
     done
 }
 # Makes the release `$1` the current one and `$2` the previous one (empty: there is none),
@@ -805,8 +817,9 @@ old_names_note() {
     echo "; the build from before the rename is still installed under its old names ($bin_dir/$bin, $config_home/$word/$tree): this script does not switch to it. What starts it again is the rollback-now that tools/pc/switch filled in, in the build directory switch was run from (~/pcbuild/stable-<sha>/rollback-now); tools/pc/rollback-now of a checkout has no rollback copies and does nothing"
 }
 
+# `$1`: previous (the default) or good, the link that names the release to switch to.
 rollback() {
-    local cur prev target restore=
+    local cur prev target restore= to=${1:-previous}
     as_the_user
     [ -d "$lib/releases" ] || die "nothing is installed under $lib"
     lock
@@ -816,8 +829,11 @@ rollback() {
     put_back_by_hand "$cur" ||
         adopt_bin "$lib/releases/$cur/tree" "nothing changed"
     cur=$(release current)
-    prev=$(release previous) || prev=$cur
-    [ "$prev" != "$cur" ] || die "no previous release to roll back to$(old_names_note)"
+    prev=$(release "$to") || prev=$cur
+    if [ "$prev" = "$cur" ]; then
+        [ "$to" = previous ] || die "no release marked good other than the current one ($cur) to roll back to"
+        die "no previous release to roll back to$(old_names_note)"
+    fi
     target=$lib/releases/$prev
     if [ ! -f "$config_tree/shell.qml" ]; then
         # No rusty-impulse config for the older binary to run: it gets its release's, as from an install.
@@ -837,6 +853,8 @@ rollback() {
         replace_tree "$target/tree" "$lib/releases/$cur/tree" || exit 1
     fi
     switch_links "$prev" "$cur" "" "nothing changed" || exit 1
+    # The release that was the previous one is neither any more.
+    [ "$to" = previous ] || prune "$prev" "$cur"
     echo "rolled back $bin_dir/rusty-impulse to $prev (was $cur)"
     if [ "$tree_change" = replaced ]; then
         if [ -n "$old" ]; then
@@ -846,6 +864,27 @@ rollback() {
         fi
     fi
     keep_tree
+}
+
+# Marks the current release as the one that has proved good: it stays until another is marked.
+# With SHA256 set, only if the current release's binary has that sha256: whoever saw a shell
+# run names the binary it saw, and an install made since then is not marked in its place.
+mark_good() {
+    local cur prev sum
+    as_the_user
+    [ -d "$lib/releases" ] || die "nothing is installed under $lib"
+    lock
+    ! foreign_bin || die "$bin_dir/rusty-impulse is not a release of $lib (no install put it there); nothing was marked"
+    cur=$(release current) || die "nothing is installed under $lib"
+    if [ -n "${SHA256:-}" ]; then
+        sum=$(sha256sum <"$lib/releases/$cur/rusty-impulse" | cut -d' ' -f1)
+        [ "$sum" = "$SHA256" ] ||
+            die "the current release $cur has the sha256 $sum, not $SHA256; nothing was marked"
+    fi
+    prev=$(release previous) || prev=
+    point good "$cur" && flush "$lib" || die "cannot write the link $lib/good; nothing was marked"
+    prune "$cur" "$prev"
+    echo "marked $cur as the release that proved good (tools/install.sh --rollback-good)"
 }
 
 status() {
@@ -863,6 +902,7 @@ status() {
     prev=$(release previous) || prev=none
     echo "current:  $cur"
     echo "previous: $prev"
+    ! release good >/dev/null || echo "good:     $(release good)"
     [ -z "$(old_names_note)" ] || echo "before the rename:$(old_names_note | cut -c2-)"
     copies=("$state_dir"/replaced-*)
     [ ! -e "${copies[0]}" ] ||
@@ -954,6 +994,14 @@ case ${1:-} in
     ;;
 --rollback)
     rollback
+    exit 0
+    ;;
+--rollback-good)
+    rollback good
+    exit 0
+    ;;
+--mark-good)
+    mark_good
     exit 0
     ;;
 --status)

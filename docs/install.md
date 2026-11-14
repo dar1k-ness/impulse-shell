@@ -7,6 +7,8 @@ NOBUILD=1 tools/install.sh    # install the existing build (the one in Cargo's t
 BIN=<file> tools/install.sh   # install an rusty-impulse built elsewhere
 tools/install.sh --rollback   # back to the release the last install replaced
 tools/install.sh --status     # the current and the previous release, and the rusty-impulse config
+tools/install.sh --mark-good  # the current release has proved good: kept until another one is marked
+tools/install.sh --rollback-good  # back to the release marked good
 tools/install.sh --uninstall
 ```
 
@@ -40,6 +42,14 @@ tools/install.sh --uninstall
   leads out of the config, or names an absolute path, comes back as the file it led to.
 - Installing the same binary again with another QML tree replaces the current release; the
   previous one stays the release to roll back to.
+- Two installs in a row leave the last two releases: `--rollback` then goes to the one the
+  first of them made, and the release that ran before both is gone. A release that has
+  proved good is therefore marked (`--mark-good`; `SHA256=<hex>` marks it only if that is its
+  binary): it is kept beside the current and the previous one until another release is
+  marked, and `--rollback-good` switches to it the way `--rollback` switches to the previous
+  one. The release switched from becomes the previous one. `tools/pc/rollback-watch` marks
+  the release that runs once its shell has run half an hour, and goes back to the marked
+  release first when a later one goes away.
 - `--rollback` switches to the previous release. If the two releases' trees differ, or that
   binary does not run the rusty-impulse config as it is now, the release's tree is put in the config's
   place; a config edited since its install is kept as for an install. A second `--rollback`

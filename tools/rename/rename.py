@@ -43,6 +43,7 @@ SKIP = (
     "tools/pc/",
     "crates/shell/tests/carry_over_dots.rs",  # the old commands the carry-over rewrites
     "crates/shell/tests/pc_switch_keyring",  # the old build's keyring item and launchers, as switch finds them
+    "crates/shell/tests/pc_rollback_watch",  # the old build the watch puts back, as switch finds it
     # a window the comparison gives to both shells, in the original's words (scenes.sh)
     "tools/parity/probe_qtr.qml",
 )
