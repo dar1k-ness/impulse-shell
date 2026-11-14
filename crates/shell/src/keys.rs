@@ -2235,6 +2235,8 @@ mod paste_tests {
     #[test]
     fn paste_inserts_the_full_text_once_the_owner_closes() {
         use std::io::Write;
+        // The cursor is written after creation: as literals beside `text` Qt 6.12 leaves it at
+        // the end (TextField) or at 0 (TextArea), fixture `text_cursor_literals.qml`.
         let (mut rt, mut kb, root, f) = field("TextField", "text: \"<>\"");
         rt.set(f, "cursorPosition", Value::Num(1.0));
         let (mut ev, read, mut w) = ctrl_v_reading(&mut rt, &mut kb);

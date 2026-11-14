@@ -1332,7 +1332,7 @@ fn write_lock(f: &std::fs::File, path: &Path) {
 fn console_sink(level: u8, line: &str) {
     let ty = match level {
         1 => Level::Info,
-        2 => Level::Warn,
+        2 | qml::builtins::QML_WARNING => Level::Warn,
         3 => Level::Critical,
         _ => Level::Debug,
     };

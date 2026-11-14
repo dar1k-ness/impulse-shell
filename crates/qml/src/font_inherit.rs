@@ -148,7 +148,7 @@ impl World {
         let mut any = false;
         for (f, (a, b)) in scalars().zip(was.iter().zip(&now)) {
             if !a.strict_eq(b) {
-                self.notify(item, &format!("font.{f}"));
+                self.notify_field(item, &format!("font.{f}"));
                 any = true;
             }
         }
@@ -227,9 +227,9 @@ impl World {
                     {
                         follows = false;
                     } else {
-                        self.notify(d, &name);
+                        self.notify_field(d, &name);
                         for k in keys.iter().filter(|k| **k != name) {
-                            self.notify(d, k);
+                            self.notify_field(d, k);
                         }
                         if !told.contains(&d) {
                             told.push(d);

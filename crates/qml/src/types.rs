@@ -25,7 +25,8 @@ pub struct PropInfo {
     pub qproperty: bool,
     /// `ty` names an enum, looked up from the declaring class as C++ does (`Registry::load`).
     pub enumeration: bool,
-    /// Has a RESET function: writing `undefined` calls it.
+    /// The property has a RESET function: writing `undefined`, or a binding that gives it,
+    /// calls it.
     pub resettable: bool,
     /// Has a NOTIFY signal: its setter compares the value with the one it holds.
     pub notify: bool,
@@ -70,6 +71,11 @@ pub struct TypeInfo {
     pub extension: Option<String>,
     pub attached: Option<String>,
     pub default_prop: Option<String>,
+    /// Q_CLASSINFO("DeferredPropertyNames"): the properties this class sets up itself, later
+    /// than the rest of the object.
+    pub deferred: Vec<String>,
+    /// `interfaces` names QQmlParserStatus: the class has a componentComplete().
+    pub parser_status: bool,
     pub props: Vec<PropInfo>,
     pub enums: Vec<EnumInfo>,
     pub methods: Vec<String>,
@@ -253,6 +259,13 @@ fn set_field(
             "extension" => t.extension = Some(unquote(v)),
             "attachedType" => t.attached = Some(unquote(v)),
             "defaultProperty" => t.default_prop = Some(unquote(v)),
+            "interfaces" => t.parser_status = v.contains("\"QQmlParserStatus\""),
+            "deferredNames" => {
+                t.deferred = (v.trim_matches(['[', ']']).split(','))
+                    .map(|n| unquote(n.trim()))
+                    .filter(|n| !n.is_empty())
+                    .collect()
+            }
             "isSingleton" => t.singleton = v == "true",
             "isCreatable" => t.creatable = v != "false",
             "exports" => {
@@ -674,6 +687,85 @@ pub fn find_prop_in_sym(
         c.as_slice_of_cells()[slot].set((set, a, found));
     });
     found
+}
+
+/// The types of QtQuick.Controls that are QML files of the style (the `qmldir` of
+/// QtQuick.Controls.Basic, Qt 6.12), each over the QtQuick.Templates class of its name.
+const STYLE_FILES: &[&str] = &[
+    "AbstractButton",
+    "Action",
+    "ActionGroup",
+    "ApplicationWindow",
+    "BusyIndicator",
+    "Button",
+    "ButtonGroup",
+    "Calendar",
+    "CalendarModel",
+    "CheckBox",
+    "CheckDelegate",
+    "ComboBox",
+    "Container",
+    "Control",
+    "DayOfWeekRow",
+    "DelayButton",
+    "Dial",
+    "Dialog",
+    "DialogButtonBox",
+    "DoubleSpinBox",
+    "Drawer",
+    "Frame",
+    "GroupBox",
+    "HorizontalHeaderView",
+    "HorizontalHeaderViewDelegate",
+    "ItemDelegate",
+    "Label",
+    "Menu",
+    "MenuBar",
+    "MenuBarItem",
+    "MenuItem",
+    "MenuSeparator",
+    "MonthGrid",
+    "Page",
+    "PageIndicator",
+    "Pane",
+    "Popup",
+    "ProgressBar",
+    "RadioButton",
+    "RadioDelegate",
+    "RangeSlider",
+    "RoundButton",
+    "ScrollBar",
+    "ScrollIndicator",
+    "ScrollView",
+    "SearchField",
+    "SelectionRectangle",
+    "Slider",
+    "SpinBox",
+    "SplitView",
+    "StackView",
+    "SwipeDelegate",
+    "SwipeView",
+    "Switch",
+    "SwitchDelegate",
+    "TabBar",
+    "TabButton",
+    "TableViewDelegate",
+    "TextArea",
+    "TextField",
+    "ToolBar",
+    "ToolButton",
+    "ToolSeparator",
+    "ToolTip",
+    "TreeViewDelegate",
+    "Tumbler",
+    "VerticalHeaderView",
+    "VerticalHeaderViewDelegate",
+    "WeekNumberColumn",
+];
+
+/// Whether the QtQuick.Controls type `name` is a QML file of the style.
+pub fn style_file(name: &str) -> bool {
+    STYLE_FILES.binary_search(&name).is_ok()
 }
 
 /// QML `instanceof` with a type name for an object of the type list `types` (interned as
@@ -1763,14 +1855,75 @@ pub fn default_prop(types: &[crate::runtime::Sym]) -> Option<Option<&'static str
     )
 }
 
-pub fn default_component_prop(types: &[crate::runtime::Sym]) -> Option<String> {
+/// The properties an object of these types sets up itself from its componentComplete(), in
+/// the order it does: the `deferredNames` of its first C++ class that has any, a class's own
+/// before its base's (QQuickAbstractButton: `indicator`, then QQuickControl's `background`
+/// and `contentItem`). None for a class with no componentComplete() (QQuickState executes its
+/// `changes` when it is applied).
+pub fn deferred_names(types: &[crate::runtime::Sym]) -> std::rc::Rc<[String]> {
+    use std::rc::Rc;
+    thread_local! {
+        static CACHE: std::cell::RefCell<HashMap<String, Rc<[String]>>> = Default::default();
+    }
     let r = registry();
-    let d = types.iter().find_map(|t| {
-        let (_, ti) = r.resolve(t)?;
-        r.chain(&ti.cpp)
-            .into_iter()
-            .find_map(|c| c.default_prop.clone())
-    })?;
+    let Some((name, ti)) = types
+        .iter()
+        .rev()
+        .find_map(|t| r.resolve(t).map(|x| (t, x.1)))
+    else {
+        return Rc::from([]);
+    };
+    if let Some(v) = CACHE.with_borrow(|c| c.get(name.as_str()).cloned()) {
+        return v;
+    }
+    let chain = r.chain(&ti.cpp);
+    let lists: Vec<&Vec<String>> = (chain.iter())
+        .map(|c| &c.deferred)
+        .filter(|d| !d.is_empty())
+        .collect();
+    let mut names: Vec<String> = Vec::new();
+    if chain.iter().any(|c| c.parser_status) {
+        for (k, own) in lists.iter().enumerate() {
+            let base = lists.get(k + 1);
+            for n in own.iter() {
+                if lists[0].contains(n) && base.is_none_or(|b| !b.contains(n)) && !names.contains(n)
+                {
+                    names.push(n.clone());
+                }
+            }
+        }
+    }
+    let v: Rc<[String]> = names.into();
+    CACHE.with_borrow_mut(|c| c.insert(name.to_string(), v.clone()));
+    v
+}
+
+/// Whether any class defers a property of this name.
+pub fn deferred_name(name: &str) -> bool {
+    static NAMES: std::sync::OnceLock<rustc_hash::FxHashSet<String>> = std::sync::OnceLock::new();
+    NAMES
+        .get_or_init(|| {
+            (registry().by_cpp.values())
+                .flat_map(|t| t.deferred.iter().cloned())
+                .collect()
+        })
+        .contains(name)
+}
+
+/// Whether any class has a default property of this name.
+pub fn default_name(name: &str) -> bool {
+    static NAMES: std::sync::OnceLock<rustc_hash::FxHashSet<String>> = std::sync::OnceLock::new();
+    NAMES
+        .get_or_init(|| {
+            (registry().by_cpp.values())
+                .filter_map(|t| t.default_prop.clone())
+                .collect()
+        })
+        .contains(name)
+}
+
+pub fn default_component_prop(types: &[crate::runtime::Sym]) -> Option<String> {
+    let d = default_prop(types)??.to_string();
     find_prop(types, &d)
         .is_some_and(|p| p.ty == "QQmlComponent*")
         .then_some(d)

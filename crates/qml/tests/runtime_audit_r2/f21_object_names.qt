@@ -1,0 +1,29 @@
+root QQuickItem_QML_N(0x, "rt")
+plain QQuickItem(0x) QQuickItem(0x) QQuickItem(0x) QQuickItem(0x)
+named QQuickItem(0x, "nm")
+own QQuickItem_QML_N(0x) false true
+sig QQuickRectangle_QML_N(0x)
+fn QQuickText_QML_N(0x)
+qo QObject(0x) QObject_QML_N(0x)
+bt Button_QMLTYPE_N(0x) Button_QMLTYPE_N(0x, "b2") Button_QMLTYPE_N_QML_N(0x) true false
+ic Ic(0x) Ic_QML_N(0x) Bare(0x)
+tm QQmlTimer(0x) QQmlListModel(0x) QQmlComponent(0x) QQuickRepeater(0x) QQuickItem(0x, "dl")
+rp QQuickItem_QML_N(0x) true false
+cp QQuickItem(0x) QQuickItem_QML_N(0x) true
+anchors null QQuickAnchors(0x) QQuickItem(0x)
+controls ButtonGroup_QMLTYPE_N(0x) Action_QMLTYPE_N(0x) Control_QMLTYPE_N(0x) Label_QMLTYPE_N(0x) Popup_QMLTYPE_N(0x)
+templates QQuickButton(0x) QQuickLabel(0x) TextField_QMLTYPE_N(0x) ScrollView_QMLTYPE_N(0x) StackView_QMLTYPE_N(0x)
+more AbstractButton_QMLTYPE_N(0x) Container_QMLTYPE_N(0x) QQuickRowLayout(0x) QQuickListView(0x)
+members QQuickRectangle_QML_N(0x) QQuickRectangle_QML_N(0x) QQuickItem_QML_N(0x) QQuickItem_QML_N(0x) QQuickItem_QML_N(0x) QQuickItem(0x) QQuickItem_QML_N(0x)
+toString QQuickItem_QML_N(0x) QQuickItem_QML_N(0x) QQuickItem_QML_N(0x)
+file F21Plain_QMLTYPE_N(0x) F21Plain_QMLTYPE_N(0x, "second") F21Plain_QMLTYPE_N_QML_N(0x) true false
+file own F21Own_QMLTYPE_N(0x) F21Own_QMLTYPE_N(0x) F21Derived_QMLTYPE_N(0x) F21Derived_QMLTYPE_N(0x) false
+loader QQuickItem(0x) QQuickItem_QML_N(0x) F21Plain_QMLTYPE_N(0x) true QQuickItem_QML_N(0x)
+made F21Own_QMLTYPE_N(0x) true QQuickItem_QML_N(0x) QQuickItem(0x)
+json {"objectName":"","k":0} {"a":{"objectName":""}}
+is true false object [object V4QObjectWrapper]
+eq true true true true true
+key Label_QMLTYPE_N(0x) 1 true 2 true
+ops true true true true
+concat true true function false
+array QQuickItem(0x),QObject(0x),QQuickItem(0x, "nm") Button_QMLTYPE_N(0x, "b2"),,,1

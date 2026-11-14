@@ -628,12 +628,15 @@ fn rail_intrusions(win: &Win) -> Vec<String> {
         let Some(r) = window_rect(&mut w, win.root, i) else {
             continue;
         };
-        // A transparent indicator (a tab neither current nor hovered) draws nothing.
+        // A transparent indicator (a tab neither current nor hovered) draws nothing: its border
+        // has the width of 1 Qt gives it, and no pen until a width or a colour is set
+        // (QQuickPen::isValid).
         let clear = is(&w, i, "Rectangle")
             && w.read(i, "color")
                 .is_some_and(|c| qml::builtins::to_color(&c).a == 0)
-            && w.read(i, "border.width")
-                .is_none_or(|b| b.to_number() == 0.0);
+            && (!w.items[i].props.contains_key("\x01pen")
+                || w.read(i, "border.width")
+                    .is_none_or(|b| b.to_number() == 0.0));
         if !clear && (r[0] < 0.0 || r[0] + r[2] > pane_left) {
             let text = w
                 .read(i, "text")

@@ -16,6 +16,9 @@ Item {
     property var field: field
     property var box: box
     onGoChanged: field.insert(field.cursorPosition, "\n")
+    // Written here, not beside `text`: there Qt 6.12 leaves a TextArea's cursor at 0
+    // (fixture `text_cursor_literals.qml`).
+    Component.onCompleted: field.cursorPosition = 1
     Rectangle {
         id: box
         width: 400

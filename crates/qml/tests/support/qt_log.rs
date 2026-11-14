@@ -121,8 +121,14 @@ pub fn our_log_and_errors(file: &Path) -> (Vec<String>, Vec<String>) {
 /// documents under it have `qs:` urls, as in a shell; with none they have `file:` urls, as
 /// in the Qt [`qt_log`] runs.
 pub fn our_log_and_errors_in(file: &Path, shell: Option<&Path>) -> (Vec<String>, Vec<String>) {
-    qml::builtins::CONSOLE_SINK
-        .get_or_init(|| |_, line| CONSOLE.with_borrow_mut(|c| c.push(line.to_owned())));
+    qml::builtins::CONSOLE_SINK.get_or_init(|| {
+        |level, line| {
+            // A qmlWarning line is no `console.*` line: [`qt_log`] does not have it either.
+            if level != qml::builtins::QML_WARNING {
+                CONSOLE.with_borrow_mut(|c| c.push(line.to_owned()))
+            }
+        }
+    });
     CONSOLE.with_borrow_mut(Vec::clear);
     let mut rt = Runtime::new(shell.map(Path::to_path_buf));
     rt.load_file(file).unwrap();

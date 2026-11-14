@@ -3581,7 +3581,7 @@ impl Interp {
     /// GetValue stores the property key back into the reference, so `o[k] += v` runs
     /// ToPropertyKey once, before `v`.
     pub fn convert_key(&mut self, base: &Value, k: &mut Value) -> R<()> {
-        if let Value::Obj(_) = k {
+        if let Value::Obj(_) | Value::Item(_) = k {
             *k = self.reference_key(base, k)?.to_value();
         }
         Ok(())
@@ -3601,7 +3601,7 @@ impl Interp {
     pub fn get_key(&mut self, v: &Value, k: &Value) -> R<Value> {
         match k {
             Value::Symbol(s) => self.get_sym(v, s),
-            Value::Obj(_) => {
+            Value::Obj(_) | Value::Item(_) => {
                 let k = self.reference_key(v, k)?;
                 self.get_pk(v, &k)
             }
@@ -3676,7 +3676,7 @@ impl Interp {
         }
         match k {
             Value::Symbol(s) => self.put_sym(v, s, val),
-            Value::Obj(_) => {
+            Value::Obj(_) | Value::Item(_) => {
                 let k = self.reference_key(v, k)?;
                 self.put_pk(v, &k, val)
             }
@@ -6602,13 +6602,20 @@ impl Interp {
             let p = self.to_primitive(v, Hint::String)?;
             return self.to_string(&p);
         }
-        // A QML object converts by its `toString`: `QQuickItem(0x...)`.
-        if let Value::Item(i) = v
-            && let Some(r) = self.host_call(*i, "toString", &[])
-        {
-            let r = r?;
-            if !matches!(r, Value::Obj(_) | Value::Item(_) | Value::Undefined) {
-                return self.to_string(&r);
+        if let Value::Item(_) = v {
+            // QV4::QObjectWrapper: the object's `toString`, Qt's `Class(0x…)` unless its QML
+            // declares one.
+            if let Value::Item(i) = v
+                && let Some(s) = self.host_call(*i, "toString", &[])
+            {
+                return Ok(s?.to_js_string());
+            }
+            let f = self.get(v, "toString")?;
+            if callable(&f).is_some() {
+                let s = self.call(&f, v.clone(), &[])?;
+                if !matches!(s, Value::Obj(_) | Value::Item(_) | Value::Native(_)) {
+                    return self.to_string(&s);
+                }
             }
         }
         if let Value::Item(i) = v

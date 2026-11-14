@@ -266,6 +266,7 @@ pub struct Tables {
     pub behaviors: Vec<(DKey, usize)>,
     pub deferred: Vec<(usize, Vec<DKey>)>,
     pub lazy_anims: Vec<(usize, crate::runtime::LazyAnim)>,
+    pub deferred_rows: Vec<(usize, Vec<crate::runtime::DeferredRow>)>,
     pub lazy_ready: Vec<usize>,
     /// Items whose `layer.enabled` or `layer.effect` was written (`World::layer_ready`): each
     /// instance gets its own effect.
@@ -371,6 +372,12 @@ pub fn tables(w: &World, p: &Pre, n0: usize, c0: usize) -> Tables {
             .collect(),
         lazy_anims: w
             .lazy_anims
+            .iter()
+            .filter(|(k, _)| ri(k))
+            .map(|(k, v)| (*k, v.clone()))
+            .collect(),
+        deferred_rows: w
+            .deferred_rows
             .iter()
             .filter(|(k, _)| ri(k))
             .map(|(k, v)| (*k, v.clone()))
@@ -586,6 +593,13 @@ pub fn replay(w: &mut World, plan: &Plan, t: &Tables, parent: Option<usize>, k0:
         a.ctx = m.ctx(a.ctx);
         w.lazy_anims.insert(m.item(*k), a);
     }
+    for (k, rows) in &t.deferred_rows {
+        let mut rows = rows.clone();
+        for r in &mut rows {
+            r.ctx = m.ctx(r.ctx);
+        }
+        w.deferred_rows.insert(m.item(*k), rows);
+    }
     w.lazy_ready.extend(t.lazy_ready.iter().map(|&k| m.item(k)));
     w.layer_ready
         .extend(t.layer_ready.iter().map(|&k| m.item(k)));
@@ -684,7 +698,11 @@ pub fn check(a: &Plan, ta: &Tables, b: &Plan, tb: &Tables) -> Vec<String> {
         if x.2.iter().map(|&c| m.item(c)).collect::<Vec<_>>() != y.2 {
             d.push(format!("{i} {ty} children"));
         }
-        if x.5 != y.5 || x.6.0.map(|l| l.as_ptr()) != y.6.0.map(|l| l.as_ptr()) || x.6.1 != y.6.1 {
+        if x.5 != y.5
+            || x.6.0.map(|l| l.as_ptr()) != y.6.0.map(|l| l.as_ptr())
+            || x.6.1 != y.6.1
+            || x.8 != y.8
+        {
             d.push(format!("{i} {ty} proxy/layout"));
         }
         let hs = |h: &HashMap<Sym, Vec<Code>>, m: &Map| {

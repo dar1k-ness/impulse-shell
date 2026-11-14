@@ -1,0 +1,8 @@
+g: false true false checkedButton b 3
+g toggle: false false true
+g uncheck: false false false Button_QMLTYPE_4(0x…) 0
+g2: false true true
+g2 nonexcl: true false
+radio: false true
+radio none: false false
+autoexcl: false true

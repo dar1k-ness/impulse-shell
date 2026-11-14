@@ -52,6 +52,8 @@ pub struct Classes {
     of: HashMap<NodeId, Class>,
     /// The class name of the objects made from a declaration with a class of its own.
     names: HashMap<NodeId, &'static str>,
+    /// The class names of the style's controls ([`Classes::style`]).
+    styles: HashMap<&'static str, &'static str>,
 }
 
 fn leak(s: String) -> &'static str {
@@ -177,6 +179,14 @@ impl Classes {
                 self.object(o, None);
             }
         }
+    }
+
+    /// The class of the style's control `file` (`Button` of the style's `Button.qml`):
+    /// `Button_QMLTYPE_<n>`. Qt numbers it as its type loader finishes the file; here the
+    /// controls are numbered among themselves, as their first object is made.
+    pub fn style(&mut self, file: &'static str) -> &'static str {
+        let n = self.styles.len();
+        (self.styles.entry(file)).or_insert_with(|| leak(format!("{file}_QMLTYPE_{n}")))
     }
 
     /// The class of an object made from `decl`, whose class is `base` without the

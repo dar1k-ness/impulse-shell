@@ -1,0 +1,111 @@
+  a.text "hello world" c0 s0-0 "" len11
+  e.length "hello world" c0 s0-0 "" len11
+  e.text "hello world" c0 s0-0 "" len11
+select 2,8
+  e.selText "hello world" c8 s2-8 "llo wo" len11
+  e.selStart "hello world" c8 s2-8 "llo wo" len11
+  e.selEnd "hello world" c8 s2-8 "llo wo" len11
+  e.cursor "hello world" c8 s2-8 "llo wo" len11
+set abc
+  e.selText "hello world" c-1 s-1--1 "" len3
+  e.selStart "hello world" c-1 s-1--1 "" len3
+  e.selEnd "hello world" c-1 s-1--1 "" len3
+  e.length "abc" c0 s0-0 "" len3
+  e.text "abc" c0 s0-0 "" len3
+  e.selStart "abc" c0 s0-0 "" len3
+  e.selEnd "abc" c0 s0-0 "" len3
+  e.cursor "abc" c0 s0-0 "" len3
+= "abc" c0 s0-0 "" len3
+select 3,0
+  e.selText "abc" c0 s0-3 "abc" len3
+  e.selEnd "abc" c0 s0-3 "abc" len3
+set longer
+  e.selText "abc" c-1 s-1--1 "" len8
+  e.selStart "abc" c-1 s-1--1 "" len8
+  e.selEnd "abc" c-1 s-1--1 "" len8
+  e.length "abcdefgh" c0 s0-0 "" len8
+  e.text "abcdefgh" c0 s0-0 "" len8
+= "abcdefgh" c0 s0-0 "" len8
+select 0,3
+  e.selText "abcdefgh" c3 s0-3 "abc" len8
+  e.selStart "abcdefgh" c3 s0-3 "abc" len8
+  e.selEnd "abcdefgh" c3 s0-3 "abc" len8
+  e.cursor "abcdefgh" c3 s0-3 "abc" len8
+set same
+= "abcdefgh" c3 s0-3 "abc" len8
+select 1,3
+  e.selText "abcdefgh" c3 s1-3 "bc" len8
+  e.selStart "abcdefgh" c3 s1-3 "bc" len8
+set empty
+  e.selText "abcdefgh" c0 s0-0 "" len0
+  e.selStart "abcdefgh" c0 s0-0 "" len0
+  e.selEnd "abcdefgh" c0 s0-0 "" len0
+  e.cursor "abcdefgh" c0 s0-0 "" len0
+  e.length "" c0 s0-0 "" len0
+  e.text "" c0 s0-0 "" len0
+  e.cursor "" c0 s0-0 "" len0
+= "" c0 s0-0 "" len0
+  e.length "one two" c0 s0-0 "" len7
+  e.text "one two" c0 s0-0 "" len7
+selectAll
+  e.selText "one two" c7 s0-7 "one two" len7
+  e.selEnd "one two" c7 s0-7 "one two" len7
+clear
+  e.selEnd "one two" c0 s0-0 "" len0
+  e.cursor "one two" c0 s0-0 "" len0
+  e.selText "one two" c0 s0-0 "" len0
+  e.length "" c0 s0-0 "" len0
+  e.text "" c0 s0-0 "" len0
+= "" c0 s0-0 "" len0
+  e.length "one two" c0 s0-0 "" len7
+  e.text "one two" c0 s0-0 "" len7
+select 2,4
+  e.selText "one two" c4 s2-4 "e " len7
+  e.selStart "one two" c4 s2-4 "e " len7
+  e.selEnd "one two" c4 s2-4 "e " len7
+  e.cursor "one two" c4 s2-4 "e " len7
+set same length
+  e.selText "one two" c-1 s-1--1 "" len7
+  e.selStart "one two" c-1 s-1--1 "" len7
+  e.selEnd "one two" c-1 s-1--1 "" len7
+  e.length "ONE TWO" c0 s0-0 "" len7
+  e.text "ONE TWO" c0 s0-0 "" len7
+  e.selStart "ONE TWO" c0 s0-0 "" len7
+  e.selEnd "ONE TWO" c0 s0-0 "" len7
+  e.cursor "ONE TWO" c0 s0-0 "" len7
+= "ONE TWO" c0 s0-0 "" len7
+cursor 3
+  e.selStart "ONE TWO" c3 s3-3 "" len7
+  e.selEnd "ONE TWO" c3 s3-3 "" len7
+  e.cursor "ONE TWO" c3 s3-3 "" len7
+set, no selection
+  e.length "q" c0 s0-0 "" len1
+  e.text "q" c0 s0-0 "" len1
+  e.selStart "q" c0 s0-0 "" len1
+  e.selEnd "q" c0 s0-0 "" len1
+  e.cursor "q" c0 s0-0 "" len1
+= "q" c0 s0-0 "" len1
+a select 2,8
+  a.selText "hello world" c8 s2-8 "llo wo" len11
+  a.selStart "hello world" c8 s2-8 "llo wo" len11
+  a.selEnd "hello world" c8 s2-8 "llo wo" len11
+  a.cursor "hello world" c8 s2-8 "llo wo" len11
+a set abc
+  a.selText "hello world" c-1 s-1--1 "" len3
+  a.selStart "hello world" c-1 s-1--1 "" len3
+  a.selEnd "hello world" c-1 s-1--1 "" len3
+  a.text "abc" c0 s0-0 "" len3
+  a.selStart "abc" c0 s0-0 "" len3
+  a.selEnd "abc" c0 s0-0 "" len3
+  a.cursor "abc" c0 s0-0 "" len3
+= "abc" c0 s0-0 "" len3
+a selectAll
+  a.selText "abc" c3 s0-3 "abc" len3
+  a.selEnd "abc" c3 s0-3 "abc" len3
+a set empty
+  a.selText "abc" c0 s0-0 "" len0
+  a.selEnd "abc" c0 s0-0 "" len0
+  a.cursor "abc" c0 s0-0 "" len0
+  a.text "" c0 s0-0 "" len0
+  a.cursor "" c0 s0-0 "" len0
+= "" c0 s0-0 "" len0

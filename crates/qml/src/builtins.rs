@@ -16,6 +16,10 @@ use std::{cell::RefCell, rc::Rc};
 /// level (0 debug, 1 info, 2 warning, 3 critical) and the joined line.
 pub static CONSOLE_SINK: std::sync::OnceLock<fn(u8, &str)> = std::sync::OnceLock::new();
 
+/// The [`CONSOLE_SINK`] level of a `qmlWarning` line: a warning that is no `console.*` call
+/// (Qt gives it the message category `default`, not `qml`).
+pub const QML_WARNING: u8 = 4;
+
 /// ToString of a `console` argument that cannot throw (V4's `Value::toQStringNoThrow`): what
 /// the conversion threw is printed in the argument's place, and nothing when that throws too.
 /// A Symbol prints its description.

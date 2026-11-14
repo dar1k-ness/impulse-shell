@@ -48,6 +48,41 @@ fn same_as_qt(name: &str) {
     assert_eq!(errors, Vec::<String>::new(), "{name}");
 }
 
+/// `line` without what differs from one run of Qt to the next: the address of an object
+/// (`0x…`) and the number of a class made for a QML declaration (`Button_QMLTYPE_4`).
+fn without_addresses(line: &str) -> String {
+    let mut out = String::new();
+    let mut rest = line;
+    let digits = |s: &str, hex: bool| {
+        s.find(|c: char| !(c.is_ascii_digit() || hex && matches!(c, 'a'..='f' | '…')))
+            .unwrap_or(s.len())
+    };
+    while let Some((at, mark)) = ["0x", "_QMLTYPE_", "_QML_"]
+        .iter()
+        .filter_map(|m| rest.find(m).map(|at| (at, *m)))
+        .min()
+    {
+        let tail = &rest[at + mark.len()..];
+        out.push_str(&rest[..at + mark.len()]);
+        out.push('N');
+        rest = &tail[digits(tail, mark == "0x")..];
+    }
+    out + rest
+}
+
+/// [`same_as_qt`] for a fixture that prints objects.
+fn same_shape_as_qt(name: &str) {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/runtime_audit_r2");
+    let qt = std::fs::read_to_string(dir.join(format!("{name}.qt"))).unwrap();
+    let (out, errors) = run(name);
+    assert_eq!(
+        without_addresses(&out),
+        without_addresses(qt.trim_end_matches('\n')),
+        "{name}"
+    );
+    assert_eq!(errors, Vec::<String>::new(), "{name}");
+}
+
 #[test]
 fn r2_1_text_write_resets_the_cursor_and_selection_of_a_text_edit() {
     same_as_qt("s26b_textarea");
@@ -239,4 +274,36 @@ fn s50_the_border_of_a_rectangle_is_one_pixel_wide_by_default() {
 #[test]
 fn s19c_an_alias_to_a_group_field_reads_the_default_of_the_group() {
     same_as_qt("s19c_alias");
+}
+
+/// QQuickTextControlPrivate::setContent: while the document takes a new text the control has
+/// no cursor, so a selection ends with `selectionStart` / `selectionEnd` -1; an empty text
+/// clears the document instead. QQuickTextEdit reports the ends it last reported.
+#[test]
+fn f01_a_text_edit_given_a_text_drops_its_selection_as_qt_does() {
+    same_as_qt("f01_textedit_assign");
+    same_as_qt("f01_textedit_seen");
+}
+
+/// An object converts to a string as QV4::QObjectWrapper's `toString` writes it: the name of
+/// its class, its address and its objectName when it has one. The class is the C++ class of
+/// the type, `Name_QMLTYPE_n` for a type that is a QML file (the controls of the style too),
+/// the name of an inline component, and `Class_QML_n` for a declaration that adds a property,
+/// signal, function, enum or `on` assignment to its type.
+#[test]
+fn s21_an_object_prints_as_the_class_qt_makes_for_it() {
+    assert_eq!(
+        without_addresses("a Button_QMLTYPE_4(0x55d0c8…, \"b\") X_QML_12(0x1f) 0"),
+        "a Button_QMLTYPE_N(0xN, \"b\") X_QML_N(0xN) 0"
+    );
+    same_shape_as_qt("s21_group");
+    same_as_qt("f21_object_names");
+}
+
+/// QDoubleValidator starts with ScientificNotation, any number of decimals and no range,
+/// QIntValidator with the range of int: `top` and `bottom` of a validator are its own
+/// properties, not anchor lines.
+#[test]
+fn s23_a_double_validator_takes_scientific_notation_by_default() {
+    same_as_qt("f23_double_validator");
 }

@@ -2260,12 +2260,12 @@ fn custom_background(w: &mut World, i: usize) -> Option<usize> {
     }
 }
 
-/// An editor's background painted below its text: QQuickControl gives a background at z 0 z -1.
+/// An editor's background painted below its text: its setter has put it at z -1.
 fn edit_background(w: &mut World, i: usize) -> Option<usize> {
     if !is_text_edit(w, i) {
         return None;
     }
-    custom_background(w, i).filter(|&b| num(w, b, "z") == 0.0)
+    custom_background(w, i).filter(|&b| num(w, b, "z") < 0.0)
 }
 
 thread_local! {

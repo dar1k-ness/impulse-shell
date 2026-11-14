@@ -43,7 +43,7 @@ fn spec(w: &mut World, v: &Value) -> Option<V> {
             } else if has("DoubleValidator") {
                 let b = num(w, i, "bottom", f64::NEG_INFINITY);
                 let t = num(w, i, "top", f64::INFINITY);
-                let d = num(w, i, "decimals", 1000.0) as i64;
+                let d = num(w, i, "decimals", -1.0) as i64;
                 let m = if num(w, i, "notation", 1.0) as i64 == 0 {
                     Mode::Standard
                 } else {
@@ -223,9 +223,14 @@ fn double(s: &str, b: f64, t: f64, dec: i64, m: Mode) -> u8 {
         Ok(x) => x,
         Err(st) => return st,
     };
-    // QLocale::toDouble always parses scientific notation.
+    // QLocale::toDouble always parses scientific notation, and fails on a number too large
+    // or too small for a double.
+    let underflow = |i: f64| {
+        let mantissa = buff.split('e').next().unwrap_or("");
+        i == 0.0 && mantissa.chars().any(|c| matches!(c, '1'..='9'))
+    };
     let i = match buff.parse::<f64>() {
-        Ok(i) if grouping_ok(s) && i.is_finite() => i,
+        Ok(i) if grouping_ok(s) && i.is_finite() && !underflow(i) => i,
         _ => return INTERMEDIATE,
     };
     if i >= b && i <= t {

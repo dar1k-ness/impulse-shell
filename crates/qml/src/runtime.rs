@@ -2249,6 +2249,22 @@ pub struct LazyAnim {
     depth: usize,
 }
 
+/// A binding to a deferred property (`types::deferred_names`) as its document wrote it.
+pub struct DeferredDecl {
+    name: String,
+    value: crate::Value,
+    file: Option<PathBuf>,
+}
+
+/// A deferred binding of one object, kept until the object executes it.
+#[derive(Clone)]
+pub struct DeferredRow {
+    decl: Rc<DeferredDecl>,
+    pub(crate) ctx: usize,
+    vis: VisRc,
+    depth: usize,
+}
+
 /// A directory and its imports (`World::vis_shared`).
 type ImportsKey = (Option<PathBuf>, Vec<(String, Option<String>)>);
 fn release_hold(holds: &mut HashMap<usize, u32>, x: usize) {
@@ -2382,8 +2398,9 @@ pub struct World {
     pub exiting: bool,
     /// Pending `forceActiveFocus()` target, taken by the shell's keyboard delivery.
     pub focus_req: Option<usize>,
-    /// The item whose literal `focus` is being stored while it is populated (`focus_asked`).
-    focus_literal: Option<usize>,
+    /// The literal being stored while its object is populated: a `focus` is `focus_asked`,
+    /// and a value of a PropertyChanges does not wait for its `target`.
+    storing_literal: Option<DKey>,
     /// Window (item) holding the keyboard, set by the shell's keyboard delivery.
     pub kbd_win: Option<usize>,
     /// Active focus item and the items holding `activeFocus` with it (it and its focused
@@ -2810,10 +2827,6 @@ pub struct World {
     pub(crate) image_loading: HashSet<usize>,
     /// A shell lays this world out: it loads every picture, as it measures the Image.
     pub image_shell: bool,
-    /// Value type properties whose queued change signal is the one of the write that stores
-    /// what their object sets of them. Qt connects an alias to its target after that write,
-    /// so it is not told of it.
-    pub(crate) populated: HashSet<DKey>,
     /// Images whose setSourceSize has emitted and has yet to load, each with the cause of the
     /// write: load() runs once the signal's handlers and bindings have.
     image_loads: Vec<(usize, Cause)>,
@@ -3244,6 +3257,10 @@ pub struct World {
     pub alias_pending: Vec<usize>,
     /// Alias target property -> the aliases (owner, name) that notify with it.
     pub alias_rev: HashMap<DKey, Vec<(usize, Sym)>>,
+    /// The value type property whose group of bindings is being populated, and whether one of
+    /// them changed it: QQmlObjectCreator reads the value, sets its properties and writes it
+    /// back once.
+    group_write: Option<(DKey, bool)>,
     /// `required` properties of the objects being created, in declaration order.
     pub required: Vec<Required>,
     /// Loaded `.pragma library` JS resources by canonical path.
@@ -3290,6 +3307,16 @@ pub struct World {
     /// Animation children of such Behaviors, not created at all until `enabled` first turns
     /// true (StyledText's `Behavior on text` mostly stays off): Behavior id -> how to create them.
     pub lazy_anims: HashMap<usize, LazyAnim>,
+    /// The bindings to deferred properties (QQmlData::deferredData) an object has not executed
+    /// yet: it does from its componentComplete(), or when the property is first read.
+    pub deferred_rows: HashMap<usize, Vec<DeferredRow>>,
+    /// The deferred properties a read executed before their object completed, each with the
+    /// objects whose Component.onCompleted waits for that completion.
+    deferred_begun: HashMap<usize, Vec<(String, Vec<usize>)>>,
+    /// The deferred property a script read has met.
+    pending_deferred: Option<DKey>,
+    /// How many deferred properties were executed.
+    deferred_runs: u64,
     /// Lazy Behaviors enabled since the engine last created their animations.
     pub lazy_ready: Vec<usize>,
     /// LazyLoaders loading in the background (`loading: true`): the next turn of the loop
@@ -3380,6 +3407,15 @@ pub struct World {
     /// value, stored). A stored one is already the property's value and is put back while its
     /// handler runs, because a later step of the same write replaced it.
     text_pending: Vec<(usize, Sym, Value, bool)>,
+    /// QQuickTextEdit::setText: what the editor's getters return from the first handler of
+    /// one of its signals on: (item, the signal's property, values, the document's length
+    /// while `text` is the cached old one). The old text stays cached until textChanged, and
+    /// QQuickTextControl has no cursor while the document takes the text.
+    text_stage: Vec<TextStage>,
+    /// QQuickTextEditPrivate::lastSelectionStart / lastSelectionEnd of a TextEdit while they
+    /// are not what `selectionStart` / `selectionEnd` read: updateSelection runs only on a
+    /// cursor or selection signal of the control.
+    text_sel_seen: HashMap<usize, (i64, i64)>,
     /// In-flight XMLHttpRequests. Dropping an entry stops its request.
     pub xhr: Vec<crate::xhr::Pending>,
     /// Objects whose `destroy()` was called; Qt deletes them once control returns to the event loop.
@@ -3558,6 +3594,8 @@ pub type LayoutViewSynced = Shown<
         crate::desktop_container::Guests,
     ),
 >;
+
+type TextStage = (usize, Sym, Vec<(&'static str, Value)>, Option<usize>);
 
 /// The script methods of QQuickTextInput and QQuickTextEdit that move the selection or change
 /// the text. Arguments are C++ `int`s; positions are UTF-16 code units.
@@ -4093,12 +4131,16 @@ impl World {
             let moved = cursor != c0 || op == (TextOp::Cut { at_cursor: true });
             // QQuickTextEdit::updateSelection runs on each control signal; only the first differs.
             let mut upd = Some(());
+            let (es, ee) = match self.text_sel_seen.get(&item) {
+                Some(&seen) => seen,
+                None => (ls as i64, le as i64),
+            };
             let mut update = |out: &mut TextSteps| {
                 if upd.take().is_some() {
-                    if ls != ns {
+                    if es != ns as i64 {
                         out.push(("selectionStart", n(ns)));
                     }
-                    if le != ne {
+                    if ee != ne as i64 {
                         out.push(("selectionEnd", n(ne)));
                     }
                 }
@@ -4124,6 +4166,9 @@ impl World {
                         out.push(("cursorPosition", n(cursor)));
                     }
                 }
+            }
+            if upd.is_none() {
+                self.text_sel_seen.remove(&item);
             }
             if edited {
                 out.push(("text", Value::from_utf16(text)));
@@ -4268,6 +4313,9 @@ impl World {
     /// Stores the deferred values `text_steps` reads (the selection). With `all`, every value
     /// whose change was never dispatched (e.g. during creation).
     fn flush_text_pending_of(&mut self, all: bool) {
+        for (item, _, values, len) in std::mem::take(&mut self.text_stage) {
+            self.text_stage_store(item, values, len);
+        }
         let (kept, pending): (Vec<_>, Vec<_>) = std::mem::take(&mut self.text_pending)
             .into_iter()
             .partition(|p| !all && p.3);
@@ -4290,6 +4338,120 @@ impl World {
         {
             let (_, _, v, stored) = self.text_pending.remove(k);
             self.text_restore(item, key.1, v, stored);
+        }
+    }
+
+    fn apply_text_stage(&mut self, item: usize, name: &str) {
+        let key = (item, Sym::new(name));
+        if let Some(k) = self.text_stage.iter().position(|s| (s.0, s.1) == key) {
+            let (_, _, values, len) = self.text_stage.remove(k);
+            self.text_stage_store(item, values, len);
+        }
+    }
+
+    fn text_stage_store(
+        &mut self,
+        item: usize,
+        values: Vec<(&'static str, Value)>,
+        len: Option<usize>,
+    ) {
+        for (name, v) in values {
+            self.text_restore(item, Sym::new(name), v, true);
+        }
+        match len {
+            Some(n) => self.text_read.insert(item, Some(n)),
+            None => self.text_read.remove(&item),
+        };
+    }
+
+    /// QQuickTextEdit::setText of a complete editor whose text was `old`, after the new text
+    /// is stored and its textChanged queued (from `mark` on). QQuickTextControlPrivate::
+    /// setContent: an empty text clears the document, which takes the cursor and the selection
+    /// to its start; any other text is loaded while the control has no cursor (every position
+    /// reads -1), then the cursor is a new one at the start. cursorPositionChanged comes last,
+    /// when the position is not the one before the call.
+    fn text_edit_assigned(&mut self, item: usize, old: Value, mark: usize) {
+        let num = |w: &mut World, k: &str| {
+            w.read(item, k)
+                .map(|v| v.to_number())
+                .filter(|x| x.is_finite())
+                .map_or(0, |x| x.max(0.0) as i64)
+        };
+        let c0 = num(self, "cursorPosition");
+        let (ls, le) = (num(self, "selectionStart"), num(self, "selectionEnd"));
+        let mut seen = self.text_sel_seen.remove(&item).unwrap_or((ls, le));
+        let new = self.read(item, "text").unwrap_or(Value::str(""));
+        let empty = new.js_str().is_none_or(|s| s.is_empty());
+        let n = |x: i64| Value::Num(x as f64);
+        let text = (item, sym!("text"));
+        let mut queued = Vec::new();
+        for k in (mark..self.changed.len()).rev() {
+            if self.changed[k].0 == text {
+                queued.push(self.changed.remove(k));
+            }
+        }
+        // QQuickTextEdit::updateSelection.
+        let update = |w: &mut World, seen: &mut (i64, i64), at: i64| {
+            if seen.0 != at {
+                w.notify(item, "selectionStart");
+            }
+            if seen.1 != at {
+                w.notify(item, "selectionEnd");
+            }
+            *seen = (at, at);
+        };
+        let mut before = vec![("text", old)];
+        let mut first = None;
+        if ls < le {
+            first = Some("selectedText");
+            self.notify(item, "selectedText");
+            update(self, &mut seen, if empty { 0 } else { -1 });
+        }
+        if empty && c0 != 0 {
+            first = first.or(Some(if seen == (0, 0) {
+                "cursorPosition"
+            } else if seen.0 != 0 {
+                "selectionStart"
+            } else {
+                "selectionEnd"
+            }));
+            update(self, &mut seen, 0);
+            self.notify(item, "cursorPosition");
+        }
+        let at = if empty { 0 } else { -1 };
+        for k in ["cursorPosition", "selectionStart", "selectionEnd"] {
+            before.push((k, n(at)));
+        }
+        before.push(("selectedText", Value::str("")));
+        for (k, v) in [
+            ("cursorPosition", n(0)),
+            ("selectionStart", n(0)),
+            ("selectionEnd", n(0)),
+            ("selectedText", Value::str("")),
+        ] {
+            self.text_quiet(item, k, v);
+        }
+        if let Some(first) = first {
+            let len = units_of(Some(&new)).len();
+            self.text_stage
+                .push((item, Sym::new(first), before, Some(len)));
+            let after = vec![
+                ("text", new),
+                ("cursorPosition", n(0)),
+                ("selectionStart", n(0)),
+                ("selectionEnd", n(0)),
+            ];
+            self.text_stage.push((item, text.1, after, None));
+        }
+        self.changed.extend(queued.into_iter().rev());
+        if c0 != 0 {
+            if !empty {
+                update(self, &mut seen, 0);
+            }
+            self.notify(item, "cursorPosition");
+        }
+        if seen != (0, 0) {
+            self.text_sel_seen.insert(item, seen);
         }
     }
 
@@ -4652,8 +4814,10 @@ impl Inst {
         if let Some(c) = self.class {
             return c.to_string();
         }
+        let r = crate::types::registry();
         match self.types.first() {
-            Some(t) => match crate::types::registry().resolve(t) {
+            // `T.Button`: the type its qualifier is in front of.
+            Some(t) => match (r.resolve(t)).or_else(|| r.resolve(t.as_str().rsplit_once('.')?.1)) {
                 Some((_, ti)) => ti.cpp.to_string(),
                 None if matches!(t.as_str(), "ListViewAttached" | "GridViewAttached") => {
                     format!("QQuick{t}")
@@ -4738,6 +4902,33 @@ pub const SCROLL_BARS: [(&str, bool); 2] = [
 
 /// Marks an object that declares `function onLengthChanged` before `function onTextChanged`.
 const LENGTH_FIRST: &str = "\x01lengthFirst";
+
+/// One member of an object where its document writes it: `m`, bound under `name` at this
+/// level (`pixelSize` for `font.pixelSize` among the bindings of `font`).
+#[derive(Clone, Copy)]
+struct Row<'a> {
+    m: &'a Member,
+    name: &'a str,
+    /// Written inside `name { … }`, not as `name.…: …`.
+    braced: bool,
+}
+
+impl<'a> Row<'a> {
+    fn of(m: &'a Member, braced: bool) -> Self {
+        let name = match m {
+            Member::Binding { name, .. } => name.as_str(),
+            _ => "",
+        };
+        Row { m, name, braced }
+    }
+}
+
+/// A row of an object's binding table: one member, or all the bindings of one attached or
+/// group property.
+enum Entry<'a> {
+    Row(Row<'a>),
+    Sub(&'a str, Vec<Row<'a>>),
+}
 
 fn is_function(v: &Value) -> bool {
     matches!(v, Value::Obj(o) if o.borrow().call.is_some())
@@ -4995,6 +5186,21 @@ fn builtin_default(inst: &Inst, name: &str) -> Option<Value> {
         // QQuickTextInputPrivate / QQuickTextEditPrivate: focusOnPress starts true, and
         // selectByMouse too since Qt 6.4.
         "activeFocusOnPress" | "selectByMouse" if is_text_editor(types) => Value::Bool(true),
+        // QIntValidator: the range of int. QDoubleValidator: any double, any number of
+        // decimals (-1), ScientificNotation. QValidator::locale: the default locale.
+        "bottom" if types.iter().any(|t| t == "IntValidator") => Value::Num(-2147483648.0),
+        "top" if types.iter().any(|t| t == "IntValidator") => Value::Num(2147483647.0),
+        "bottom" if types.iter().any(|t| t == "DoubleValidator") => Value::Num(f64::NEG_INFINITY),
+        "top" if types.iter().any(|t| t == "DoubleValidator") => Value::Num(f64::INFINITY),
+        "decimals" if types.iter().any(|t| t == "DoubleValidator") => Value::Num(-1.0),
+        "notation" if types.iter().any(|t| t == "DoubleValidator") => Value::Num(1.0),
+        "locale"
+            if types
+                .iter()
+                .any(|t| t == "IntValidator" || t == "DoubleValidator") =>
+        {
+            Value::str(&crate::builtins::system_locale_name())
+        }
         // QQuickTextInputPrivate / QQuickTextEditPrivate: hAlign starts AlignLeft.
         "horizontalAlignment" if is_text_editor(types) => Value::Num(1.0),
         // QQuickSpinBox: to 99, stepSize 1.
@@ -5884,6 +6090,9 @@ impl WriteFx {
     const MARGIN: u64 = 1 << 31;
     /// SpringAnimation.damping and mass: setters that cap or refuse a value.
     const SPRING: u64 = 1 << 34;
+    /// The `background` of a control, a text editor, a Label or a Popup: the setter puts it
+    /// under the other children.
+    const BACKGROUND: u64 = 1 << 39;
     /// Kirigami.Icon's source, size and roundToIconSize: setters that tell the icon at once
     /// (`World::icon_changed`).
     const ICON: u64 = 1 << 32;
@@ -5954,14 +6163,12 @@ impl WriteFx {
                 || name == "delegate" && is("Repeater"),
             Self::DELEG_MODEL,
         );
-        set(
-            matches!(
-                name,
-                "source" | "sourceSize" | "sourceSize.width" | "sourceSize.height"
-            ) && is("Image"),
-            Self::IMAGE_SOURCE,
-        );
+        set(name == "source" && is("Image"), Self::IMAGE_SOURCE);
         set(polish, Self::ICON_POLISH);
+        set(
+            name == "background" && inst.prop_info_sym(sym).is_some(),
+            Self::BACKGROUND,
+        );
         set(
             is("Kirigami.Icon")
                 && matches!(name, "source" | "width" | "height" | "roundToIconSize"),
@@ -6138,6 +6345,8 @@ impl WriteFx {
             ) || name == "active" && (is("Loader") || is("Instantiator"))
                 || name == "blur" && is("RectangularShadow")
                 || name == "maximumLength" && is("TextInput")
+                || matches!(name, "bottom" | "top" | "decimals" | "notation")
+                    && (is("IntValidator") || is("DoubleValidator"))
                 || matches!(name, "horizontalAlignment" | "effectiveHorizontalAlignment")
                     && is("Text"),
             Self::CPP_DEFAULT,
@@ -6776,7 +6985,9 @@ impl World {
         };
         // QObject's operator<<(QDebug): the objectName follows the address when set.
         let name = match inst.props.get("objectName").map(|p| &p.value) {
-            Some(Value::Str(n)) if !n.is_empty() => format!(", \"{n}\""),
+            Some(n @ (Value::Str(_) | Value::Str16(_))) if !n.to_js_string().is_empty() => {
+                format!(", \"{}\"", n.to_js_string())
+            }
             _ => String::new(),
         };
         format!("{class}(0x{item:x}{name})")
@@ -9483,7 +9694,7 @@ impl World {
     /// (target, property) → value of a State's PropertyChanges/AnchorChanges, and whether a
     /// binding gives it, in the order of QQuickState's action list: object by object, and of
     /// a PropertyChanges (QQuickPropertyChanges::actions) the literals, then the bindings,
-    /// each last one first (QmlIR prepends an object's bindings).
+    /// each in the order of the object's binding table ([`Eng::binding_table`]).
     fn state_changes(&mut self, s: usize) -> Vec<(Key, Value, bool)> {
         let mut out = Vec::new();
         for c in self.items[s].children.clone() {
@@ -9500,7 +9711,7 @@ impl World {
                 _ => None,
             };
             if !self.pc_names.contains_key(&c) {
-                let mut names: Vec<(bool, std::cmp::Reverse<u32>, String)> = self
+                let mut names: Vec<(bool, u32, String)> = self
                     .assigned
                     .iter()
                     .filter(|(i, n)| {
@@ -9513,11 +9724,7 @@ impl World {
                     .map(|(_, n)| {
                         let seq = self.items[c].props.get_sym(*n).map_or(0, |p| p.seq);
                         let seq = if seq >> 16 == 0 { seq } else { 0 };
-                        (
-                            seq & 0x8000 != 0,
-                            std::cmp::Reverse(seq & 0x7fff),
-                            n.to_string(),
-                        )
+                        (seq & 0x8000 != 0, seq & 0x7fff, n.to_string())
                     })
                     .collect();
                 names.sort();
@@ -10682,6 +10889,7 @@ impl World {
             menu_entries,
             text_undo,
             text_sel_rest,
+            text_sel_seen,
             text_read,
             text_pastes,
             text_replaying: _,
@@ -10744,6 +10952,10 @@ impl World {
             pc_names,
             deferred,
             lazy_anims,
+            deferred_rows,
+            deferred_begun,
+            pending_deferred: _,
+            deferred_runs: _,
             deferred_trans,
             fresh,
             settling,
@@ -10767,6 +10979,7 @@ impl World {
             assigned: _,
             group_of: _,
             alias_rev: _,
+            group_write: _,
             behaviors: _,
             // Lists retained against `dead` by `purge_dead`, or that prune dead ids themselves.
             types_by: _,
@@ -10818,7 +11031,6 @@ impl World {
             shown_at,
             image_loading,
             image_shell: _,
-            populated: _,
             image_loads,
             dispatching: _,
             polish_held: _,
@@ -10846,6 +11058,7 @@ impl World {
             incomplete: _,
             context_cleared: _,
             text_pending: _,
+            text_stage: _,
             emits: _,
             fire: _,
             smooth_carry: _,
@@ -10892,7 +11105,7 @@ impl World {
             tree_edits: _,
             // Single current references, checked against `dead` where they are read.
             focus_req: _,
-            focus_literal: _,
+            storing_literal: _,
             kbd_win: _,
             focus_active: _,
             focus_chain: _,
@@ -11203,6 +11416,7 @@ impl World {
         menu_entries.remove(&i);
         text_undo.remove(&i);
         text_sel_rest.remove(&i);
+        text_sel_seen.remove(&i);
         text_read.remove(&i);
         text_pastes.retain(|&p| p != i);
         view_passthrough.remove(&i);
@@ -11291,6 +11505,8 @@ impl World {
         pc_names.remove(&i);
         deferred.remove(&i);
         lazy_anims.remove(&i);
+        deferred_rows.remove(&i);
+        deferred_begun.remove(&i);
         deferred_trans.remove(&i);
         fresh.remove(&i);
         settling.remove(&i);
@@ -11880,6 +12096,15 @@ impl World {
         self.revision += 1;
     }
 
+    /// Field `name` of a value type property of `item` changed with other fields of it: what
+    /// reads the field reads it again; the NOTIFY signal is the property's, which the caller
+    /// sends once ([`World::notify`] of the property).
+    pub(crate) fn notify_field(&mut self, item: usize, name: &str) {
+        self.dirty_from(&(item, Sym::new(name)));
+        self.stamp(item);
+        self.revision += 1;
+    }
+
     /// `children` of `p` changed (child added/removed/reordered): re-run bindings reading it.
     pub fn children_changed(&mut self, p: usize) {
         self.children_restructured(p);
@@ -11908,6 +12133,15 @@ impl World {
     /// emits parentChanged, which the handlers the child declares hear.
     fn child_populated(&mut self, c: usize, p: usize) {
         let item = |w: &World, i: usize| crate::types::inherits(&w.items[i].types, "QQuickItem");
+        // QQuickItemPrivate::data_append: a declared object that is no item joins the
+        // resources, also the list a write to `resources` has made.
+        if self.items[c].parent == Some(p)
+            && crate::types::is_non_item(&self.items[c].types)
+            && let Some(l) = self.res_lists.get_mut(&p)
+            && !l.contains(&c)
+        {
+            l.push(c);
+        }
         if self.items[c].parent != Some(p) || !item(self, c) || !item(self, p) {
             return;
         }
@@ -11915,9 +12149,11 @@ impl World {
         // QQuickItemPrivate::setEffectiveVisibleRecur / setEffectiveEnableRecur: the items
         // that follow it, children first.
         let reading = self.reading.take();
+        // A binding not enabled yet has written nothing: the flag is still the constructor's.
         let own = |w: &mut Self, i: usize, s: Sym| {
-            w.read_inner_sym(i, s.as_str(), s)
-                .is_none_or(|v| v.truthy())
+            w.fresh_bind.contains_key(&(i, s))
+                || w.read_inner_sym(i, s.as_str(), s)
+                    .is_none_or(|v| v.truthy())
         };
         for s in [sym!("visible"), sym!("enabled")] {
             if own(self, p, s) || !own(self, c, s) {
@@ -13767,7 +14003,7 @@ impl World {
                     .chain(self.owned.get(&i).into_iter().flatten())
                     .copied()
                     .partition(|c| self.adopted.contains_key(c));
-                let kids = self.creation_order(i, kids);
+                let kids = self.creation_order(kids);
                 stack.extend(moved.into_iter().rev().map(|c| (c, false)));
                 stack.extend(kids.into_iter().rev().map(|c| (c, false)));
             }
@@ -13865,7 +14101,7 @@ impl World {
                     None => true,
                 })
                 .collect();
-            let kids = self.creation_order(i, kids);
+            let kids = self.creation_order(kids);
             stack.extend(kids.into_iter().rev().map(|c| (c, false)));
         }
         insts.sort_unstable_by(|a, b| b.cmp(a));
@@ -13876,40 +14112,12 @@ impl World {
     }
 
     /// `kids` of `i` in the order QQmlObjectCreator made them, which is the order their
-    /// `Component` attached objects are told of the destruction: QmlIR::Object::appendBinding
-    /// prepends a binding to a named property and keeps those to the default property in
-    /// source order after it, so the objects that are property values come first, the last
-    /// declared property's first.
-    fn creation_order(&self, i: usize, kids: Vec<usize>) -> Vec<usize> {
+    /// `Component` attached objects are told of the destruction: the objects that are property
+    /// values come first, in the order of the binding table (`Eng::binding_table`).
+    fn creation_order(&self, kids: Vec<usize>) -> Vec<usize> {
         let value = |c: &usize| self.items[*c].props.contains_key("\x01propval");
-        if !kids.iter().any(value) {
-            return kids;
-        }
-        // Each value object's property, as the first object that property holds.
-        let mut first: HashMap<usize, usize> = HashMap::default();
-        for p in self.items[i].props.values() {
-            let held: Vec<usize> = match &p.value {
-                Value::Item(c) => vec![*c],
-                Value::Obj(o) => match &o.borrow().array {
-                    Some(a) => a
-                        .iter()
-                        .filter_map(|e| match e {
-                            Value::Item(c) => Some(*c),
-                            _ => None,
-                        })
-                        .collect(),
-                    None => continue,
-                },
-                _ => continue,
-            };
-            if let Some(&m) = held.iter().min() {
-                for c in held {
-                    first.entry(c).or_insert(m);
-                }
-            }
-        }
         let (mut values, rest): (Vec<usize>, Vec<usize>) = kids.into_iter().partition(value);
-        values.sort_by_key(|c| (std::cmp::Reverse(first.get(c).copied().unwrap_or(*c)), *c));
+        values.sort_unstable();
         values.extend(rest);
         values
     }
@@ -15091,6 +15299,13 @@ impl World {
         {
             self.pending_read = Some((item, sym));
         }
+        if self.js_reading
+            && self.pending_deferred.is_none()
+            && (self.deferred_rows.get(&item))
+                .is_some_and(|rows| rows.iter().any(|r| r.decl.name == name))
+        {
+            self.pending_deferred = Some((item, sym));
+        }
         // QQuickTextEdit::text: textCached = true.
         if self.script_read && sym == sym!("text") && is_text_edit(&inst.types) {
             self.text_read.entry(item).or_insert(None);
@@ -15519,8 +15734,13 @@ impl World {
                 return self.read(item, of);
             }
         }
+        // QQuickItem's anchor lines: another object has `top` and `bottom` only as properties
+        // of its own (a validator's range). A window or a popup stands in for its
+        // `contentItem`, the `parent` of the items declared in it.
         if let Some(line) = ANCHOR_LINES.iter().find(|l| **l == name)
             && !self.items.get(item)?.props.contains_key(name)
+            && (!crate::types::is_non_item(&self.items[item].types)
+                || crate::types::find_prop(&self.items[item].types, "contentItem").is_some())
         {
             return Some(new_anchor_line(Some((item, line))));
         }
@@ -16129,6 +16349,29 @@ impl World {
         };
         self.reading = r;
         res
+    }
+
+    /// Has the aliases of `o` that can be resolved now notify with their targets, ahead of
+    /// [`Self::resolve_aliases`], which reports the ones that cannot.
+    fn connect_aliases(&mut self, o: usize) {
+        let aliases: Vec<(Sym, Alias)> = self.items[o]
+            .props
+            .iter()
+            .filter_map(|(n, p)| Some((Sym::new(n), p.alias.as_deref()?.clone())))
+            .collect();
+        let r = self.reading.take();
+        // QQmlVMEMetaObject::connectAlias reads nothing of the target: a Text is not measured
+        // for it, so what is then written through the alias is set before it is.
+        let measure = self.text_measure.take();
+        let open = HashSet::default();
+        for (n, a) in aliases {
+            // An alias to an id is made read-only: left to `resolve_aliases`.
+            if a.path.len() > 1 && self.find_id(a.ctx, &a.path[0]).is_some() {
+                let _ = self.resolve_alias(o, n, &a, &open);
+            }
+        }
+        self.text_measure = measure;
+        self.reading = r;
     }
 
     /// Resolves alias `n` of `o`: Ok(false) while it names an alias in `open` (not resolved).
@@ -16820,6 +17063,16 @@ impl World {
         let mut at = self.alias_setter(item, name);
         while let Some((target, prop)) = at {
             self.assign((target, Sym::new(&prop)));
+            // A Text not laid out yet is AlignLeft in effect (QQuickTextPrivate's hAlign before
+            // determineHorizontalAlignment): QQuickText::setHAlign compares with that, and the
+            // handlers of the Text are connected by now.
+            let effective = "effectiveHorizontalAlignment";
+            if prop == "horizontalAlignment"
+                && self.items[target].types.iter().any(|t| t == "Text")
+                && !self.items[target].props.contains_key(effective)
+            {
+                self.write_unheard(target, effective, Value::Num(1.0));
+            }
             at = self.alias_setter(target, &prop);
         }
     }
@@ -16952,6 +17205,7 @@ impl World {
             let c = list.remove(i);
             w.set_parent_item(c, None);
             w.container_set(item, list);
+            w.container_count_changed(item);
             c
         };
         match name {
@@ -16983,6 +17237,7 @@ impl World {
                         }
                         list.insert(to, c);
                         self.container_set(item, list);
+                        self.container_count_changed(item);
                         if count == 0 && cur == -1 {
                             set(self, to as i64);
                         }
@@ -18032,6 +18287,21 @@ impl World {
     /// [`Self::write`], with what the properties that follow `name` showed before it
     /// (`shown_followers`).
     fn write_told(&mut self, item: usize, name: &str, v: Value, shown: Option<Followed>) -> bool {
+        // The setter of a deferred property cancels what it has deferred.
+        if !self.deferred_rows.is_empty()
+            && let Some(rows) = self.deferred_rows.get_mut(&item)
+        {
+            rows.retain(|r| r.decl.name != name);
+        }
+        // QQuickTextEdit::setText only stores the text of an incomplete item: its document is
+        // empty, and setCursorPosition drops a position past the end.
+        if name == "cursorPosition"
+            && (self.text_literals.contains(&item)
+                || self.storing_literal == Some((item, sym!("cursorPosition"))))
+            && self.text_edit(item)
+        {
+            return false;
+        }
         if name.starts_with("palette")
             && let Some(changed) = self.palette_write(item, name, &v)
         {
@@ -18127,21 +18397,6 @@ impl World {
         }
         self.resume_reading(reading);
         r
-    }
-
-    /// The change signal of value type property `whole` for the one write that stores the
-    /// properties its object sets of it, unless that object's creation has sent it.
-    fn group_populated(&mut self, whole: (usize, Sym)) {
-        let sent = self
-            .changed
-            .iter()
-            .rev()
-            .take_while(|(c, _)| c.0 >= whole.0)
-            .any(|(c, _)| *c == whole);
-        if !sent {
-            self.changed.push((whole, self.sched.cur()));
-        }
-        self.populated.insert(whole);
     }
 
     /// QQuickImageBase::load of a complete Image. With no shell it ends here, unless the
@@ -18386,6 +18641,16 @@ impl World {
                 "damping" if n > 1.0 => self.write_prop(item, name, Value::Num(1.0)),
                 _ => self.write_prop(item, name, v),
             };
+        }
+        // QQuickControl::setBackground (and the same in QQuickTextField, QQuickTextArea,
+        // QQuickLabel): a background at z 0 goes to z -1.
+        if fx.has(WriteFx::BACKGROUND)
+            && (self.items[item].props.get(name)).is_none_or(|p| p.decl == Decl::Cpp)
+            && let &Value::Item(b) = &v
+            && self.items.holds(b)
+            && self.read(b, "z").is_none_or(|z| z.to_number() == 0.0)
+        {
+            self.write(b, "z", Value::Num(-1.0));
         }
         if fx.has(WriteFx::STDIN) && !v.truthy() {
             // Closing stdin (QProcess::closeWriteChannel): the child sees EOF.
@@ -18939,7 +19204,7 @@ impl World {
         } else {
             v
         };
-        let v = if name == "focus" && self.focus_literal == Some(item) {
+        let v = if name == "focus" && self.storing_literal.is_some_and(|k| k.0 == item) {
             self.focus_asked(item, v)
         } else {
             v
@@ -18971,6 +19236,9 @@ impl World {
             .then(|| self.pval(item, "model"))
             .flatten();
         let line = self.items[item].prop_info("acceptableInput").is_some();
+        let old_text = (name == "text" && !line && !self.text_keep_cursor)
+            .then(|| self.read(item, name))
+            .flatten();
         // QQuickTextInputPrivate::internalSetText: `txt.left(m_maxLength)`.
         let mask = if line && matches!(name, "text" | "inputMask") {
             self.input_mask(item)
@@ -19124,6 +19392,13 @@ impl World {
                 }
             }
         }
+        // A binding's first value equal to the constructor's flag: QQuickItem::setVisible and
+        // setEnabled return early, no item below hears a change.
+        let flag_kept = matches!(name, "visible" | "enabled")
+            && v.truthy()
+            && (self.items[item].props.get(name))
+                .is_some_and(|p| matches!(p.value, Value::Undefined) && p.binding.is_some())
+            && crate::types::inherits(&self.items[item].types, "QQuickItem");
         let r = self.write_raw(item, name, v);
         if r && let Some(was) = view_model {
             self.view_model_set(item, &was);
@@ -19307,7 +19582,7 @@ impl World {
         if matches!(name, "border.width" | "border.color") {
             self.items[item].props.entry("\x01pen").or_default();
         }
-        if r && name == "visible" {
+        if r && !flag_kept && name == "visible" {
             // QQuickItem::setVisible recomputes the effective visibility, which the constructor
             // left true: an item `createObject(null)` made is shown until its first write of
             // `visible`, and hidden from then on until it gets a parent item.
@@ -19338,7 +19613,7 @@ impl World {
                 self.visible_children_changed(p);
             }
         }
-        if r && name == "enabled" {
+        if r && !flag_kept && name == "enabled" {
             self.enabled_written(item);
         }
         if r && (name == "visible" || name == "hovered") {
@@ -19406,10 +19681,8 @@ impl World {
                 .iter()
                 .any(|t| matches!(t.as_str(), "TextEdit" | "TextArea"))
         {
-            let t = units_of(self.read(item, "text").as_ref());
-            for (k, v) in self.text_steps(item, &t, 0, (0, 0), TextOp::Edit) {
-                self.text_defer(item, k, v);
-            }
+            self.flush_text_pending();
+            self.text_edit_assigned(item, old_text.unwrap_or(Value::str("")), mark);
         }
         // QQuickTextInput/QQuickTextEdit::setCursorPosition drop the selection.
         if r && let Some(old) = old_cursor
@@ -21614,10 +21887,12 @@ impl WorldHost {
     fn js_read<T>(&mut self, mut read: impl FnMut(&mut World) -> T) -> T {
         let mut flushed: Option<DKey> = None;
         loop {
-            let (v, pending) = {
+            let pending = {
                 let mut w = self.0.borrow_mut();
                 let outer = std::mem::replace(&mut w.script_read, true);
-                if (w.fresh_bind.is_empty() && w.dirty.is_empty()) || w.js_reading {
+                if (w.fresh_bind.is_empty() && w.deferred_rows.is_empty() && w.dirty.is_empty())
+                    || w.js_reading
+                {
                     let v = read(&mut w);
                     w.script_read = outer;
                     return v;
@@ -21626,8 +21901,13 @@ impl WorldHost {
                 let v = read(&mut w);
                 w.js_reading = false;
                 w.script_read = outer;
-                (v, w.pending_read.take())
+                (v, w.pending_read.take(), w.pending_deferred.take())
             };
+            let (v, pending, deferred) = pending;
+            if let Some(k) = deferred {
+                read_deferred(&self.0, k);
+                continue;
+            }
             match pending {
                 Some(k) if flushed != Some(k) && flush_pending_binding(&self.0, k) => {
                     flushed = Some(k);
@@ -21637,6 +21917,24 @@ impl WorldHost {
             }
         }
     }
+}
+
+/// The getter of a deferred property (QQuickControl::contentItem) executes it, when its
+/// object has not: the value is made by this read, and completes with its object.
+fn read_deferred(world: &Rc<RefCell<World>>, k: DKey) {
+    let Some(mut it) = world.borrow_mut().take_interp(world) else {
+        world.borrow_mut().deferred_rows.remove(&k.0);
+        return;
+    };
+    let done = Eng {
+        it: &mut it,
+        world: world.clone(),
+    }
+    .begin_deferred(k.0, k.1.as_str());
+    let mut w = world.borrow_mut();
+    w.park(it);
+    let name = k.1.as_str().to_string();
+    w.deferred_begun.entry(k.0).or_default().push((name, done));
 }
 
 /// How often a pending binding is put back behind its pending inputs (`World::fresh_bind`).
@@ -21729,6 +22027,15 @@ fn change_scope(world: &Rc<RefCell<World>>, item: usize, name: &str) -> usize {
             .any(|t| t == "PropertyChanges" || t == "AnchorChanges")
     {
         return item;
+    }
+    // The values are script strings Qt evaluates when the state is applied, after the
+    // creation enabled `target`: a `target` still pending here is enabled first. A literal
+    // is stored while the object is populated and reads nothing.
+    let key = (owner, sym!("target"));
+    if w.storing_literal != Some((item, Sym::new(name))) && w.fresh_bind.contains_key(&key) {
+        drop(w);
+        flush_pending_binding(world, key);
+        w = world.borrow_mut();
     }
     let r = w.reading.take();
     let t = w.pval(owner, "target");
@@ -23374,7 +23681,9 @@ impl WorldHost {
             crate::eval::set_own(&o, "y", Value::Num(y));
             return Some(Value::Obj(o));
         }
-        if name == "toString" && !inst.props.contains_key(name) {
+        // QV4::QObjectWrapper's toString, unless the QML declares a function `toString`; a
+        // property of that name does not hide it.
+        if name == "toString" && inst.props.get(name).is_none_or(|p| p.ty != "function") {
             if args.is_none() {
                 return Some(Value::Undefined);
             }
@@ -23451,6 +23760,19 @@ fn insufficient_cpp_args(overloads: &[&crate::types::SignalInfo]) -> HostError {
         m += &format!("\n    {}({})", s.name, tys.join(","));
     }
     HostError::new("Error", m)
+}
+
+impl World {
+    /// The control of the style `item` is, by the name of its QML file (`Button`): Qt names
+    /// its class after the file, not after the QtQuick.Templates class under it, which
+    /// `import QtQuick.Templates` names itself (`scope`, where its document looks its type up).
+    fn style_control(&self, item: usize, scope: &Lookup) -> Option<&'static str> {
+        let bare = type_of(self.items[item].types.first()?.as_str());
+        let templates = matches!(scope, Lookup::Module(m) if &**m == "QtQuick.Templates");
+        let (module, _) = crate::types::registry().resolve(bare)?;
+        (module == "QtQuick.Templates" && !templates && crate::types::style_file(bare))
+            .then_some(bare)
+    }
 }
 
 impl WorldHost {
@@ -24128,20 +24450,7 @@ impl Host for WorldHost {
         }
         match it.props.get(name) {
             Some(p) => Some(p.ty),
-            // A list of QQuickItem is a QQmlListProperty; `visibleChildren` is one without
-            // an append function, which `valuetypes::assign` reads from the `const`.
-            None => it.prop_info(name).map(|p| match p.list {
-                true if !crate::types::is_non_item(&it.types) => Sym::new(&format!(
-                    "{}QQmlListProperty<{}>",
-                    if name == "visibleChildren" {
-                        "const "
-                    } else {
-                        ""
-                    },
-                    p.ty
-                )),
-                _ => Sym::new(&p.ty),
-            }),
+            None => it.prop_info(name).map(|p| Sym::new(&p.ty)),
         }
     }
     fn write_slot(&mut self, item: usize, name: &str) -> Option<Rc<crate::valuetypes::Slot>> {
@@ -27894,10 +28203,13 @@ impl Eng<'_> {
             })
         };
         self.world.borrow_mut().fill_list_models(n0);
+        let runs = self.world.borrow().deferred_runs;
         self.finalize_settle(n0);
         if self.world.borrow_mut().icons_sized(n0) {
             self.settle();
         }
+        // What a read made of a deferred property is not part of what every instance copies.
+        let recorded = recorded && runs == self.world.borrow().deferred_runs;
         if recorded && !crate::debug::on(crate::debug::Switch::NOPOST) {
             let mut srcs = vec![Sym::new("model")];
             if let Value::Obj(o) = props {
@@ -27978,6 +28290,7 @@ impl Eng<'_> {
         }
         // The Images created before a Repeater or a Loader that has made its objects now.
         self.images_complete(n0, Self::settle);
+        self.execute_deferred(n0);
         self.stacks_init(n0);
         self.combos_init(n0);
         self.views_init(n0);
@@ -28531,6 +28844,7 @@ impl Eng<'_> {
         let mark = self.world.borrow().fire.len();
         self.world.borrow_mut().autostart(n0);
         fire_now(&self.world, mark);
+        self.execute_deferred(n0);
         self.stacks_init(n0);
         self.combos_init(n0);
         self.views_init(n0);
@@ -28782,13 +29096,18 @@ impl Eng<'_> {
                 w.items[id].layout = Some(l);
             }
             let w = &mut *w;
+            if w.items[id].class.is_none()
+                && let Some(file) = w.style_control(id, &obj.scope)
+            {
+                w.items[id].class = Some(w.classes.style(file));
+            }
             if let Some(c) = w.classes.name(obj.decl, || w.items[id].class_name()) {
                 w.items[id].class = Some(c);
             }
         }
-        let d0 = self.world.borrow().dirty.len();
         self.apply(&obj.members, id, ctx, "", file, vis, depth)?;
         let mut w = self.world.borrow_mut();
+        w.container_declared(id);
         if w.items[id]
             .types
             .first()
@@ -28808,45 +29127,6 @@ impl Eng<'_> {
                 },
             );
         }
-        w.container_declared(id);
-        if w.dirty.len() > d0 {
-            // QQmlObjectCreator::setupBindings queues an object's own bindings in reverse
-            // before its children are created, so finalize() enables children first and then
-            // the object's bindings in source order.
-            let queued = w.dirty.split_off(d0);
-            let (own, rest): (Vec<_>, Vec<_>) = queued.into_iter().partition(|e| e.key.0 == id);
-            if w.items[id].types.iter().any(|t| t == "PanelWindow") {
-                // Constant bindings are stored while populating, in reverse source order
-                // (QmlIR prepends them), before finalize(). Only a setter with side effects
-                // can tell: exclusiveZone sets exclusionMode Normal, so StyledPopup's
-                // `exclusionMode: ExclusionMode.Ignore; exclusiveZone: 0` stays Ignore.
-                let consts: Vec<Sym> = obj
-                    .members
-                    .iter()
-                    .filter_map(|m| match m {
-                        Member::Binding {
-                            name,
-                            value: crate::Value::Script(s),
-                        } if qmlir_constant(s, w.items[id].enum_target(Sym::new(name))) => {
-                            Some(Sym::new(name))
-                        }
-                        _ => None,
-                    })
-                    .collect();
-                let (c, n): (Vec<_>, Vec<_>) =
-                    own.into_iter().partition(|e| consts.contains(&e.key.1));
-                for e in n.into_iter().rev().chain(c) {
-                    w.dirty.push_entry(e);
-                }
-            } else {
-                for e in own.into_iter().rev() {
-                    w.dirty.push_entry(e);
-                }
-            }
-            for e in rest {
-                w.dirty.push_entry(e);
-            }
-        }
         if w.items[id]
             .handlers
             .contains_key(&Sym::new("Component.onCompleted"))
@@ -28860,38 +29140,7 @@ impl Eng<'_> {
         Ok(id)
     }
 
-    /// The `members` of object `id` that bind one of its alias properties, by index.
-    /// QmlUnitGenerator writes an object's bindings to alias properties after its other
-    /// bindings (`isValueBindingToAlias` last), so QQmlObjectCreator sets them once the
-    /// object's children exist: `property alias a: inner.x; a: 1; Item { id: inner }`.
-    fn alias_bindings(&self, members: &[Member], id: usize, prefix: &str) -> Vec<usize> {
-        if !prefix.is_empty() {
-            return Vec::new();
-        }
-        let own: Vec<&str> = members
-            .iter()
-            .filter_map(|m| match m {
-                Member::Property { name, ty, .. } if ty == "alias" => Some(name.as_str()),
-                _ => None,
-            })
-            .collect();
-        let w = self.world.borrow();
-        let props = &w.items[id].props;
-        members
-            .iter()
-            .enumerate()
-            .filter_map(|(k, m)| match m {
-                Member::Binding { name, .. }
-                    if own.contains(&name.as_str())
-                        || props.get(name.as_str()).is_some_and(|p| p.alias.is_some()) =>
-                {
-                    Some(k)
-                }
-                _ => None,
-            })
-            .collect()
-    }
-
+    /// Sets up what `members` declare on `id`. See [`Self::apply_rows`].
     #[allow(clippy::too_many_arguments)]
     fn apply(
         &mut self,
@@ -28903,63 +29152,139 @@ impl Eng<'_> {
         vis: &Vis,
         depth: usize,
     ) -> Result<(), String> {
-        let late = self.alias_bindings(members, id, prefix);
-        let mut order: Vec<usize> = (0..members.len())
-            .filter(|k| !late.contains(k))
-            .chain(late.iter().copied())
-            .collect();
-        // Constant bindings are stored in reverse source order (QmlIR prepends them). Only a
-        // setter with side effects can tell: QQuickTextInput::setInputMask moves the cursor to
-        // the first blank, so `text` written before `inputMask` leaves it there.
-        let constant = |k: &usize, n: &str, enum_target: bool| {
-            matches!(&members[*k], Member::Binding { name, value: crate::Value::Script(s) }
-                if name == n && qmlir_constant(s, enum_target))
+        let rows: Vec<Row> = members.iter().map(|m| Row::of(m, false)).collect();
+        self.apply_rows(&rows, id, ctx, prefix, file, vis, depth)
+    }
+
+    /// The binding table of an object as Qt's compilation unit holds it, from its members
+    /// `rows` in file order. QmlIR::Object::appendBinding appends a binding to the default
+    /// property and prepends any other, and QmlUnitGenerator::generate writes the list in five
+    /// groups: values that are not written through an alias, signal handlers, attached
+    /// properties, group properties, values written through an alias. All the bindings of one
+    /// attached or group property are one row, where the first of them stands.
+    /// Returns the table and where its last group starts.
+    fn binding_table<'a>(
+        &self,
+        rows: &[Row<'a>],
+        id: usize,
+        ctx: usize,
+        prefix: &str,
+    ) -> (Vec<Entry<'a>>, usize) {
+        let w = self.world.borrow();
+        let it = &w.items[id];
+        let alias =
+            |n: &str| prefix.is_empty() && it.props.get(n).is_some_and(|p| p.alias.is_some());
+        // A document's own children are not routed through the default property it declares
+        // itself.
+        let declared = (prefix.is_empty() && w.default_ctx.get(&id) != Some(&ctx))
+            .then(|| w.default_of.get(&id))
+            .flatten()
+            .filter(|p| it.props.get(p).is_some_and(|q| q.ty != "Component"));
+        let default_alias =
+            declared.is_some_and(|p| it.props.get(p).is_some_and(|q| q.alias.is_some()));
+        // QQmlDefaultPropertyMerger: a binding that names the default property is one more
+        // of its objects, where it stands in the file.
+        let names_default = |n: &str| match declared {
+            Some(p) => p == n,
+            None => {
+                prefix.is_empty()
+                    && crate::types::default_name(n)
+                    && crate::types::default_prop(&it.types).flatten() == Some(n)
+            }
         };
-        if let Some(t) = order.iter().position(|k| constant(k, "text", false))
-            && let Some(m) = order.iter().position(|k| constant(k, "inputMask", false))
-            && self.world.borrow().items[id]
-                .prop_info("acceptableInput")
-                .is_some()
-        {
-            order.swap(t, m);
-        }
-        // QQuickCheckBox::setCheckState and QQuickAbstractButton::setChecked set each other, so
-        // of `checked` and `checkState` the one written first in the file is stored last.
-        if prefix.is_empty()
-            && let Some(c) = order.iter().position(|k| constant(k, "checked", false))
-            && let Some(s) = order.iter().position(|k| constant(k, "checkState", true))
-            && self.world.borrow().items[id]
-                .prop_info("checkState")
-                .is_some()
-        {
-            order.swap(c, s);
-        }
-        // QQuickTextInput::setText puts the cursor at the end of the new text, and a position
-        // past the text is refused: `text` before `cursorPosition` leaves the cursor at the end.
-        if let Some(t) = order.iter().position(|k| constant(k, "text", false))
-            && let Some(c) = order
-                .iter()
-                .position(|k| constant(k, "cursorPosition", false))
-            && is_text_editor(&self.world.borrow().items[id].types)
-        {
-            order.swap(t, c);
-        }
-        // Value bindings come before the default property's objects in the compilation unit:
-        // a child is given to a parent that already has its literal `visible` / `enabled`.
-        if prefix.is_empty()
-            && let Some(first) = order
-                .iter()
-                .position(|&k| matches!(members[k], Member::Child(_)))
-        {
-            for n in ["visible", "enabled"] {
-                if let Some(at) = order.iter().position(|k| constant(k, n, false))
-                    && at > first
-                {
-                    let k = order.remove(at);
-                    order.insert(first, k);
+        let [
+            mut values,
+            mut defaults,
+            mut handlers,
+            mut attached,
+            mut groups,
+        ] = [const { Vec::new() }; 5];
+        let [mut aliases, mut alias_defaults] = [const { Vec::new() }; 2];
+        for &r in rows {
+            let mut sub = |name: &'a str, more: &mut dyn Iterator<Item = Row<'a>>| {
+                let list = if name.starts_with(|c: char| c.is_uppercase()) {
+                    &mut attached
+                } else {
+                    &mut groups
+                };
+                let at = list
+                    .iter()
+                    .position(|e| matches!(e, Entry::Sub(n, _) if *n == name));
+                let at = at.unwrap_or_else(|| {
+                    list.push(Entry::Sub(name, Vec::new()));
+                    list.len() - 1
+                });
+                if let Entry::Sub(_, rows) = &mut list[at] {
+                    rows.extend(more);
                 }
+            };
+            match r.m {
+                Member::Child(_) if default_alias => alias_defaults.push(Entry::Row(r)),
+                Member::Child(_) => defaults.push(Entry::Row(r)),
+                Member::On { .. } => values.push(Entry::Row(r)),
+                Member::Property {
+                    ty, value: Some(_), ..
+                } if ty != "alias" => values.push(Entry::Row(r)),
+                Member::Group { name, members } => {
+                    sub(name, &mut members.iter().map(|m| Row::of(m, true)))
+                }
+                Member::Binding { value, .. } => {
+                    if let Some((head, rest)) = r.name.split_once('.') {
+                        let row = Row {
+                            name: rest,
+                            braced: false,
+                            ..r
+                        };
+                        sub(head, &mut std::iter::once(row));
+                    } else if names_default(r.name) {
+                        if default_alias {
+                            alias_defaults.push(Entry::Row(r));
+                        } else {
+                            defaults.push(Entry::Row(r));
+                        }
+                    } else if matches!(value, crate::Value::Script(_))
+                        && crate::walk::binding_kind(&format!("{prefix}{}", r.name), || {
+                            anim_kind(&it.types) == Some("ScriptAction")
+                        }) == crate::walk::BodyKind::Handler
+                    {
+                        handlers.push(Entry::Row(r));
+                    } else if alias(r.name) {
+                        aliases.push(Entry::Row(r));
+                    } else {
+                        values.push(Entry::Row(r));
+                    }
+                }
+                _ => {}
             }
         }
+        let rev = |v: Vec<Entry<'a>>| v.into_iter().rev();
+        let mut table: Vec<Entry<'a>> = rev(values)
+            .chain(defaults)
+            .chain(rev(handlers))
+            .chain(rev(attached))
+            .chain(rev(groups))
+            .collect();
+        let through_alias = table.len();
+        table.extend(rev(aliases).chain(alias_defaults));
+        (table, through_alias)
+    }
+
+    /// QQmlObjectCreator::populateInstance for one document layer of object `id`: what the
+    /// layer declares (properties, signals, functions, the id) is there first, then
+    /// setupBindings goes through its [binding table](Self::binding_table) in order. A literal
+    /// is written, a handler connected and an object created where its row stands; an
+    /// expression waits for `finalize`.
+    #[allow(clippy::too_many_arguments)]
+    fn apply_rows(
+        &mut self,
+        rows: &[Row],
+        id: usize,
+        ctx: usize,
+        prefix: &str,
+        file: Option<&Path>,
+        vis: &Vis,
+        depth: usize,
+    ) -> Result<(), String> {
         // The first of `onTextChanged` / `onLengthChanged` this object declared (text editors).
         let mut text_handler: Option<bool> = None;
         // The level these members declare at, found when the first one is declared.
@@ -28973,7 +29298,7 @@ impl Eng<'_> {
                 p.seq = level << 16 | u32::from(alias) << 15 | (k as u32 & 0x7fff);
             }
         };
-        for (k, m) in order.into_iter().map(|k| (k, &members[k])) {
+        for (k, m) in rows.iter().map(|r| r.m).enumerate() {
             match m {
                 Member::Id(s) => {
                     self.world.borrow_mut().ctxs[ctx].ids.insert(s.clone(), id);
@@ -29083,9 +29408,6 @@ impl Eng<'_> {
                         w.default_of.insert(id, name.clone());
                         w.default_ctx.insert(id, ctx);
                     }
-                    if let Some(v) = value {
-                        self.assign(id, name, v, ctx, file, vis, depth)?;
-                    }
                 }
                 Member::Required { name, loc } => {
                     let mut w = self.world.borrow_mut();
@@ -29144,9 +29466,84 @@ impl Eng<'_> {
                         });
                     }
                 }
-                Member::Binding { name, value } => {
+                _ => {}
+            }
+        }
+        let (table, through_alias) = self.binding_table(rows, id, ctx, prefix);
+        for (k, e) in table.into_iter().enumerate() {
+            if k == through_alias {
+                // The alias has its target by now: what is written through it notifies as the
+                // alias too (QQmlVMEMetaObject::connectAlias).
+                self.world.borrow_mut().connect_aliases(id);
+            }
+            let row = match e {
+                Entry::Row(row) => row,
+                Entry::Sub(name, sub) => {
+                    // `background { anchors.fill: root }`: a group on an object-valued
+                    // property configures that object.
+                    let target = (prefix.is_empty()).then_some(()).and_then(|()| {
+                        let w = self.world.borrow();
+                        match w.items[id].props.get(name).map(|p| &p.value) {
+                            Some(&Value::Item(t)) if t != id && !w.groups.contains_key(&t) => {
+                                Some(t)
+                            }
+                            _ => None,
+                        }
+                    });
+                    let (braced, dotted): (Vec<Row>, Vec<Row>) = match target {
+                        Some(_) => sub.into_iter().partition(|r| r.braced),
+                        None => (Vec::new(), sub),
+                    };
+                    if let Some(t) = target
+                        && !braced.is_empty()
+                    {
+                        self.apply_rows(&braced, t, ctx, "", file, vis, depth)?;
+                    }
+                    if !dotted.is_empty() {
+                        let whole = {
+                            let mut w = self.world.borrow_mut();
+                            let vt = prefix.is_empty() && w.value_type_of(id, name).is_some();
+                            let key = ((id, Sym::new(name)), false);
+                            vt.then(|| w.group_write.replace(key))
+                        };
+                        let prefix = format!("{prefix}{name}.");
+                        let r = self.apply_rows(&dotted, id, ctx, &prefix, file, vis, depth);
+                        if let Some(outer) = whole {
+                            // QQmlObjectCreator::setPropertyBinding: the value type is read,
+                            // populated and written back once.
+                            let mut w = self.world.borrow_mut();
+                            let now = std::mem::replace(&mut w.group_write, outer);
+                            let mut heard = now.is_some_and(|g| g.1);
+                            if !heard && name == "sourceSize" && w.image_base(id) {
+                                // QQuickImageBase::setSourceSize emits for the size read,
+                                // which is not the unset one.
+                                let n = w.changed.len();
+                                let width = w.image_source_size(id)[0];
+                                heard =
+                                    w.set_source_size(id, "sourceSize.width", Value::Num(width));
+                                w.changed.truncate(n);
+                            }
+                            drop(w);
+                            if heard {
+                                self.dispatch_changed(id, name, true, false);
+                            }
+                        }
+                        r?;
+                    }
+                    continue;
+                }
+            };
+            match row.m {
+                Member::Property {
+                    name,
+                    ty,
+                    value: Some(v),
+                    ..
+                } if ty != "alias" => self.assign(id, name, v, ctx, file, vis, depth)?,
+                Member::Binding { value, .. } => {
+                    let name = row.name;
                     let full: std::borrow::Cow<str> = if prefix.is_empty() {
-                        name.as_str().into()
+                        name.into()
                     } else {
                         format!("{prefix}{name}").into()
                     };
@@ -29188,7 +29585,8 @@ impl Eng<'_> {
                             }
                             // `on<Property>Changed` is a handler of the property's NOTIFY signal,
                             // which for `length` of the text editors is textChanged. Handlers
-                            // one object declares for one signal run last declared first.
+                            // one object declares for one signal run last declared first:
+                            // that one is connected first.
                             let length = full == "onLengthChanged";
                             let twin = (length || full == "onTextChanged")
                                 && is_text_editor(&w.items[id].types)
@@ -29200,45 +29598,23 @@ impl Eng<'_> {
                             };
                             let hs = w.items[id].handlers.entry(key).or_default();
                             match hs.iter().position(|c| c.ctx == ctx) {
-                                Some(k) if twin => hs.insert(k, code),
+                                Some(k) if twin => hs.insert(k + 1, code),
                                 Some(k) => hs[k] = code,
                                 None => hs.push(code),
                             }
                         }
+                        v if prefix.is_empty()
+                            && crate::types::deferred_name(name)
+                            && self.defer_row(id, name, v, ctx, file, vis, depth) => {}
                         v => {
-                            self.assign(id, &full, v, ctx, file, vis, depth)?;
-                            if late.contains(&k) {
+                            // The setter of the alias's target marks it as set before the
+                            // handlers connected by now hear of the write.
+                            if prefix.is_empty() && k >= through_alias {
                                 self.world.borrow_mut().assign_alias_target(id, &full);
                             }
+                            self.assign(id, &full, v, ctx, file, vis, depth)?;
                         }
                     }
-                }
-                // `background { anchors.fill: root }`: a group on an object-valued property
-                // configures that object.
-                Member::Group { name, members }
-                    if prefix.is_empty()
-                        && let Some(t) = {
-                            let w = self.world.borrow();
-                            match w.items[id].props.get(name.as_str()).map(|p| &p.value) {
-                                Some(&Value::Item(t)) if t != id && !w.groups.contains_key(&t) => {
-                                    Some(t)
-                                }
-                                _ => None,
-                            }
-                        } =>
-                {
-                    self.apply(members, t, ctx, "", file, vis, depth)?;
-                }
-                Member::Group { name, members } => {
-                    self.apply(
-                        members,
-                        id,
-                        ctx,
-                        &format!("{prefix}{name}."),
-                        file,
-                        vis,
-                        depth,
-                    )?;
                 }
                 Member::On { prop, object } => {
                     let prop = &self.world.borrow().declared(id, prop).to_string();
@@ -29445,6 +29821,221 @@ impl Eng<'_> {
     /// assigns `enabled` and nothing outside can see its animations (no ids, handlers, nested
     /// Behaviors or autostart), exactly the Behaviors whose bindings `defer_behavior_bindings`
     /// holds back. Decided once per declaration.
+    /// QQmlTypeCompiler's scan for deferred bindings: a binding to a property its object's
+    /// class defers is not set up with the others, unless an object inside its value has an
+    /// `id`. The object keeps the outermost one of each property; true when `v` is kept.
+    #[allow(clippy::too_many_arguments)]
+    fn defer_row(
+        &mut self,
+        id: usize,
+        name: &str,
+        v: &crate::Value,
+        ctx: usize,
+        file: Option<&Path>,
+        vis: &Vis,
+        depth: usize,
+    ) -> bool {
+        thread_local!(static DECLS: RefCell<HashMap<crate::NodeId, Option<Rc<DeferredDecl>>>> =
+            Default::default());
+        if crate::debug::on(crate::debug::Switch::NODEFER) {
+            return false;
+        }
+        let key = match v {
+            crate::Value::Object(o) => o.decl,
+            crate::Value::Script(s) => s.id,
+            crate::Value::List(_) => return false,
+        };
+        if key.is_none()
+            || !crate::types::deferred_names(&self.world.borrow().items[id].types)
+                .iter()
+                .any(|n| n == name)
+        {
+            return false;
+        }
+        let known = DECLS.with(|d| d.borrow().get(&key).cloned());
+        let decl = known.unwrap_or_else(|| {
+            let mut named = false;
+            if let crate::Value::Object(o) = v {
+                o.walk(&mut |x| named |= x.members.iter().any(|m| matches!(m, Member::Id(_))));
+            }
+            let d = (!named).then(|| {
+                Rc::new(DeferredDecl {
+                    name: name.to_string(),
+                    value: v.clone(),
+                    file: file.map(Path::to_path_buf),
+                })
+            });
+            DECLS.with(|c| c.borrow_mut().insert(key, d.clone()));
+            d
+        });
+        let Some(decl) = decl else {
+            return false;
+        };
+        let mut w = self.world.borrow_mut();
+        let vis = file
+            .and_then(|f| w.types_cache.get(f))
+            .filter(|r| std::ptr::eq(&***r, vis))
+            .cloned()
+            .unwrap_or_else(|| Rc::new(vis.clone()));
+        let rows = w.deferred_rows.entry(id).or_default();
+        rows.retain(|r| r.decl.name != name);
+        rows.push(DeferredRow {
+            decl,
+            ctx,
+            vis,
+            depth,
+        });
+        true
+    }
+
+    /// quickBeginDeferred and quickCompleteDeferred for the deferred property `name` of `id`:
+    /// its binding is set up as a creation of its own, whose objects complete here. Returns
+    /// the objects whose Component.onCompleted is due.
+    fn begin_deferred(&mut self, id: usize, name: &str) -> Vec<usize> {
+        let row = {
+            let mut w = self.world.borrow_mut();
+            let Some(rows) = w.deferred_rows.get_mut(&id) else {
+                return Vec::new();
+            };
+            let Some(k) = rows.iter().position(|r| r.decl.name == name) else {
+                return Vec::new();
+            };
+            let row = rows.remove(k);
+            if rows.is_empty() {
+                w.deferred_rows.remove(&id);
+            }
+            w.deferred_runs += 1;
+            row
+        };
+        let (start, m0, a0, from, outer_dirty, live) = {
+            let mut w = self.world.borrow_mut();
+            let m0 = w.items.len();
+            (
+                w.completed.len(),
+                m0,
+                w.alias_pending.len(),
+                std::mem::replace(&mut w.creating_from, m0),
+                std::mem::take(&mut w.dirty),
+                std::mem::replace(&mut w.behaviors_live, false),
+            )
+        };
+        // As a creation inside another one: the delegators of the objects around are built by
+        // their own pass.
+        let outer_floor = {
+            let mut w = self.world.borrow_mut();
+            (!w.delegating).then(|| {
+                let f = w.deleg_floor.max(m0);
+                let s = w.delegators_seq;
+                (
+                    std::mem::replace(&mut w.deleg_floor, f),
+                    std::mem::replace(&mut w.deleg_mark, s),
+                )
+            })
+        };
+        let d = &row.decl;
+        let made = self
+            .assign(
+                id,
+                &d.name,
+                &d.value,
+                row.ctx,
+                d.file.as_deref(),
+                &row.vis,
+                row.depth,
+            )
+            .and_then(|()| self.world.borrow_mut().resolve_aliases(a0));
+        if let Err(e) = made {
+            tracing::warn!(target: "ri::qml", "{e}");
+        }
+        self.world.borrow_mut().fill_list_models(m0);
+        self.finalize_settle(m0);
+        let (done, notified, images): (Vec<usize>, bool, usize) = {
+            let mut w = self.world.borrow_mut();
+            let (notified, images) = w.complete_from(m0);
+            let n = w.completed.len();
+            w.behaviors_live = live;
+            w.creating_from = from;
+            (
+                w.completed.drain(start.min(n)..).collect(),
+                notified,
+                images,
+            )
+        };
+        if notified | self.binds_complete(m0) {
+            self.settle();
+        }
+        self.images_complete(images, Self::settle);
+        if live {
+            let mark = self.world.borrow().fire.len();
+            self.world.borrow_mut().autostart(m0);
+            fire_now(&self.world, mark);
+        }
+        self.execute_deferred(m0);
+        self.stacks_init(m0);
+        self.combos_init(m0);
+        self.drain_layers();
+        self.containers_complete(m0);
+        self.progress_bars_init(m0);
+        let mut w = self.world.borrow_mut();
+        if let Some((f, m)) = outer_floor {
+            w.deleg_floor = f;
+            w.deleg_mark = m;
+        }
+        let rest = std::mem::replace(&mut w.dirty, outer_dirty);
+        w.dirty.append(rest);
+        done
+    }
+
+    /// The componentComplete() of the objects from `n0` on that have deferred properties,
+    /// last created first: each executes the ones not executed yet, in the order of its
+    /// classes (`types::deferred_names`), and completes them all: their objects'
+    /// Component.onCompleted runs here, before that of the creation they are part of.
+    fn execute_deferred(&mut self, n0: usize) {
+        let mut ids: Vec<usize> = {
+            let w = self.world.borrow();
+            if w.deferred_rows.is_empty() && w.deferred_begun.is_empty() {
+                return;
+            }
+            (w.deferred_rows.keys())
+                .chain(w.deferred_begun.keys())
+                .copied()
+                .filter(|&i| i >= n0)
+                .collect()
+        };
+        ids.sort_unstable_by(|a, b| b.cmp(a));
+        ids.dedup();
+        for id in ids {
+            let names = {
+                let w = self.world.borrow();
+                if w.dead.contains(&id) || !w.items.holds(id) {
+                    Rc::from([])
+                } else {
+                    crate::types::deferred_names(&w.items[id].types)
+                }
+            };
+            for name in names.iter() {
+                let begun = {
+                    let mut w = self.world.borrow_mut();
+                    w.deferred_begun.get_mut(&id).and_then(|b| {
+                        let k = b.iter().position(|x| x.0 == *name)?;
+                        Some(b.remove(k).1)
+                    })
+                };
+                let done = match begun {
+                    Some(done) => done,
+                    None => self.begin_deferred(id, name),
+                };
+                for i in done.into_iter().rev() {
+                    self.run_handler(i, Sym::new("Component.onCompleted"));
+                    self.settle();
+                }
+            }
+            let mut w = self.world.borrow_mut();
+            w.deferred_rows.remove(&id);
+            w.deferred_begun.remove(&id);
+        }
+    }
+
     fn lazy_decl(
         &mut self,
         object: &Object,
@@ -29893,16 +30484,10 @@ impl Eng<'_> {
                 }
                 let mut w = self.world.borrow_mut();
                 let enum_target = w.items[id].enum_target(sym);
-                let panel_exclusion = matches!(name, "exclusiveZone" | "exclusionMode")
-                    && w.items[id].types.iter().any(|t| t == "PanelWindow");
                 let prev = w.items[id]
                     .props
                     .get_sym(sym)
                     .and_then(|p| p.binding.clone());
-                // An Image's `sourceSize` is none until it is written: the write of the value
-                // some of whose properties an object sets is a change whatever they are.
-                let image_size = name.starts_with("sourceSize.")
-                    && w.items[id].types.iter().any(|t| t == "Image");
                 w.clear_binding_sym(id, sym);
                 // QQuickPropertyChanges keeps the literals and the bindings it assigns in two
                 // lists, each in the order QmlIR stored them ([`World::state_changes`]).
@@ -29923,9 +30508,7 @@ impl Eng<'_> {
                 {
                     p.seq = seq;
                 }
-                // PanelWindow's exclusion constants keep their queue position: their relative
-                // order decides exclusionMode (see `instantiate`).
-                let constant = !panel_exclusion && qmlir_constant(s, enum_target);
+                let constant = qmlir_constant(s, enum_target);
                 p.binding = Some(Code {
                     #[cfg(feature = "interp")]
                     body,
@@ -29934,20 +30517,6 @@ impl Eng<'_> {
                     func: None,
                 });
                 let k = (id, sym);
-                // A value type group is read, populated and written back once, after the
-                // object's signal handlers are connected (QmlUnitGenerator::generate lists
-                // group properties after them): QQuickImageBase::setSourceSize emits for
-                // the size read, which is not the unset one.
-                let size_group =
-                    matches!(name, "sourceSize.width" | "sourceSize.height") && w.image_base(id);
-                let size_key = (id, sym!("sourceSize"));
-                let size_sent = size_group && w.changed.iter().any(|c| c.0 == size_key);
-                if size_group && !constant {
-                    let now = w.image_source_size(id)[usize::from(name.ends_with("height"))];
-                    let n = w.changed.len();
-                    w.set_source_size(id, name, Value::Num(now));
-                    w.changed.truncate(n + usize::from(!size_sent));
-                }
                 if name == "text" {
                     w.text_literals.remove(&id);
                 }
@@ -29958,47 +30527,16 @@ impl Eng<'_> {
                     }
                     let n = w.changed.len();
                     let owed = w.notify_owed.len();
-                    w.focus_literal = (name == "focus").then_some(id);
+                    w.storing_literal = Some(k);
                     drop(w);
                     self.eval_binding(id, name);
-                    self.world.borrow_mut().focus_literal = None;
-                    // No change handlers fire for values set while populating, also for a
-                    // NOTIFY the setter withholds (QQuickLoader::setActive). The compilation
-                    // unit lists an object's attached properties after its signal handlers
-                    // (QmlUnitGenerator::generate), so `LayoutMirroring.enabled` does reach
-                    // `onMirroredChanged`.
+                    self.world.borrow_mut().storing_literal = None;
+                    // The setter emits from the write: the handlers connected by now hear
+                    // it, the ones this layer connects later in its binding table do not. A
+                    // NOTIFY the setter withholds (QQuickLoader::setActive) is not sent later.
                     let mut w = self.world.borrow_mut();
-                    if size_group && !size_sent {
-                        let at = w.changed[n..].iter().position(|c| c.0 == size_key);
-                        w.changed.truncate(n + at.map_or(0, |at| at + 1));
-                    } else if matches!(name, "visible" | "enabled") {
-                        // The handlers of its children are connected: those follow it.
-                        let mut k = 0;
-                        w.changed.retain(|c| {
-                            k += 1;
-                            k <= n || (c.0.0 != id && c.0.1 == sym)
-                        });
-                    } else if !name.starts_with("LayoutMirroring.") {
-                        // A value type property is written once, after the properties an
-                        // object sets of it and after its signal handlers are connected: that
-                        // write's change signal does reach them (`font.bold: true`).
-                        let whole = name
-                            .split_once('.')
-                            .map(|(head, _)| (id, Sym::new(head)))
-                            .filter(|k| w.changed[n..].iter().any(|(c, _)| c == k));
-                        w.changed.truncate(n);
-                        if !w.populated.is_empty() {
-                            let w = &mut *w;
-                            w.populated
-                                .retain(|k| w.changed.iter().any(|(c, _)| c == k));
-                        }
-                        if let Some(whole) = whole {
-                            w.group_populated(whole);
-                        }
-                    }
-                    if image_size {
-                        w.group_populated((id, sym!("sourceSize")));
-                    }
+                    let n = n.min(w.changed.len());
+                    let heard = w.changed.split_off(n);
                     let owed = owed.min(w.notify_owed.len());
                     for o in &mut w.notify_owed[owed..] {
                         o.2 = false;
@@ -30019,6 +30557,22 @@ impl Eng<'_> {
                     if name == "text" && w.text_edit(id) {
                         w.text_literals.insert(id);
                     }
+                    let outer = w.sched.cur();
+                    drop(w);
+                    for (key, cause) in heard {
+                        let mut w = self.world.borrow_mut();
+                        // A value type group is written back once, when it is populated.
+                        if let Some((k, heard)) = &mut w.group_write
+                            && *k == key
+                        {
+                            *heard = true;
+                            continue;
+                        }
+                        w.sched.establish(cause);
+                        drop(w);
+                        self.dispatch_changed(key.0, &key.1, true, false);
+                    }
+                    self.world.borrow_mut().sched.establish(outer);
                     return Ok(());
                 }
                 // An override replaces the base type's still-queued binding and is enabled at its
@@ -30035,9 +30589,6 @@ impl Eng<'_> {
                     _ => 0,
                 };
                 w.fresh_bind.insert(k, kind);
-                if image_size {
-                    w.group_populated((id, sym!("sourceSize")));
-                }
                 return Ok(());
             }
             crate::Value::Object(o)
@@ -30097,9 +30648,19 @@ impl Eng<'_> {
                 v => loose(v),
             }
         }
+        // The list of an item this writes to, also through an alias (`inner.data`).
+        let list = match w.items[id]
+            .props
+            .get_sym(sym)
+            .and_then(|p| p.alias_target())
+        {
+            Some((_, path)) if path.len() > 1 => path.last().cloned().unwrap_or_default(),
+            Some(_) => String::new(),
+            None => name.to_string(),
+        };
         // Objects listed in `children`/`data` stay visual children, not property values.
         if matches!(
-            name,
+            list.as_str(),
             "children" | "data" | "flickableData" | "flickableChildren"
         ) && let Value::Obj(o) = &val
             && let Some(a) = &o.borrow().array
@@ -30113,7 +30674,7 @@ impl Eng<'_> {
         w.clear_binding_sym(id, sym);
         // A list of object literals appends to the list (QQmlObjectCreator: one append each).
         if matches!(
-            name,
+            list.as_str(),
             "children" | "data" | "resources" | "flickableData" | "flickableChildren"
         ) {
             w.list_write = ListWrite::Append;
@@ -30670,6 +31231,9 @@ impl Eng<'_> {
                 tracing::warn!(target: "ri::binding", "Invalid use of Qt.binding() in a binding declaration. ({site})");
             }
             Ok(v) => {
+                if w.binding_errors.remove(&key).is_some() {
+                    w.held_errors.retain(|k| *k != key);
+                }
                 // An alias for a size: the reset size is the implicit one, also when that
                 // changes later.
                 if matches!(v, Value::Undefined)
@@ -36396,6 +36960,9 @@ impl Eng<'_> {
             {
                 self.bind_eval(item);
             }
+            if !self.world.borrow().text_stage.is_empty() {
+                self.world.borrow_mut().apply_text_stage(item, name);
+            }
             if !self.world.borrow().text_pending.is_empty() {
                 self.world.borrow_mut().apply_text_pending(item, name);
             }
@@ -36469,20 +37036,7 @@ impl Eng<'_> {
         if synced && conns {
             self.notify_synchronizers(item, name, false);
         }
-        // The one write of a value type property an object sets properties of tells its
-        // handlers, not an alias to it; the mark goes with the last part of the delivery.
-        let populated = !self.world.borrow().populated.is_empty() && {
-            let key = (item, Sym::new(name));
-            let mut w = self.world.borrow_mut();
-            if conns {
-                w.populated.remove(&key)
-            } else {
-                w.populated.contains(&key)
-            }
-        };
-        if !populated {
-            self.alias_changed(item, name, own, conns);
-        }
+        self.alias_changed(item, name, own, conns);
     }
 
     /// QQmlPropertyPrivate alias notify: a property alias emits its change signal with its
@@ -36982,11 +37536,18 @@ impl Eng<'_> {
                     continue;
                 }
                 let mut w = self.world.borrow_mut();
-                // A creation inside another one (createObject from a binding) has enabled its
-                // own bindings only: those of the objects made before it stay pending.
-                let from = w.creating_from;
-                w.fresh_bind.retain(|k, _| k.0 < from);
-                if !w.text_pending.is_empty() {
+                // QQmlData keeps a binding pending until it is enabled: by its own creation
+                // (QQmlObjectCreator::finalize walks its own allCreatedBindings only) or by a
+                // read (flushPendingBinding). What has not run stays pending: the bindings of
+                // the objects made before the creation that settles here, whose queue is set
+                // aside, and the ones a change being delivered holds back.
+                {
+                    let w = &mut *w;
+                    let from = w.creating_from;
+                    w.fresh_bind
+                        .retain(|k, _| k.0 < from || w.dirty.contains(k));
+                }
+                if !w.text_pending.is_empty() || !w.text_stage.is_empty() {
                     w.flush_text_pending_of(true);
                     drop(w);
                     continue;
@@ -38216,7 +38777,7 @@ fn negative_model_warning(model: &Value) {
         let line = format!("Model size of {n} is less than 0");
         elog::eprintln!("console: {line}");
         if let Some(sink) = crate::builtins::CONSOLE_SINK.get() {
-            sink(2, &line);
+            sink(crate::builtins::QML_WARNING, &line);
         }
     }
 }
@@ -38227,7 +38788,7 @@ fn qml_warning(w: &World, item: usize, msg: &str) {
     let line = format!("QML {ty}: {msg}");
     elog::eprintln!("console: {line}");
     if let Some(sink) = crate::builtins::CONSOLE_SINK.get() {
-        sink(2, &line);
+        sink(crate::builtins::QML_WARNING, &line);
     }
 }
 
@@ -48955,6 +49516,8 @@ TextInput { cursorPosition: 1; text: "foo" }"#,
             )
             .unwrap();
         rt.settle();
+        // Qt 6.12 writes `text` first here (the binding table is in reverse file order), so
+        // the cursor set after it stays; with the two swapped the text moves it to 3.
         assert_eq!(rt.get(root, "cursorPosition").to_number(), 1.0);
         rt.set(root, "text", Value::str("Foot Server"));
         rt.settle();

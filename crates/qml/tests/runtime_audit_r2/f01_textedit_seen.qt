@@ -1,0 +1,83 @@
+  e.text "hello world" c0 s0-0 "" len11
+cursor 2
+  e.selStart "hello world" c2 s2-2 "" len11
+  e.selEnd "hello world" c2 s2-2 "" len11
+  e.cursor "hello world" c2 s2-2 "" len11
+set empty, no selection
+  e.selStart "hello world" c0 s0-0 "" len0
+  e.selEnd "hello world" c0 s0-0 "" len0
+  e.cursor "hello world" c0 s0-0 "" len0
+  e.text "" c0 s0-0 "" len0
+  e.cursor "" c0 s0-0 "" len0
+= "" c0 s0-0 "" len0
+  e.text "one two" c0 s0-0 "" len7
+select 4,0
+  e.selText "one two" c0 s0-4 "one " len7
+  e.selEnd "one two" c0 s0-4 "one " len7
+set empty
+  e.selText "one two" c0 s0-0 "" len0
+  e.selEnd "one two" c0 s0-0 "" len0
+  e.text "" c0 s0-0 "" len0
+= "" c0 s0-0 "" len0
+  e.text "one two" c0 s0-0 "" len7
+select 4,0
+  e.selText "one two" c0 s0-4 "one " len7
+  e.selEnd "one two" c0 s0-4 "one " len7
+set x
+  e.selText "one two" c-1 s-1--1 "" len1
+  e.selStart "one two" c-1 s-1--1 "" len1
+  e.selEnd "one two" c-1 s-1--1 "" len1
+  e.text "x" c0 s0-0 "" len1
+= "x" c0 s0-0 "" len1
+cursor 1
+  e.selStart "x" c1 s1-1 "" len1
+  e.selEnd "x" c1 s1-1 "" len1
+  e.cursor "x" c1 s1-1 "" len1
+= "x" c1 s1-1 "" len1
+set y
+  e.text "y" c0 s0-0 "" len1
+  e.selStart "y" c0 s0-0 "" len1
+  e.selEnd "y" c0 s0-0 "" len1
+  e.cursor "y" c0 s0-0 "" len1
+= "y" c0 s0-0 "" len1
+  e.text "three four" c0 s0-0 "" len10
+select 0,5
+  e.selText "three four" c5 s0-5 "three" len10
+  e.selEnd "three four" c5 s0-5 "three" len10
+  e.cursor "three four" c5 s0-5 "three" len10
+set z
+  e.selText "three four" c-1 s-1--1 "" len1
+  e.selStart "three four" c-1 s-1--1 "" len1
+  e.selEnd "three four" c-1 s-1--1 "" len1
+  e.text "z" c0 s0-0 "" len1
+  e.selStart "z" c0 s0-0 "" len1
+  e.selEnd "z" c0 s0-0 "" len1
+  e.cursor "z" c0 s0-0 "" len1
+= "z" c0 s0-0 "" len1
+set zz
+  e.text "zz" c0 s0-0 "" len2
+= "zz" c0 s0-0 "" len2
+selectAll
+  e.selText "zz" c2 s0-2 "zz" len2
+  e.selEnd "zz" c2 s0-2 "zz" len2
+= "zz" c2 s0-2 "zz" len2
+set w
+  e.selText "zz" c-1 s-1--1 "" len1
+  e.selStart "zz" c-1 s-1--1 "" len1
+  e.selEnd "zz" c-1 s-1--1 "" len1
+  e.text "w" c0 s0-0 "" len1
+  e.selStart "w" c0 s0-0 "" len1
+  e.selEnd "w" c0 s0-0 "" len1
+  e.cursor "w" c0 s0-0 "" len1
+= "w" c0 s0-0 "" len1
+deselect
+= "w" c0 s0-0 "" len1
+insert
+  e.selStart "w" c2 s2-2 "" len3
+  e.selEnd "w" c2 s2-2 "" len3
+  e.cursor "w" c2 s2-2 "" len3
+  e.text "abw" c2 s2-2 "" len3
+= "abw" c2 s2-2 "" len3
+q "other" c0 s0-0 "" len5
+q "more" c0 s0-0 "" len4
+q "more" c2 s0-2 "mo" len4
