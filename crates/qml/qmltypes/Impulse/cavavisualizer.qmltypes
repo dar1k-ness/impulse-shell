@@ -1,0 +1,32 @@
+import QtQuick.tooling 1.2
+
+// The media controls' audio visualizer (crates/qml/src/cava.rs): bar heights computed in
+// process from the PipeWire monitor, no `cava` program.
+Module {
+    Component {
+        file: "cava.rs"
+        name: "ImpulseCavaVisualizer"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/CavaVisualizer 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "running"
+            type: "bool"
+            read: "running"
+            write: "setRunning"
+            notify: "runningChanged"
+            index: 0
+        }
+        Property {
+            name: "points"
+            type: "QVariantList"
+            read: "points"
+            notify: "pointsChanged"
+            index: 1
+            isReadonly: true
+        }
+        Signal { name: "runningChanged" }
+        Signal { name: "pointsChanged" }
+    }
+}

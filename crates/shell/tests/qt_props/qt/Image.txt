@@ -1,0 +1,57 @@
+a.sourceSize [size]: QSize(0, 0) | set QSize(3, 4) | reset QSize(0, 0) | bind QSize(3, 4) -> QSize(0, 0) -> QSize(3, 4) | reset QSize(0, 0)
+b.sourceSize [size]: QSize(0, 0) | set QSize(3, 4) | reset QSize(0, 0) | bind QSize(3, 4) -> QSize(0, 0) -> QSize(3, 4) | reset QSize(0, 0)
+c.sourceSize: QSize(0, 0)
+a.sourceClipRect [rect]: QRectF(0, 0, 0, 0) | set QRectF(1, 2, 3, 4) | reset QRectF(0, 0, 0, 0) | bind QRectF(1, 2, 3, 4) -> QRectF(0, 0, 0, 0) -> QRectF(1, 2, 3, 4) | reset QRectF(0, 0, 0, 0)
+b.sourceClipRect [rect]: QRectF(0, 0, 0, 0) | set QRectF(1, 2, 3, 4) | reset QRectF(0, 0, 0, 0) | bind QRectF(1, 2, 3, 4) -> QRectF(0, 0, 0, 0) -> QRectF(1, 2, 3, 4) | reset QRectF(0, 0, 0, 0)
+c.sourceClipRect: QRectF(0, 0, 0, 0)
+a.width [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.width [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.width: 0
+a.height [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.height [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.height: 0
+a.palette [skip]: QQuickPalette(PTR) | reset QQuickPalette(PTR)
+b.palette [skip]: QQuickPalette(PTR) | reset QQuickPalette(PTR)
+c.palette: QQuickPalette(PTR)
+a.anchors.left [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@0,0,0,0 | reset QQuickAnchorLine()@0,0,0,0 | bind QQuickAnchorLine()@0,0,0,0 -> QQuickAnchorLine()@0,0,0,0 -> QQuickAnchorLine()@0,0,0,0 | reset QQuickAnchorLine()@0,0,0,0
+b.anchors.left [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@11,0,0,0 | reset QQuickAnchorLine()@11,0,0,0 | bind QQuickAnchorLine()@11,0,0,0 -> QQuickAnchorLine()@11,0,0,0 -> QQuickAnchorLine()@11,0,0,0 | reset QQuickAnchorLine()@11,0,0,0
+c.anchors.left: QQuickAnchorLine()
+a.anchors.right [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@11,0,0,0 | reset QQuickAnchorLine()@11,0,0,0 | bind QQuickAnchorLine()@11,0,0,0 -> QQuickAnchorLine()@11,0,0,0 -> QQuickAnchorLine()@11,0,0,0 | reset QQuickAnchorLine()@11,0,0,0
+b.anchors.right [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@0,0,0,0 | reset QQuickAnchorLine()@0,0,0,0 | bind QQuickAnchorLine()@0,0,0,0 -> QQuickAnchorLine()@0,0,0,0 -> QQuickAnchorLine()@0,0,0,0 | reset QQuickAnchorLine()@0,0,0,0
+c.anchors.right: QQuickAnchorLine()
+a.anchors.horizontalCenter [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@6,0,0,0 | reset QQuickAnchorLine()@6,0,0,0 | bind QQuickAnchorLine()@6,0,0,0 -> QQuickAnchorLine()@6,0,0,0 -> QQuickAnchorLine()@6,0,0,0 | reset QQuickAnchorLine()@6,0,0,0
+b.anchors.horizontalCenter [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@6,0,0,0 | reset QQuickAnchorLine()@6,0,0,0 | bind QQuickAnchorLine()@6,0,0,0 -> QQuickAnchorLine()@6,0,0,0 -> QQuickAnchorLine()@6,0,0,0 | reset QQuickAnchorLine()@6,0,0,0
+c.anchors.horizontalCenter: QQuickAnchorLine()
+a.anchors.top [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@0,0,0,0 | reset QQuickAnchorLine()@0,0,0,0 | bind QQuickAnchorLine()@0,0,0,0 -> QQuickAnchorLine()@0,0,0,0 -> QQuickAnchorLine()@0,0,0,0 | reset QQuickAnchorLine()@0,0,0,0
+b.anchors.top [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@0,11,0,0 | reset QQuickAnchorLine()@0,11,0,0 | bind QQuickAnchorLine()@0,11,0,0 -> QQuickAnchorLine()@0,11,0,0 -> QQuickAnchorLine()@0,11,0,0 | reset QQuickAnchorLine()@0,11,0,0
+c.anchors.top: QQuickAnchorLine()
+a.anchors.bottom [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@0,13,0,0 | reset QQuickAnchorLine()@0,13,0,0 | bind QQuickAnchorLine()@0,13,0,0 -> QQuickAnchorLine()@0,13,0,0 -> QQuickAnchorLine()@0,13,0,0 | reset QQuickAnchorLine()@0,13,0,0
+b.anchors.bottom [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@0,2,0,0 | reset QQuickAnchorLine()@0,2,0,0 | bind QQuickAnchorLine()@0,2,0,0 -> QQuickAnchorLine()@0,2,0,0 -> QQuickAnchorLine()@0,2,0,0 | reset QQuickAnchorLine()@0,2,0,0
+c.anchors.bottom: QQuickAnchorLine()
+a.anchors.verticalCenter [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@0,7,0,0 | reset QQuickAnchorLine()@0,7,0,0 | bind QQuickAnchorLine()@0,7,0,0 -> QQuickAnchorLine()@0,7,0,0 -> QQuickAnchorLine()@0,7,0,0 | reset QQuickAnchorLine()@0,7,0,0
+b.anchors.verticalCenter [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@0,7,0,0 | reset QQuickAnchorLine()@0,7,0,0 | bind QQuickAnchorLine()@0,7,0,0 -> QQuickAnchorLine()@0,7,0,0 -> QQuickAnchorLine()@0,7,0,0 | reset QQuickAnchorLine()@0,7,0,0
+c.anchors.verticalCenter: QQuickAnchorLine()
+a.anchors.baseline [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@0,0,0,0 | reset QQuickAnchorLine()@0,0,0,0 | bind QQuickAnchorLine()@0,0,0,0 -> QQuickAnchorLine()@0,0,0,0 -> QQuickAnchorLine()@0,0,0,0 | reset QQuickAnchorLine()@0,0,0,0
+b.anchors.baseline [line]: QQuickAnchorLine()@0,0,0,0 | set QQuickAnchorLine()@0,0,0,0 | reset QQuickAnchorLine()@0,0,0,0 | bind QQuickAnchorLine()@0,0,0,0 -> QQuickAnchorLine()@0,0,0,0 -> QQuickAnchorLine()@0,0,0,0 | reset QQuickAnchorLine()@0,0,0,0
+c.anchors.baseline: QQuickAnchorLine()
+a.anchors.leftMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.anchors.leftMargin [num]: 11 | set 14 | reset 11 | bind 14 -> 11 -> 14 | reset 11
+c.anchors.leftMargin: 0
+a.anchors.rightMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.anchors.rightMargin [num]: 11 | set 14 | reset 11 | bind 14 -> 11 -> 14 | reset 11
+c.anchors.rightMargin: 0
+a.anchors.topMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.anchors.topMargin [num]: 11 | set 14 | reset 11 | bind 14 -> 11 -> 14 | reset 11
+c.anchors.topMargin: 0
+a.anchors.bottomMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.anchors.bottomMargin [num]: 11 | set 14 | reset 11 | bind 14 -> 11 -> 14 | reset 11
+c.anchors.bottomMargin: 0
+a.anchors.fill [item]: null@0,0,0,0 | set <other>@0,0,11,13 | reset null@0,0,11,13 | bind <other>@0,0,11,13 -> null@0,0,11,13 -> <other>@0,0,11,13 | reset null@0,0,11,13
+b.anchors.fill [item]: null@0,0,0,0 | set <other>@11,11,-11,-9 | reset null@11,11,-11,-9 | bind <other>@11,11,-11,-9 -> null@11,11,-11,-9 -> <other>@11,11,-11,-9 | reset null@11,11,-11,-9
+c.anchors.fill: null
+a.anchors.centerIn [item]: null@0,0,0,0 | set <other>@6,7,0,0 | reset null@6,7,0,0 | bind <other>@6,7,0,0 -> null@6,7,0,0 -> <other>@6,7,0,0 | reset null@6,7,0,0
+b.anchors.centerIn [item]: null@0,0,0,0 | set <other>@6,7,0,0 | reset null@6,7,0,0 | bind <other>@6,7,0,0 -> null@6,7,0,0 -> <other>@6,7,0,0 | reset null@6,7,0,0
+c.anchors.centerIn: null
+a.antialiasing [bool]: false | set true | reset false | bind true -> false -> true | reset false
+b.antialiasing [bool]: false | set true | reset false | bind true -> false -> true | reset false
+c.antialiasing: false

@@ -1,0 +1,48 @@
+(function(){ var w = Qt.locale("en_US").weekDays; var r = w.pop(); return r + "|" + w.length })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; var r = w.shift(); return r + "|" + w.length })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; var r = w.unshift(7); return r + "|" + w.length })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; var r = w.splice(0, 1); return r + "|" + w.length })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w.sort(function(a, b){ return b - a }); return w.join(",") })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w.reverse(); return w.join(",") })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w.length = 0; return w.length })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; w.length = 9; return w.length })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; w.fill(0); return w.join(",") })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; var r = delete w[0]; return r + "|" + w.join(",") })()
+=> THROW TypeError: Cannot delete from a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w[7] = 1; return w.length })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w.foo = 1; return w.foo + "|" + Object.keys(w).join(",") })()
+=> string:1|0,1,2,3,4
+(function(){ "use strict"; var w = Qt.locale("en_US").weekDays; w[0] = 6; return w[0] })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w.copyWithin(0, 1); return w.join(",") })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; return Object.isFrozen(w) + "|" + Object.isExtensible(w) + "|" + JSON.stringify(Object.getOwnPropertyDescriptor(w, "0")) + "|" + JSON.stringify(Object.getOwnPropertyDescriptor(w, "length")) })()
+=> string:false|true|undefined|undefined
+(function(){ var w = Qt.locale("en_US").weekDays; return Object.getOwnPropertyNames(Object.getPrototypeOf(w)).join(",") + "|" + (Object.getPrototypeOf(Object.getPrototypeOf(w)) === Array.prototype) + "|" + (Object.getPrototypeOf(w) === Object.getPrototypeOf(Qt.locale("de_DE").uiLanguages)) })()
+=> string:valueOf,length,shift,unshift,push,pop|true|true
+(function(){ var w = Qt.locale("en_US").weekDays; return [w.indexOf(3), w.includes(3), w.reduce(function(a, b){ return a + b }, 0), w.toString(), w.valueOf() === w, [0].concat(w).length, Array.from(w).length, [...w].length, w.constructor === Array].join("|") })()
+=> string:2|true|15|1,2,3,4,5|false|6|5|5|true
+(function(){ var l = Qt.locale("en_US"); l.weekDays = [1]; return l.weekDays.length })()
+=> THROW Error: Cannot assign QList<QQmlLocale::DayOfWeek> to QList<QQmlLocale::DayOfWeek>
+(function(){ var l = Qt.locale("en_US"); return (l.uiLanguages === l.uiLanguages) + "|" + (l.weekDays === Qt.locale("en_US").weekDays) })()
+=> string:true|false
+(function(){ var w = Qt.locale("en_US").weekDays; var p = Object.getPrototypeOf(w); return Object.getOwnPropertyNames(p).map(function(k){ var d = Object.getOwnPropertyDescriptor(p, k); return k + ":" + typeof d.value + typeof d.get + typeof d.set + d.writable + d.enumerable + d.configurable }).join("|") })()
+=> string:valueOf:functionundefinedundefinedtruefalsetrue|length:undefinedfunctionfunctionundefinedfalsetrue|shift:functionundefinedundefinedtruefalsetrue|unshift:functionundefinedundefinedtruefalsetrue|push:functionundefinedundefinedtruefalsetrue|pop:functionundefinedundefinedtruefalsetrue
+(function(){ var w = Qt.locale("en_US").weekDays; var v = w.valueOf(); return [typeof v, Object.prototype.toString.call(v), Array.isArray(v), v.length, v === w.valueOf(), String(v), Object.getPrototypeOf(v) === Object.getPrototypeOf(w), Object.getPrototypeOf(v) === Array.prototype].join("|") })()
+=> string:string|[object String]|false|9|true|1,2,3,4,5|false|false
+(function(){ var w = Qt.locale("en_US").weekDays; var p = Object.getPrototypeOf(w); return [Object.prototype.toString.call(p), p.length, Array.isArray(p), Object.keys(p).join(","), typeof p.valueOf, p.push === Array.prototype.push, p.pop === Array.prototype.pop, p.valueOf === Object.prototype.valueOf, p.hasOwnProperty("constructor"), w.hasOwnProperty("length"), w.hasOwnProperty(0), w.hasOwnProperty("foo"), "length" in w, 0 in w, 7 in w].join("|") })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; w.foo = 1; return [w.hasOwnProperty("foo"), "foo" in w, Object.getOwnPropertyNames(w).join(","), JSON.stringify(w), JSON.stringify(Object.getOwnPropertyDescriptor(w, "foo")), w.propertyIsEnumerable(0), w.propertyIsEnumerable("foo")].join("|") })()
+=> string:true|true|0,1,2,3,4,length|[1,2,3,4,5]|{"value":1,"writable":true,"enumerable":true,"configurable":true}|false|true
+(function(){ var w = Qt.locale("en_US").uiLanguages; var r = []; for (var k in w) r.push(k); return r.join(",") + "|" + Object.entries(w).join(";") + "|" + JSON.stringify(Object.getOwnPropertyDescriptors(w)) })()
+=> string:0,1,2,3|0,en-Latn-US;1,en-US;2,en-Latn;3,en|{"0":{"value":"en-Latn-US","writable":true,"enumerable":true,"configurable":true},"1":{"value":"en-US","writable":true,"enumerable":true,"configurable":true},"2":{"value":"en-Latn","writable":true,"enumerable":true,"configurable":true},"3":{"value":"en","writable":true,"enumerable":true,"configurable":true},"length":{"value":"en","writable":true,"enumerable":true,"configurable":true}}

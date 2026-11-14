@@ -1,0 +1,18 @@
+#include <stdio.h>
+#include "util.h"
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+/* A point. TODO: 3d */
+typedef struct point { double x, y; } point_t;
+static const char *names[] = { "a", "b\n", NULL };
+int main(int argc, char **argv) {
+    unsigned long n = 0xFFul + 017 + 1.5e-3f;
+    point_t p = { .x = 1.0, .y = -2 };
+    for (size_t i = 0; i < sizeof names / sizeof *names; ++i) {
+        if (names[i] == NULL) break;
+        printf("%zu: %s %c\n", i, names[i], 'x');
+    }
+#ifdef DEBUG
+    fprintf(stderr, "p = (%f, %f)\n", p.x, p.y);
+#endif
+    return MAX(argc, 1) ? EXIT_SUCCESS : 1; // done
+}

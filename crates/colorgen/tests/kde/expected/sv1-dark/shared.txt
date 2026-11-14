@@ -1,0 +1,5 @@
+.config/konsolerc	seed-000000-dark
+.local/share/konsole/Profile 1.profile	seed-000000-dark
+.local/share/konsole/TempMyou.profile	seed-000000-dark
+dbus.log	seed-000000-dark
+outcome.txt	seed-000000-dark

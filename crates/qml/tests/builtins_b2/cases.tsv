@@ -1,0 +1,818 @@
+B2-11	[].forEach(undefined)
+B2-11	[].every()
+B2-11	[].find()
+B2-11	[].findIndex()
+B2-11	[].some()
+B2-11	[].reduce(undefined, 0)
+B2-11	[].reduceRight(undefined, 0)
+B2-11	[1].forEach(5)
+B2-12	Array.from([], 5)
+B2-13	Math.hypot(1e200, 1e200)
+B2-13	Math.hypot(1e-200, 1e-200)
+B2-13	1 / Math.hypot()
+B2-13	Math.hypot(3, 4)
+B2-13	Math.hypot(NaN, Infinity)
+B2-13	Math.hypot(1, NaN)
+B2-14	JSON.stringify({a:1}, null, new Number(2))
+B2-14	JSON.stringify({a:1}, null, new String("-"))
+B2-14	JSON.stringify([1], null, "😀😀😀😀😀😀😀").length
+B2-14	JSON.stringify([1], null, 20)
+B2-14	JSON.stringify([1], null, 2.9)
+B2-14	JSON.stringify([1], null, "abcdefghijklmnop")
+B2-15	Error.prototype.toString.call(5)
+B2-15	Error.prototype.toString.call({name: "N", message: "m"})
+B2-16	Object.getPrototypeOf(TypeError) === Error
+B2-16	Object.getPrototypeOf(RangeError) === Error
+B2-16	Object.getPrototypeOf(Error) === Function.prototype
+B2-17	new Array(16777217).length
+B2-17	Array(20000000).length
+B2-17	(function(){ var a = []; a.length = 7000000; return a.length })()
+B2-17	(function(){ var a = []; a[4294967294] = 1; return a.length })()
+B2-17	(function(){ var a = new Array(16777217); a[16777216] = 7; return a[16777216] + " " + a[5] + " " + (5 in a) + " " + (16777216 in a) + " " + Object.keys(a) })()
+B2-17	Array.prototype.push.call({length: 2**53-1}, 1)
+B2-4	Qt.hsla(0.5, 0.5, 0.5)
+B2-4	Qt.hsva(0.5, 0.5, 0.5)
+B2-4	Qt.rgba(1, 1, 1, undefined)
+B2-4	Qt.rgba(1, 1, 1)
+B2-4	Qt.hsla(NaN, 1, 0.5, 1)
+B2-4	Qt.hsva(NaN, 1, 1, 1)
+B2-4	Qt.rgba(NaN, 1, 1, 1)
+B2-6	Qt.rgba(1, 0)
+B2-6	Qt.rgba()
+B2-6	Qt.hsla(1, 0)
+B2-6	Qt.hsva(1, 0)
+B2-6	Qt.rgba(1, 1, 1, 1, 1)
+B2-5	Qt.color("nonsense")
+B2-5	Qt.color("#ff000")
+B2-5	Qt.color("red")
+B2-6	Qt.color()
+B2-5	Qt.color(5)
+B2-5	Qt.lighter("nonsense")
+B2-5	Qt.darker("nonsense")
+B2-5	Qt.alpha("nonsense", 0.5)
+B2-5	Qt.tint("nonsense", "red")
+B2-5	Qt.lighter("red", "x")
+B2-5	Qt.darker("red", "x")
+B2-5	Qt.lighter("red", 1e10)
+B2-5	Qt.darker("red", 1e10)
+B2-5	Qt.lighter("red")
+B2-6	Qt.lighter()
+B2-6	Qt.lighter("red", 1.5, 3)
+B2-6	Qt.darker()
+B2-6	Qt.alpha("red")
+B2-6	Qt.alpha("red", 0.5)
+B2-6	Qt.alpha("red", 0.5, 1)
+B2-2	"" + Qt.resolvedUrl("foo.qml")
+B2-2	"" + Qt.resolvedUrl("/a/../b/./c.png")
+B2-2	"" + Qt.resolvedUrl("/a//b")
+B2-2	"" + Qt.resolvedUrl("/a/b%20c d.png")
+B2-2	"" + Qt.resolvedUrl("file:/x/y")
+B2-2	"" + Qt.resolvedUrl(Qt.url("/a b"))
+B2-2	"" + Qt.resolvedUrl(null)
+B2-2	"" + Qt.resolvedUrl(undefined)
+B2-2	"" + Qt.resolvedUrl()
+B2-2	"" + Qt.resolvedUrl(5)
+B2-2	typeof Qt.resolvedUrl("/a")
+B2-2	Qt.resolvedUrl("") ? 1 : 2
+B2-2	"" + Qt.resolvedUrl("")
+B2-2	"" + Qt.resolvedUrl("http://e.x/a/../b")
+B2-2	"" + Qt.resolvedUrl("../up.qml")
+B2-2	"" + Qt.resolvedUrl("./a/./b/")
+B2-2	"" + Qt.resolvedUrl("/a/b?q=1#f")
+B2-2	"" + Qt.resolvedUrl("image://icon/x")
+B2-2	"" + Qt.resolvedUrl("qrc:/a/b")
+B2-2	"" + Qt.resolvedUrl("/a/b/")
+B2-2	"" + Qt.resolvedUrl("/a/%41%zz")
+B2-2	"" + Qt.resolvedUrl("/пример")
+B2-2	Qt.resolvedUrl("/a") == "file:///a"
+B2-2	Qt.resolvedUrl("/a") === "file:///a"
+B2-2	JSON.stringify(Qt.resolvedUrl("/a"))
+B2-2	Qt.resolvedUrl("/a").toString()
+B2-2	Qt.resolvedUrl("/a b").toString().length
+B2-6	Qt.md5()
+B2-7	Qt.md5(new ArrayBuffer(3))
+B2-6	Qt.md5("a", "b")
+B2-7	Qt.md5("a")
+B2-7	Qt.md5(5)
+B2-7	Qt.md5(new Uint8Array([1,2,3]).buffer)
+B2-7	Qt.md5(null)
+B2-7	Qt.md5(undefined)
+B2-8	(Qt.platform.os = "x", Qt.platform.os)
+B2-8	(Qt.foo = 5, Qt.foo)
+B2-8	(function(){ Qt.rgba = 5; return typeof Qt.rgba })()
+B2-8	(function(){ Qt.platform = 5; return typeof Qt.platform })()
+B2-8	(function(){ Qt.platform.foo = 5; return Qt.platform.foo })()
+B2-8	(function(){ "use strict"; Qt.foo2 = 5; return Qt.foo2 })()
+B2-8	(function(){ delete Qt.rgba; return typeof Qt.rgba })()
+B2-9	typeof console.assert + " " + typeof console.count + " " + typeof console.exception + " " + typeof console.profile + " " + typeof console.profileEnd + " " + typeof console.time + " " + typeof console.timeEnd + " " + typeof console.trace
+B2-9	console.warn.name
+B2-9	console.log.name + " " + console.debug.name + " " + console.info.name + " " + console.error.name + " " + console.assert.name + " " + console.time.name
+B2-9	Object.getOwnPropertyNames(console).sort().join()
+B2-9	console.assert(false, "b2 assert") + " " + console.count("b2") + " " + console.time("b2") + " " + console.timeEnd("b2") + " " + console.trace() + " " + console.exception("b2 exc") + " " + console.profile() + " " + console.profileEnd()
+B2-9	console.log.length + " " + console.assert.length + " " + console.time.length
+B2-10	Locale.CurrencySymbol + " " + Locale.MetricSystem + " " + Locale.OmitGroupSeparator
+B2-10	[Locale.LongFormat, Locale.ShortFormat, Locale.NarrowFormat, Locale.CurrencyIsoCode, Locale.CurrencySymbol, Locale.CurrencyDisplayName, Locale.MetricSystem, Locale.ImperialUSSystem, Locale.ImperialUKSystem, Locale.ImperialSystem, Locale.DefaultNumberOptions, Locale.OmitGroupSeparator, Locale.RejectGroupSeparator, Locale.OmitLeadingZeroInExponent, Locale.RejectLeadingZeroInExponent, Locale.IncludeTrailingZeroesAfterDot, Locale.RejectTrailingZeroesAfterDot].join()
+B2-10	[Locale.Sunday, Locale.Monday, Locale.Tuesday, Locale.Wednesday, Locale.Thursday, Locale.Friday, Locale.Saturday].join()
+B2-10	Object.getOwnPropertyNames(Locale).sort().join()
+B2-10	Object.keys(Locale).join()
+B2-9	Object.keys(console).join()
+B2-8	(function(){ Locale.LongFormat = 9; return Locale.LongFormat })()
+B2-8	(function(){ JSON.parse = 1; return typeof JSON.parse })()
+B2-8	(function(){ String.prototype.arg = 5; return typeof "".arg })()
+B2-8	(function(){ console.log = 1; return typeof console.log })()
+B2-8	(function(){ Math.max = 1; return typeof Math.max })()
+B2-8	(function(){ Math.PI = 1; return Math.PI })()
+B2-8	(function(){ Math.b2x = 1; return Math.b2x })()
+B2-8	(function(){ JSON.b2x = 1; return JSON.b2x })()
+B2-8	(function(){ console.b2x = 1; return console.b2x })()
+B2-8	(function(){ Array.prototype.b2x = 1; return [].b2x })()
+B2-8	(function(){ Array.prototype.push = 1; return typeof [].push })()
+B2-8	(function(){ Object.prototype.b2x = 1; return ({}).b2x })()
+B2-8	(function(){ Object.keys = 1; return typeof Object.keys })()
+B2-8	(function(){ Array.b2x = 1; return Array.b2x })()
+B2-8	(function(){ Number.prototype.toFixed = 1; return typeof (1).toFixed })()
+B2-8	(function(){ Date.now = 1; return typeof Date.now })()
+B2-8	(function(){ Function.prototype.call = 1; return typeof (function(){}).call })()
+B2-8	(function(){ "use strict"; JSON.parse = 1; return typeof JSON.parse })()
+B2-8	(function(){ "use strict"; String.prototype.arg = 5; return typeof "".arg })()
+B2-8	(function(){ "use strict"; Math.b2y = 1; return Math.b2y })()
+B2-8	(function(){ Object.defineProperty(Math, "b2z", {value: 1}); return Math.b2z })()
+B2-8	Object.isFrozen(Math) + " " + Object.isFrozen(JSON) + " " + Object.isFrozen(Qt) + " " + Object.isFrozen(console) + " " + Object.isFrozen(Array.prototype) + " " + Object.isFrozen(Object.prototype) + " " + Object.isFrozen(Locale) + " " + Object.isFrozen(Qt.platform)
+B2-8	Object.isExtensible(Math) + " " + Object.isExtensible(Qt) + " " + Object.isExtensible(Array.prototype) + " " + Object.isExtensible(Array)
+B2-19	qsTranslate("ctx", "a", "d", "x")
+B2-19	qsTranslate("ctx", "a %n", "d", 3)
+B2-19	qsTranslate("ctx", "a", "d", "x", 5)
+B2-19	qsTranslate("ctx", "a", 5)
+B2-19	qsTranslate("ctx")
+B2-19	qsTranslate(5, "a")
+B2-19	qsTrId(5)
+B2-19	qsTrId()
+B2-19	qsTrId("id", "x")
+B2-19	qsTrId("id %n", 4)
+B2-19	qsTr(5)
+B2-19	qsTr()
+B2-19	qsTr("a", 5)
+B2-19	qsTr("a %n", "d", "x")
+B2-19	qsTr("a %n", "d", 2)
+B2-21	Math.SQRT1_2 + " " + Math.LN10 + " " + Math.LOG2E + " " + Math.LOG10E
+B2-4	Qt.rgba(undefined, undefined, undefined)
+B2-4	Qt.rgba(1, 1, 1, undefined, undefined)
+B2-4	Qt.rgba(1, 1, undefined)
+B2-4	Qt.rgba("1", "0", "0")
+B2-4	Qt.rgba(2, -1, 0.5, 0.5)
+B2-4	Qt.rgba(1,1,1,NaN)
+B2-4	Qt.hsla(-1, 1, 0.5, 1)
+B2-4	Qt.hsla(2, 1, 0.5, 1)
+B2-4	Qt.hsva(-1, 1, 1)
+B2-4	Qt.hsla(1,1,1,1,1)
+B2-5	Qt.color(undefined)
+B2-5	Qt.color(null)
+B2-5	Qt.color("red", 1)
+B2-4	Qt.color(Qt.rgba(1,0,0,1))
+B2-5	Qt.color("")
+B2-5	Qt.color("transparent")
+B2-5	Qt.lighter("red", undefined)
+B2-5	Qt.lighter("red", NaN)
+B2-5	Qt.lighter("red", 0)
+B2-5	Qt.lighter("red", -1)
+B2-5	Qt.lighter("red", 1e7)
+B2-5	Qt.lighter("red", 21474836.47)
+B2-5	Qt.lighter("red", 21474836.48)
+B2-5	Qt.lighter("red", Infinity)
+B2-5	Qt.lighter(undefined)
+B2-5	Qt.lighter(null)
+B2-5	Qt.lighter(5)
+B2-5	Qt.lighter({})
+B2-5	Qt.lighter("")
+B2-5	Qt.darker("red")
+B2-5	Qt.darker("red", NaN)
+B2-5	Qt.darker("red", 0)
+B2-5	Qt.darker("red", -1)
+B2-5	Qt.darker("red", Infinity)
+B2-5	Qt.darker("red", 3)
+B2-4	Qt.darker(Qt.rgba(1,0,0,1), "2")
+B2-5	Qt.alpha("red", NaN)
+B2-5	Qt.alpha("red", 2)
+B2-5	Qt.alpha("red", -1)
+B2-5	Qt.alpha("red", "x")
+B2-5	Qt.alpha("red", undefined)
+B2-5	Qt.alpha(undefined, 0.5)
+B2-5	Qt.alpha(5, 0.5)
+B2-4	Qt.alpha(Qt.rgba(1,0,0,1), 0.25)
+B2-6	Qt.md5("a", undefined)
+B2-7	Qt.md5(new Uint8Array([255,254,65]).buffer)
+B2-7	Qt.md5(new Uint8Array([104,0,105]).buffer)
+B2-7	Qt.md5(new Uint8Array([1,2,3]))
+B2-6	Qt.md5([1,2,3])
+B2-6	Qt.md5({})
+B2-6	Qt.md5("\ud800")
+B2-6	Qt.md5("é")
+B2-4	Qt.rgba(1,1,undefined,undefined)
+B2-4	Qt.rgba(undefined,undefined,undefined,undefined)
+B2-4	Qt.rgba(1,1,1,0.5,undefined)
+B2-4	Qt.rgba(1,1,1,undefined,1)
+B2-4	Qt.rgba(1,1,1,"0.5")
+B2-4	Qt.rgba(1,1,1,null)
+B2-4	Qt.rgba(1,1,1,{})
+B2-5	Qt.lighter(undefined, undefined)
+B2-5	Qt.lighter("red", undefined, undefined)
+B2-5	Qt.lighter("red", 2, undefined)
+B2-5	Qt.lighter("red", null)
+B2-5	Qt.lighter("red", "2")
+B2-5	Qt.lighter("red", {})
+B2-5	Qt.alpha("red", 0.5, undefined)
+B2-5	Qt.alpha(undefined, undefined)
+B2-5	Qt.color(undefined, undefined)
+B2-5	Qt.color(Symbol())
+B2-6	Qt.md5(Symbol())
+B2-5	Qt.lighter("red", 1.5).valid
+B2-5	Qt.lighter("red", NaN).valid
+B2-5	Qt.lighter("#80ff0000", 1.5)
+B2-5	Qt.lighter("#12345", 1.5)
+B2-4	Qt.rgba(1,1,1,Symbol())
+B2-5	Qt.lighter("red", Symbol())
+B2-4	Qt.hsla(0.5,0.5,undefined)
+B2-4	Qt.hsva(0.2,0.5,0.5,undefined)
+B2-4	Qt.hsla()
+B2-4	Qt.hsva(1)
+B2-4	Qt.hsva(1,1,1,1,1)
+B2-2	"" + Qt.resolvedUrl("a b")
+B2-2	"" + Qt.resolvedUrl("a%20b")
+B2-2	"" + Qt.resolvedUrl("a%2Fb%3fc%23d%25e")
+B2-2	"" + Qt.resolvedUrl("a?x=1 2#f g")
+B2-2	"" + Qt.resolvedUrl("http://Example.COM/a/../b//c/./d")
+B2-2	"" + Qt.resolvedUrl("HTTP://x/a b%20c?q=%41 b#%41 c")
+B2-2	"" + Qt.resolvedUrl("qrc:/a/../b//c")
+B2-2	"" + Qt.resolvedUrl("//host/p/../q")
+B2-2	"" + Qt.resolvedUrl("#frag")
+B2-2	"" + Qt.resolvedUrl("?q")
+B2-2	"" + Qt.resolvedUrl("a/%e4")
+B2-2	"" + Qt.resolvedUrl("ä/€")
+B2-2	"" + Qt.resolvedUrl("a/%C3%A4")
+B2-2	"" + Qt.resolvedUrl("/a%")
+B2-2	"" + Qt.resolvedUrl("C:/x")
+B2-2	"" + Qt.resolvedUrl("file:")
+B2-2	"" + Qt.resolvedUrl("FILE:///A/../B")
+B2-2	"" + Qt.resolvedUrl("mailto:x@y")
+B2-2	"" + Qt.resolvedUrl("/a/b/../../../c")
+B2-2	"" + Qt.resolvedUrl("..")
+B2-2	"" + Qt.resolvedUrl(".")
+B2-2	"" + Qt.resolvedUrl("a\\b")
+B2-2	"" + Qt.resolvedUrl(" /a ")
+B2-2	"" + Qt.resolvedUrl("a/..")
+B2-2	"" + Qt.resolvedUrl("a/../")
+B2-2	"" + Qt.resolvedUrl("a//b///c")
+B2-2	"" + Qt.resolvedUrl("file:///a//b")
+B2-2	"" + Qt.resolvedUrl("file://host/a/../b")
+B2-2	"" + Qt.resolvedUrl("file:a/b")
+B2-2	"" + Qt.resolvedUrl("image://prov/a/../b//c")
+B2-2	"" + Qt.resolvedUrl("/")
+B2-2	"" + Qt.resolvedUrl("/a/%7Eb%2D%2e")
+B2-2	"" + Qt.resolvedUrl("/a/%3A%40%21%24%26%27%28%29%2A%2B%2C%3B%3D")
+B2-2	"" + Qt.resolvedUrl("/a/<>\"{}|^`[]")
+B2-2	"" + Qt.resolvedUrl("/a/%3C%3E%22%7B%7D%7C%5E%60%5B%5D%5C")
+B2-2	"" + Qt.resolvedUrl("/a/%00%01%7f%20")
+B2-2	"" + Qt.resolvedUrl("x.png", null)
+B2-2	"" + Qt.resolvedUrl("x.png", undefined)
+B2-2	"" + Qt.resolvedUrl("x.png", 5)
+B2-2	"" + Qt.resolvedUrl("x.png", {})
+B2-2	"" + Qt.resolvedUrl("x.png", root)
+B2-2	"" + Qt.resolvedUrl("x.png", root, 1)
+B2-2	"" + Qt.resolvedUrl("x.png", undefined, undefined)
+B2-2	"" + Qt.resolvedUrl(new String("x.png"))
+B2-2	"" + Qt.resolvedUrl({})
+B2-2	"" + Qt.resolvedUrl(true)
+B2-2	"" + Qt.resolvedUrl(Symbol())
+B2-2	"" + Qt.resolvedUrl(Qt.url("a/../b c%20d"))
+B2-2	"" + Qt.url("a/../b//c")
+B2-2	Qt.resolvedUrl("/a") == Qt.resolvedUrl("/a")
+B2-2	Qt.resolvedUrl("/a") === Qt.resolvedUrl("/a")
+B2-2	JSON.stringify(Qt.resolvedUrl("/a b"))
+B2-2	Qt.resolvedUrl("/a b").toString()
+B2-2	String(Qt.resolvedUrl("/a b"))
+B2-2	Qt.resolvedUrl("/a b") + "/c"
+B2-2	Object.prototype.toString.call(Qt.resolvedUrl("/a"))
+B2-2	Qt.resolvedUrl("/a").length
+B2-2	"" + Qt.resolvedUrl("/a/%41%zz?q=%41#%41")
+B2-2	"" + Qt.resolvedUrl("/a/%41?q=%41%zz#%41")
+B2-2	"" + Qt.resolvedUrl("/a/%41?q=%41#%41%z")
+B2-2	"" + Qt.resolvedUrl("/a?<>\"{}|^`[]\\ %20%3C%5B%23%26%3D%2B%3F%2F")
+B2-2	"" + Qt.resolvedUrl("/a#<>\"{}|^`[]\\ %20%3C%5B%23%26%3D%2B%3F%2F")
+B2-2	"" + Qt.resolvedUrl("/a\tb\nc\u0001\u007f")
+B2-2	"" + Qt.resolvedUrl("/a:b@c!$&'()*+,;=")
+B2-2	"" + Qt.resolvedUrl("a:b")
+B2-2	"" + Qt.resolvedUrl("./a:b")
+B2-2	"" + Qt.resolvedUrl("1a:b")
+B2-2	"" + Qt.resolvedUrl("a+b-c.d:/x")
+B2-2	"" + Qt.resolvedUrl("http://User:Pw@HOST:80/p")
+B2-2	"" + Qt.resolvedUrl("http://h%41st/p")
+B2-2	"" + Qt.resolvedUrl("//HOST/a//b/./c")
+B2-2	"" + Qt.resolvedUrl("///a//b")
+B2-2	"" + Qt.resolvedUrl("////a")
+B2-2	"" + Qt.resolvedUrl("a/./b/../../../../c")
+B2-2	"" + Qt.resolvedUrl("../../../../../../x")
+B2-2	"" + Qt.resolvedUrl("a/b/..")
+B2-2	"" + Qt.resolvedUrl("a/b/.")
+B2-2	"" + Qt.resolvedUrl("a/...")
+B2-2	"" + Qt.resolvedUrl("a/.b/..c")
+B2-2	"" + Qt.resolvedUrl("?a/../b")
+B2-2	"" + Qt.resolvedUrl("x?a//b#c//d/../e")
+B2-2	"" + Qt.resolvedUrl("/a/%2e%2e/b")
+B2-2	"" + Qt.resolvedUrl("/a/%2E/b")
+B2-2	"" + Qt.resolvedUrl("/%F0%9F%98%80/%ED%A0%80/%C0%80/%EF%BF%BD")
+B2-2	"" + Qt.resolvedUrl("/a%2520b")
+B2-2	"" + Qt.resolvedUrl("\ud83d\ude00")
+B2-2	"" + Qt.resolvedUrl("/a", null)
+B2-2	"" + Qt.resolvedUrl("", null)
+B2-2	"" + Qt.resolvedUrl("http://a/b", null)
+B2-6	Qt.md5("a\ud800b")
+B2-6	Qt.md5("a\ud800")
+B2-6	Qt.md5("\ud83d\ude00")
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return a.length + " " + a[70000] + " " + (69999 in a) + " " + Object.keys(a) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var n = 0; a.forEach(function(){ n++ }); return n })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var k = []; for (var i in a) k.push(i); return k.join() })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var n = 0, s = 0; for (var v of a) { n++; if (v) s += v } return n + " " + s })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return a.join("").length + " " + a.join("").slice(-3) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var s = String(a); return s.length + " " + s.slice(0, 5) + " " + s.slice(-2) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var b = a.concat([4]); return b.length + " " + b[70000] + " " + b[70001] + " " + (5 in b) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var b = [...a]; return b.length + " " + b[70000] + " " + (5 in b) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var b = a.slice(69999); return b.length + " " + b[1] + " " + (0 in b) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var b = a.slice(-1); return b.length + " " + b[0] })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return a.indexOf(3) + " " + a.lastIndexOf(3) + " " + a.includes(undefined) + " " + a.indexOf(undefined) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; a.reverse(); return a.length + " " + a[0] + " " + a[70000] + " " + a[69999] + " " + (1 in a) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return a.pop() + " " + a.length + " " + a.pop() + " " + a.length })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return a.shift() + " " + a.length + " " + a[69999] + " " + a[0] })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return a.unshift(0) + " " + a[70001] + " " + a[1] + " " + (70000 in a) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; a.push(4); return a.length + " " + a[70001] })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var r = a.splice(1, 69999); return r.length + " " + a.length + " " + a + " " + r[0] + " " + (1 in r) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var r = a.splice(70000, 1, 7, 8); return r + " " + a.length + " " + a[70000] + " " + a[70001] })()
+B2-17	(function(){ var a = [3,1]; a[70000] = 2; a.sort(); return a.length + " " + a[0] + a[1] + a[2] + " " + (3 in a) + " " + (70000 in a) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; a.fill(9, 69999); return a[69999] + " " + a[70000] + " " + (69998 in a) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var b = a.map(function(x){ return x * 2 }); return b.length + " " + b[70000] + " " + (5 in b) + " " + b[0] })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var b = a.filter(function(){ return true }); return b.length + " " + b })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return a.reduce(function(s, x){ return s + x }, 0) + " " + a.reduceRight(function(s, x){ return s + x }) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return a.some(function(x){ return x === 3 }) + " " + a.every(function(x){ return x > 0 }) + " " + a.findIndex(function(x){ return x === 3 }) + " " + a.find(function(x){ return x === undefined }) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var s = JSON.stringify(a); return s.length + " " + s.slice(0, 14) + " " + s.slice(-8) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; a.length = 3; return a.length + " " + (70000 in a) + " " + a + " " + Object.keys(a) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; a.length = 70000; return a.length + " " + (70000 in a) + " " + a[70000] })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; delete a[70000]; return a.length + " " + (70000 in a) + " " + Object.keys(a) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; a[2] = 5; a[3] = 6; return a.length + " " + a[2] + a[3] + " " + Object.keys(a) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return Object.getOwnPropertyNames(a).join() + " " + JSON.stringify(Object.getOwnPropertyDescriptor(a, "70000")) + " " + JSON.stringify(Object.getOwnPropertyDescriptor(a, "length")) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return Object.entries(a).join("|") + " " + Object.values(a) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var it = a.keys(), n = 0, last; for (var k of it) { n++; last = k } return n + " " + last })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var e = a.entries(), r; for (var x of e) r = x; return r.join() })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return Array.from(a).length + " " + Array.from(a)[70000] + " " + (5 in Array.from(a)) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; a.copyWithin(0, 69999); return a.length + " " + a[0] + " " + a[1] + " " + (0 in a) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; Object.freeze(a); a[5] = 1; a[70000] = 9; return a.length + " " + a[70000] + " " + (5 in a) + " " + Object.isFrozen(a) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; Object.defineProperty(a, "length", {writable: false}); a[70001] = 1; a[7] = 7; return a.length + " " + a[7] + " " + a[70001] })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return Math.max.apply(null, a) + " " + Function.prototype.apply.call(function(){ return arguments.length }, null, a) })()
+B2-17	Reflect.apply(Math.max, null, [,,-5])
+B2-17	Math.max.apply(null, [,,-5])	NaN
+B2-17	(function(a){ return typeof a + " " + String(a) + " " + (a === undefined) }).apply(null, [,1])	"undefined undefined true"
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return Math.max.apply(null, a.slice(69990)) })()	NaN
+B2-17	(function(){ var a = new Array(70000); a[0] = 1; return a.length + " " + a.join("").length + " " + Object.keys(a) + " " + a.indexOf(1) })()
+B2-17	(function(){ var a = new Array(70000); a.push(1); return a.length + " " + a[70000] + " " + Object.keys(a) })()
+B2-17	(function(){ var a = new Array(70000); a.unshift(1); return a.length + " " + a[0] + " " + Object.keys(a) })()
+B2-17	(function(){ var a = new Array(70000); for (var i = 0; i < 10; i++) a[i] = i; return a.length + " " + Object.keys(a).length + " " + a[9] + " " + a.lastIndexOf(9) })()
+B2-17	(function(){ var a = new Array(70000); for (var i = 69999; i >= 69990; i--) a[i] = i; return a.length + " " + Object.keys(a) })()
+B2-17	(function(){ var a = []; a.length = 70000; a.length = 5; a.push(1); return a.length + " " + Object.keys(a) })()
+B2-17	(function(){ var a = []; a[66000] = 1; a[70000] = 2; a[68000] = 3; return a.length + " " + Object.keys(a) + " " + a.filter(function(){ return true }) })()
+B2-17	(function(){ var a = []; a[4294967294] = 1; a[0] = 2; return a.length + " " + Object.keys(a) + " " + a[4294967294] })()
+B2-17	(function(){ var a = []; a[4294967294] = 1; try { a.push(2) } catch (e) { return e.name + " " + a.length + " " + a[4294967295] } return "no" })()
+B2-17	(function(){ var a = []; a[4294967295] = 1; return a.length + " " + Object.keys(a) })()
+B2-17	(function(){ var a = []; a[4294967294] = 1; a.length = 1; return a.length + " " + Object.keys(a).length })()
+B2-17	(function(){ var a = []; a[4294967294] = 1; return a.pop() + " " + a.length })()
+B2-17	(function(){ var a = []; a[4294967294] = 1; var b = a.slice(4294967290); return b.length + " " + b[4] + " " + (0 in b) })()
+B2-17	(function(){ var a = []; a[4294967294] = 1; return a.indexOf(1, 4294967290) + " " + a.lastIndexOf(1) + " " + a.includes(1, 4294967290) })()
+B2-17	(function(){ var a = new Array(4294967295); return a.length + " " + Object.keys(a).length + " " + a.lastIndexOf(1, 5) + " " + (4294967294 in a) })()
+B2-17	(function(){ try { new Array(4294967296) } catch (e) { return e.name } return "no" })()
+B2-17	(function(){ var a = []; try { a.length = 4294967296 } catch (e) { return e.name } return "no" })()
+B2-17	(function(){ var a = [1, 2, 3]; a.length = 4294967295; return a.length + " " + a.splice(4294967290).length + " " + a.length })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var b = a.slice(); return b.length + " " + b[70000] + " " + Object.keys(b) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var b = [0].concat(a, a); return b.length + " " + b[70001] + " " + b[140002] + " " + Object.keys(b).length })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return a.toString === Array.prototype.toString && a.toLocaleString().length })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; return Array.isArray(a) + " " + a.hasOwnProperty(70000) + " " + a.hasOwnProperty(69999) + " " + a.propertyIsEnumerable(70000) })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var [x, y, z] = a; return x + " " + y + " " + z })()
+B2-17	(function(){ var a = [1,2]; a[70000] = 3; var b = Object.assign([], a); return b.length + " " + b[70000] })()
+B2-8	(function(){ var a = [1]; a.join = function () { return 'J' }; return String(a) })()
+B2-8	(function(){ var r = /a/; r.exec = function () { return null }; return r.test('a') })()
+B2-8	(function(){ var o = {}; o.hasOwnProperty = 5; return typeof o.hasOwnProperty })()
+B2-8	(function(){ var o = {}; o.toString = function(){ return "x" }; return String(o) })()
+B2-8	(function(){ "use strict"; var a = [1]; a.join = function () { return 'J' }; return String(a) })()
+B2-8	(function(){ function F(){}; F.prototype = Object.create(Array.prototype); F.prototype.push = 1; return typeof F.prototype.push })()
+B2-8	(function(){ function F(){}; F.prototype.call = 1; F.bind = 2; return typeof F.prototype.call + " " + typeof F.bind })()
+B2-8	JSON.stringify(Object.getOwnPropertyDescriptor(Array.prototype, "join"))
+B2-8	JSON.stringify(Object.getOwnPropertyDescriptor(Array.prototype, "toString"))
+B2-8	JSON.stringify(Object.getOwnPropertyDescriptor(Array.prototype, "length"))
+B2-8	JSON.stringify(Object.getOwnPropertyDescriptor(Math, "PI"))
+B2-8	JSON.stringify(Object.getOwnPropertyDescriptor(Array, "prototype"))
+B2-8	JSON.stringify(Object.getOwnPropertyDescriptor(Array.prototype, "constructor"))
+B2-8	(function(){ var d = Object.getOwnPropertyDescriptor(Array.prototype, Symbol.iterator); return d.writable + " " + d.configurable })()
+B2-8	(function(){ var d = Object.getOwnPropertyDescriptor(Map.prototype, "size"); return typeof d.get + " " + d.configurable })()
+B2-8	(function(){ Array.prototype[Symbol.iterator] = 1; return typeof [][Symbol.iterator] })()
+B2-8	(function(){ Object.defineProperty(Array.prototype, "join", {value: 1}); return typeof [].join })()
+B2-8	(function(){ return delete Array.prototype.join })()
+B2-8	(function(){ "use strict"; delete Array.prototype.join; return "deleted" })()
+B2-8	(function(){ var m = new Map(); m.set = function(){ return 7 }; return typeof m.set === "function" && m.set(1, 2) === 7 })()
+B2-8	(function(){ class A extends Array { join() { return "c" } } return new A().join() })()
+B2-8	(function(){ var o = Object.create(Math); o.max = 5; return typeof o.max })()
+B2-8	(function(){ var f = function(){}; f.call = 5; f.name2 = 1; return typeof f.call })()
+B2-8	(function(){ var s = new String("a"); s.arg = 5; return typeof s.arg })()
+B2-8	(function(){ var e = new Error("m"); e.toString = function(){ return "E" }; e.name = "N"; e.message = "M"; return String(e) + e.name + e.message })()
+B2-8	(function(){ Number.MAX_VALUE = 1; Number.b2q = 2; return (Number.MAX_VALUE > 1) + " " + Number.b2q })()
+B2-8	(function(){ var p = Promise.resolve(1); p.then = 5; return typeof p.then })()
+B2-8	(function(){ var o = {}; o.constructor = 5; o.valueOf = 6; o.toLocaleString = 7; return o.constructor + o.valueOf + o.toLocaleString })()
+B2-8	(function(){ var o = {}; o.isPrototypeOf = 5; o.propertyIsEnumerable = 6; return typeof o.isPrototypeOf + typeof o.propertyIsEnumerable })()
+B2-8	(function(){ var o = {hasOwnProperty: 5, join: 6}; return o.hasOwnProperty + o.join })()
+B2-8	(function(){ var a = []; a["push"] = 5; var k = "pop"; a[k] = 6; return typeof a.push + typeof a.pop })()
+B2-17	(function(){ var o = {length: 2**53-1}; try { Array.prototype.unshift.call(o, 1) } catch (e) { return e.name + " " + o.length } return "no " + o.length })()
+B2-17	(function(){ var o = {length: 2**53-1}; try { Array.prototype.splice.call(o, 0, 0, 1) } catch (e) { return e.name + " " + o.length } return "no " + o.length })()
+B2-17	(function(){ var o = {length: 2**53-1}; try { Array.prototype.push.call(o, 1) } catch (e) { return e.name + " " + o.length + " " + o[9007199254740991] } return "no " + o.length })()
+B2-17	(function(){ var o = {length: 2**53+5}; return Array.prototype.pop.call(o) + " " + o.length })()
+B2-17	(function(){ var o = {length: 2**53-2}; return Array.prototype.push.call(o, 7) + " " + o.length + " " + o[9007199254740990] })()
+B2-17	(function(){ var o = {length: 4294967296, 4294967295: "x"}; return Array.prototype.pop.call(o) + " " + o.length })()
+B2-17	(function(){ var o = {length: 4294967295}; return Array.prototype.push.call(o, "a", "b") + " " + o.length + " " + o[4294967296] })()
+B2-17	(function(){ var o = {length: 4294967297, 4294967296: "z"}; return Array.prototype.indexOf.call(o, "z", 4294967290) + " " + Array.prototype.lastIndexOf.call(o, "z") + " " + Array.prototype.includes.call(o, "z", 4294967290) })()
+B2-17	(function(){ var o = {length: 4294967300, 4294967298: "q"}; var r = Array.prototype.slice.call(o, 4294967297, 4294967300); return r.length + " " + r[1] + " " + (0 in r) })()
+B2-17	(function(){ var o = {length: -5}; return Array.prototype.push.call(o, 1) + " " + o.length + " " + o[0] })()
+B2-17	(function(){ var o = {length: 4294967296, 0: "a"}; return Array.prototype.shift.call({length: 3, 0: "a", 2: "c"}) + " " + Array.prototype.join.call({length: 3, 0: "a", 2: "c"}) })()
+B2-17	(function(){ var o = {length: 2**53-1, 9007199254740990: "t"}; var r = Array.prototype.splice.call(o, 9007199254740990, 1); return r.length + " " + r[0] + " " + o.length })()
+Qt.url	Qt.url("/a/b%20c d.png") + ""
+Qt.url	Qt.url("a%2Fb%41%7e%zz?x%20y#f%20g") + ""
+Qt.url	Qt.url("HTTP://Ex%41mple.COM/%7Euser/a b") + ""
+Qt.url	Qt.url("") + ""
+Qt.url	Qt.url("file:///a/../b/./c") + ""
+Qt.url	Qt.url("/a/b?q=1 2&r=%26#frag ment") + ""
+Qt.url	Qt.url("a b") + ""
+Qt.url	Qt.url(Qt.url("/a/b%20c")) + ""
+Qt.url	Qt.url("%E4%BD%A0/ü") + ""
+Qt.url	Qt.url("mailto:A@B.c") + ""
+Qt.url	Qt.url("x:%2f%3F%23") + ""
+Qt.url	Qt.url("//HOST/p%25q") + ""
+Qt.url	(function(){ root.u = Qt.url("/a/b%20c"); return root.u + "" })()
+Qt.url	Qt.url("/a/b%20c d.png") == "/a/b c d.png"
+Qt.url	Qt.url("/a/b%20c d.png").toString()
+Qt.url	JSON.stringify(Qt.url("/a/b%20c d.png"))
+Qt.url	Qt.url("http://u%40s:p%20w@Host/%2e%2E/a%5Cb\\c") + ""
+Qt.url	Qt.url("a%2fb") + ""
+Qt.url	Qt.url("a%2f%20b%41") + ""
+Qt.url	Qt.url("?a%20b%3D%26%23") + ""
+Qt.url	Qt.url("#a%20b%23%25") + ""
+Qt.url	Qt.url("file:/a%20b") + ""
+Qt.url	Qt.url("FILE:///A%20b") + ""
+Qt.url	Qt.url("qrc:/a%20b") + ""
+Qt.url	Qt.url("/a/%C3%BC%FF") + ""
+Qt.url	Qt.url("/a\tb\nc") + ""
+Qt.url	Qt.url("  /a b  ") + ""
+Qt.url	Qt.url("/a%") + ""
+Qt.url	Qt.url("/a%2") + ""
+Qt.url	Qt.url("/%7b%7D%5b%5D%22%3c%3E%5e%60%7C") + ""
+Qt.url	Qt.url("/{}[]\"<>^`|") + ""
+Qt.url	Qt.url("http://[::1]:80/a b") + ""
+Qt.url	Qt.url(undefined) + ""
+Qt.url	Qt.url(1) + ""
+Qt.url	Qt.url("http://us%3Aer:pa%3Ass@h/") + ""
+Qt.url	Qt.url("http://u s%2F%3f%23%5B%5d:p:w%40@h/") + ""
+Qt.url	Qt.url("http://user@h/") + ""
+Qt.url	Qt.url("http://:pw@h/") + ""
+Qt.url	Qt.url("http://u:@h/") + ""
+Qt.url	Qt.url("http://@h/") + ""
+Qt.url	Qt.url("http://%41b%7e{}<>:c%41{}|^@H%41/") + ""
+Qt.url	Qt.url("//u%20v@h") + ""
+Qt.url	Qt.resolvedUrl("http://u%20v:p%20q@H/x") + ""
+Qt.url	Qt.url("http://a b/p") + ""
+Qt.url	Qt.url("http://a!b/p") + ""
+Qt.url	Qt.url("http://a\"b/p") + ""
+Qt.url	Qt.url("http://a$b/p") + ""
+Qt.url	Qt.url("http://a%b/p") + ""
+Qt.url	Qt.url("http://a&b/p") + ""
+Qt.url	Qt.url("http://a'b/p") + ""
+Qt.url	Qt.url("http://a(b/p") + ""
+Qt.url	Qt.url("http://a)b/p") + ""
+Qt.url	Qt.url("http://a*b/p") + ""
+Qt.url	Qt.url("http://a+b/p") + ""
+Qt.url	Qt.url("http://a,b/p") + ""
+Qt.url	Qt.url("http://a-b/p") + ""
+Qt.url	Qt.url("http://a.b/p") + ""
+Qt.url	Qt.url("http://a0b/p") + ""
+Qt.url	Qt.url("http://a:b/p") + ""
+Qt.url	Qt.url("http://a;b/p") + ""
+Qt.url	Qt.url("http://a<b/p") + ""
+Qt.url	Qt.url("http://a=b/p") + ""
+Qt.url	Qt.url("http://a>b/p") + ""
+Qt.url	Qt.url("http://a@b/p") + ""
+Qt.url	Qt.url("http://aAb/p") + ""
+Qt.url	Qt.url("http://a[b/p") + ""
+Qt.url	Qt.url("http://a\\b/p") + ""
+Qt.url	Qt.url("http://a]b/p") + ""
+Qt.url	Qt.url("http://a^b/p") + ""
+Qt.url	Qt.url("http://a_b/p") + ""
+Qt.url	Qt.url("http://a`b/p") + ""
+Qt.url	Qt.url("http://azb/p") + ""
+Qt.url	Qt.url("http://a{b/p") + ""
+Qt.url	Qt.url("http://a|b/p") + ""
+Qt.url	Qt.url("http://a}b/p") + ""
+Qt.url	Qt.url("http://a~b/p") + ""
+Qt.url	Qt.url("http://a%20b/p") + ""
+Qt.url	Qt.url("http://a%41b/p") + ""
+Qt.url	Qt.url("http://a%2Fb/p") + ""
+Qt.url	Qt.url("http://a%25b/p") + ""
+Qt.url	Qt.url("http://a%00b/p") + ""
+Qt.url	Qt.url("http://a..b/p") + ""
+Qt.url	Qt.url("http://.a/p") + ""
+Qt.url	Qt.url("http://a./p") + ""
+Qt.url	Qt.url("http://-a/p") + ""
+Qt.url	Qt.url("http://a-/p") + ""
+Qt.url	Qt.url("http://xn--a/p") + ""
+Qt.url	Qt.url("http://[::1]/p") + ""
+Qt.url	Qt.url("http://[::1/p") + ""
+Qt.url	Qt.url("http://1.2.3.4/p") + ""
+Qt.url	Qt.url("http://1.2.3/p") + ""
+Qt.url	Qt.url("http://0x7f.1/p") + ""
+Qt.url	Qt.url("http://A_B/p") + ""
+Qt.url	Qt.url("http:///p") + ""
+Qt.url	Qt.url("http://%/p") + ""
+Qt.url	Qt.url("http://a@b@h/") + ""
+Qt.url	Qt.url("http://u:p@h:80/") + ""
+Qt.url	Qt.url("http://h:/") + ""
+Qt.url	Qt.url("http://h:x/") + ""
+Qt.url	Qt.url("http://h:99999/") + ""
+Qt.url	Qt.url("http://:80/") + ""
+Qt.url	Qt.url("http://u@/") + ""
+Qt.url	Qt.url("file://ex ample/x") + ""
+Qt.url	Qt.url("qrc://a b/x") + ""
+Qt.url	Qt.url("foo://a^b/x") + ""
+Qt.url	Qt.url("//a b/x") + ""
+Qt.url	Qt.url("http://ab--c/p") + ""
+Qt.url	Qt.url("http://a_/p") + ""
+Qt.url	Qt.url("http://_a/p") + ""
+Qt.url	Qt.url("http://a.-b/p") + ""
+Qt.url	Qt.url("http://a-.b/p") + ""
+Qt.url	Qt.url("http://a.b-/p") + ""
+Qt.url	Qt.url("http://h:080/p") + ""
+Qt.url	Qt.url("http://h:0/p") + ""
+Qt.url	Qt.url("http://h:65535/p") + ""
+Qt.url	Qt.url("http://h:65536/p") + ""
+Qt.url	Qt.url("http://h: 80/p") + ""
+Qt.url	Qt.url("http://h:+80/p") + ""
+Qt.url	Qt.url("http://h:-1/p") + ""
+Qt.url	Qt.url("http://h:8 0/p") + ""
+Qt.url	Qt.url("http://[::1]:80/p") + ""
+Qt.url	Qt.url("http://[::1]x/p") + ""
+Qt.url	Qt.url("http://[v1.x]/p") + ""
+Qt.url	Qt.url("http://[1.2.3.4]/p") + ""
+Qt.url	Qt.url("http://[::FFFF:1.2.3.4]/p") + ""
+Qt.url	Qt.url("http://[0:0:0:0:0:0:0:1]/p") + ""
+Qt.url	Qt.url("http://[::g]/p") + ""
+Qt.url	Qt.url("http://1.2.3.4.5/p") + ""
+Qt.url	Qt.url("http://999.1.1.1/p") + ""
+Qt.url	Qt.url("http://1.2.3.256/p") + ""
+Qt.url	Qt.url("http://1.2.3.4./p") + ""
+Qt.url	Qt.url("http://a.1/p") + ""
+Qt.url	Qt.url("http://1/p") + ""
+Qt.url	Qt.url("http://0/p") + ""
+Qt.url	Qt.url("http://1a/p") + ""
+Qt.url	Qt.url("http://a1/p") + ""
+Qt.url	Qt.url("http://4294967295/p") + ""
+Qt.url	Qt.url("http://4294967296/p") + ""
+Qt.url	Qt.url("http://010.1/p") + ""
+Qt.url	Qt.url("http://08.1/p") + ""
+Qt.url	Qt.url("http://0x.1/p") + ""
+Qt.url	Qt.url("http://1.a/p") + ""
+Qt.url	Qt.url("http://1..2/p") + ""
+Qt.url	Qt.url("http://1.2.3.0x100/p") + ""
+Qt.url	Qt.url("http://0x7F/p") + ""
+Qt.url	Qt.url("http://a:b:c@h/p") + ""
+Qt.url	Qt.url("http://u%40x:p%3Ay@h/p") + ""
+Qt.url	Qt.url("http://u@h@/p") + ""
+Qt.url	Qt.url("http://%61/p") + ""
+Qt.url	Qt.url("http://A%2DB/p") + ""
+Qt.url	Qt.url("http://a%2Eb/p") + ""
+Qt.url	Qt.url("http://a%5Fb/p") + ""
+Qt.url	Qt.url("http://%2Da/p") + ""
+Qt.url	Qt.url("http://a%2E%2Eb/p") + ""
+Qt.url	Qt.url("http://www.Example.COM/p") + ""
+Qt.url	Qt.url("http://a.b.c.d.e./p") + ""
+Qt.url	Qt.url("http://a../p") + ""
+Qt.url	Qt.url("http://./p") + ""
+Qt.url	Qt.url("http://+1/p") + ""
+Qt.url	Qt.url("http://+1.2/p") + ""
+Qt.url	Qt.url("http://-1/p") + ""
+Qt.url	Qt.url("http://1.+2/p") + ""
+Qt.url	Qt.url("http:// 1/p") + ""
+Qt.url	Qt.url("http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/p") + ""
+Qt.url	Qt.url("http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/p") + ""
+Qt.url	Qt.url("http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc.ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd/p") + ""
+Qt.url	Qt.url("http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc.dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd/p") + ""
+Qt.url	Qt.url("http://[1:0:2:3:4:5:6:7]/p") + ""
+Qt.url	Qt.url("http://[1:0:0:2:0:0:0:3]/p") + ""
+Qt.url	Qt.url("http://[1:0:0:2:3:0:0:4]/p") + ""
+Qt.url	Qt.url("http://[::]/p") + ""
+Qt.url	Qt.url("http://[::1.2.3.4]/p") + ""
+Qt.url	Qt.url("http://[::ffff:102:304]/p") + ""
+Qt.url	Qt.url("http://[2001:DB8::1]/p") + ""
+Qt.url	Qt.url("http://[1::2%25eth0]/p") + ""
+Qt.url	Qt.url("http://[v1.X:y]/p") + ""
+Qt.url	Qt.url("http://[vA.x]/p") + ""
+Qt.url	Qt.url("http://[vg.x]/p") + ""
+Qt.url	Qt.url("http://[v1.]/p") + ""
+Qt.url	Qt.url("http://[v12.x]/p") + ""
+Qt.url	Qt.url("http://[v1.x y]/p") + ""
+Qt.url	Qt.url("http://[]/p") + ""
+Qt.url	Qt.url("http://[/p") + ""
+Qt.url	Qt.url("http://h:00000000000000000080/p") + ""
+Qt.url	Qt.url("http://u:p@h:1/p") + ""
+Qt.url	Qt.url("http://u:p@:1/p") + ""
+Qt.url	Qt.url("http://@:1/p") + ""
+Qt.url	Qt.url("http://%31.2/p") + ""
+Qt.url	Qt.url("http://:/p") + ""
+Qt.url	Qt.url("http://h::1/p") + ""
+Qt.url	Qt.url("http://h:1:2/p") + ""
+Qt.url	Qt.url("http://[::1]:/p") + ""
+Qt.url	Qt.url("http://[::1]:x/p") + ""
+Qt.url	Qt.url("http://XN--A/p") + ""
+Qt.url	Qt.url("http://%5B::1%5D/p") + ""
+Qt.url	Qt.url("//h:x") + ""
+Qt.url	Qt.url("//H:080/x") + ""
+Qt.url	Qt.url("image://icon/a b") + ""
+Qt.url	Qt.url("file://host/a b") + ""
+Qt.url	Qt.url("x://h") + ""
+Qt.url	Qt.url("x://h:1") + ""
+Qt.url	Qt.url("mailto:a@b c") + ""
+Qt.url	Qt.url("http://h/?a b#c d") + ""
+Qt.url	Qt.url("HTTP://U:P@H:80") + ""
+B2-17	Math.min.apply(null, [,,5])	NaN
+B2-17	Math.max.apply(null, [-1,,-3])	NaN
+B2-17	Math.abs.apply(null, [,])	NaN
+B2-17	Math.round.apply(null, [,])	NaN
+B2-17	Math.hypot.apply(null, [,3])	NaN
+B2-17	Number.apply(null, [,])	NaN
+B2-17	String.apply(null, [,])	"undefined"
+B2-17	isNaN.apply(null, [,])	true
+B2-17	isFinite.apply(null, [,])	false
+B2-17	String.prototype.concat.apply("a", [,"b"])	"aundefinedb"
+B2-17	0 in Array.apply(null, [,1])	true
+B2-17	0 in Array.of.apply(null, [,1])	true
+B2-17	0 in [].concat.apply([], [,1])	true
+B2-17	JSON.stringify((function(){ var a = []; a.push.apply(a, [,1]); return [a.length, 0 in a, typeof a[0]] })())	"[2,true,\"undefined\"]"
+B2-17	(function(a = 7){ return a }).apply(null, [,])	7
+B2-17	(function(a){ return a + 1 }).apply(null, [,])	NaN
+B2-17	(function(a){ return typeof a }).apply(null, (function(){ var x = [1,2]; delete x[0]; return x })())	"undefined"
+B2-17	(function(a){ return typeof a }).apply(null, [,1].slice())	"undefined"
+B2-17	(function(a){ return typeof a }).apply(null, [,].concat([1]))	"undefined"
+B2-17	(function(a){ return typeof a }).apply(null, [,1].map(function(x){ return x }))	"undefined"
+B2-17	Math.max(...[,,-5])
+B2-17	Math.max.call(null, [,,-5][0], -5)
+B2-17	Math.max.apply(null, new Array(3))
+B2-17	(function(a){ return typeof a }).apply(null, new Array(2))
+B2-17	(function(a){ return typeof a }).apply(null, Array.from([,1]))
+B2-17	(function(a){ return typeof a }).apply(null, [...[,1]])
+B2-17	(function(a){ return typeof a }).apply(null, [undefined])
+B2-17	parseInt.apply(null, [,])
+B2-17	typeof JSON.stringify.apply(null, [,])
+B2-17	Boolean.apply(null, [,])
+B2-17	JSON.stringify(String.fromCharCode.apply(null, [,65]))
+B2-17	Number.isNaN.apply(null, [,])
+B2-17	Array.isArray.apply(null, [,])
+B2-2	Qt.createComponent(Qt.resolvedUrl("missing.qml")).status
+B2-2	Qt.createComponent(Qt.url("missing.qml")).status
+B2-2	Qt.createComponent(Qt.resolvedUrl("main.qml")).status
+B2-2	"" + Qt.createComponent(Qt.resolvedUrl("missing.qml")).url === "" + Qt.resolvedUrl("missing.qml")
+B2-2	Qt.createComponent(Qt.resolvedUrl("missing.qml"), Component.PreferSynchronous).status
+B2-2	Qt.createComponent(Qt.resolvedUrl("missing.qml"), root).status
+B2-2	Qt.createComponent(Qt.resolvedUrl("missing.qml"), "T").status
+B2-2	Qt.createComponent("missing.qml", "T").status
+B2-2	Qt.createComponent("missing.qml", "T", root).status
+B2-2	Qt.createComponent("QtQuick", Qt.url("Item")).status
+B2-2	Qt.createComponent(Qt.url("")) === null
+B2-2	Qt.createComponent("") === null
+B2-2	Qt.createComponent("QtQuick", "") === null
+B2-2	Qt.createComponent(1).status
+B2-2	Qt.createComponent(null).status
+B2-2	Qt.createComponent({}).status
+B2-2	Qt.createComponent(new String("missing.qml")).status
+B2-2	"" + Qt.resolvedUrl(Qt.resolvedUrl("a.qml")) === "" + Qt.resolvedUrl("a.qml")
+B2-2	typeof Qt.resolvedUrl(Qt.resolvedUrl("a.qml"))
+B2-2	"" + Qt.resolvedUrl(Qt.resolvedUrl("/x/a b.qml"))
+B2-2	"" + Qt.resolvedUrl(Qt.resolvedUrl("sub/a.qml"), root) === "" + Qt.resolvedUrl("sub/a.qml")
+B2-2	(function(){ root.ld.source = "missing.qml"; return "" + root.ld.source === "" + Qt.resolvedUrl("missing.qml") })()
+B2-2	(function(){ root.ld.source = Qt.resolvedUrl("missing.qml"); return "" + root.ld.source === "" + Qt.resolvedUrl("missing.qml") })()
+B2-2	(function(){ root.ld.source = Qt.url("missing.qml"); return "" + root.ld.source === "" + Qt.resolvedUrl("missing.qml") })()
+B2-2	(function(){ root.ld.source = ""; return "" + root.ld.source })()
+B2-2	(function(){ root.ld.source = Qt.url(""); return "" + root.ld.source })()
+B2-2	typeof root.ld.source
+B2-2	(function(){ root.im.source = "missing.png"; return "" + root.im.source === "" + Qt.resolvedUrl("missing.png") })()
+B2-2	(function(){ root.im.source = Qt.resolvedUrl("missing.png"); return "" + root.im.source === "" + Qt.resolvedUrl("missing.png") })()
+B2-2	(function(){ root.im.source = Qt.url("missing.png"); return "" + root.im.source === "" + Qt.resolvedUrl("missing.png") })()
+B2-2	(function(){ root.im.source = Qt.url("missing.png"); return "" + root.im.source })()
+B2-2	(function(){ root.im.source = "/x/a b.png"; return "" + root.im.source })()
+B2-2	(function(){ root.im.source = Qt.resolvedUrl("/x/a b.png"); return "" + root.im.source })()
+B2-2	(function(){ root.im.source = ""; return "" + root.im.source })()
+B2-2	typeof root.im.source
+B2-2	(function(){ root.fl.source = "missing.ttf"; return "" + root.fl.source === "" + Qt.resolvedUrl("missing.ttf") })()
+B2-2	(function(){ root.fl.source = Qt.resolvedUrl("missing.ttf"); return "" + root.fl.source === "" + Qt.resolvedUrl("missing.ttf") })()
+B2-2	(function(){ root.fl.source = Qt.url("missing.ttf"); return "" + root.fl.source })()
+B2-2	(function(){ root.fl.source = "/x/a b.ttf"; return "" + root.fl.source })()
+B2-2	typeof root.fl.source
+B2-2	(function(){ var x = new XMLHttpRequest(); x.open("GET", "a.txt"); return x.readyState })()
+B2-2	(function(){ var x = new XMLHttpRequest(); x.open("GET", Qt.resolvedUrl("a.txt")); return x.readyState })()
+B2-2	(function(){ var x = new XMLHttpRequest(); x.open("GET", Qt.url("a.txt")); return x.readyState })()
+B2-2	(function(){ var x = new XMLHttpRequest(); x.open("GET", Qt.url("")); return x.readyState })()
+B2-2	(function(){ var x = new XMLHttpRequest(); x.open("GET", 1); return x.readyState })()
+B2-2	(function(){ var x = new XMLHttpRequest(); x.open("GET"); return x.readyState })()
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, "dyn.qml").s === "" + Qt.resolvedUrl("x.qml")
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, "sub/dyn.qml").s === "" + Qt.resolvedUrl("sub/x.qml")
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, Qt.resolvedUrl("sub/dyn.qml")).s === "" + Qt.resolvedUrl("sub/x.qml")
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, Qt.url("sub/dyn.qml")).s === "" + Qt.resolvedUrl("sub/x.qml")
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, "/abs/dyn.qml").s
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, Qt.url("/abs/dyn.qml")).s
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root).s === "" + Qt.resolvedUrl("x.qml")
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root).s === "" + Qt.resolvedUrl("inline")
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, 1).s
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, {}).s
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, null).s === "" + Qt.resolvedUrl("x.qml")
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, undefined).s === "" + Qt.resolvedUrl("x.qml")
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, "").s === "" + Qt.resolvedUrl("x.qml")
+B2-2	"" + Qt.createQmlObject('import QtQml; QtObject { property url s: Qt.resolvedUrl("x.qml") }', root, Qt.url("")).s === "" + Qt.resolvedUrl("x.qml")
+B2-2	"" + root.comp.createObject(root, {u: "a.png"}).u === "" + Qt.resolvedUrl("a.png")
+B2-2	"" + root.comp.createObject(root, {u: "a.png"}).u
+B2-2	"" + root.comp.createObject(root, {u: Qt.resolvedUrl("a.png")}).u === "" + Qt.resolvedUrl("a.png")
+B2-2	"" + root.comp.createObject(root, {u: Qt.url("a.png")}).u
+B2-2	"" + root.comp.createObject(root, {u: Qt.url("/x/a b.png")}).u
+B2-2	"" + root.comp.createObject(root, {u: "/x/a b.png"}).u
+B2-2	typeof root.comp.createObject(root, {u: "a.png"}).u
+B2-2	root.comp.createObject(root, {s: Qt.url("a.png")}).s
+B2-2	root.comp.createObject(root, {s: Qt.resolvedUrl("/x/a b.png")}).s
+B2-2	typeof root.comp.createObject(root, {s: Qt.url("a.png")}).s
+B2-2	typeof root.comp.createObject(root, {v: Qt.url("a.png")}).v
+B2-2	"" + root.comp.createObject(root, {v: Qt.url("a.png")}).v
+B2-2	Qt.resolvedUrl("/a/b.qml").startsWith
+B2-2	Qt.resolvedUrl("/a/b.qml").startsWith("file")
+B2-2	Qt.resolvedUrl("/a/b.qml").replace("file://", "")
+B2-2	Qt.resolvedUrl("/a/b.qml").length
+B2-2	Qt.resolvedUrl("/a/b.qml").slice
+B2-2	Qt.resolvedUrl("/a/b.qml").split("/")
+B2-2	Qt.resolvedUrl("/a/b.qml").indexOf("b")
+B2-2	Qt.resolvedUrl("/a/b.qml").toString().startsWith("file")
+B2-2	Qt.resolvedUrl("/a/b.qml") + ""
+B2-2	Qt.resolvedUrl("/a/b.qml") + "?x"
+B2-2	"x" + Qt.resolvedUrl("/a/b.qml")
+B2-2	`${Qt.resolvedUrl("/a/b.qml")}`
+B2-2	String(Qt.resolvedUrl("/a/b.qml"))
+B2-2	Qt.resolvedUrl("/a/b.qml") === "file:///a/b.qml"
+B2-2	Qt.resolvedUrl("/a/b.qml") !== "file:///a/b.qml"
+B2-2	Qt.resolvedUrl("/a/b.qml") == "file:///a/b.qml"
+B2-2	Qt.resolvedUrl("/a/b.qml") != "file:///a/b.qml"
+B2-2	Qt.resolvedUrl("/a/b.qml") === Qt.resolvedUrl("/a/b.qml")
+B2-2	Qt.resolvedUrl("/a/b.qml") !== Qt.resolvedUrl("/a/c.qml")
+B2-2	Qt.resolvedUrl("/a/b.qml") !== Qt.resolvedUrl("/a/b.qml")
+B2-2	Qt.resolvedUrl("/a/b.qml") === Qt.url("file:///a/b.qml")
+B2-2	root.ld.source === Qt.url("")
+B2-2	root.im.source === ""
+B2-2	root.im.source == ""
+B2-2	root.u === ""
+B2-2	root.u == ""
+B2-2	root.u.length
+B2-2	root.u.startsWith
+B2-2	root.im.source.startsWith
+B2-2	root.im.source.toString().length
+B2-2	(function(){ root.u = "/x/y.png"; return root.u.toString().slice(7) })()
+B2-2	(function(){ root.u = "/x/y.png"; return root.u.slice })()
+B2-2	(function(){ root.u = "/x/y.png"; return root.u === Qt.resolvedUrl("/x/y.png") })()
+B2-2	(function(){ root.u = "/x/y.png"; return root.u === "file:///x/y.png" })()
+B2-2	(function(){ root.u = "/x/y.png"; return root.u == "file:///x/y.png" })()
+B2-2	JSON.stringify(Qt.resolvedUrl("/a/b.qml"))
+B2-2	JSON.stringify({u: Qt.resolvedUrl("/a/b.qml")})
+B2-2	Qt.resolvedUrl("/a/b.qml") ? 1 : 2
+B2-2	Qt.url("") ? 1 : 2
+B2-2	!Qt.url("")
+B2-2	Qt.url("") || "fallback"
+B2-2	[Qt.resolvedUrl("/a/b.qml")].indexOf("file:///a/b.qml")
+B2-2	[Qt.resolvedUrl("/a/b.qml")].includes("file:///a/b.qml")
+B2-2	["file:///a/b.qml"].includes(Qt.resolvedUrl("/a/b.qml"))
+B2-2	({"file:///a/b.qml": 1})[Qt.resolvedUrl("/a/b.qml")]
+B2-2	/b\.qml$/.test(Qt.resolvedUrl("/a/b.qml"))
+B2-2	"file:///a/b.qml".startsWith(Qt.resolvedUrl("/a"))
+B2-2	decodeURIComponent(Qt.resolvedUrl("/a/b c.qml"))
+B2-2	encodeURIComponent(Qt.resolvedUrl("/a/b.qml"))
+B2-2	Qt.md5(Qt.resolvedUrl("/a/b.qml"))
+B2-2	Qt.openUrlExternally()
+B2-2	Qt.openUrlExternally("")
+B2-2	Qt.openUrlExternally(Qt.url(""))
+B2-2	Qt.openUrlExternally(1, 2)
+B2-2	Qt.openUrlExternally(1)
+B2-2	Qt.openUrlExternally({})
+B2-2	Qt.openUrlExternally(null)
+B2-2	Qt.openUrlExternally(undefined)
+B2-2	Qt.openUrlExternally(true)
+B2-2	Qt.openUrlExternally([])
+B2-2	Qt.openUrlExternally("", undefined)
+B2-2	Qt.openUrlExternally(new String(""))
+B2-2	(function(){ root.ld.source = "missing.qml"; return root.ld.status })()
+B2-2	(function(){ root.ld.source = ""; return root.ld.status })()
+B2-2	(function(){ root.u = Qt.resolvedUrl("a b.png"); return "" + root.u === "" + Qt.resolvedUrl("a b.png") })()
+B2-2	(function(){ root.u = Qt.url("a b.png"); return "" + root.u })()
+B2-2	(function(){ root.u = "a b.png"; return "" + root.u })()
+B2-2	(function(){ var x = new XMLHttpRequest(); x.open("GET", "a", true, "u", "p", 1); return x.readyState })()
+B2-2	(function(){ var x = new XMLHttpRequest(); x.open(); return x.readyState })()
+B2-2	(function(){ try { new XMLHttpRequest().open() } catch (e) { return e.code } })()

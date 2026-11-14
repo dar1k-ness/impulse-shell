@@ -1,0 +1,7 @@
+called in the root document | DIR/Leaf.qml | 1 root
+called in the Loader's document | DIR/sub/Leaf.qml | 1 sub
+called in a js file | DIR/lib/Leaf.qml | 1 lib
+called in a library js file | DIR/lib/Leaf.qml | 1 lib
+called in the root document with properties | DIR/Leaf.qml | 1 given
+given a resolved url | DIR/lib/Leaf.qml | 1 lib
+source written in the root document | Leaf.qml | 1 sub

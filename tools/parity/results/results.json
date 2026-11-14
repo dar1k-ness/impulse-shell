@@ -1,0 +1,5925 @@
+[
+ {
+  "scene": "overlay-actions.log",
+  "status": "pass",
+  "note": ""
+ },
+ {
+  "scene": "state.log",
+  "status": "pass",
+  "note": ""
+ },
+ {
+  "scene": "anim_overview.f00",
+  "status": "pass",
+  "matched_orig": "anim_overview.f00",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 2919,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_overview.f01",
+  "status": "pass",
+  "matched_orig": "anim_overview.f02",
+  "coarse": 9080,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 21405,
+  "pixels_gt8": 9560,
+  "pixels_gt32": 7937,
+  "max": 220,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 720,
+    "y": 32,
+    "w": 160,
+    "h": 80,
+    "pixels": 4908
+   },
+   {
+    "x": 1056,
+    "y": 32,
+    "w": 144,
+    "h": 80,
+    "pixels": 4172
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_overview.f02",
+  "status": "pass",
+  "matched_orig": "anim_overview.f02",
+  "coarse": 7290,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 17592,
+  "pixels_gt8": 7675,
+  "pixels_gt32": 6382,
+  "max": 220,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 736,
+    "y": 32,
+    "w": 144,
+    "h": 80,
+    "pixels": 4272
+   },
+   {
+    "x": 1056,
+    "y": 32,
+    "w": 128,
+    "h": 80,
+    "pixels": 3018
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_overview.f03",
+  "status": "pass",
+  "matched_orig": "anim_overview.f02",
+  "coarse": 6207,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 15952,
+  "pixels_gt8": 6523,
+  "pixels_gt32": 5317,
+  "max": 220,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 752,
+    "y": 32,
+    "w": 128,
+    "h": 80,
+    "pixels": 3514
+   },
+   {
+    "x": 1056,
+    "y": 32,
+    "w": 112,
+    "h": 80,
+    "pixels": 2693
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_overview.f04",
+  "status": "pass",
+  "matched_orig": "anim_overview.f02",
+  "coarse": 4658,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 14015,
+  "pixels_gt8": 4998,
+  "pixels_gt32": 3860,
+  "max": 220,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 752,
+    "y": 32,
+    "w": 128,
+    "h": 80,
+    "pixels": 2642
+   },
+   {
+    "x": 1056,
+    "y": 48,
+    "w": 112,
+    "h": 64,
+    "pixels": 2016
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_overview.f05",
+  "status": "pass",
+  "matched_orig": "anim_overview.f02",
+  "coarse": 3072,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 12152,
+  "pixels_gt8": 3577,
+  "pixels_gt32": 2524,
+  "max": 220,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 752,
+    "y": 48,
+    "w": 128,
+    "h": 64,
+    "pixels": 1725
+   },
+   {
+    "x": 1056,
+    "y": 48,
+    "w": 96,
+    "h": 64,
+    "pixels": 1347
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_overview.f06",
+  "status": "pass",
+  "matched_orig": "anim_overview.f02",
+  "coarse": 1725,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 10720,
+  "pixels_gt8": 2412,
+  "pixels_gt32": 1549,
+  "max": 220,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 1056,
+    "y": 48,
+    "w": 96,
+    "h": 64,
+    "pixels": 885
+   },
+   {
+    "x": 768,
+    "y": 48,
+    "w": 112,
+    "h": 64,
+    "pixels": 840
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_overview.f07",
+  "status": "pass",
+  "matched_orig": "anim_overview.f02",
+  "coarse": 136,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 8322,
+  "pixels_gt8": 1110,
+  "pixels_gt32": 501,
+  "max": 181,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 864,
+    "y": 64,
+    "w": 32,
+    "h": 32,
+    "pixels": 90
+   },
+   {
+    "x": 784,
+    "y": 64,
+    "w": 32,
+    "h": 16,
+    "pixels": 30
+   },
+   {
+    "x": 832,
+    "y": 64,
+    "w": 16,
+    "h": 32,
+    "pixels": 16
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_overview.f08",
+  "status": "pass",
+  "matched_orig": "anim_overview.f02",
+  "coarse": 136,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 8322,
+  "pixels_gt8": 1110,
+  "pixels_gt32": 501,
+  "max": 181,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 864,
+    "y": 64,
+    "w": 32,
+    "h": 32,
+    "pixels": 90
+   },
+   {
+    "x": 784,
+    "y": 64,
+    "w": 32,
+    "h": 16,
+    "pixels": 30
+   },
+   {
+    "x": 832,
+    "y": 64,
+    "w": 16,
+    "h": 32,
+    "pixels": 16
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_overview.f09",
+  "status": "pass",
+  "matched_orig": "anim_overview.f04",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 6783,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_overview.f10",
+  "status": "pass",
+  "matched_orig": "anim_overview.f04",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 6783,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_overview.f11",
+  "status": "pass",
+  "matched_orig": "anim_overview.f04",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 6783,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f00",
+  "status": "pass",
+  "matched_orig": "anim_session.f00",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 2919,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f01",
+  "status": "pass",
+  "matched_orig": "anim_session.f01",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f02",
+  "status": "pass",
+  "matched_orig": "anim_session.f01",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f03",
+  "status": "pass",
+  "matched_orig": "anim_session.f01",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f04",
+  "status": "pass",
+  "matched_orig": "anim_session.f01",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f05",
+  "status": "pass",
+  "matched_orig": "anim_session.f01",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f06",
+  "status": "pass",
+  "matched_orig": "anim_session.f01",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f07",
+  "status": "pass",
+  "matched_orig": "anim_session.f01",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f08",
+  "status": "pass",
+  "matched_orig": "anim_session.f01",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f09",
+  "status": "pass",
+  "matched_orig": "anim_session.f01",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f10",
+  "status": "pass",
+  "matched_orig": "anim_session.f01",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_session.f11",
+  "status": "pass",
+  "matched_orig": "anim_session.f01",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f00",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f04",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7599,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f01",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f05",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 6535,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f02",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f05",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7599,
+  "pixels_gt8": 1345,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 1856,
+    "y": 0,
+    "w": 48,
+    "h": 48,
+    "pixels": 916
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f03",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f05",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7607,
+  "pixels_gt8": 1402,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 1856,
+    "y": 0,
+    "w": 48,
+    "h": 48,
+    "pixels": 973
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f04",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f05",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7607,
+  "pixels_gt8": 1417,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 1856,
+    "y": 0,
+    "w": 48,
+    "h": 48,
+    "pixels": 988
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f05",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f05",
+  "coarse": 491,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7607,
+  "pixels_gt8": 1417,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 1856,
+    "y": 0,
+    "w": 48,
+    "h": 48,
+    "pixels": 491
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f06",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f05",
+  "coarse": 551,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7619,
+  "pixels_gt8": 1419,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 1856,
+    "y": 0,
+    "w": 48,
+    "h": 48,
+    "pixels": 551
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f07",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f05",
+  "coarse": 551,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7619,
+  "pixels_gt8": 1419,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 1856,
+    "y": 0,
+    "w": 48,
+    "h": 48,
+    "pixels": 551
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f08",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f05",
+  "coarse": 551,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7619,
+  "pixels_gt8": 1419,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 1856,
+    "y": 0,
+    "w": 48,
+    "h": 48,
+    "pixels": 551
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f09",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f05",
+  "coarse": 551,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7619,
+  "pixels_gt8": 1419,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 1856,
+    "y": 0,
+    "w": 48,
+    "h": 48,
+    "pixels": 551
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f10",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f05",
+  "coarse": 551,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7619,
+  "pixels_gt8": 1419,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 1856,
+    "y": 0,
+    "w": 48,
+    "h": 48,
+    "pixels": 551
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "anim_sidebarRight.f11",
+  "status": "pass",
+  "matched_orig": "anim_sidebarRight.f05",
+  "coarse": 551,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7619,
+  "pixels_gt8": 1419,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 1856,
+    "y": 0,
+    "w": 48,
+    "h": 48,
+    "pixels": 551
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "bar_hover_clock",
+  "status": "pass",
+  "matched_orig": "bar_hover_clock",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3857,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "clock popup: system uptime"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "bar_hover_leftSide",
+  "status": "pass",
+  "matched_orig": "bar_hover_leftSide",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2922,
+  "pixels_gt8": 426,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 68
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "bar_hover_media",
+  "status": "pass",
+  "matched_orig": "bar_hover_media",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2919,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "bar_hover_resources",
+  "status": "pass",
+  "matched_orig": "bar_hover_resources",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3151,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "resources popup: live RAM/swap/CPU values, and the popup is as wide as they are and centred, so all of it moves with them"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "bar_hover_rightSide",
+  "status": "pass",
+  "matched_orig": "bar_hover_rightSide",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2928,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "bar_hover_utilButtons",
+  "status": "pass",
+  "matched_orig": "bar_hover_utilButtons",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2926,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "bar_hover_workspaces",
+  "status": "pass",
+  "matched_orig": "bar_hover_workspaces",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2918,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "bar_vertical",
+  "status": "pass",
+  "matched_orig": "bar_vertical",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2811,
+  "pixels_gt8": 428,
+  "pixels_gt32": 87,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "vertical bar Resources: live rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 16,
+    "w": 16,
+    "h": 32,
+    "pixels": 70
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "bar_vertical_live",
+  "status": "pass",
+  "matched_orig": "bar_vertical_live",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2811,
+  "pixels_gt8": 428,
+  "pixels_gt32": 87,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "vertical bar Resources: live rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 16,
+    "w": 16,
+    "h": 32,
+    "pixels": 70
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "bar_vertical_sidebarRight",
+  "status": "pass",
+  "matched_orig": "bar_vertical_sidebarRight",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6360,
+  "pixels_gt8": 428,
+  "pixels_gt32": 86,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)",
+   "sidebar header uptime (Up Nm), sidebar without a bar above it",
+   "vertical bar Resources: live rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 16,
+    "w": 16,
+    "h": 32,
+    "pixels": 70
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "base",
+  "status": "pass",
+  "matched_orig": "base",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2919,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "cheatsheet",
+  "status": "pass",
+  "matched_orig": "cheatsheet",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 5774,
+  "pixels_gt8": 74,
+  "pixels_gt32": 3,
+  "max": 41,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "firstStart",
+  "status": "pass",
+  "matched_orig": "firstStart",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2919,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "firstStart_sidebarRight",
+  "status": "pass",
+  "matched_orig": "firstStart_sidebarRight",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6375,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "killDialog",
+  "status": "pass",
+  "matched_orig": "killDialog",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3037,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "lock",
+  "status": "pass",
+  "matched_orig": "lock",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 100,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 4,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "lock_after_unlock",
+  "status": "pass",
+  "matched_orig": "lock_after_unlock",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2919,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "lock_typing",
+  "status": "pass",
+  "matched_orig": "lock_typing",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 361,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 4,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "mediaControls",
+  "status": "pass",
+  "matched_orig": "mediaControls",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3844,
+  "pixels_gt8": 426,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 68
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "notif_popup",
+  "status": "pass",
+  "matched_orig": "notif_popup",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3923,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "notif_popup2",
+  "status": "pass",
+  "matched_orig": "notif_popup2",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 4035,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "notif_sidebar",
+  "status": "pass",
+  "matched_orig": "notif_sidebar",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6530,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "icon of a critical notification: ii picks one of two shapes at random (NotificationAppIcon.qml)",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "notifburst.f0",
+  "status": "pass",
+  "matched_orig": "notifburst.f0",
+  "coarse": 1487,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 5908,
+  "pixels_gt8": 2244,
+  "pixels_gt32": 1325,
+  "max": 202,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 1584,
+    "y": 80,
+    "w": 256,
+    "h": 32,
+    "pixels": 1487
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "notifburst.f1",
+  "status": "pass",
+  "matched_orig": "notifburst.f0",
+  "coarse": 1852,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 7177,
+  "pixels_gt8": 3147,
+  "pixels_gt32": 1513,
+  "max": 202,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 1600,
+    "y": 64,
+    "w": 224,
+    "h": 48,
+    "pixels": 1852
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "notifburst.f2",
+  "status": "pass",
+  "matched_orig": "notifburst.f3",
+  "coarse": 84,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 6612,
+  "pixels_gt8": 1411,
+  "pixels_gt32": 839,
+  "max": 194,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 1568,
+    "y": 64,
+    "w": 48,
+    "h": 48,
+    "pixels": 81
+   },
+   {
+    "x": 1664,
+    "y": 96,
+    "w": 16,
+    "h": 16,
+    "pixels": 2
+   },
+   {
+    "x": 1808,
+    "y": 96,
+    "w": 16,
+    "h": 16,
+    "pixels": 1
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "notifburst.f3",
+  "status": "pass",
+  "matched_orig": "notifburst.f2",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 4331,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "notifburst.f4",
+  "status": "pass",
+  "matched_orig": "notifburst.f2",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 4322,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "notifburst.f5",
+  "status": "pass",
+  "matched_orig": "notifburst.f2",
+  "coarse": 0,
+  "limit": 12000,
+  "limit_reason": "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more",
+  "pixels": 4322,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "notifburst_end",
+  "status": "pass",
+  "matched_orig": "notifburst_end",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 4073,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "notifburst_sidebar",
+  "status": "pass",
+  "matched_orig": "notifburst_sidebar",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6651,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "osdVolume",
+  "status": "pass",
+  "matched_orig": "osdVolume",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3534,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "overlay",
+  "status": "pass",
+  "matched_orig": "overlay",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3055,
+  "pixels_gt8": 539,
+  "pixels_gt32": 290,
+  "max": 48,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 832,
+    "y": 448,
+    "w": 256,
+    "h": 48,
+    "pixels": 344
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "overview",
+  "status": "pass",
+  "matched_orig": "overview",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6810,
+  "pixels_gt8": 432,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 832,
+    "y": 64,
+    "w": 16,
+    "h": 32,
+    "pixels": 3
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "polkit",
+  "status": "pass",
+  "matched_orig": "polkit",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2924,
+  "pixels_gt8": 520,
+  "pixels_gt32": 128,
+  "max": 205,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 752,
+    "y": 560,
+    "w": 80,
+    "h": 16,
+    "pixels": 295
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 1152,
+    "y": 560,
+    "w": 16,
+    "h": 16,
+    "pixels": 10
+   },
+   {
+    "x": 752,
+    "y": 608,
+    "w": 16,
+    "h": 16,
+    "pixels": 10
+   },
+   {
+    "x": 1152,
+    "y": 608,
+    "w": 16,
+    "h": 16,
+    "pixels": 10
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "polkit_unfocused",
+  "status": "pass",
+  "matched_orig": "polkit_unfocused",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3048,
+  "pixels_gt8": 583,
+  "pixels_gt32": 146,
+  "max": 44,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 768,
+    "y": 576,
+    "w": 80,
+    "h": 32,
+    "pixels": 388
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "polkit_wrong",
+  "status": "pass",
+  "matched_orig": "polkit_wrong",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2924,
+  "pixels_gt8": 520,
+  "pixels_gt32": 128,
+  "max": 205,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 752,
+    "y": 560,
+    "w": 80,
+    "h": 16,
+    "pixels": 295
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 1152,
+    "y": 560,
+    "w": 16,
+    "h": 16,
+    "pixels": 10
+   },
+   {
+    "x": 752,
+    "y": 608,
+    "w": 16,
+    "h": 16,
+    "pixels": 10
+   },
+   {
+    "x": 1152,
+    "y": 608,
+    "w": 16,
+    "h": 16,
+    "pixels": 10
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_notif_popup_expanded",
+  "status": "pass",
+  "matched_orig": "ptr_notif_popup_expanded",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 4113,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_notif_popup_hover",
+  "status": "pass",
+  "matched_orig": "ptr_notif_popup_hover",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3913,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_notif_sidebar_dragged",
+  "status": "pass",
+  "matched_orig": "ptr_notif_sidebar_dragged",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6369,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_notif_sidebar_expanded",
+  "status": "pass",
+  "matched_orig": "ptr_notif_sidebar_expanded",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6511,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_notif_sidebar_hover",
+  "status": "pass",
+  "matched_orig": "ptr_notif_sidebar_hover",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6434,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_center",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_center",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3056,
+  "pixels_gt8": 539,
+  "pixels_gt32": 290,
+  "max": 48,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 832,
+    "y": 448,
+    "w": 256,
+    "h": 48,
+    "pixels": 344
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_folder",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_folder",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2923,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_region",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_region",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2502,
+  "pixels_gt8": 138,
+  "pixels_gt32": 0,
+  "max": 23,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 48,
+    "h": 48,
+    "pixels": 46
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 37
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 24
+   },
+   {
+    "x": 512,
+    "y": 608,
+    "w": 32,
+    "h": 32,
+    "pixels": 16
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 11
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 1
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_regionRecord",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_regionRecord",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2499,
+  "pixels_gt8": 138,
+  "pixels_gt32": 0,
+  "max": 23,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 48,
+    "h": 48,
+    "pixels": 46
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 37
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 24
+   },
+   {
+    "x": 512,
+    "y": 608,
+    "w": 32,
+    "h": 32,
+    "pixels": 16
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 11
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 1
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_screenRecord",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_screenRecord",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 4003,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_screenshot",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_screenshot",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2919,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_task0",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_task0",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2589,
+  "pixels_gt8": 195,
+  "pixels_gt32": 0,
+  "max": 29,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_task1",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_task1",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3183,
+  "pixels_gt8": 539,
+  "pixels_gt32": 290,
+  "max": 48,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 832,
+    "y": 448,
+    "w": 256,
+    "h": 48,
+    "pixels": 344
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_task2",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_task2",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3147,
+  "pixels_gt8": 539,
+  "pixels_gt32": 290,
+  "max": 48,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 832,
+    "y": 448,
+    "w": 256,
+    "h": 48,
+    "pixels": 344
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_task3",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_task3",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2845,
+  "pixels_gt8": 539,
+  "pixels_gt32": 290,
+  "max": 48,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 832,
+    "y": 448,
+    "w": 256,
+    "h": 48,
+    "pixels": 344
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_task4",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_task4",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2646,
+  "pixels_gt8": 617,
+  "pixels_gt32": 248,
+  "max": 48,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)",
+   "the original's own bug: after a widget is switched back on it draws the Crosshair widget inside the Recorder frame",
+   "the original's own bug: after a widget is switched back on it draws the Resources widget inside the Crosshair frame"
+  ],
+  "regions": [
+   {
+    "x": 832,
+    "y": 448,
+    "w": 304,
+    "h": 48,
+    "pixels": 314
+   },
+   {
+    "x": 832,
+    "y": 560,
+    "w": 16,
+    "h": 128,
+    "pixels": 108
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_task5",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_task5",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3048,
+  "pixels_gt8": 617,
+  "pixels_gt32": 248,
+  "max": 48,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)",
+   "the original's own bug: after a widget is switched back on it draws the Crosshair widget inside the Recorder frame",
+   "the original's own bug: after a widget is switched back on it draws the Resources widget inside the Crosshair frame"
+  ],
+  "regions": [
+   {
+    "x": 832,
+    "y": 448,
+    "w": 304,
+    "h": 48,
+    "pixels": 314
+   },
+   {
+    "x": 832,
+    "y": 560,
+    "w": 16,
+    "h": 128,
+    "pixels": 108
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_btn_task6",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_btn_task6",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2822,
+  "pixels_gt8": 617,
+  "pixels_gt32": 248,
+  "max": 48,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)",
+   "the original's own bug: after a widget is switched back on it draws the Crosshair widget inside the Recorder frame",
+   "the original's own bug: after a widget is switched back on it draws the Resources widget inside the Crosshair frame"
+  ],
+  "regions": [
+   {
+    "x": 832,
+    "y": 448,
+    "w": 304,
+    "h": 48,
+    "pixels": 314
+   },
+   {
+    "x": 832,
+    "y": 560,
+    "w": 16,
+    "h": 128,
+    "pixels": 108
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_crosshair",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_crosshair",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3074,
+  "pixels_gt8": 539,
+  "pixels_gt32": 290,
+  "max": 48,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 1120,
+    "y": 640,
+    "w": 272,
+    "h": 64,
+    "pixels": 344
+   },
+   {
+    "x": 464,
+    "y": 592,
+    "w": 80,
+    "h": 48,
+    "pixels": 79
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 30
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 4
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_mixer",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_mixer",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2480,
+  "pixels_gt8": 451,
+  "pixels_gt32": 290,
+  "max": 48,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 1120,
+    "y": 640,
+    "w": 272,
+    "h": 64,
+    "pixels": 344
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 512,
+    "y": 592,
+    "w": 32,
+    "h": 48,
+    "pixels": 25
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overlay_pinned",
+  "status": "pass",
+  "matched_orig": "ptr_overlay_pinned",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2482,
+  "pixels_gt8": 451,
+  "pixels_gt32": 290,
+  "max": 48,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"
+  ],
+  "regions": [
+   {
+    "x": 1120,
+    "y": 640,
+    "w": 272,
+    "h": 64,
+    "pixels": 344
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 52
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 27
+   },
+   {
+    "x": 512,
+    "y": 592,
+    "w": 32,
+    "h": 48,
+    "pixels": 25
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overview_hover_searchIcon",
+  "status": "pass",
+  "matched_orig": "ptr_overview_hover_searchIcon",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6624,
+  "pixels_gt8": 432,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 832,
+    "y": 64,
+    "w": 16,
+    "h": 32,
+    "pixels": 3
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overview_hover_ws3",
+  "status": "pass",
+  "matched_orig": "ptr_overview_hover_ws3",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6809,
+  "pixels_gt8": 432,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 832,
+    "y": 64,
+    "w": 16,
+    "h": 32,
+    "pixels": 3
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overview_ws1",
+  "status": "pass",
+  "matched_orig": "ptr_overview_ws1",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2919,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_overview_ws2",
+  "status": "pass",
+  "matched_orig": "ptr_overview_ws2",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2924,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarLeft_anime",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarLeft_anime",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6945,
+  "pixels_gt8": 424,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 66
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarLeft_hover_clear",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarLeft_hover_clear",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6945,
+  "pixels_gt8": 424,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 66
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarLeft_intelligence",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarLeft_intelligence",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6944,
+  "pixels_gt8": 424,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 66
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarRight_calCollapse",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarRight_calCollapse",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 5921,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarRight_calExpand",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarRight_calExpand",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6369,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarRight_calNext",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarRight_calNext",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6406,
+  "pixels_gt8": 482,
+  "pixels_gt32": 110,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1648,
+    "y": 720,
+    "w": 16,
+    "h": 32,
+    "pixels": 53
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarRight_calPrev",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarRight_calPrev",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6366,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarRight_editMode",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarRight_editMode",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6407,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarRight_editModeOff",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarRight_editModeOff",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6370,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarRight_hover_bluetooth",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarRight_hover_bluetooth",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6377,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarRight_hover_calNext",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarRight_hover_calNext",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6367,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarRight_hover_clearAll",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarRight_hover_clearAll",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6372,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarRight_hover_internet",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarRight_hover_internet",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6363,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "ptr_sidebarRight_hover_silence",
+  "status": "pass",
+  "matched_orig": "ptr_sidebarRight_hover_silence",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6372,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "region_record",
+  "status": "pass",
+  "matched_orig": "region_record",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2504,
+  "pixels_gt8": 138,
+  "pixels_gt32": 0,
+  "max": 23,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 48,
+    "h": 48,
+    "pixels": 46
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 37
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 24
+   },
+   {
+    "x": 512,
+    "y": 608,
+    "w": 32,
+    "h": 32,
+    "pixels": 16
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 11
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 1
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "region_screenshot",
+  "status": "pass",
+  "matched_orig": "region_screenshot",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2507,
+  "pixels_gt8": 138,
+  "pixels_gt32": 0,
+  "max": 23,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 48,
+    "h": 48,
+    "pixels": 46
+   },
+   {
+    "x": 512,
+    "y": 528,
+    "w": 32,
+    "h": 48,
+    "pixels": 37
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 32,
+    "h": 32,
+    "pixels": 24
+   },
+   {
+    "x": 512,
+    "y": 608,
+    "w": 32,
+    "h": 32,
+    "pixels": 16
+   },
+   {
+    "x": 32,
+    "y": 0,
+    "w": 16,
+    "h": 32,
+    "pixels": 11
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   },
+   {
+    "x": 464,
+    "y": 672,
+    "w": 16,
+    "h": 16,
+    "pixels": 1
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "sameLogin_sidebarRight",
+  "status": "pass",
+  "matched_orig": "sameLogin_sidebarRight",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6382,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "search",
+  "status": "pass",
+  "matched_orig": "search",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6810,
+  "pixels_gt8": 432,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 832,
+    "y": 64,
+    "w": 16,
+    "h": 32,
+    "pixels": 3
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "search_query",
+  "status": "pass",
+  "matched_orig": "search_query",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 4692,
+  "pixels_gt8": 429,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "session",
+  "status": "pass",
+  "matched_orig": "session",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 1266,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 3,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "settings",
+  "status": "pass",
+  "matched_orig": "settings",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 2050,
+  "pixels_gt8": 74,
+  "pixels_gt32": 3,
+  "max": 41,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "sidebarLeft",
+  "status": "pass",
+  "matched_orig": "sidebarLeft",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6945,
+  "pixels_gt8": 424,
+  "pixels_gt32": 83,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 66
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "sidebarRight",
+  "status": "pass",
+  "matched_orig": "sidebarRight",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6374,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "sidebarRight_calendar",
+  "status": "pass",
+  "matched_orig": "sidebarRight_calendar",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6372,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "sidebarRight_timer",
+  "status": "pass",
+  "matched_orig": "sidebarRight_timer",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6161,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "sidebarRight_todo",
+  "status": "pass",
+  "matched_orig": "sidebarRight_todo",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 6011,
+  "pixels_gt8": 429,
+  "pixels_gt32": 82,
+  "max": 58,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "sidebar header uptime (Up Nm)"
+  ],
+  "regions": [
+   {
+    "x": 464,
+    "y": 592,
+    "w": 96,
+    "h": 96,
+    "pixels": 208
+   },
+   {
+    "x": 464,
+    "y": 528,
+    "w": 80,
+    "h": 48,
+    "pixels": 147
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "waffle",
+  "status": "pass",
+  "matched_orig": "waffle",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 1,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 1,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "waffle_actionCenter",
+  "status": "pass",
+  "matched_orig": "waffle_actionCenter",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 1791,
+  "pixels_gt8": 126,
+  "pixels_gt32": 4,
+  "max": 37,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 1568,
+    "y": 864,
+    "w": 32,
+    "h": 32,
+    "pixels": 54
+   },
+   {
+    "x": 1616,
+    "y": 656,
+    "w": 16,
+    "h": 16,
+    "pixels": 12
+   },
+   {
+    "x": 1712,
+    "y": 656,
+    "w": 32,
+    "h": 16,
+    "pixels": 12
+   },
+   {
+    "x": 1616,
+    "y": 688,
+    "w": 16,
+    "h": 16,
+    "pixels": 12
+   },
+   {
+    "x": 1712,
+    "y": 688,
+    "w": 32,
+    "h": 16,
+    "pixels": 12
+   },
+   {
+    "x": 1824,
+    "y": 752,
+    "w": 16,
+    "h": 16,
+    "pixels": 12
+   },
+   {
+    "x": 1824,
+    "y": 784,
+    "w": 16,
+    "h": 16,
+    "pixels": 12
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "waffle_hover_clock",
+  "status": "pass",
+  "matched_orig": "waffle_hover_clock",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 1,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 1,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "waffle_hover_search",
+  "status": "pass",
+  "matched_orig": "waffle_hover_search",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 1,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 1,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "waffle_hover_start",
+  "status": "pass",
+  "matched_orig": "waffle_hover_start",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 1,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 1,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "waffle_live",
+  "status": "pass",
+  "matched_orig": "waffle_live",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 1,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 1,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "waffle_notificationCenter",
+  "status": "pass",
+  "matched_orig": "waffle_notificationCenter",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3314,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 2,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "waffle_osd",
+  "status": "pass",
+  "matched_orig": "waffle_osd",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 32,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 1,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "waffle_startMenu",
+  "status": "pass",
+  "matched_orig": "waffle_startMenu",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 4983,
+  "pixels_gt8": 0,
+  "pixels_gt32": 0,
+  "max": 2,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [],
+  "unsettled": []
+ },
+ {
+  "scene": "waffle_taskView",
+  "status": "pass",
+  "matched_orig": "waffle_taskView",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 31755,
+  "pixels_gt8": 8384,
+  "pixels_gt32": 0,
+  "max": 15,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 720,
+    "y": 864,
+    "w": 240,
+    "h": 160,
+    "pixels": 8384
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "wallpaperSelector",
+  "status": "pass",
+  "matched_orig": "wallpaperSelector",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 25890,
+  "pixels_gt8": 8948,
+  "pixels_gt32": 64,
+  "max": 53,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings"
+  ],
+  "regions": [
+   {
+    "x": 1088,
+    "y": 512,
+    "w": 144,
+    "h": 144,
+    "pixels": 1395
+   },
+   {
+    "x": 576,
+    "y": 512,
+    "w": 144,
+    "h": 144,
+    "pixels": 1344
+   },
+   {
+    "x": 832,
+    "y": 512,
+    "w": 144,
+    "h": 144,
+    "pixels": 1331
+   },
+   {
+    "x": 1344,
+    "y": 320,
+    "w": 144,
+    "h": 144,
+    "pixels": 1123
+   },
+   {
+    "x": 1344,
+    "y": 512,
+    "w": 144,
+    "h": 64,
+    "pixels": 549
+   },
+   {
+    "x": 576,
+    "y": 448,
+    "w": 144,
+    "h": 16,
+    "pixels": 396
+   },
+   {
+    "x": 832,
+    "y": 448,
+    "w": 144,
+    "h": 16,
+    "pixels": 396
+   },
+   {
+    "x": 1088,
+    "y": 448,
+    "w": 144,
+    "h": 16,
+    "pixels": 396
+   },
+   {
+    "x": 576,
+    "y": 320,
+    "w": 144,
+    "h": 48,
+    "pixels": 394
+   },
+   {
+    "x": 832,
+    "y": 320,
+    "w": 144,
+    "h": 48,
+    "pixels": 394
+   },
+   {
+    "x": 1088,
+    "y": 320,
+    "w": 144,
+    "h": 48,
+    "pixels": 394
+   },
+   {
+    "x": 1344,
+    "y": 640,
+    "w": 144,
+    "h": 16,
+    "pixels": 264
+   },
+   {
+    "x": 1392,
+    "y": 192,
+    "w": 64,
+    "h": 48,
+    "pixels": 220
+   },
+   {
+    "x": 1472,
+    "y": 144,
+    "w": 16,
+    "h": 128,
+    "pixels": 97
+   },
+   {
+    "x": 1344,
+    "y": 160,
+    "w": 16,
+    "h": 112,
+    "pixels": 86
+   },
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 576,
+    "y": 128,
+    "w": 16,
+    "h": 48,
+    "pixels": 31
+   },
+   {
+    "x": 704,
+    "y": 144,
+    "w": 16,
+    "h": 32,
+    "pixels": 15
+   },
+   {
+    "x": 640,
+    "y": 128,
+    "w": 16,
+    "h": 32,
+    "pixels": 12
+   },
+   {
+    "x": 896,
+    "y": 128,
+    "w": 16,
+    "h": 32,
+    "pixels": 11
+   }
+  ],
+  "unsettled": []
+ },
+ {
+  "scene": "welcome",
+  "status": "pass",
+  "matched_orig": "welcome",
+  "coarse": 0,
+  "limit": 0,
+  "limit_reason": "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect",
+  "pixels": 3395,
+  "pixels_gt8": 74,
+  "pixels_gt32": 3,
+  "max": 41,
+  "masked": [
+   "bar Resources: live RAM/swap/CPU percentages and rings",
+   "welcome window: wavy slider, an animation that never stops"
+  ],
+  "regions": [
+   {
+    "x": 16,
+    "y": 0,
+    "w": 32,
+    "h": 32,
+    "pixels": 71
+   },
+   {
+    "x": 1904,
+    "y": 1072,
+    "w": 16,
+    "h": 8,
+    "pixels": 3
+   }
+  ],
+  "unsettled": [
+   "a",
+   "b"
+  ]
+ }
+]

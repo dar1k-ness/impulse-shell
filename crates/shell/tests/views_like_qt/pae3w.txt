@@ -1,0 +1,22 @@
+start 2 -30 110 true true
+prompt 4 -30 110 true true
+prompt later 4 30 230 false true
+answer 5 30 230 false true
+answer later 5 90 290 false true
+part 1 5 90 290 false true
+part 1 later 5 90 310 false false
+part 2 5 90 310 false false
+part 2 later 5 90 330 false false
+part 3 5 90 330 false false
+part 3 later 5 90 350 false false
+next 6 90 350 false false
+next later 6 150 350 false true
+next part 6 150 350 false true
+next part later 6 150 430 false false
+scrolled 6 150 430 false false
+scrolled later 6 40 430 false false
+away 7 40 430 false false
+away later 7 40 410 false false
+button 7 210 410 false true
+button later 7 210 410 false true
+done

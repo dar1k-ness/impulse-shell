@@ -1,0 +1,8 @@
+.config/konsolerc	seed-000000-dark
+.local/share/konsole/Profile 1.profile	seed-000000-dark
+.local/share/konsole/TempMyou.profile	seed-000000-dark
+.local/share/org.kde.syntax-highlighting/themes/material-you-dark.theme	seed-5e7a91-dark
+.local/share/org.kde.syntax-highlighting/themes/material-you-light.theme	seed-5e7a91-dark
+dbus.log	seed-000000-dark
+export.json	seed-5e7a91-dark
+outcome.txt	seed-000000-dark

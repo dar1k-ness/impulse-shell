@@ -1,0 +1,139 @@
+init 5 5 5 5 5 5 5 4 4
+-- 0
+a len 11
+a text 11
+11 5
+a len 12
+a text 12
+hello world! 12 5
+a len 12
+a text 12
+12 5
+a len 11
+a text 11
+ELLO WORLD! 11 5
+a len 11
+a text 11
+ELLO WORLD! 11 5
+a len 0
+a text 0
+ 0 5
+ 0 5
+-- 1
+b text 11
+b len 11
+11 5
+b text 12
+b len 12
+hello world! 12 5
+b text 12
+b len 12
+12 5
+b text 11
+b len 11
+ELLO WORLD! 11 5
+b text 11
+b len 11
+ELLO WORLD! 11 5
+b text 0
+b len 0
+ 0 5
+ 0 5
+-- 2
+c len 11
+c text 11
+11 5
+c len 12
+c text 12
+hello world! 12 5
+c len 12
+c text 12
+12 5
+c len 11
+c text 11
+ELLO WORLD! 11 5
+ELLO WORLD! 11 5
+c len 0
+c text 0
+ 0 5
+ 0 5
+-- 3
+d text 11
+d len 11
+11 5
+d text 12
+d len 12
+hello world! 12 5
+d text 12
+d len 12
+12 5
+d text 11
+d len 11
+ELLO WORLD! 11 5
+ELLO WORLD! 11 5
+d text 0
+d len 0
+ 0 5
+ 0 5
+-- 4
+e text 11
+e len 11
+11 5
+e text 12
+e len 12
+hello world! 12 5
+e text 12
+e len 12
+12 5
+e text 11
+e len 11
+ELLO WORLD! 11 5
+e text 11
+e len 11
+ELLO WORLD! 11 5
+e text 0
+e len 0
+ 0 5
+ 0 5
+-- 5
+11 11
+hello world! 12 12
+12 12
+ELLO WORLD! 11 11
+ELLO WORLD! 11 11
+ 0 0
+ 0 0
+-- 6
+g len 11
+11 0
+g edited
+g len 12
+hello world! 12 0
+g len 12
+12 0
+g edited
+g len 11
+ELLO WORLD! 11 0
+g edited
+g len 11
+ELLO WORLD! 11 0
+g len 0
+ 0 0
+ 0 0
+-- 7
+h len 11
+11 0
+h len 12
+hello world! 12 0
+h len 12
+12 0
+h len 11
+ELLO WORLD! 11 0
+ELLO WORLD! 11 0
+h len 0
+ 0 0
+ 0 0
+u 6
+v 6
+u 4 true
+v 4 true

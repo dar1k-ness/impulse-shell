@@ -1,0 +1,5 @@
+900 520 #fef7ff
+40 40 128 128 35 1 /usr/share/icons/hicolor/256x256/apps/kitty.png
+300 40 128 128 20 0 /usr/share/icons/hicolor/256x256/apps/kitty.png
+520 140 128 128 100 1 /usr/share/icons/hicolor/256x256/apps/kitty.png
+40 300 160 160 35 0 /usr/share/icons/hicolor/256x256/apps/kitty.png

@@ -1,0 +1,24 @@
+# compose file
+version: "3.9"
+services:
+  web:
+    image: nginx:1.27-alpine
+    ports: ["8080:80", '443:443']
+    environment:
+      - DEBUG=true
+      - RETRIES=3
+    deploy: {replicas: 2, resources: {limits: {cpus: 0.5}}}
+    command: >
+      sh -c "nginx -g 'daemon off;'"
+  db: &db
+    image: postgres
+    restart: always
+    healthcheck:
+      test: [CMD, pg_isready]
+      interval: 10s
+  replica:
+    <<: *db
+    enabled: no
+    note: ~
+---
+key: !!str 123

@@ -1,0 +1,19 @@
+import QtQuick.tooling 1.2
+
+// Fades of the shell's windows from their previous frame (crates/qml/src/native.rs).
+Module {
+    Component {
+        file: "native.rs"
+        name: "ImpulseCrossfade"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/Crossfade 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Method {
+            name: "request"
+            Parameter { name: "ms"; type: "int" }
+        }
+    }
+}

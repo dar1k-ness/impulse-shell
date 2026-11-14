@@ -1,0 +1,6 @@
+a.fillGradient [skip]: null | reset null
+b.fillGradient [skip]: null | reset null
+c.fillGradient: null
+a.strokeGradient [skip]: null | reset null
+b.strokeGradient [skip]: null | reset null
+c.strokeGradient: null

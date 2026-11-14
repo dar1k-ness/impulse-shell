@@ -1,0 +1,15 @@
+a.width	number:0
+a.height	number:0
+root.nw	number:0
+root.nh	number:0
+b.width	number:6
+root.nb	number:0
+b.src = 4; b.width	number:4
+root.nb	number:1
+b.src = NaN; b.width	number:4
+root.nb	number:1
+c.width	number:2
+c.implicitWidth = 8; c.width	number:2
+c.width = NaN; c.width	number:2
+c.width = 3; c.width = NaN; c.width	number:3
+c.implicitWidth = 9; c.width	number:3

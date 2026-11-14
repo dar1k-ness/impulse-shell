@@ -1,0 +1,12 @@
+// @js modules/common/functions/fuzzysort.js
+// v4: [["Files:0.920688","Firefox:0.892758","file roller:0.856107","LibreOffice Writer:0.461690"],["Steam:0.920688","Visual Studio Code:0.814049","System Monitor:0.610181","Settings:0.358353","Spotify:0.352544","Telegram Desktop:0.304883"],["System Monitor:0.763454","Steam:0.473093","Telegram Desktop:0.352495"],["Firefox:0.892758","Files:0.920688","Foot:0.000000","Kitty:0.000000","Visual Studio Code:0.814049","GNU Image Manipulation Program:0.000000","Telegram Desktop:0.378549","Steam:0.435369","System Monitor:0.718241","Settings:0.358353","Spotify:0.352544","Obsidian:0.000000","LibreOffice Writer:0.461690","file roller:0.856107"],[],["LibreOffice Writer:0.815565"],0.3387682574858826,"[V]isual [S]tudio [C]ode",["Steam","Spotify","Settings"],["Settings1","Telegram Desktop1","Steam2"],[["nope","","docs","0.9651"],["Document Viewer","Document Viewer","","0.8389"]],3]
+var F = M_modules_common_functions_fuzzysort;
+var names = ["Firefox", "Files", "Foot", "Kitty", "Visual Studio Code", "GNU Image Manipulation Program", "Telegram Desktop", "Steam", "System Monitor", "Settings", "Spotify", "Obsidian", "LibreOffice Writer", "file roller"];
+var prepped = names.map(n => ({ name: F.prepare(n), entry: n }));
+var go = q => F.go(q, prepped, { all: true, key: "name" }).map(r => r.obj.entry + ":" + r.score.toFixed(6));
+var single = F.single("fx", "Firefox");
+var hl = F.highlight(F.single("vsc", "Visual Studio Code"), "[", "]");
+var limited = F.go("s", names, { limit: 3 }).map(r => r.target);
+var thr = F.go("e", names, { threshold: 0.5 }).map(r => r.target + r.indexes.join(""));
+var keys = F.go("doc", [{ a: "Document Viewer", b: "x" }, { a: "nope", b: "docs" }], { keys: ["a", "b"] }).map(r => [r.obj.a, r[0] ? r[0].target : null, r[1] ? r[1].target : null, r.score.toFixed(4)]);
+var result = JSON.stringify([go("fi"), go("st"), go("s m"), go(""), go("zzz"), go("lib wr"), single && single.score, hl, limited, thr, keys, F.go("FIRE", names).total]);

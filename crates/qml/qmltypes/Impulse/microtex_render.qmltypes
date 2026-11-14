@@ -1,0 +1,77 @@
+import QtQuick.tooling 1.2
+
+// Renders `expression` with MicroTeX (`binaryDir`/`binaryName`) to the SVG `output`; exits 0 only when the image was made.
+// A Process whose work is native (crates/qml/src/procs.rs): `running`, `exited`, `stdout` as Process.
+Module {
+    Component {
+        file: "procs.rs"
+        name: "ImpulseMicroTexRender"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/MicroTexRender 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "binaryDir"
+            type: "QString"
+            read: "binaryDir"
+            write: "setBinaryDir"
+            notify: "binaryDirChanged"
+            index: 0
+        }
+        Property {
+            name: "binaryName"
+            type: "QString"
+            read: "binaryName"
+            write: "setBinaryName"
+            notify: "binaryNameChanged"
+            index: 1
+        }
+        Property {
+            name: "expression"
+            type: "QString"
+            read: "expression"
+            write: "setExpression"
+            notify: "expressionChanged"
+            index: 2
+        }
+        Property {
+            name: "output"
+            type: "QString"
+            read: "output"
+            write: "setOutput"
+            notify: "outputChanged"
+            index: 3
+        }
+        Property {
+            name: "textSize"
+            type: "QString"
+            read: "textSize"
+            write: "setTextSize"
+            notify: "textSizeChanged"
+            index: 4
+        }
+        Property {
+            name: "padding"
+            type: "QString"
+            read: "padding"
+            write: "setPadding"
+            notify: "paddingChanged"
+            index: 5
+        }
+        Property {
+            name: "foreground"
+            type: "QString"
+            read: "foreground"
+            write: "setForeground"
+            notify: "foregroundChanged"
+            index: 6
+        }
+        Signal { name: "binaryDirChanged" }
+        Signal { name: "binaryNameChanged" }
+        Signal { name: "expressionChanged" }
+        Signal { name: "outputChanged" }
+        Signal { name: "textSizeChanged" }
+        Signal { name: "paddingChanged" }
+        Signal { name: "foregroundChanged" }
+    }
+}

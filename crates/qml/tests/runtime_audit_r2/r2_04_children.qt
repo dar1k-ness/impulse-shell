@@ -1,0 +1,68 @@
+init a a1,a2 | aq,at | aq,at,a1,a2
+init c c1 | cq | cq,c1
+init d d2 null d
+  a.childrenChanged 1
+  b.childrenChanged 1
+  a1.parentChanged b
+moved a2 a1 b
+same parent again
+  b.childrenChanged 0
+  a1.visible false
+  a1.parentChanged null
+  a.childrenChanged 0
+  b.childrenChanged 1
+  a2.parentChanged b
+b=[a2]  a2 null
+b=[a2] again a2
+  b.childrenChanged 0
+  a2.parentChanged null
+  b.childrenChanged 1
+  a1.visible true
+  a1.parentChanged b
+  b.childrenChanged 2
+  a2.parentChanged b
+b=[a1,a2] a1,a2
+  b.childrenChanged 1
+  a1.visible false
+  a1.parentChanged null
+  b.childrenChanged 0
+  a2.parentChanged null
+  b.childrenChanged 1
+  a2.parentChanged b
+  b.childrenChanged 2
+  a1.visible true
+  a1.parentChanged b
+b=[a2,a1] a2,a1
+  b.childrenChanged 1
+  a2.parentChanged null
+  b.childrenChanged 0
+  a1.visible false
+  a1.parentChanged null
+  b.childrenChanged 1
+  a1.visible true
+  a1.parentChanged b
+b=a1 a1 null
+  b.childrenChanged 0
+  a1.visible false
+  a1.parentChanged null
+b=[]  null false
+b=null 
+  c.childrenChanged 0
+  c.childrenChanged 1
+  a1.visible true
+  a1.parentChanged c
+c.data=[a1,q] a1 | q | q,a1
+  c.childrenChanged 0
+  a1.visible false
+  a1.parentChanged null
+c.data=[]  |  |  null
+c.resources=  | q,aq | q,aq
+  c.childrenChanged 1
+  a2.parentChanged c
+c.data=a2 a2 |  | a2
+a.data=[at]  | at | at
+  b.childrenChanged 1
+  a1.visible true
+  a1.parentChanged b
+push a1
+data.push q q,a1

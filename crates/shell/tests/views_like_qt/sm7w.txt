@@ -1,0 +1,178 @@
+count 0
+valuesChanged ["a","b","c"]
+lv + a 0 0
+lv idx b -1 1
+lv + b 1 1
+lv idx c -1 2
+lv + c 2 2
+count 3
+isCurrent a 0 true
+current 0
+currentItem a#0
+count 3
+-- append
+valuesChanged ["a","b","c","d"]
+lv idx d -1 3
+lv + d 3 3
+count 4
+values ["a","b","c","d"] 0 4
+-- remove middle
+lv idx b 1 -1
+lv idx c 2 1
+lv idx d 3 2
+valuesChanged ["a","c","d"]
+lv - b 1
+count 3
+values ["a","c","d"] 0 3
+-- move
+lv idx a 0 1
+lv idx c 2 2
+lv idx d 3 0
+valuesChanged ["d","a","c"]
+current 1
+values ["d","a","c"] 1 3
+-- replace one
+lv idx a 0 2
+lv idx c 2 3
+lv idx a 0 -1
+lv idx c 2 2
+valuesChanged ["d","X","c"]
+lv idx X -1 1
+lv + X 1 4
+isCurrent a 0 false
+lv - a 0
+currentItem none
+isCurrent c 2 true
+current 2
+currentItem c#2
+values ["d","X","c"] 2 3
+-- dups
+lv idx X 4 2
+lv idx c 2 3
+lv idx X 4 -1
+lv idx c 2 2
+valuesChanged ["d","d","c","d"]
+lv idx d -1 1
+lv + d 1 5
+lv idx d -1 3
+lv + d 3 6
+lv - X 4
+count 4
+values ["d","d","c","d"] 2 4
+-- remove first two
+lv idx d 3 2
+lv idx d 5 3
+lv idx c 2 0
+lv idx d 6 1
+lv idx d 3 -1
+lv idx d 5 -1
+valuesChanged ["c","d"]
+lv - d 5
+lv - d 3
+current 0
+count 2
+values ["c","d"] 0 2
+-- prepend
+lv idx c 2 2
+lv idx d 6 3
+valuesChanged ["p","q","c","d"]
+lv + p 0 7
+lv idx q -1 1
+lv + q 1 8
+current 2
+count 4
+values ["p","q","c","d"] 2 4
+-- remove current
+lv idx c 2 -1
+lv idx d 6 2
+valuesChanged ["p","q","d"]
+isCurrent c 2 false
+lv - c 2
+currentItem none
+isCurrent d 6 true
+currentItem d#6
+count 3
+values ["p","q","d"] 2 3
+-- remove last current
+lv idx d 6 -1
+valuesChanged ["p","q"]
+isCurrent d 6 false
+lv - d 6
+currentItem none
+isCurrent q 8 true
+current 1
+currentItem q#8
+count 2
+values ["p","q"] 1 2
+-- swap
+lv idx p 7 1
+lv idx q 8 0
+valuesChanged ["q","p"]
+current 0
+values ["q","p"] 0 2
+-- clear
+lv idx q 8 -1
+lv idx p 7 -1
+valuesChanged []
+lv - p 7
+isCurrent q 8 false
+lv - q 8
+currentItem none
+current -1
+count 0
+values [] -1 0
+-- fill
+valuesChanged [1,2,3,4,5]
+lv + 1 0 9
+lv idx 2 -1 1
+lv + 2 1 10
+lv idx 3 -1 2
+lv + 3 2 11
+lv idx 4 -1 3
+lv + 4 3 12
+lv idx 5 -1 4
+lv + 5 4 13
+isCurrent 1 9 true
+current 0
+currentItem 1#9
+count 5
+values [1,2,3,4,5] 0 5
+-- set current 3
+isCurrent 1 9 false
+isCurrent 4 12 true
+current 3
+currentItem 4#12
+values [1,2,3,4,5] 3 5
+-- remove around
+lv idx 2 10 -1
+lv idx 3 11 -1
+lv idx 4 12 1
+lv idx 5 13 2
+valuesChanged [1,4,5]
+lv - 3 11
+lv - 2 10
+current 1
+count 3
+values [1,4,5] 1 3
+-- move current first
+lv idx 1 9 1
+lv idx 4 12 0
+valuesChanged [4,1,5]
+current 0
+values [4,1,5] 0 3
+-- clear again
+lv idx 4 12 -1
+lv idx 1 9 -1
+lv idx 5 13 -1
+valuesChanged []
+lv - 5 13
+lv - 1 9
+isCurrent 4 12 false
+lv - 4 12
+currentItem none
+current -1
+count 0
+values [] -1 0
+-- undefined
+values [] -1 0
+done

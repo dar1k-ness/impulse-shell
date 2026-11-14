@@ -1,0 +1,8 @@
+ffmpeg -y -i @HOME@/Pictures/Wallpapers/clip.mp4 -vframes 1 @HOME@/.config/hypr/custom/scripts/mpvpaper_thumbnails/clip.mp4.jpg
+gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark
+kde-material-you-colors-wrapper.sh --scheme-variant scheme-tonal-spot
+mpvpaper -o no-audio loop hwdec=auto scale=bilinear interpolation=no video-sync=display-resample panscan=1.0 video-scale-x=1.0 video-scale-y=1.0 video-align-x=0.5 video-align-y=0.5 load-scripts=no DP-1 @HOME@/Pictures/Wallpapers/clip.mp4
+mpvpaper -o no-audio loop hwdec=auto scale=bilinear interpolation=no video-sync=display-resample panscan=1.0 video-scale-x=1.0 video-scale-y=1.0 video-align-x=0.5 video-align-y=0.5 load-scripts=no HDMI-A-1 @HOME@/Pictures/Wallpapers/clip.mp4
+pgrep -f kitty
+pkill -9 -x mpvpaper; pidwait -x mpvpaper

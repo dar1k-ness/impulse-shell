@@ -1,0 +1,37 @@
+import QtQuick.tooling 1.2
+
+// Listening for the song that plays (crates/qml/src/musicrecognizer.rs): `songrec` on the
+// default sink's monitor or the default source, found through PipeWire.
+Module {
+    Component {
+        file: "musicrecognizer.rs"
+        name: "ImpulseMusicRecognizer"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/MusicRecognizer 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "running"
+            type: "bool"
+            read: "running"
+            notify: "runningChanged"
+            index: 0
+            isReadonly: true
+        }
+        Signal { name: "runningChanged" }
+        Signal {
+            name: "finished"
+            Parameter { name: "text"; type: "QString" }
+            Parameter { name: "exitCode"; type: "int" }
+        }
+        Method {
+            name: "start"
+            Parameter { name: "interval"; type: "int" }
+            Parameter { name: "timeout"; type: "int" }
+            Parameter { name: "source"; type: "QString" }
+        }
+        Method { name: "stop" }
+    }
+}

@@ -1,0 +1,36 @@
+// Package main is a demo.
+package main
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+)
+
+type Server struct {
+	Addr  string `json:"addr"`
+	Ports []int
+	mu    sync.Mutex
+}
+
+const Pi, max = 3.14, 0x1F
+
+func (s *Server) Run(ctx context.Context) (err error) {
+	defer func() { recover() }()
+	ch := make(chan int, 4)
+	go func() { ch <- len(s.Ports) }()
+	select {
+	case n := <-ch:
+		fmt.Printf("%d ports on %q\n", n, s.Addr)
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+	for i, p := range s.Ports {
+		if p > 1024 && i != 0 || p == 'a' {
+			http.ListenAndServe(fmt.Sprintf(":%d", p), nil)
+		}
+	}
+	var x interface{} = map[string][]byte{"k": []byte(`raw\n`)}
+	_ = x
+	return nil
+}

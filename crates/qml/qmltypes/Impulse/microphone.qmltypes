@@ -1,0 +1,18 @@
+import QtQuick.tooling 1.2
+
+// Impulse/Microphone: the default audio source as a whole (crates/qml/src/pw.rs).
+Module {
+    Component {
+        file: "pw.rs"
+        name: "ImpulseMicrophone"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/Microphone 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        // Toggles the default source's mute, as `wpctl set-mute @DEFAULT_SOURCE@ toggle` does:
+        // also of a source Pipewire.defaultAudioSource has no `audio` for.
+        Method { name: "toggleMute" }
+    }
+}

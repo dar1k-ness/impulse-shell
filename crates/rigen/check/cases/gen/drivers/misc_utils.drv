@@ -1,0 +1,20 @@
+// @qml modules/common/functions/FileUtils.qml
+// @qml modules/common/functions/NotificationUtils.qml
+// @qml modules/common/functions/NumberUtils.qml
+// @qml modules/common/functions/ObjectUtils.qml
+// @qml modules/common/functions/DateUtils.qml
+// v4: [[["wall.paper.png","wall.paper.png","/home/u/Pictures/wall.paper","/home/u/Pictures"],["","b","/a/b/","/a/b"],["noext","noext","noext",""],["f.txt","f.txt","C:\\dir\\f","C:/dir"],["z","z","/x.y/z","/x.y"],["","","",""],["","","",""]],["chat","restart_alt","screenshot_monitor","folder_copy","power","question_mark","chat","reset_wrench"],["Hello\n\n<img src=1>","a\n\nb\n\n<img>","x"],["","Now",true],[2,2,4,-2,1002],{"a":[1,{"b":2}],"c":["p","q"],"d":null,"e":"s"},{"list":[7],"nested":{"v":2,"w":[]},"keep":"K","n":5},[3,4,5],[26,27,1],[0,1],true,false]
+var F = FileUtils, N = NotificationUtils, O = ObjectUtils, D = DateUtils;
+var paths = ["file:///home/u/Pictures/wall.paper.png", "/a/b/", "noext", "C:\\dir\\f.txt", "/x.y/z", "", 5];
+var fu = paths.map(p => [F.fileNameForPath(p), F.folderNameForPath(p), F.trimFileExt(p), F.parentDirectory(p)]);
+var summ = ["", "System reboot required", "Screenshot taken", "file copied", "Battery low", "Couldn't connect", "random", "Configuration Reloaded"].map(N.findSuitableMaterialSymbol);
+var bodies = [N.processNotificationBody('<a href="x">site</a>\n\nHello<IMG src=1>', "Google Chrome"), N.processNotificationBody("a\n\nb<img>", "kitty"), N.processNotificationBody("x", "")];
+var tm = [N.getFriendlyNotifTimeString(0), N.getFriendlyNotifTimeString(Date.now() - 1000), N.getFriendlyNotifTimeString(Date.now() - 2 * 3600000 - 5).length > 0];
+var plain = O.toPlainObject({ a: [1, { b: 2, f() { } }], objectName: "x", parentX: 1, c: { length: 2, 0: "p", 1: "q" }, d: null, e: "s" });
+var target = { list: [1, 2, 3], nested: { v: 1, w: [9] }, keep: "k", n: 0 };
+O.applyToQtObject(target, { list: [7], nested: { v: 2, w: [] }, keep: "K", absent: 1, n: 5 });
+var arrT = [1, 2]; O.applyToQtObject(arrT, [3, 4, 5]);
+var d0 = new Date(2026, 9, 29, 12, 0, 0);
+var wk = [0, 1, 6].map(i => D.getIthDayDateOfSameWeek(d0, i).getDate());
+var wk0 = [0, 1].map(fd => D.getFirstDayOfWeek(d0, fd).getDay());
+var result = JSON.stringify([fu, summ, bodies, tm, [1, 2.9, 3, -3, 1001].map(N2 => NumberUtils.roundToEven(N2)), plain, target, arrT, wk, wk0, D.sameDate(d0, new Date(2026, 9, 29, 1)), D.sameDate(d0, new Date(2026, 9, 30))]);

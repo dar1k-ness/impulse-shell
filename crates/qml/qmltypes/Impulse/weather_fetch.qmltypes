@@ -1,0 +1,25 @@
+import QtQuick.tooling 1.2
+
+// Fetches the weather for `place` (wttr.in j1) and prints the current condition, location and astronomy as JSON.
+// A Process whose work is native (crates/qml/src/procs.rs): `running`, `exited`, `stdout` as Process.
+Module {
+    Component {
+        file: "procs.rs"
+        name: "ImpulseWeatherFetch"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/WeatherFetch 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "place"
+            type: "QString"
+            read: "place"
+            write: "setPlace"
+            notify: "placeChanged"
+            index: 0
+        }
+        Signal { name: "placeChanged" }
+        // The last fetch failed without a connection and NetworkManager now reports one.
+        Signal { name: "networkRestored" }
+    }
+}

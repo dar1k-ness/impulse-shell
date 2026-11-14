@@ -1,0 +1,9 @@
+// @qml modules/common/functions/StringUtils.qml splitMarkdownBlocks
+// splitMarkdownBlocks loops on `regex.exec` with /g; lastIndex must advance (bounded here so a missing lastIndex cannot hang the test).
+// v4: [["1",0,2,"2",3,5,"3",6,8],true,2,["a1","a2"],"vk; yx",[[{"type":"text","content":"Hi\n"},{"type":"think","content":"plan","completed":true},{"type":"code","lang":"js","content":"let x = 1\n","completed":true},{"type":"text","content":"\ntail "},{"type":"code","lang":"py","content":"print(1)","completed":false}],[{"type":"text","content":"intro "},{"type":"think","content":"unfinished","completed":false}],[{"type":"code","lang":"","content":"raw","completed":false}]]]
+var re = /a(\d)/g, s = "a1 a2 a3", m, out = [], n = 0;
+while ((m = re.exec(s)) !== null && n++ < 5) out.push(m[1], m.index, re.lastIndex);
+var sticky = /x/y; sticky.lastIndex = 1;
+var advances = out.length === 9 && out[8] === 8;
+var md = advances ? [StringUtils.splitMarkdownBlocks("Hi\n<think>plan</think>\n```js\nlet x = 1\n```\ntail ```py\nprint(1)"), StringUtils.splitMarkdownBlocks("intro <think>unfinished"), StringUtils.splitMarkdownBlocks("```\nraw")] : null;
+var result = JSON.stringify([out, sticky.test("ax"), sticky.lastIndex, "a1a2".match(/a\d/g), "k=v; x=y".replace(/(\w)=(\w)/g, (all, k, v) => v + k), md]);

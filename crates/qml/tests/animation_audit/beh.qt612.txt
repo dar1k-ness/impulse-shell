@@ -1,0 +1,124 @@
+s 1 0 0 0 0 0 0
+set a
+sa running true 0
+sa running false 0
+after a 0 false
+s 2 0 0 0 0 0 0
+s 3 0 0 0 0 0 0
+set b
+nb running true 0
+after b 0 true
+s 4 0 0 0 0 0 0
+b 1.6 true
+s 5 0 1.6 0 0 0 0
+b 3.2 true
+s 6 0 3.2 0 0 0 0
+b 4.8 true
+set b again
+after b 4.8 true
+s 7 0 4.8 0 0 0 0
+b 7.232 true
+s 8 0 7.232 0 0 0 0
+b 9.664 true
+set b same
+after b 9.664 true
+s 9 0 9.664 0 0 0 0
+b 12.096 true
+s 10 0 12.096 0 0 0 0
+b 14.528 true
+s 11 0 14.528 0 0 0 0
+b 16.96 true
+s 12 0 16.96 0 0 0 0
+b 19.392 true
+s 13 0 19.392 0 0 0 0
+b 20 true
+nb running false 20
+s 14 0 20 0 0 0 0
+s 15 0 20 0 0 0 0
+s 16 0 20 0 0 0 0
+s 17 0 20 0 0 0 0
+set c
+nc running true 0
+c 10 true
+nc running false 10
+after c 10 false
+s 18 0 20 10 0 0 0
+s 19 0 20 10 0 0 0
+set d
+sd running true 0
+after d 0 true
+s 20 0 20 10 0 0 0
+d 2.048 true
+s 21 0 20 10 2.048 0 0
+d 7.408 true
+set d again
+sd running false 7.408
+sd running true 7.408
+after d 7.408 true
+s 22 0 20 10 7.408 0 0
+d 4.046 true
+s 23 0 20 10 4.046 0 0
+d 4 true
+s 24 0 20 10 4 0 0
+s 25 0 20 10 4 0 0
+sd running false 4
+s 26 0 20 10 4 0 0
+s 27 0 20 10 4 0 0
+s 28 0 20 10 4 0 0
+s 29 0 20 10 4 0 0
+set e
+se running true 0
+after e 0 true
+s 30 0 20 10 4 0 0
+s 31 0 20 10 4 0 0
+s 32 0 20 10 4 0 0
+e 3.333 true
+s 33 0 20 10 4 3.333 0
+e 6.667 true
+s 34 0 20 10 4 6.667 0
+e 10 true
+se running false 10
+s 35 0 20 10 4 10 0
+s 36 0 20 10 4 10 0
+s 37 0 20 10 4 10 0
+s 38 0 20 10 4 10 0
+s 39 0 20 10 4 10 0
+set src
+nf running true 0
+after src 0 true
+s 40 0 20 10 4 10 0
+f 2.5 true
+s 41 0 20 10 4 10 2.5
+f 5 true
+s 42 0 20 10 4 10 5
+f 7.5 true
+s 43 0 20 10 4 10 7.5
+f 10 true
+nf running false 10
+s 44 0 20 10 4 10 10
+s 45 0 20 10 4 10 10
+s 46 0 20 10 4 10 10
+s 47 0 20 10 4 10 10
+set a twice
+sa running true 0
+sa running false 0
+sa running true 0
+sa running false 0
+after a 0 false
+s 48 0 20 10 4 10 10
+s 49 0 20 10 4 10 10
+set a to itself
+sa running true 0
+sa running false 0
+after a 0 false
+s 50 0 20 10 4 10 10
+s 51 0 20 10 4 10 10
+s 52 0 20 10 4 10 10
+s 53 0 20 10 4 10 10
+s 54 0 20 10 4 10 10
+s 55 0 20 10 4 10 10
+s 56 0 20 10 4 10 10
+s 57 0 20 10 4 10 10
+s 58 0 20 10 4 10 10
+s 59 0 20 10 4 10 10
+s 60 0 20 10 4 10 10

@@ -1,0 +1,141 @@
+# B3-1: far dates
+String(new Date(8.64e15))
+=> string:Sat Sep 13 03:00:00 275760 GMT+0300
+new Date(8.64e15).getTimezoneOffset()
+=> number:-180
+new Date(8.64e15).toDateString()
+=> string:Sat Sep 13 275760
+new Date(8.64e15).toTimeString()
+=> string:03:00:00
+Qt.formatDateTime(new Date(8.64e15), "yyyy-MM-dd hh:mm")
+=> string:+275760-09-13 03:00
+Qt.formatDateTime(new Date(8.64e15), "ddd d MMM yy hh:mm:ss.zzz AP")
+=> string:Sat 13 Sep 60 03:00:00.000 AM
+Qt.formatDate(new Date(8.64e15), "dddd d MMMM yyyy")
+=> string:Saturday 13 September +275760
+Qt.formatTime(new Date(8.64e15), "h:m:s")
+=> string:3:0:0
+new Date(8.64e15).toLocaleString(Qt.locale("en_US"))
+=> string:Saturday, September 13, +275760 3:00:00 AM Moscow Standard Time
+new Date(8.64e15).toLocaleDateString(Qt.locale("en_US"))
+=> string:Saturday, September 13, +275760
+new Date(8.64e15).toLocaleTimeString(Qt.locale("en_US"))
+=> string:3:00:00 AM Moscow Standard Time
+new Date(8.64e15).toLocaleString(Qt.locale("de_DE"), "yyyy-MM-dd")
+=> string:+275760-09-13
+Qt.locale("en_US").toString(new Date(8.64e15), "yyyy MMMM d")
+=> string:+275760 September 13
+String(new Date(-8.64e15))
+=> string:Tue Apr 20 02:30:17 -271822 GMT+0230
+new Date(-8.64e15).getTimezoneOffset()
+=> number:-150.28333333333333
+new Date(-8.64e15).toDateString()
+=> string:Tue Apr 20 -271822
+new Date(-8.64e15).toTimeString()
+=> string:02:30:17
+Qt.formatDateTime(new Date(-8.64e15), "yyyy-MM-dd hh:mm")
+=> string:-271822-04-20 02:30
+Qt.formatDate(new Date(-8.64e15), "dddd d MMMM yyyy")
+=> string:Tuesday 20 April -271822
+String(new Date(8.3e15))
+=> string:Wed Jul 12 22:33:20 264986 GMT+0300
+new Date(8.3e15).getTimezoneOffset()
+=> number:-180
+Qt.formatDateTime(new Date(8.3e15), "yyyy-MM-dd hh:mm:ss")
+=> string:+264986-07-12 22:33:20
+String(new Date(-8.3e15))
+=> string:Thu Jun 21 06:56:57 -261048 GMT+0230
+new Date(-8.3e15).getTimezoneOffset()
+=> number:-150.28333333333333
+Qt.formatDateTime(new Date(-8.3e15), "yyyy-MM-dd hh:mm:ss")
+=> string:-261048-06-21 06:56:57
+String(new Date(8.64e15 + 1))
+=> string:Invalid Date
+new Date(8.64e15 + 1).getTimezoneOffset()
+=> number:NaN
+Qt.formatDateTime(new Date(8.64e15 + 1), "yyyy-MM-dd hh:mm")
+=> string:
+new Date(8.64e15).getFullYear() + " " + new Date(8.64e15).getMonth() + " " + new Date(8.64e15).getDate() + " " + new Date(8.64e15).getDay() + " " + new Date(8.64e15).getHours()
+=> string:275760 8 13 6 3
+new Date(-8.64e15).getFullYear() + " " + new Date(-8.64e15).getMonth() + " " + new Date(-8.64e15).getDate() + " " + new Date(-8.64e15).getDay() + " " + new Date(-8.64e15).getHours()
+=> string:-271821 3 20 2 2
+String(new Date(1e15))
+=> string:Fri Sep 27 04:46:40 33658 GMT+0300
+Qt.formatDateTime(new Date(1e15), "yyyy-MM-dd hh:mm:ss")
+=> string:+33658-09-27 04:46:40
+Qt.formatDateTime(new Date(-1e14), "yyyy-MM-dd hh:mm:ss")
+=> string:-1200-02-15 16:43:37
+Qt.formatDateTime(new Date(-62198755200000), "yyyy-MM-dd hh:mm:ss yy")
+=> string:-0002-01-01 02:30:17 -2
+Qt.formatDateTime(new Date(-62135596800000 - 86400000 * 400), "yyyy-MM-dd yy")
+=> string:-0002-11-28 -2
+Qt.formatDateTime(new Date(253402300800000), "yyyy-MM-dd yy")
+=> string:+10000-01-01 00
+Qt.formatDateTime(new Date(2024, 1, 1, 13, 5, 9, 7), "yyyy-MM-dd hh:mm:ss.zzz AP ddd MMM")
+=> string:2024-02-01 01:05:09.007 PM Thu Feb
+# B3-2: year text
+new Date(10000, 0, 1).toDateString()
+=> string:Sat Jan 1 10000
+String(new Date(10000, 0, 1))
+=> string:Sat Jan 1 00:00:00 10000 GMT+0300
+new Date(9999, 11, 31).toDateString()
+=> string:Fri Dec 31 9999
+new Date(123456, 5, 7).toDateString()
+=> string:Sat Jun 7 123456
+String(new Date(123456, 5, 7, 8, 9, 10))
+=> string:Sat Jun 7 08:09:10 123456 GMT+0300
+new Date(-1, 0, 1).toDateString()
+=> string:Fri Jan 1 -002
+String(new Date(-12345, 0, 1))
+=> string:Fri Jan 1 00:00:00 -12346 GMT+0230
+new Date(99, 0, 1).toDateString()
+=> string:Fri Jan 1 1999
+new Date(0).toDateString()
+=> string:Thu Jan 1 1970
+String(new Date(2024, 0, 5, 3, 4, 5))
+=> string:Fri Jan 5 03:04:05 2024 GMT+0300
+new Date(2024, 0, 5, 3, 4, 5).toDateString()
+=> string:Fri Jan 5 2024
+new Date(2024, 0, 5, 3, 4, 5).toTimeString()
+=> string:03:04:05
+new Date(NaN).toDateString()
+=> string:
+String(new Date(NaN))
+=> string:Invalid Date
+new Date(NaN).getTimezoneOffset()
+=> number:NaN
+# B3-3: DST gap and overlap, Europe/Moscow 2010
+Date.parse("2010-03-28T02:30:00")
+=> number:1269729000000
+new Date(2010, 2, 28, 2, 30).getTime()
+=> number:1269729000000
+Date.parse("2010-03-28T01:59:59")
+=> number:1269730799000
+Date.parse("2010-03-28T03:00:00")
+=> number:1269730800000
+Date.parse("2010-03-28T02:00:00")
+=> number:1269727200000
+Date.parse("2010-03-28T02:59:59.999")
+=> number:1269730799999
+new Date("2010-03-28T02:30:00").getHours()
+=> number:1
+Date.parse("2010-10-31T02:30:00")
+=> number:1288481400000
+new Date(2010, 9, 31, 2, 30).getTime()
+=> number:1288481400000
+Date.parse("2011-03-27T02:30:00")
+=> number:1301178600000
+Date.parse("2014-10-26T01:30:00")
+=> number:1414276200000
+Date.parse("Mar 28 2010 02:30:00")
+=> number:1269732600000
+Date.parse("2010-03-28T02:30:00Z")
+=> number:1269743400000
+Date.parse("2010-03-28T02:30")
+=> number:1269729000000
+new Date(2010, 2, 28, 2, 30).getTimezoneOffset()
+=> number:-180
+new Date(1269732600000).getTimezoneOffset()
+=> number:-240
+new Date(1269729000000).getTimezoneOffset()
+=> number:-180

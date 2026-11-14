@@ -1,0 +1,23 @@
+root.done	string:,,,,,,,,,,,,,,,,,,,,,,,,,,,!Error: Cannot assign [undefined] to QFont,,,,,,
+[s1.topLeftRadius, s1.topRightRadius, s1.bottomLeftRadius, s1.bottomRightRadius, s1.antialiasing].join(" ")	string:5 5 5 5 true
+[g1.rowSpacing, g1.columnSpacing].join(" ")	string:3 4
+[v1.contentWidth, v1.contentHeight].join(" ")	string:41 42
+[b1.contentWidth, b1.contentHeight].join(" ")	string:0 0
+[c1.leftPadding, c1.rightPadding, c1.topPadding, c1.bottomPadding].join(" ")	string:8 8 9 9
+[c2.horizontalPadding, c2.verticalPadding, c2.leftPadding, c2.topPadding].join(" ")	string:5 5 5 5
+[c3.padding, c3.spacing, c3.leftPadding, c3.rightPadding, c3.horizontalPadding].join(" ")	string:0 0 1 0 0
+[p1.leftMargin, p1.topMargin, p1.rightMargin, p1.closePolicy, p1.topPadding].join(" ")	string:6 6 6 17 5
+[p2.margins, p2.leftMargin, p2.rightMargin].join(" ")	string:-1 1 -1
+p3.closePolicy	number:17
+[f1.font.pixelSize === f2.font.pixelSize, f1.font.pixelSize !== 21, f1.font.bold].join(" ")	string:true true false
+[f3.font.pixelSize, f3.leftPadding, f4.padding, f4.topPadding].join(" ")	string:22 5 0 2
+[s2.topLeftRadius, s2.bottomRightRadius, s2.antialiasing].join(" ")	string:5 5 true
+g2.rowSpacing	number:3
+v2.contentWidth	number:41
+b2.contentWidth	number:0
+[c4.horizontalPadding, c4.leftPadding, c4.topPadding].join(" ")	string:5 5 5
+[c5.padding, c5.spacing, c5.leftPadding].join(" ")	string:0 0 0
+[p4.margins, p4.leftMargin, p4.closePolicy].join(" ")	string:-1 -1 17
+[p5.margins, p5.leftMargin].join(" ")	string:6 6
+[pn1.contentWidth, pn1.contentHeight].join(" ")	string:41 42
+[te1, tx1, te2].map(t => String(t.baseUrl).replace(/.*\//, "")).join(" ")	string:reset.qml reset.qml reset.qml

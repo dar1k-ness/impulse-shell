@@ -1,0 +1,97 @@
+@property point pt: Qt.point(1, 2)
+@property vector3d v3: Qt.vector3d(1, 2, 3)
+@property rect rc: Qt.rect(1, 2, 3, 4)
+@property size sz: Qt.size(1, 2)
+@property font f
+@property matrix4x4 mx
+@property int np: 0
+@property int nv: 0
+@property int nr: 0
+@property int ns: 0
+@property int nf: 0
+@property int nm: 0
+@onPtChanged: np += 1
+@onV3Changed: nv += 1
+@onRcChanged: nr += 1
+@onSzChanged: ns += 1
+@onFChanged: nf += 1
+@onMxChanged: nm += 1
+# B3-22 notifications on no-op writes
+(function(){ var a = np; pt.x = 1; return a + ">" + np })()
+=> string:1>1
+(function(){ var a = np; pt.x = 5; return a + ">" + np })()
+=> string:1>2
+(function(){ var a = np; pt.x = 5; return a + ">" + np })()
+=> string:2>2
+(function(){ var a = np; pt.y = 2; return a + ">" + np })()
+=> string:2>2
+(function(){ var a = np; pt.x = 5 + 1e-13; return a + ">" + np + " " + (pt.x == 5) })()
+=> string:2>2 false
+(function(){ var a = np; pt.x = "5"; return a + ">" + np })()
+=> string:2>2
+(function(){ var a = np; pt.nosuch = 1; return a + ">" + np })()
+=> string:2>2
+(function(){ var a = np; pt = Qt.point(5, 2); return a + ">" + np })()
+=> string:2>2
+(function(){ var a = np; pt = Qt.point(5 + 1e-13, 2); return a + ">" + np })()
+=> string:2>2
+(function(){ var a = np; pt = Qt.point(6, 2); return a + ">" + np })()
+=> string:2>3
+(function(){ var a = nv; v3.x = 1; return a + ">" + nv })()
+=> string:1>1
+(function(){ var a = nv; v3.x = 2; return a + ">" + nv })()
+=> string:1>2
+(function(){ var a = nv; v3.x = 2 + 1e-9; return a + ">" + nv })()
+=> string:2>2
+(function(){ var a = nv; v3 = Qt.vector3d(2, 2, 3); return a + ">" + nv })()
+=> string:2>2
+(function(){ var a = nr; rc.x = 1; return a + ">" + nr })()
+=> string:1>1
+(function(){ var a = nr; rc.width = 3; return a + ">" + nr })()
+=> string:1>1
+(function(){ var a = nr; rc.width = 4; return a + ">" + nr })()
+=> string:1>2
+(function(){ var a = ns; sz.width = 1; return a + ">" + ns })()
+=> string:1>1
+(function(){ var a = ns; sz.height = 3; return a + ">" + ns })()
+=> string:1>2
+(function(){ var a = nf; f.pixelSize = 14; return a + ">" + nf })()
+=> string:0>1
+(function(){ var a = nf; f.pixelSize = 14; return a + ">" + nf })()
+=> string:1>1
+(function(){ var a = nf; f.pixelSize = 14.2; return a + ">" + nf })()
+=> string:1>1
+(function(){ var a = nf; f.bold = false; return a + ">" + nf })()
+=> string:1>1
+(function(){ var a = nf; f.bold = true; return a + ">" + nf })()
+=> string:1>2
+(function(){ var a = nf; f.bold = true; return a + ">" + nf })()
+=> string:2>2
+(function(){ var a = nf; f.family = f.family; return a + ">" + nf })()
+=> string:2>2
+(function(){ var a = nf; f.weight = 700; return a + ">" + nf })()
+=> string:2>2
+(function(){ var a = nf; f.italic = false; return a + ">" + nf })()
+=> string:2>2
+(function(){ var a = nf; f.letterSpacing = 0; return a + ">" + nf })()
+=> string:2>3
+(function(){ var a = nf; f.letterSpacing = 0; return a + ">" + nf })()
+=> string:3>3
+(function(){ var a = nf; f.weight = 5000; return a + ">" + nf })()
+=> string:3>4
+(function(){ var a = nf; f.weight = 5000; return a + ">" + nf })()
+=> string:4>4
+(function(){ var a = nf; f.pointSize = f.pointSize; return a + ">" + nf })()
+=> string:4>4
+(function(){ var a = nm; mx.m11 = 1; return a + ">" + nm })()
+=> string:0>1
+(function(){ var a = nm; mx.m11 = 2; return a + ">" + nm })()
+=> string:1>2
+(function(){ var a = nm; mx.m11 = 2; return a + ">" + nm })()
+=> string:2>2
+(function(){ var a = nm; mx.translate(Qt.vector3d(0, 0, 0)); return a + ">" + nm })()
+=> string:2>2
+(function(){ var a = nm; mx.translate(Qt.vector3d(1, 0, 0)); return a + ">" + nm })()
+=> string:2>3
+np + " " + nv + " " + nr + " " + ns + " " + nf + " " + nm
+=> string:3 2 2 2 4 3

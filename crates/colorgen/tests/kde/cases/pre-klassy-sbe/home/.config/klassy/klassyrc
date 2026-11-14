@@ -1,0 +1,6 @@
+[TitleBarOpacity]
+ActiveTitleBarOpacity=50
+OpaqueMaximizedTitleBars=true
+
+[Windeco]
+ButtonSize=Small

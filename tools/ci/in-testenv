@@ -1,0 +1,76 @@
+#!/bin/sh
+# tools/ci/in-testenv IMAGE CMD...: runs CMD as root in the ri-testenv image with the flags the
+# Containerfile header documents, the checkout at /src and $RI_GATE_DIR/{target,cargo} as the
+# target dir and Cargo's registry and git directories. RI_GATE_DIR defaults to $RUNNER_TEMP,
+# which the workflows cache; tools/ci/gate sets it for a run outside CI. `tester`, who runs
+# cargo (see `as-tester`), has the caller's uid and gid in the container (HOST_ID, the image's
+# entrypoint), so the files it writes in those directories are the caller's at every moment:
+# a container that is killed leaves nothing with another owner. What CMD writes there as root
+# is given to the caller when CMD ends, also when it is interrupted, and what a container
+# killed before that left is given to the caller before the next CMD. Only a caller who is
+# root has the directories handed to `tester` first and back at the end.
+#
+# Every checkout is mounted at /src and built into the one target dir, and cargo knows a
+# changed file by its modification time alone: before CMD, tools/ci/tree-times gives the
+# files that differ from the tree built last a new time (its record: /target/ri-gate-tree).
+# One run at a time uses a cache directory: a second one from another tree would record its
+# tree over the first one's and build into the same target dir. tools/ci/gate holds the lock
+# already (RI_GATE_LOCKED); a run started here takes it. tree-times runs as `tester` too: its
+# record is the caller's like the rest of the cache.
+set -eu
+image=$1
+shift
+dir=${RI_GATE_DIR:-$RUNNER_TEMP}
+t=$dir/target
+c=$dir/cargo
+mkdir -p "$t" "$c/registry" "$c/git"
+if [ -z "${RI_GATE_LOCKED-}" ]; then
+    exec 9>"$dir/lock"
+    if ! flock -n 9; then
+        echo "tools/ci/in-testenv: another run is using $dir; wait for it or set RI_GATE_DIR" >&2
+        exit 1
+    fi
+fi
+# On a terminal the container gets one too: Ctrl-C then reaches CMD's whole process group,
+# not only the container's first process.
+tty=
+if [ -t 0 ] && [ -t 1 ]; then
+    tty=-it
+fi
+# --shm-size: Docker's default /dev/shm is 64 MiB, which a few headless sways and their clients'
+# wl_shm buffers fill when tests run at once; a write past it is a SIGBUS (sway, grim, ...).
+exec docker run --rm $tty --sysctl net.ipv4.ip_unprivileged_port_start=0 --shm-size=1g \
+    --security-opt seccomp=unconfined --security-opt systempaths=unconfined \
+    --security-opt apparmor=unconfined -e CARGO_TERM_COLOR=always \
+    -e HOST_ID="$(id -u):$(id -g)" -v "$PWD":/src -v "$t":/target \
+    -v "$c/registry":/home/tester/.cargo/registry -v "$c/git":/home/tester/.cargo/git \
+    "$image" sh -c '
+        d="/src /target /home/tester/.cargo/registry /home/tester/.cargo/git"
+        mine() {
+            find $d \( ! -user "${HOST_ID%%:*}" -o ! -group "${HOST_ID##*:}" \) \
+                -exec chown -h "$HOST_ID" {} +
+        }
+        # Nothing of CMD is left writing when its files go to the caller.
+        back() {
+            kill -KILL -1 2>/dev/null
+            mine
+        }
+        trap back EXIT
+        trap "exit 130" INT TERM
+        if [ "${HOST_ID%%:*}" = 0 ]; then
+            chown -R tester:tester $d
+        else
+            # What a killed container left as root: `tester` cannot give such a file a new
+            # time (tree-times) or write over it.
+            mine
+        fi
+        as-tester python3 /src/tools/ci/tree-times /src /target/ri-gate-tree || exit 1
+        if [ -t 0 ]; then
+            "$@"
+        else
+            # The shell runs a trap only between commands: wait for CMD instead of running it
+            # in the foreground, or `docker stop` and a signal to the client would do nothing
+            # until CMD ends (and after 10 s kill the container, leaving what root wrote).
+            "$@" &
+            wait $!
+        fi' sh "$@"

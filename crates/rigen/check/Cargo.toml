@@ -1,0 +1,31 @@
+# Compiles rigen output (snippets in cases/, and every original QML/JS script when RI_DIR is set)
+# and runs it against the interpreter. Separate workspace: `cargo test --release` here
+# (ri-gate: `--profile gate`, as in the main workspace).
+[package]
+name = "rigen-check"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-only"
+
+[workspace]
+
+[dependencies]
+qml = { path = "../../qml" }
+
+[build-dependencies]
+qml = { path = "../../qml" }
+rigen = { path = ".." }
+
+[profile.dev]
+opt-level = 1
+debug = 0
+
+[profile.gate]
+inherits = "release"
+lto = false
+debug-assertions = true
+
+# As in the main workspace's Cargo.toml.
+[patch.crates-io]
+regress = { path = "../../../vendor/regress" }

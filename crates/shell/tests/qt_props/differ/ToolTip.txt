@@ -1,0 +1,5 @@
+a.locale	text: locale
+b.locale	text: locale
+c.locale	text: locale
+a.anchors.centerIn	default
+b.anchors.centerIn	default

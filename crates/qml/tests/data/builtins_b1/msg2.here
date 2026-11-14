@@ -1,0 +1,3 @@
+U64 => THROW TypeError: Type error
+U157 => THROW TypeError: Type error
+U193 => THROW TypeError: Type error

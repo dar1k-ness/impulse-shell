@@ -1,0 +1,1 @@
+mkdir -p $GEN && printf "\$primary: #111111;\n" > $GEN/material_colors.scss && printf "#111111" > $GEN/color.txt

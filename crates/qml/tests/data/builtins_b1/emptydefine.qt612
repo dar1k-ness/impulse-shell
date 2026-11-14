@@ -1,0 +1,2 @@
+x4 => ok|2|1||0,length|{"0":{"value":2,"writable":false,"enumerable":false,"configurable":false},"length":{"value":1,"writable":true,"enumerable":false,"configurable":false}}
+x5 => ok|2|3||2,length|{"2":{"value":2,"writable":false,"enumerable":false,"configurable":false},"length":{"value":3,"writable":true,"enumerable":false,"configurable":false}}

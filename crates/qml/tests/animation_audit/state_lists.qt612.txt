@@ -1,0 +1,105 @@
+end        |0 0 0 0 0 0
+state      one|0 0 0 0 0 0
+c          one|0 0 3 0 0 0
+a          one|1 0 3 0 0 0
+g          one|1 0 3 0 0 0 7 0
+e          one|1 0 3 0 5 0
+d          6
+b          20
+h          one|1 20 3 6 5 0 7 2
+after one  one|1 20 3 6 5 0
+end        one|1 20 3 6 5 0
+d          7
+b          30
+h          one|1 30 3 7 5 0 7 3
+after k    one|1 30 3 7 5 0
+end        one|1 30 3 7 5 0
+state      more|1 30 3 7 5 0
+a          more|11 30 3 7 5 0
+f          more|11 30 3 7 5 6
+after more more|11 30 3 7 5 6
+end        more|11 30 3 7 5 6
+state      less|11 30 3 7 5 6
+c          less|11 30 33 7 5 6
+a          less|0 30 33 7 5 6
+d          0
+b          0
+g          less|0 0 33 0 5 6 0 3
+h          less|0 0 33 0 5 6 0 0
+e          less|0 0 33 0 0 6
+f          less|0 0 33 0 0 0
+after less less|0 0 33 0 0 0
+end        less|0 0 33 0 0 0
+state      one|0 0 33 0 0 0
+c          one|0 0 3 0 0 0
+a          one|1 0 3 0 0 0
+g          one|1 0 3 0 0 0 7 0
+e          one|1 0 3 0 5 0
+d          7
+b          30
+h          one|1 30 3 7 5 0 7 3
+after one  one|1 30 3 7 5 0
+end        one|1 30 3 7 5 0
+state      |1 30 3 7 5 0
+c          |1 30 0 7 5 0
+a          |0 30 0 7 5 0
+d          0
+b          0
+g          |0 0 0 0 5 0 0 3
+h          |0 0 0 0 5 0 0 0
+e          |0 0 0 0 0 0
+after ''   |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0
+end        |0 0 0 0 0 0

@@ -1,0 +1,11 @@
+; settings
+[General]
+name = demo
+enabled=true
+count = 42
+path = /usr/share/demo
+# another comment
+[Section.Sub]
+key with spaces = "quoted value"
+ratio=0.75
+empty=

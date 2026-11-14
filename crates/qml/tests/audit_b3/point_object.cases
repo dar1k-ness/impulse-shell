@@ -1,0 +1,54 @@
+@property point c: Qt.point(1, 2)
+@property var vc: Qt.point(3, 4)
+JSON.stringify(Qt.point(1, 2))
+=> string:{"x":1,"y":2}
+JSON.stringify(c)
+=> string:{"x":1,"y":2}
+JSON.stringify(vc)
+=> string:{"x":3,"y":4}
+JSON.stringify({k: c, l: [Qt.point(5, 6)]})
+=> string:{"k":{"x":1,"y":2},"l":[{"x":5,"y":6}]}
+JSON.stringify(Qt.size(1, 2))
+=> string:{"width":1,"height":2}
+JSON.stringify(Qt.point(1, 2), null, 1).length
+=> number:20
+Object.keys(c).join(",")
+=> string:x,y
+Object.getOwnPropertyNames(c).join(",")
+=> string:x,y
+(function(){ var r = []; for (var k in c) r.push(k); return r.join(",") })()
+=> string:x,y
+Object.entries(Qt.point(1, 2)).join("|")
+=> string:x,1|y,2
+Object.values(Qt.point(1, 2)).join("|")
+=> string:1|2
+JSON.stringify(Object.assign({}, Qt.point(1, 2)))
+=> string:{"x":1,"y":2}
+["x", "y", "dotProduct", "foo2", "toString", "hasOwnProperty", "foo", "constructor", "valueOf"].map(function(k){ return k + ":" + (k in c) + ":" + c.hasOwnProperty(k) + ":" + Object.prototype.hasOwnProperty.call(c, k) + ":" + typeof c[k] }).join("|")
+=> string:x:true:true:true:number|y:true:true:true:number|dotProduct:false:false:false:undefined|foo2:false:false:false:undefined|toString:true:true:true:function|hasOwnProperty:true:false:false:function|foo:false:false:false:undefined|constructor:true:false:false:function|valueOf:true:false:false:function
+[c instanceof Object, typeof c.constructor, c.constructor === Object, Object.prototype.toString.call(c), Object.getPrototypeOf(c) === Object.getPrototypeOf(Qt.point(1, 2)), Object.getPrototypeOf(Object.getPrototypeOf(c)) === Object.prototype, Object.getOwnPropertyNames(Object.getPrototypeOf(c)).join(",")].join("|")
+=> string:true|function|true|[object QMLValueTypeWrapper]|true|true|toString
+[c.propertyIsEnumerable("x"), c.propertyIsEnumerable("toString"), c.propertyIsEnumerable("toString"), Object.isExtensible(c), Object.isFrozen(c), Object.isSealed(c)].join("|")
+=> string:true|true|true|true|false|false
+JSON.stringify([Object.getOwnPropertyDescriptor(c, "x"), Object.getOwnPropertyDescriptor(c, "toString") === undefined, Object.getOwnPropertyDescriptor(c, "y"), Object.getOwnPropertyDescriptor(c, "foo")])
+=> string:[{"value":1,"writable":true,"enumerable":true,"configurable":true},false,{"value":2,"writable":true,"enumerable":true,"configurable":true},null]
+[c.valueOf() === c, c.valueOf() == c, typeof c.valueOf(), String(c.valueOf()), c.toString(), c.toLocaleString(), c + "", c + 1, `${c}`, [c] + ""].join("|")
+=> string:true|true|object|QPointF(1, 2)|QPointF(1, 2)|QPointF(1, 2)|QPointF(1, 2)|QPointF(1, 2)1|QPointF(1, 2)|QPointF(1, 2)
+[c == "QPointF(1, 2)", c == "1,2", c === "QPointF(1, 2)", "QPointF(1, 2)" == c, c == c, c === c, c != Qt.point(1, 2), c == Qt.point(1, 2), c === Qt.point(1, 2), vc == "QPointF(3, 4)", c == null, c == 0xff0000, !c, !!c].join("|")
+=> string:true|false|false|true|true|true|false|true|true|true|false|false|false|true
+(function(){ var o = {}; o[c] = 1; return Object.keys(o).join(",") })()
+=> string:QPointF(1, 2)
+(function(){ try { delete c.x; return "ok " + c.x } catch (e) { return String(e) } })()
+=> string:ok 1
+(function(){ "use strict"; try { c.foo = 1; return "ok " + c.foo } catch (e) { return String(e) } })()
+=> string:TypeError: Type error
+(function(){ try { Object.defineProperty(c, "foo", {value: 1}); return "ok " + c.foo } catch (e) { return String(e) } })()
+=> string:ok undefined
+(function(){ try { Object.freeze(c); return "ok " + Object.isFrozen(c) } catch (e) { return String(e) } })()
+=> string:ok false
+(function(){ try { Object.setPrototypeOf(c, null); return "ok" } catch (e) { return String(e) } })()
+=> string:ok
+[Array.isArray(c), typeof c, typeof vc, c.length, c[0], Number(c), isNaN(c), parseInt(c), JSON.stringify([c])].join("|")
+=> string:false|object|object|||NaN|true|NaN|[{"x":1,"y":2}]
+(function(){ var m = new Map(); m.set(c, 1); return m.has(c) + "|" + m.has(Qt.point(1, 2)) + "|" + new Set([c, c, Qt.point(1, 2)]).size + "|" + [c, c].indexOf(c) + "|" + [Qt.point(1, 2)].includes(c) })()
+=> string:true|true|1|0|true

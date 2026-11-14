@@ -1,0 +1,3 @@
+threw: Invalid attempt to destroy() an indestructible object
+root still alive at 50ms
+root onDestruction

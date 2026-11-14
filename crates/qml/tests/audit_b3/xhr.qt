@@ -1,0 +1,86 @@
+abbody| states=2:200:Fine:-,3:200:Fine:103,4:200:Fine:103 => POST /ok [content-length: 2] [content-type: text/plain;charset=UTF-8] [user-agent: Mozilla/5.0] body=hi
+abortdone| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => 0 THROW Error: Invalid state
+ab| states=2:200:OK:-,3:200:OK:256,4:200:OK:256 => true 256 255 256 false
+allhdr| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => "content-type: text/plain\r\ncontent-length: 39\r\nx-custom: a, b\r\nx-other: spaced\r\nx-lower: L\r\nconnection: close"
+badjson| states=2:200:OK:-,3:200:OK:5,4:200:OK:5 => SyntaxError {nope
+bintext| states=2:200:OK:-,3:200:OK:256,4:200:OK:256 => string 256 256 65533
+bodyget| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => GET /ok [user-agent: Mozilla/5.0] body=
+bogus| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => string 0 "bogus"
+cbthis| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => args=0 false object
+del| states=2:200:Fine:-,3:200:Fine:42,4:200:Fine:42 => DELETE /ok [user-agent: Mozilla/5.0] body=
+docjson| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => object null
+docsame| states=2:200:OK:-,3:200:OK:31,4:200:OK:31 => true true root 
+doc| states=2:200:OK:-,3:200:OK:31,4:200:OK:31 => object [object Object] "document"
+empty| states=2:204::-,3:204::0,4:204::0 => 204 "" [] "connection: close"
+err500| states=2:500:Internal Thing:-,3:500:Internal Thing:3,3:500:Internal Thing:3,4:500:Internal Thing:3 => 500 Internal Thing [err]
+get| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => GET /ok [user-agent: Mozilla/5.0] body=
+hdr| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => "a, b" "a, b" "" "spaced" "" "" "" "text/plain"
+head| states=2:200:Fine:-,3:200:Fine:0,4:200:Fine:0 => 200 [] 40
+jsonlate| states=2:200:OK:-,3:200:OK:23,4:200:OK:23 => object x
+json| states=2:200:OK:-,3:200:OK:23,4:200:OK:23 => object 2 x "json" {"a": [1, 2], "b": "x"} true
+latin1| states=2:200:OK:-,3:200:OK:5,4:200:OK:5 => café! 5
+lower| states=2:200:Fine:-,3:200:Fine:103,4:200:Fine:103 => POST /ok [content-length: 2] [content-type: text/plain;charset=UTF-8] [user-agent: Mozilla/5.0] body=lb
+merge| states=2:200:Fine:-,3:200:Fine:153,4:200:Fine:153 => Fine 200 POST /ok [content-length: 4] [content-type: a/b,c/d;charset=UTF-8] [user-agent: Mozilla/5.0] [x-a: 1,2] [x-b: 3,4] [x-c: ] [x-d: 5] [x-e: null] body=body
+no0| states=3:404:Nope:0,4:404:Nope:0 => 404 Nope []
+noreason| states=2:200::-,3:200::2,4:200::2 => 200 "" [hi]
+no| states=2:404:Nope:-,3:404:Nope:7,3:404:Nope:7,4:404:Nope:7 => 404 Nope [missing] "missing"
+nullbody| states=2:200:Fine:-,3:200:Fine:105,4:200:Fine:105 => POST /ok [content-length: 4] [content-type: text/plain;charset=UTF-8] [user-agent: Mozilla/5.0] body=null
+numbody| states=2:200:Fine:-,3:200:Fine:102,4:200:Fine:102 => POST /ok [content-length: 1] [content-type: text/plain;charset=UTF-8] [user-agent: Mozilla/5.0] body=5
+objbody| states=2:200:Fine:-,3:200:Fine:117,4:200:Fine:117 => POST /ok [content-length: 15] [content-type: text/plain;charset=UTF-8] [user-agent: Mozilla/5.0] body=[object Object]
+options| states=2:200:Fine:-,3:200:Fine:65,4:200:Fine:65 => OPTIONS /ok [content-length: 2] [user-agent: Mozilla/5.0] body=ob
+patch| states=2:200:Fine:-,3:200:Fine:63,4:200:Fine:63 => PATCH /ok [content-length: 2] [user-agent: Mozilla/5.0] body=xb
+put| states=2:200:Fine:-,3:200:Fine:102,4:200:Fine:102 => PUT /ok [content-length: 2] [content-type: text/plain;charset=UTF-8] [user-agent: Mozilla/5.0] body=pb
+redir| states=2:200:Fine:-,3:200:Fine:50,4:200:Fine:50 => 200 Fine http://127.0.0.1:18765/ok?from=redir 50
+refused| states=4:0::0 => 0 "" [] "" "http://127.0.0.1:1/x"
+reopen| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => 200
+reuse| states=2:404:Nope:-,3:404:Nope:7,3:404:Nope:7,4:404:Nope:7 => first 404 1 []
+reuse| states=2:404:Nope:-,3:404:Nope:7,3:404:Nope:7,4:404:Nope:7,2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => second 200
+s0| string:function function function
+s10| string:THROW Error: Incorrect argument count
+s11| string:THROW Error: Invalid state
+s12| string:THROW Error: Invalid state
+s13| string:THROW Error: Invalid state
+s14| string:THROW Error: Invalid state
+s15| string:THROW Error: Incorrect argument count
+s16| string:THROW Error: Incorrect argument count
+s17| undefined
+s18| string:THROW Error: Incorrect argument count
+s19| string:THROW Error: Invalid state
+s1| string:THROW Error: Invalid state
+s20| string:THROW Error: Invalid state
+s21| string:THROW Error: Invalid state
+s22| string:THROW Error: Invalid state
+s23| string:THROW Error: Invalid state
+s24| string:"json" "arraybuffer" "text" "" "document" "blob" "bogus" "5" "null"
+s25| string:THROW Error: Invalid state
+s26| string:2 1
+s27| string:THROW Error: Invalid state
+s28| string:1 0
+s29| string:
+s2| string:THROW Error: Invalid state
+s30| string:DONE,HEADERS_RECEIVED,LOADING,OPENED,UNSENT,abort,getAllResponseHeaders,getResponseHeader,open,overrideMimeType,readyState,response,responseText,responseType,responseURL,responseXML,send,setRequestHeader,status,statusText
+s31| string:0,1,2,3 function 4 4 true
+s32| string:[object Object] [object Object]
+s33| undefined
+s34| string:ok
+s35| string:ok
+s36| string:ok 1
+s37| string:ok 1
+s38| string:ok
+s39| string:GET+ PUT+ HEAD+ POST+ DELETE+ OPTIONS+ PROPFIND+ PATCH+ CONNECT- TRACE- patch+ Head+ -
+s3| string:THROW Error: Incorrect argument count
+s4| string:THROW Error: Incorrect argument count
+s5| string:THROW Error: Unsupported HTTP method type
+s6| string:ok 1
+s7| string:THROW Error: Incorrect argument count
+s8| string:THROW Error: Incorrect argument count
+s9| string:THROW Error: Incorrect argument count
+text| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => string true
+thisis| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => false false false object [object Object]
+throw| states=2:200:Fine:-,3:200:Fine:39,4:200:Fine:39 => THROW Error: boom
+url| states=2:200:Fine:-,3:200:Fine:47,4:200:Fine:47 => http://127.0.0.1:18765/ok?a=b c
+xmlbad| states=2:200:OK:-,3:200:OK:18,4:200:OK:18 => null null
+xmldom| states=2:200:OK:-,3:200:OK:31,4:200:OK:31 => #document 9 root root 1  1 kid #text t 3 1 a a 2 kid 
+xmlover| states=2:200:OK:-,3:200:OK:31,4:200:OK:31 => [object Object] text/plain
+xmltext| states=2:200:OK:-,3:200:OK:31,4:200:OK:31 => null
+xml| states=2:200:OK:-,3:200:OK:31,4:200:OK:31 => object root kid 1

@@ -1,0 +1,80 @@
+qml: seen -1
+qml: viaLoading -1
+qml: f6 -1
+qml: init seen -1 b2 false false viaLoading -1
+qml: b2 loading true false
+qml: b2 obj completed
+WARN scene: QML QtObject at @lazyb.qml[15:9]: Binding loop detected for property "got":
+qs:@/qs/lazyb.qml:15:20
+qml: b2 active true true
+qml: b2 loading false true
+qml: b3 obj completed 6
+qml: -- state
+qml: seen -1 b2 true false b3 6 viaLoading -1
+qml: -- b1.loading=true; k++
+qml: b1 loading true false
+qml: now false true
+qml: b1 obj completed
+qml: b1 item true
+WARN scene: QML Scope at @lazyb.qml[3:1]: Binding loop detected for property "seen":
+qs:@/qs/lazyb.qml:9:5
+qml: b1 active true true
+qml: b1 loading false true
+qml: seen 5
+qml: after 5 true false
+qml: -- state
+qml: seen 5 true false
+qml: -- b1.active=false; k++
+qml: b1 item false
+qml: seen -1
+qml: b1 active false false
+qml: after -1 false false
+qml: b1 obj destroyed
+qml: -- b1.loading=true
+qml: b1 loading true false
+qml: after -1 false true
+qml: b1 obj completed
+qml: b1 item true
+qml: seen 5
+qml: b1 active true true
+qml: b1 loading false true
+qml: -- state
+qml: seen 5 true false
+qml: -- b4.loading=true
+qml: b4 loading true false
+qml: viaLoading -2
+qml: after -2 false true
+qml: b4 obj completed
+qml: viaLoading 7
+qml: b4 active true true
+qml: b4 loading false true
+qml: viaLoading -1
+qml: -- state
+qml: viaLoading -1 true false
+qml: -- b5.loading=true; k5++
+qml: b5 obj completed
+WARN scene: QML Scope at @lazyb.qml[3:1]: Binding loop detected for property "has5":
+qs:@/qs/lazyb.qml:25:5
+qml: b5 active true true
+qml: has5 true
+qml: after true true false
+qml: -- state
+qml: has5 true true false
+qml: -- b6.loading=true; k6++
+qml: b6 obj completed
+WARN scene: QML Scope at @lazyb.qml[3:1]: Binding loop detected for property "f6":
+qs:@/qs/lazyb.qml:32:5
+qml: b6 active true true
+qml: f6 9
+qml: after 9 true false
+qml: -- state
+qml: f6 9 true false
+qml: -- b7.loading=true
+qml: b7 loading true false false
+qml: after false true
+qml: b7 obj completed
+qml: b7 loading false true true
+qml: -- state
+qml: b7 true false
+qml: done
+qml: b1 obj destroyed

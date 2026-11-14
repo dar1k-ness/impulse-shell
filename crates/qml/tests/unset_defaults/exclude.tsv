@@ -1,0 +1,7 @@
+# `<C++ class or QML type>.<property>`, a tab and why table.py leaves it out of qt_defaults.tsv.
+QQuickFolderListModel.folder	the directory Qt was started in
+QQuickFolderListModel.parentFolder	the directory Qt was started in
+QQuickContainer.currentIndex	changed by pull request 193
+QQuickScrollBar.minimumSize	Basic's ScrollBar.qml binds it to the bar's width and height
+QQuickTextEdit.selectionColor	QQuickTextEditPrivate's #000080, which the engine has itself; the value read here is TextArea's, bound by Basic's TextArea.qml
+QQuickTextEdit.selectedTextColor	QQuickTextEditPrivate's #ffffff, which the engine has itself; the value read here is TextArea's, bound by Basic's TextArea.qml

@@ -1,0 +1,5 @@
+t4 => 100001|100001|2|false
+t7 => TypeError|TypeError|100001|4|100001|0,1,2,100000|0,1,2,100000,length|{"0":{"value":1,"writable":true,"enumerable":true,"configurable":true},"1":{"value":2,"writable":true,"enumerable":true,"configurable":true},"2":{"value":3,"writable":true,"enumerable":true,"configurable":true},"100000":{"value":4,"writable":true,"enumerable":true,"configurable":true},"length":{"value":100001,"writable":true,"enumerable":false,"configurable":false}}|false|false|false
+t18 => ok|1,2,3,|100000
+t24 => TypeError|TypeError|100001|100001||4
+t31 => ok|TypeError|TypeError|TypeError|100001|9|||false|0,1,2,3,4,5,6,7,8,9

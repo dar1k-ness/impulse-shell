@@ -1,0 +1,27 @@
+# M9, M11, M19: parseInt's radix, Math.round's zero, a literal with a leading zero.
+return parseInt("11", 4294967312)
+return parseInt("11", -4294967294)
+return parseInt("11", 2.9)
+return parseInt("11", 37)
+return parseInt("11", 1)
+return parseInt("11", "16")
+return parseInt("0x11", 4294967312)
+return parseInt("11", Infinity)
+return Math.round(-0.4)
+return Math.round(-0.5)
+return Math.round(-0.6)
+return Math.round(0.4)
+return Math.round(-0)
+return Math.round(2.5)
+return Math.round(-2.5)
+return Math.round(0.49999999999999994)
+return 010
+return 0777
+return 08
+return 019
+return 010 + 1
+return -010
+return 00
+return 0o10
+return 0x10
+return (function () { "use strict"; return 1 })()

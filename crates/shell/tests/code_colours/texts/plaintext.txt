@@ -1,0 +1,2 @@
+Just some text: 42, "quoted" and a // slash.
+second line

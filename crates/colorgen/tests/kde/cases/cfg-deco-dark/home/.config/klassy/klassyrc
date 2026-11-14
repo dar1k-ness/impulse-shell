@@ -1,0 +1,6 @@
+[WindowOutlineStyle]
+ThinWindowOutlineStyleActive=WindowOutlineNone
+ThinWindowOutlineThickness=1
+
+[Windeco]
+ButtonSize=Small

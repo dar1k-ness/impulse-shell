@@ -1,0 +1,65 @@
+# M13: a direct eval runs in the scope of its caller.
+var x = 10; return eval("x+1")
+var x = 10; eval("x = 20"); return x
+var x = 10; eval("var y = x + 5"); return y
+var x = 10; return (0, eval)("typeof x")
+var x = 10; var e = eval; return e("typeof x")
+return (function (a) { return eval("a * 2") })(21)
+var x = 1; return (function () { var z = 5; return eval("x + z") })()
+return eval("this === root")
+let q = 3; return eval("q + 1")
+const q = 3; return eval("typeof q")
+var x = 1; { let x = 2; return eval("x") }
+return eval("var zz = 7; zz")
+eval("function ff() { return 9 }"); return ff()
+return eval("arguments.length")
+return (function () { "use strict"; eval("var sv = 1"); return typeof sv })()
+return eval(5)
+return eval()
+return eval("1;;;")
+return eval("if (true) { 4 }")
+var x = 10; return eval("eval('x + 2')")
+var f = function () { return eval("x") }; var x = 4; return f()
+return (function () { var x = 1; return [1,2].map(function (v) { return eval("v + x") }).join() })()
+return (() => { var x = 3; return eval("x") })()
+try { eval("var x = ;") } catch (e) { return e.name } return "no"
+return eval("root.out.length")
+var x = 1; eval("x++"); eval("x += 5"); return x
+return typeof eval("(function () { return 1 })")
+var x = 2; return eval("(function () { return x * 3 })")()
+# The var and function declarations of the code go to the calling function.
+return (function () { eval("var a = 1"); var g = function () { return a }; return g() })()
+return (function () { var a = 1; eval("var a = 2"); return a })()
+return (function () { var x = 1; eval("var x"); return x })()
+return (function () { eval("var u"); return typeof u + (u === undefined) })()
+return (function () { eval("function a() { return 3 }"); return a() })()
+return (function () { var a = 1; eval("function a() { return 3 }"); return typeof a })()
+return (function () { eval("var q1 = 1"); return (function () { return q1 })() })()
+return (function () { eval("let l = 1; var v = 2"); return typeof l + typeof v })()
+return (function (p) { eval("p = 5"); return arguments[0] })(1)
+return (function (a, b) { return eval("arguments.length + a + b") })(1, 2)
+return (function () { var r = []; for (var i = 0; i < 2; i++) eval("r.push(i)"); return r.join() })()
+return (function () { var x = 1; function inner() { return eval("x = x + 1") } inner(); return x })()
+return eval("var x1 = 1; (function () { return x1 })()")
+# Strict code gets its own variables.
+return (function () { "use strict"; var a = 1; return eval("var a = 2; a") + a })()
+return (function () { return eval("'use strict'; var sv2 = 1; sv2") + typeof sv2 })()
+# Blocks, catch parameters, arrows, methods.
+return (function () { var x = 1; return (() => eval("x + 1"))() })()
+return (function () { for (let i = 0; i < 2; i++) { if (i) return eval("i") } })()
+return (function () { try { throw 4 } catch (c) { return eval("c + 1") } })()
+return (function () { var o = {m() { var k = 2; return eval("k + 1") }}; return o.m() })()
+# Only a call of the name eval whose value is the built-in is direct.
+return (function () { var f = eval; var x = 1; return f("typeof x") })()
+return (function () { var x = 1; return eval?.("typeof x") })()
+return (function () { var eval = function (s) { return s + "!" }; return eval("x") })()
+# In a generator.
+var g = function* () { var x = 1; yield eval("x + 1"); eval("var y = 5"); yield y }; var it = g(); return it.next().value + ":" + it.next().value
+var g = function* () { let x = 1; yield 0; { let z = 2; yield eval("x + z") } }; var it = g(); it.next(); return it.next().value
+var g = function* () { var x = 1; eval("function x() {}"); yield typeof x }; return g().next().value
+# The eval code's var is deletable; this is the caller's.
+return (function () { eval("var a = 1"); return delete a })()
+return (function () { var a = 1; eval(""); return delete a })()
+return eval("var dz = 1; delete dz")
+return (function () { return eval("this") === this }).call({})
+return (function () { var o = {m: function () { return eval("this === o") }}; return o.m() })()

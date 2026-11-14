@@ -1,0 +1,180 @@
+pragma Singleton
+pragma ComponentBehavior: Bound
+
+import Rustshell
+import Rustshell.Io
+import Impulse
+import QtQuick
+import QtPositioning
+
+import ri.modules.common
+
+Singleton {
+    id: root
+    // 10 minute
+    readonly property int fetchInterval: Config.options.bar.weather.fetchInterval * 60 * 1000
+    readonly property string city: Config.options.bar.weather.city
+    readonly property bool useUSCS: Config.options.bar.weather.useUSCS
+    property bool gpsActive: Config.options.bar.weather.enableGPS
+
+    onUseUSCSChanged: {
+        root.getData();
+    }
+    onCityChanged: {
+        root.getData();
+    }
+
+    property var location: ({
+        valid: false,
+        lat: 0,
+        lon: 0
+    })
+
+    property var data: ({
+        uv: 0,
+        humidity: 0,
+        sunrise: 0,
+        sunset: 0,
+        windDir: 0,
+        wCode: 0,
+        city: 0,
+        wind: 0,
+        precip: 0,
+        visib: 0,
+        press: 0,
+        temp: 0,
+        tempFeelsLike: 0,
+        lastRefresh: 0,
+    })
+
+    function refineData(data) {
+        let temp = {};
+        temp.uv = data?.current?.uvIndex || 0;
+        temp.humidity = (data?.current?.humidity || 0) + "%";
+        temp.sunrise = data?.astronomy?.sunrise || "0.0";
+        temp.sunset = data?.astronomy?.sunset || "0.0";
+        temp.windDir = data?.current?.winddir16Point || "N";
+        temp.wCode = data?.current?.weatherCode || "113";
+        temp.city = data?.location?.areaName[0]?.value || "City";
+        temp.temp = "";
+        temp.tempFeelsLike = "";
+        if (root.useUSCS) {
+            temp.wind = (data?.current?.windspeedMiles || 0) + " mph";
+            temp.precip = (data?.current?.precipInches || 0) + " in";
+            temp.visib = (data?.current?.visibilityMiles || 0) + " m";
+            temp.press = (data?.current?.pressureInches || 0) + " psi";
+            temp.temp += (data?.current?.temp_F || 0);
+            temp.tempFeelsLike += (data?.current?.FeelsLikeF || 0);
+            temp.temp += "°F";
+            temp.tempFeelsLike += "°F";
+        } else {
+            temp.wind = (data?.current?.windspeedKmph || 0) + " km/h";
+            temp.precip = (data?.current?.precipMM || 0) + " mm";
+            temp.visib = (data?.current?.visibility || 0) + " km";
+            temp.press = (data?.current?.pressure || 0) + " hPa";
+            temp.temp += (data?.current?.temp_C || 0);
+            temp.tempFeelsLike += (data?.current?.FeelsLikeC || 0);
+            temp.temp += "°C";
+            temp.tempFeelsLike += "°C";
+        }
+        temp.lastRefresh = DateTime.time + " • " + DateTime.date;
+        root.data = temp;
+    }
+
+    function getData() {
+        if (root.gpsActive && root.location.valid) {
+            fetcher.place = `${root.location.lat},${root.location.long}`;
+        } else {
+            fetcher.place = formatCityName(root.city);
+        }
+        fetcher.running = true;
+    }
+
+    function formatCityName(cityName) {
+        return cityName.trim().split(/\s+/).join('+');
+    }
+
+    Component.onCompleted: {
+        if (root.gpsActive)
+            geoclueCheck.running = true;
+    }
+
+    // GPS needs GeoClue: without it this run uses the city instead of failing
+    GeoClueCheck {
+        id: geoclueCheck
+        onExited: code => {
+            if (code === 0) {
+                console.info("[WeatherService] Starting the GPS service.");
+                positionSource.start();
+            } else {
+                // Only for this run: the saved option stays, so GPS works once GeoClue is up
+                root.gpsActive = false;
+            }
+        }
+    }
+
+    WeatherFetch {
+        id: fetcher
+        onNetworkRestored: root.getData()
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (text.length === 0)
+                    return;
+                try {
+                    const parsedData = JSON.parse(text);
+                    root.refineData(parsedData);
+                    // console.info(`[ data: ${JSON.stringify(parsedData)}`);
+                } catch (e) {
+                    console.error(`[WeatherService] ${e.message}`);
+                }
+            }
+        }
+    }
+
+    PositionSource {
+        id: positionSource
+        updateInterval: root.fetchInterval
+
+        onPositionChanged: {
+            // update the location if the given location is valid
+            // if it fails getting the location, use the last valid location
+            if (position.latitudeValid && position.longitudeValid) {
+                root.location.lat = position.coordinate.latitude;
+                root.location.long = position.coordinate.longitude;
+                root.location.valid = true;
+                // console.info(`📍 Location: ${position.coordinate.latitude}, ${position.coordinate.longitude}`);
+                root.getData();
+                // if can't get initialized with valid location deactivate the GPS
+            } else {
+                root.gpsActive = root.location.valid ? true : false;
+                console.error("[WeatherService] Failed to get the GPS location.");
+            }
+        }
+
+        onValidityChanged: {
+            if (!positionSource.valid) {
+                positionSource.stop();
+                root.location.valid = false;
+                root.gpsActive = false;
+                Notify.send(Translation.tr("Weather Service"), Translation.tr("Cannot find a GPS service. Using the fallback method instead."));
+                console.error("[WeatherService] Could not aquire a valid backend plugin.");
+            }
+        }
+    }
+
+    Timer {
+        running: !root.gpsActive
+        repeat: true
+        interval: root.fetchInterval
+        triggeredOnStart: !root.gpsActive
+        onTriggered: root.getData()
+    }
+
+    // GPS mode refreshes on the same interval: GeoClue only signals moves
+    Timer {
+        running: root.gpsActive
+        repeat: true
+        interval: root.fetchInterval
+        onTriggered: root.getData()
+    }
+}

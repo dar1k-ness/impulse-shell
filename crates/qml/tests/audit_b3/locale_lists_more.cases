@@ -1,0 +1,55 @@
+# readonly sequences of a Locale: every mutator
+(function(){ var w = Qt.locale("en_US").weekDays; var r = w.pop(); return r + "|" + w.length })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; var r = w.shift(); return r + "|" + w.length })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; var r = w.unshift(7); return r + "|" + w.length })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; var r = w.splice(0, 1); return r + "|" + w.length })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w.sort(function(a, b){ return b - a }); return w.join(",") })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w.reverse(); return w.join(",") })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w.length = 0; return w.length })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; w.length = 9; return w.length })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; w.fill(0); return w.join(",") })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; var r = delete w[0]; return r + "|" + w.join(",") })()
+=> THROW TypeError: Cannot delete from a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w[7] = 1; return w.length })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w.foo = 1; return w.foo + "|" + Object.keys(w).join(",") })()
+=> string:1|0,1,2,3,4
+(function(){ "use strict"; var w = Qt.locale("en_US").weekDays; w[0] = 6; return w[0] })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; w.copyWithin(0, 1); return w.join(",") })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var w = Qt.locale("en_US").weekDays; return Object.isFrozen(w) + "|" + Object.isExtensible(w) + "|" + JSON.stringify(Object.getOwnPropertyDescriptor(w, "0")) + "|" + JSON.stringify(Object.getOwnPropertyDescriptor(w, "length")) })()
+=> string:false|true|undefined|undefined
+(function(){ var w = Qt.locale("en_US").weekDays; return Object.getOwnPropertyNames(Object.getPrototypeOf(w)).join(",") + "|" + (Object.getPrototypeOf(Object.getPrototypeOf(w)) === Array.prototype) + "|" + (Object.getPrototypeOf(w) === Object.getPrototypeOf(Qt.locale("de_DE").uiLanguages)) })()
+=> string:valueOf,length,shift,unshift,push,pop|true|true
+(function(){ var w = Qt.locale("en_US").weekDays; return [w.indexOf(3), w.includes(3), w.reduce(function(a, b){ return a + b }, 0), w.toString(), w.valueOf() === w, [0].concat(w).length, Array.from(w).length, [...w].length, w.constructor === Array].join("|") })()
+=> string:2|true|15|1,2,3,4,5|false|6|5|5|true
+(function(){ var l = Qt.locale("en_US"); l.weekDays = [1]; return l.weekDays.length })()
+=> THROW Error: Cannot assign QList<QQmlLocale::DayOfWeek> to QList<QQmlLocale::DayOfWeek>
+(function(){ var l = Qt.locale("en_US"); l.name = "x"; return l.name })()
+=> THROW Error: Cannot assign QString to QString
+(function(){ var l = Qt.locale("en_US"); l.zzz = 1; return l.zzz })()
+=> undefined
+(function(){ var l = Qt.locale("en_US"); return (l.uiLanguages === l.uiLanguages) + "|" + (l.weekDays === Qt.locale("en_US").weekDays) })()
+=> string:true|false
+(function(){ var l = Qt.locale("en_US"); l.toString = 5; return typeof l.toString })()
+=> THROW Error: Cannot assign int to 
+(function(){ var v = Qt.vector3d(1, 2, 3); v.toString = 5; return typeof v.toString })()
+=> string:function
+(function(){ var v = Qt.vector3d(1, 2, 3); return v.times.length + "|" + v.toString.length + "|" + Qt.locale().monthName.length })()
+=> string:0|0|0
+Object.keys(Easing).join(",")
+=> string:objectName,objectNameChanged,valueForProgress
+Object.getOwnPropertyNames(Easing).length
+=> number:3
+Object.prototype.toString.call(Easing)
+=> string:[object QMLTypeWrapper]

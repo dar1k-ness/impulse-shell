@@ -1,0 +1,32 @@
+lm undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+cm undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+qo undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+bd undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+cn undefined true undefined undefined undefined undefined undefined undefined undefined undefined undefined
+tm undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+co undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+ci true true 0 0 0 0 1 1 0 undefined 0
+it true true 0 0 0 0 1 1 0 undefined 0
+rc true true 0 0 0 0 1 1 0 0 0
+tx true true 0 0 0 0 1 1 0 undefined 0
+ma true true 0 0 0 0 1 1 0 undefined 0
+ld true true 0 0 0 0 1 1 0 undefined 0
+rp true true 0 0 0 0 1 1 0 undefined 0
+fl true true 0 0 0 0 1 1 0 undefined 0
+lv true true 0 0 0 0 1 1 0 undefined 0
+cl true true 0 0 0 0 1 1 0 undefined 0
+tin true true 0 0 0 0 1 1 0 undefined 0
+im true true 0 0 0 0 1 1 0 undefined 0
+iv undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+fm undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+na undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+sta undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+gr undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+ins undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined undefined
+tr undefined undefined undefined 0 0 undefined undefined undefined undefined undefined undefined
+bare radius ReferenceError: radius is not defined
+bare visible true
+bare nosuch ReferenceError: nosuch is not defined
+in lm false false
+in it true false
+typeof undefined undefined undefined

@@ -1,0 +1,81 @@
+a.z [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.z [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.z: 0
+a.width [num]: 12 | set 15 | reset 12 | bind 15 -> 12 -> 15 | reset 12
+b.width [num]: 31 | set 34 | reset 31 | bind 34 -> 31 -> 34 | reset 31
+c.width: 0
+a.height [num]: 29 | set 32 | reset 29 | bind 32 -> 29 -> 32 | reset 29
+b.height [num]: 32 | set 35 | reset 32 | bind 35 -> 32 -> 35 | reset 32
+c.height: 17
+a.margins [num]: 6 | set 9 | reset -1 | bind 2 -> -1 -> 2 | reset -1
+b.margins [num]: 6 | set 9 | reset -1 | bind 2 -> -1 -> 2 | reset -1
+c.margins: -1
+a.topMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.topMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+c.topMargin: -1
+a.leftMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.leftMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+c.leftMargin: -1
+a.rightMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.rightMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+c.rightMargin: -1
+a.bottomMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.bottomMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+c.bottomMargin: -1
+a.padding [num]: 6 | set 9 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.padding [num]: 5 | set 8 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.padding: 0
+a.topPadding [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.topPadding [num]: 9 | set 12 | reset 9 | bind 12 -> 9 -> 12 | reset 9
+c.topPadding: 0
+a.leftPadding [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.leftPadding [num]: 8 | set 11 | reset 8 | bind 11 -> 8 -> 11 | reset 8
+c.leftPadding: 0
+a.rightPadding [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.rightPadding [num]: 8 | set 11 | reset 8 | bind 11 -> 8 -> 11 | reset 8
+c.rightPadding: 0
+a.bottomPadding [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.bottomPadding [num]: 9 | set 12 | reset 9 | bind 12 -> 9 -> 12 | reset 9
+c.bottomPadding: 0
+a.locale [skip]: QLocale::system()/* C, Default, Default */ | reset QLocale::system()/* C, Default, Default */
+b.locale [skip]: QLocale::system()/* C, Default, Default */ | reset QLocale::system()/* C, Default, Default */
+c.locale: QLocale::system()/* C, Default, Default */
+a.font [skip]: QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0) | reset QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+b.font [skip]: QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0) | reset QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+c.font: QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+a.parent [item]: ToolTip(PTR) | set <other> | reset ToolTip(PTR) | bind <other> -> ToolTip(PTR) -> <other> | reset ToolTip(PTR)
+b.parent [item]: ToolTip(PTR) | set <other> | reset ToolTip(PTR) | bind <other> -> ToolTip(PTR) -> <other> | reset ToolTip(PTR)
+c.parent: ToolTip(PTR)
+a.dim [bool]: false | set true | reset false | bind true -> false -> true | reset false
+b.dim [bool]: false | set true | reset false | bind true -> false -> true | reset false
+c.dim: false
+a.closePolicy [skip]: 26 | reset 17
+b.closePolicy [skip]: 26 | reset 17
+c.closePolicy: 17
+a.spacing [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.spacing [num]: 4 | set 7 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.spacing: 0
+a.palette [skip]: QQuickPalette(PTR) | reset QQuickPalette(PTR)
+b.palette [skip]: QQuickPalette(PTR) | reset QQuickPalette(PTR)
+c.palette: QQuickPalette(PTR)
+a.horizontalPadding [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.horizontalPadding [num]: 8 | set 11 | reset 5 | bind 8 -> 5 -> 8 | reset 5
+c.horizontalPadding: 0
+a.verticalPadding [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.verticalPadding [num]: 9 | set 12 | reset 5 | bind 8 -> 5 -> 8 | reset 5
+c.verticalPadding: 0
+a.anchors.centerIn [item]: null@0,0,12,29 | set <other>@0,0,12,29 | reset null@0,0,12,29 | bind <other>@0,0,12,29 -> null@0,0,12,29 -> <other>@0,0,12,29 | reset null@0,0,12,29
+b.anchors.centerIn [item]: null@0,0,31,32 | set <other>@0,0,31,32 | reset null@0,0,31,32 | bind <other>@0,0,31,32 -> null@0,0,31,32 -> <other>@0,0,31,32 | reset null@0,0,31,32
+c.anchors.centerIn: null
+a.topInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.topInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.topInset: 0
+a.leftInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.leftInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.leftInset: 0
+a.rightInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.rightInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.rightInset: 0
+a.bottomInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.bottomInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.bottomInset: 0

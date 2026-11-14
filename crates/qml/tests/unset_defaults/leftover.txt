@@ -1,0 +1,565 @@
+AnchorChanges.anchors.left	"QQmlScriptString()"	"QQuickAnchorLine()"
+AnchorChanges.anchors.right	"QQmlScriptString()"	"QQuickAnchorLine()"
+AnchorChanges.anchors.horizontalCenter	"QQmlScriptString()"	"QQuickAnchorLine()"
+AnchorChanges.anchors.top	"QQmlScriptString()"	"QQuickAnchorLine()"
+AnchorChanges.anchors.bottom	"QQmlScriptString()"	"QQuickAnchorLine()"
+AnchorChanges.anchors.verticalCenter	"QQmlScriptString()"	"QQuickAnchorLine()"
+AnchorChanges.anchors.baseline	"QQmlScriptString()"	"QQuickAnchorLine()"
+AnimatedImage.sourceSize	"QSize(0, 0)"	"QSize(-1, -1)"
+AnimatedImage.sourceSize.width	number:0	number:-1
+AnimatedImage.sourceSize.height	number:0	number:-1
+Behavior.targetProperty	"QQmlProperty(, )"	null
+Behavior.targetProperty.object	null	!TypeError: Cannot read property 'object' of null
+Behavior.targetProperty.name	""	!TypeError: Cannot read property 'name' of null
+Connections.target	object	null
+DragHandler.target	object	null
+Flickable.data	list:1	list:0
+Flickable.children	list:1	list:0
+Flickable.visibleChildren	list:1	list:0
+Flickable.atXBeginning	boolean:true	boolean:false
+Flickable.atYBeginning	boolean:true	boolean:false
+GridView.data	list:1	list:0
+GridView.children	list:1	list:0
+GridView.visibleChildren	list:1	list:0
+GridView.atXEnd	boolean:true	boolean:false
+GridView.atYEnd	boolean:true	boolean:false
+GridView.atXBeginning	boolean:true	boolean:false
+GridView.atYBeginning	boolean:true	boolean:false
+ListView.data	list:1	list:0
+ListView.children	list:1	list:0
+ListView.visibleChildren	list:1	list:0
+ListView.atXEnd	boolean:true	boolean:false
+ListView.atYEnd	boolean:true	boolean:false
+ListView.atXBeginning	boolean:true	boolean:false
+ListView.atYBeginning	boolean:true	boolean:false
+PathPolyline.path	list:0	undefined
+ScriptAction.script	"QQmlScriptString()"	null
+Text.height	number:17	number:0
+Text.baselineOffset	number:12.8125	number:0
+Text.transformOriginPoint	"QPointF(0, 8.5)"	"QPointF(0, 0)"
+Text.transformOriginPoint.y	number:8.5	number:0
+Text.implicitHeight	number:17	number:0
+Text.implicitHeight	number:17	number:0
+Text.lineCount	number:1	number:0
+Text.contentHeight	number:17	number:0
+Text.paintedHeight	number:17	number:0
+Text.baseUrl	"file:///nonexistent/defaults/x.qml"	"file://$CWD/"	shell unset_window
+TextInput.height	number:17	number:0
+TextInput.baselineOffset	number:12.8125	number:0
+TextInput.transformOriginPoint	"QPointF(0, 8.5)"	"QPointF(0, 0)"
+TextInput.transformOriginPoint.y	number:8.5	number:0
+TextInput.implicitHeight	number:17	number:0
+TextInput.implicitHeight	number:17	number:0
+TextInput.cursorRectangle	"QRectF(0, 0, 1, 17)"	"QRectF(0, 0, 0, 0)"
+TextInput.cursorRectangle.width	number:1	number:0
+TextInput.cursorRectangle.height	number:17	number:0
+TextInput.cursorRectangle.right	number:1	number:0
+TextInput.cursorRectangle.bottom	number:17	number:0
+TextInput.contentHeight	number:17	number:0
+WheelHandler.target	object	null
+ApplicationWindow.data	list:1	list:0
+ApplicationWindow.contentItem	object	null
+ApplicationWindow.screen	object	null
+ApplicationWindow.screen.objectName	""	!TypeError: Cannot read property 'objectName' of null
+ApplicationWindow.screen.name	""	!TypeError: Cannot read property 'name' of null
+ApplicationWindow.screen.manufacturer	""	!TypeError: Cannot read property 'manufacturer' of null
+ApplicationWindow.screen.model	""	!TypeError: Cannot read property 'model' of null
+ApplicationWindow.screen.serialNumber	""	!TypeError: Cannot read property 'serialNumber' of null
+ApplicationWindow.screen.width	number:800	!TypeError: Cannot read property 'width' of null
+ApplicationWindow.screen.height	number:800	!TypeError: Cannot read property 'height' of null
+ApplicationWindow.screen.desktopAvailableWidth	number:800	!TypeError: Cannot read property 'desktopAvailableWidth' of null
+ApplicationWindow.screen.desktopAvailableHeight	number:800	!TypeError: Cannot read property 'desktopAvailableHeight' of null
+ApplicationWindow.screen.logicalPixelDensity	number:3.7795275590551185	!TypeError: Cannot read property 'logicalPixelDensity' of null
+ApplicationWindow.screen.pixelDensity	number:3.937007874015748	!TypeError: Cannot read property 'pixelDensity' of null
+ApplicationWindow.screen.devicePixelRatio	number:1	!TypeError: Cannot read property 'devicePixelRatio' of null
+ApplicationWindow.screen.primaryOrientation	number:2	!TypeError: Cannot read property 'primaryOrientation' of null
+ApplicationWindow.screen.orientation	number:0	!TypeError: Cannot read property 'orientation' of null
+ApplicationWindow.screen.virtualX	number:0	!TypeError: Cannot read property 'virtualX' of null
+ApplicationWindow.screen.virtualY	number:0	!TypeError: Cannot read property 'virtualY' of null
+ApplicationWindow.contentItem	object	null
+Button.data	list:2	list:0
+Button.children	list:2	list:0
+Button.width	number:100	number:0
+Button.height	number:40	number:0
+Button.visibleChildren	list:2	list:0
+Button.childrenRect	"QRectF(0, 0, 100, 40)"	"QRectF(0, 0, 0, 0)"
+Button.childrenRect.width	number:100	number:0
+Button.childrenRect.height	number:40	number:0
+Button.childrenRect.right	number:100	number:0
+Button.childrenRect.bottom	number:40	number:0
+Button.baselineOffset	number:6	number:0
+Button.transformOriginPoint	"QPointF(50, 20)"	"QPointF(0, 0)"
+Button.transformOriginPoint.x	number:50	number:0
+Button.transformOriginPoint.y	number:20	number:0
+Button.implicitWidth	number:100	number:0
+Button.implicitHeight	number:40	number:0
+Button.availableWidth	number:84	number:0
+Button.availableHeight	number:28	number:0
+Button.background	object	null
+Button.contentItem	object	null
+Button.baselineOffset	number:6	number:0
+Button.implicitBackgroundWidth	number:100	number:0
+Button.implicitBackgroundHeight	number:40	number:0
+ComboBox.data	list:3	list:0
+ComboBox.children	list:3	list:0
+ComboBox.width	number:140	number:0
+ComboBox.height	number:40	number:0
+ComboBox.visibleChildren	list:3	list:0
+ComboBox.childrenRect	"QRectF(0, 0, 140, 40)"	"QRectF(0, 0, 0, 0)"
+ComboBox.childrenRect.width	number:140	number:0
+ComboBox.childrenRect.height	number:40	number:0
+ComboBox.childrenRect.right	number:140	number:0
+ComboBox.childrenRect.bottom	number:40	number:0
+ComboBox.baselineOffset	number:24.3125	number:0
+ComboBox.transformOriginPoint	"QPointF(70, 20)"	"QPointF(0, 0)"
+ComboBox.transformOriginPoint.x	number:70	number:0
+ComboBox.transformOriginPoint.y	number:20	number:0
+ComboBox.implicitWidth	number:140	number:0
+ComboBox.implicitHeight	number:40	number:0
+ComboBox.availableWidth	number:100	number:0
+ComboBox.availableHeight	number:40	number:0
+ComboBox.background	object	null
+ComboBox.contentItem	object	null
+ComboBox.baselineOffset	number:24.3125	number:0
+ComboBox.implicitContentHeight	number:29	number:0
+ComboBox.implicitBackgroundWidth	number:140	number:0
+ComboBox.implicitBackgroundHeight	number:40	number:0
+ComboBox.delegateModel	null	object
+ComboBox.delegate	object	null
+ComboBox.delegate.objectName	""	!TypeError: Cannot read property 'objectName' of null
+ComboBox.delegate.progress	number:1	!TypeError: Cannot read property 'progress' of null
+ComboBox.delegate.status	number:1	!TypeError: Cannot read property 'status' of null
+ComboBox.delegate.url	"qrc:/qt-project.org/imports/QtQuick/Controls/Basic/ComboBox.qml"	!TypeError: Cannot read property 'url' of null
+ComboBox.indicator	object	null
+ComboBox.popup	object	null
+ComboBox.implicitIndicatorWidth	number:40	number:0
+ComboBox.implicitIndicatorHeight	number:28	number:0
+DayOfWeekRow.data	list:1	list:0
+DayOfWeekRow.children	list:1	list:0
+DayOfWeekRow.width	number:189.21875	number:0
+DayOfWeekRow.height	number:29	number:0
+DayOfWeekRow.visibleChildren	list:1	list:0
+DayOfWeekRow.childrenRect	"QRectF(0, 6, 189.219, 17)"	"QRectF(0, 0, 0, 0)"
+DayOfWeekRow.childrenRect.y	number:6	number:0
+DayOfWeekRow.childrenRect.width	number:189.21875	number:0
+DayOfWeekRow.childrenRect.height	number:17	number:0
+DayOfWeekRow.childrenRect.right	number:189.21875	number:0
+DayOfWeekRow.childrenRect.top	number:6	number:0
+DayOfWeekRow.childrenRect.bottom	number:23	number:0
+DayOfWeekRow.baselineOffset	number:6	number:0
+DayOfWeekRow.transformOriginPoint	"QPointF(94.6094, 14.5)"	"QPointF(0, 0)"
+DayOfWeekRow.transformOriginPoint.x	number:94.609375	number:0
+DayOfWeekRow.transformOriginPoint.y	number:14.5	number:0
+DayOfWeekRow.implicitWidth	number:189.21875	number:0
+DayOfWeekRow.implicitHeight	number:29	number:0
+DayOfWeekRow.availableWidth	number:189.21875	number:0
+DayOfWeekRow.availableHeight	number:17	number:0
+DayOfWeekRow.contentItem	object	null
+DayOfWeekRow.baselineOffset	number:6	number:0
+DayOfWeekRow.implicitContentWidth	number:189.21875	number:0
+DayOfWeekRow.implicitContentHeight	number:17	number:0
+DayOfWeekRow.source	object	undefined
+DayOfWeekRow.source.objectName	""	!TypeError: Cannot read property 'objectName' of undefined
+DayOfWeekRow.source.locale	"QLocale::system()/* C, Default, Default */"	!TypeError: Cannot read property 'locale' of undefined
+DayOfWeekRow.source.locale.firstDayOfWeek	number:1	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.measurementSystem	number:0	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.textDirection	number:0	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.weekDays	list:5	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.uiLanguages	list:1	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.name	"C"	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.nativeLanguageName	""	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.nativeCountryName	""	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.nativeTerritoryName	""	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.decimalPoint	"."	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.groupSeparator	","	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.percent	"%"	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.zeroDigit	"0"	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.negativeSign	"-"	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.positiveSign	"+"	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.exponential	"e"	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.amText	"AM"	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.pmText	"PM"	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.locale.numberOptions	number:1	!TypeError: Cannot read property 'locale' of undefined	#162
+DayOfWeekRow.source.count	number:7	!TypeError: Cannot read property 'count' of undefined
+DayOfWeekRow.delegate	object	null
+DayOfWeekRow.delegate.objectName	""	!TypeError: Cannot read property 'objectName' of null
+DayOfWeekRow.delegate.progress	number:1	!TypeError: Cannot read property 'progress' of null
+DayOfWeekRow.delegate.status	number:1	!TypeError: Cannot read property 'status' of null
+DayOfWeekRow.delegate.url	"qrc:/qt-project.org/imports/QtQuick/Controls/Basic/DayOfWeekRow.qml"	!TypeError: Cannot read property 'url' of null
+ItemDelegate.data	list:2	list:0
+ItemDelegate.children	list:2	list:0
+ItemDelegate.width	number:100	number:0
+ItemDelegate.height	number:40	number:0
+ItemDelegate.visibleChildren	list:1	list:0
+ItemDelegate.childrenRect	"QRectF(0, 0, 100, 40)"	"QRectF(0, 0, 0, 0)"
+ItemDelegate.childrenRect.width	number:100	number:0
+ItemDelegate.childrenRect.height	number:40	number:0
+ItemDelegate.childrenRect.right	number:100	number:0
+ItemDelegate.childrenRect.bottom	number:40	number:0
+ItemDelegate.baselineOffset	number:12	number:0
+ItemDelegate.transformOriginPoint	"QPointF(50, 20)"	"QPointF(0, 0)"
+ItemDelegate.transformOriginPoint.x	number:50	number:0
+ItemDelegate.transformOriginPoint.y	number:20	number:0
+ItemDelegate.implicitWidth	number:100	number:0
+ItemDelegate.implicitHeight	number:40	number:0
+ItemDelegate.availableWidth	number:76	number:0
+ItemDelegate.availableHeight	number:16	number:0
+ItemDelegate.background	object	null
+ItemDelegate.contentItem	object	null
+ItemDelegate.baselineOffset	number:12	number:0
+ItemDelegate.implicitBackgroundWidth	number:100	number:0
+ItemDelegate.implicitBackgroundHeight	number:40	number:0
+Menu.width	number:200	number:0
+Menu.height	number:40	number:0
+Menu.implicitWidth	number:200	number:0
+Menu.implicitHeight	number:40	number:0
+Menu.availableWidth	number:200	number:0
+Menu.availableHeight	number:40	number:0
+Menu.background	object	null
+Menu.contentItem	object	null
+Menu.contentChildren	list:2	list:0
+Menu.implicitBackgroundWidth	number:200	number:0
+Menu.implicitBackgroundHeight	number:40	number:0
+Menu.contentModel	"QVariant(QPointer<QQmlObjectModel>, QQmlObjectModel(0x))"	object
+Menu.delegate	object	null
+Menu.delegate.objectName	""	!TypeError: Cannot read property 'objectName' of null
+Menu.delegate.progress	number:1	!TypeError: Cannot read property 'progress' of null
+Menu.delegate.status	number:1	!TypeError: Cannot read property 'status' of null
+Menu.delegate.url	"qrc:/qt-project.org/imports/QtQuick/Controls/Basic/Menu.qml"	!TypeError: Cannot read property 'url' of null
+MenuItem.data	list:4	list:0
+MenuItem.children	list:4	list:0
+MenuItem.width	number:200	number:0
+MenuItem.height	number:40	number:0
+MenuItem.visibleChildren	list:2	list:0
+MenuItem.childrenRect	"QRectF(1, 1, 198, 38)"	"QRectF(0, 0, 0, 0)"
+MenuItem.childrenRect.x	number:1	number:0
+MenuItem.childrenRect.y	number:1	number:0
+MenuItem.childrenRect.width	number:198	number:0
+MenuItem.childrenRect.height	number:38	number:0
+MenuItem.childrenRect.left	number:1	number:0
+MenuItem.childrenRect.right	number:199	number:0
+MenuItem.childrenRect.top	number:1	number:0
+MenuItem.childrenRect.bottom	number:39	number:0
+MenuItem.baselineOffset	number:6	number:0
+MenuItem.transformOriginPoint	"QPointF(100, 20)"	"QPointF(0, 0)"
+MenuItem.transformOriginPoint.x	number:100	number:0
+MenuItem.transformOriginPoint.y	number:20	number:0
+MenuItem.implicitWidth	number:200	number:0
+MenuItem.implicitHeight	number:40	number:0
+MenuItem.availableWidth	number:188	number:0
+MenuItem.availableHeight	number:28	number:0
+MenuItem.background	object	null
+MenuItem.contentItem	object	null
+MenuItem.baselineOffset	number:6	number:0
+MenuItem.implicitBackgroundWidth	number:200	number:0
+MenuItem.implicitBackgroundHeight	number:40	number:0
+MenuItem.indicator	object	null
+MenuItem.arrow	object	null
+Popup.width	number:24	number:0
+Popup.height	number:24	number:0
+Popup.implicitWidth	number:24	number:0
+Popup.implicitHeight	number:24	number:0
+Popup.background	object	null
+Popup.contentItem	object	null
+ProgressBar.data	list:2	list:0
+ProgressBar.children	list:2	list:0
+ProgressBar.width	number:200	number:0
+ProgressBar.height	number:6	number:0
+ProgressBar.visibleChildren	list:2	list:0
+ProgressBar.childrenRect	"QRectF(0, 0, 200, 6)"	"QRectF(0, 0, 0, 0)"
+ProgressBar.childrenRect.width	number:200	number:0
+ProgressBar.childrenRect.height	number:6	number:0
+ProgressBar.childrenRect.right	number:200	number:0
+ProgressBar.childrenRect.bottom	number:6	number:0
+ProgressBar.transformOriginPoint	"QPointF(100, 3)"	"QPointF(0, 0)"
+ProgressBar.transformOriginPoint.x	number:100	number:0
+ProgressBar.transformOriginPoint.y	number:3	number:0
+ProgressBar.implicitWidth	number:200	number:0
+ProgressBar.implicitHeight	number:6	number:0
+ProgressBar.availableWidth	number:200	number:0
+ProgressBar.availableHeight	number:6	number:0
+ProgressBar.background	object	null
+ProgressBar.contentItem	object	null
+ProgressBar.implicitContentWidth	number:116	number:0
+ProgressBar.implicitContentHeight	number:6	number:0
+ProgressBar.implicitBackgroundWidth	number:200	number:0
+ProgressBar.implicitBackgroundHeight	number:6	number:0
+RadioButton.data	list:2	list:0
+RadioButton.children	list:2	list:0
+RadioButton.width	number:46	number:0
+RadioButton.height	number:40	number:0
+RadioButton.visibleChildren	list:2	list:0
+RadioButton.childrenRect	"QRectF(6, 6, 34, 28)"	"QRectF(0, 0, 0, 0)"
+RadioButton.childrenRect.x	number:6	number:0
+RadioButton.childrenRect.y	number:6	number:0
+RadioButton.childrenRect.width	number:34	number:0
+RadioButton.childrenRect.height	number:28	number:0
+RadioButton.childrenRect.left	number:6	number:0
+RadioButton.childrenRect.right	number:40	number:0
+RadioButton.childrenRect.top	number:6	number:0
+RadioButton.childrenRect.bottom	number:34	number:0
+RadioButton.baselineOffset	number:18.8125	number:0
+RadioButton.transformOriginPoint	"QPointF(23, 20)"	"QPointF(0, 0)"
+RadioButton.transformOriginPoint.x	number:23	number:0
+RadioButton.transformOriginPoint.y	number:20	number:0
+RadioButton.implicitWidth	number:46	number:0
+RadioButton.implicitHeight	number:40	number:0
+RadioButton.availableWidth	number:34	number:0
+RadioButton.availableHeight	number:28	number:0
+RadioButton.contentItem	object	null
+RadioButton.baselineOffset	number:18.8125	number:0
+RadioButton.implicitContentWidth	number:34	number:0
+RadioButton.implicitContentHeight	number:17	number:0
+RadioButton.indicator	object	null
+RadioButton.implicitIndicatorWidth	number:28	number:0
+RadioButton.implicitIndicatorHeight	number:28	number:0
+ScrollBar.data	list:2	list:0
+ScrollBar.children	list:2	list:0
+ScrollBar.width	number:10	number:0
+ScrollBar.height	number:10	number:0
+ScrollBar.visibleChildren	list:1	list:0
+ScrollBar.childrenRect	"QRectF(0, 0, 10, 10)"	"QRectF(0, 0, 0, 0)"
+ScrollBar.childrenRect.width	number:10	number:0
+ScrollBar.childrenRect.height	number:10	number:0
+ScrollBar.childrenRect.right	number:10	number:0
+ScrollBar.childrenRect.bottom	number:10	number:0
+ScrollBar.baselineOffset	number:2	number:0
+ScrollBar.transformOriginPoint	"QPointF(5, 5)"	"QPointF(0, 0)"
+ScrollBar.transformOriginPoint.x	number:5	number:0
+ScrollBar.transformOriginPoint.y	number:5	number:0
+ScrollBar.implicitWidth	number:10	number:0
+ScrollBar.implicitHeight	number:10	number:0
+ScrollBar.availableWidth	number:6	number:0
+ScrollBar.availableHeight	number:6	number:0
+ScrollBar.background	object	null
+ScrollBar.contentItem	object	null
+ScrollBar.baselineOffset	number:2	number:0
+ScrollBar.implicitContentWidth	number:6	number:0
+ScrollBar.implicitContentHeight	number:6	number:0
+ScrollBar.minimumSize	number:1	number:0
+ScrollBar.visualSize	number:1	number:0
+ScrollView.data	list:3	list:0
+ScrollView.children	list:3	list:0
+ScrollView.visibleChildren	list:3	list:0
+ScrollView.childrenRect	"QRectF(-10, -10, 10, 10)"	"QRectF(0, 0, 0, 0)"
+ScrollView.childrenRect.x	number:-10	number:0
+ScrollView.childrenRect.y	number:-10	number:0
+ScrollView.childrenRect.width	number:10	number:0
+ScrollView.childrenRect.height	number:10	number:0
+ScrollView.childrenRect.left	number:-10	number:0
+ScrollView.childrenRect.top	number:-10	number:0
+ScrollView.contentItem	object	null
+ScrollView.implicitContentWidth	number:-1	number:0
+ScrollView.implicitContentHeight	number:-1	number:0
+Slider.data	list:2	list:0
+Slider.children	list:2	list:0
+Slider.width	number:200	number:0
+Slider.height	number:40	number:0
+Slider.visibleChildren	list:2	list:0
+Slider.childrenRect	"QRectF(6, 6, 188, 28)"	"QRectF(0, 0, 0, 0)"
+Slider.childrenRect.x	number:6	number:0
+Slider.childrenRect.y	number:6	number:0
+Slider.childrenRect.width	number:188	number:0
+Slider.childrenRect.height	number:28	number:0
+Slider.childrenRect.left	number:6	number:0
+Slider.childrenRect.right	number:194	number:0
+Slider.childrenRect.top	number:6	number:0
+Slider.childrenRect.bottom	number:34	number:0
+Slider.transformOriginPoint	"QPointF(100, 20)"	"QPointF(0, 0)"
+Slider.transformOriginPoint.x	number:100	number:0
+Slider.transformOriginPoint.y	number:20	number:0
+Slider.implicitWidth	number:200	number:0
+Slider.implicitHeight	number:40	number:0
+Slider.availableWidth	number:188	number:0
+Slider.availableHeight	number:28	number:0
+Slider.background	object	null
+Slider.implicitBackgroundWidth	number:200	number:0
+Slider.implicitBackgroundHeight	number:6	number:0
+Slider.handle	object	null
+Slider.implicitHandleWidth	number:28	number:0
+Slider.implicitHandleHeight	number:28	number:0
+SwipeView.data	list:1	list:0
+SwipeView.children	list:1	list:0
+SwipeView.visibleChildren	list:1	list:0
+SwipeView.contentItem	object	null
+SwipeView.contentModel	object	undefined
+SwipeView.contentModel.objectName	""	!TypeError: Cannot read property 'objectName' of undefined
+SwipeView.contentModel.count	number:0	!TypeError: Cannot read property 'count' of undefined
+SwipeView.contentModel.children	list:0	!TypeError: Cannot read property 'children' of undefined
+Switch.data	list:2	list:0
+Switch.children	list:2	list:0
+Switch.width	number:74	number:0
+Switch.height	number:40	number:0
+Switch.visibleChildren	list:2	list:0
+Switch.childrenRect	"QRectF(6, 6, 62, 28)"	"QRectF(0, 0, 0, 0)"
+Switch.childrenRect.x	number:6	number:0
+Switch.childrenRect.y	number:6	number:0
+Switch.childrenRect.width	number:62	number:0
+Switch.childrenRect.height	number:28	number:0
+Switch.childrenRect.left	number:6	number:0
+Switch.childrenRect.right	number:68	number:0
+Switch.childrenRect.top	number:6	number:0
+Switch.childrenRect.bottom	number:34	number:0
+Switch.baselineOffset	number:18.8125	number:0
+Switch.transformOriginPoint	"QPointF(37, 20)"	"QPointF(0, 0)"
+Switch.transformOriginPoint.x	number:37	number:0
+Switch.transformOriginPoint.y	number:20	number:0
+Switch.implicitWidth	number:74	number:0
+Switch.implicitHeight	number:40	number:0
+Switch.availableWidth	number:62	number:0
+Switch.availableHeight	number:28	number:0
+Switch.contentItem	object	null
+Switch.baselineOffset	number:18.8125	number:0
+Switch.implicitContentWidth	number:62	number:0
+Switch.implicitContentHeight	number:17	number:0
+Switch.indicator	object	null
+Switch.implicitIndicatorWidth	number:56	number:0
+Switch.implicitIndicatorHeight	number:28	number:0
+TabBar.data	list:2	list:0
+TabBar.children	list:2	list:0
+TabBar.visibleChildren	list:2	list:0
+TabBar.background	object	null
+TabBar.contentItem	object	null
+TabBar.contentModel	object	undefined
+TabBar.contentModel.objectName	""	!TypeError: Cannot read property 'objectName' of undefined
+TabBar.contentModel.count	number:0	!TypeError: Cannot read property 'count' of undefined
+TabBar.contentModel.children	list:0	!TypeError: Cannot read property 'children' of undefined
+TabButton.data	list:2	list:0
+TabButton.children	list:2	list:0
+TabButton.width	number:12	number:0
+TabButton.height	number:40	number:0
+TabButton.visibleChildren	list:2	list:0
+TabButton.childrenRect	"QRectF(0, 0, 12, 40)"	"QRectF(0, 0, 0, 0)"
+TabButton.childrenRect.width	number:12	number:0
+TabButton.childrenRect.height	number:40	number:0
+TabButton.childrenRect.right	number:12	number:0
+TabButton.childrenRect.bottom	number:40	number:0
+TabButton.baselineOffset	number:6	number:0
+TabButton.transformOriginPoint	"QPointF(6, 20)"	"QPointF(0, 0)"
+TabButton.transformOriginPoint.x	number:6	number:0
+TabButton.transformOriginPoint.y	number:20	number:0
+TabButton.implicitWidth	number:12	number:0
+TabButton.implicitHeight	number:40	number:0
+TabButton.availableHeight	number:28	number:0
+TabButton.background	object	null
+TabButton.contentItem	object	null
+TabButton.baselineOffset	number:6	number:0
+TabButton.implicitBackgroundHeight	number:40	number:0
+TextArea.data	list:2	list:0
+TextArea.children	list:2	list:0
+TextArea.width	number:16	number:0
+TextArea.height	number:29	number:0
+TextArea.visibleChildren	list:1	list:0
+TextArea.childrenRect	"QRectF(0, 0, 16, 29)"	"QRectF(0, 0, 0, 0)"
+TextArea.childrenRect.width	number:16	number:0
+TextArea.childrenRect.height	number:29	number:0
+TextArea.childrenRect.right	number:16	number:0
+TextArea.childrenRect.bottom	number:29	number:0
+TextArea.baselineOffset	number:18.8125	number:0
+TextArea.transformOriginPoint	"QPointF(8, 14.5)"	"QPointF(0, 0)"
+TextArea.transformOriginPoint.x	number:8	number:0
+TextArea.transformOriginPoint.y	number:14.5	number:0
+TextArea.implicitWidth	number:16	number:0
+TextArea.implicitHeight	number:29	number:0
+TextArea.implicitWidth	number:16	number:0
+TextArea.implicitHeight	number:29	number:0
+TextArea.lineCount	number:1	number:0
+TextArea.contentHeight	number:17	number:0
+TextArea.paintedHeight	number:17	number:0
+TextArea.cursorRectangle	"QRectF(10, 6, 1, 17)"	"QRectF(0, 0, 0, 0)"
+TextArea.cursorRectangle.x	number:10	number:0
+TextArea.cursorRectangle.y	number:6	number:0
+TextArea.cursorRectangle.width	number:1	number:0
+TextArea.cursorRectangle.height	number:17	number:0
+TextArea.cursorRectangle.left	number:10	number:0
+TextArea.cursorRectangle.right	number:11	number:0
+TextArea.cursorRectangle.top	number:6	number:0
+TextArea.cursorRectangle.bottom	number:23	number:0
+TextArea.baseUrl	"file:///nonexistent/defaults/x.qml"	"file://$CWD/"	shell unset_window
+TextArea.cursorSelection.font.features	"[object V4ReferenceObject]"	undefined
+TextArea.cursorSelection.font.variableAxes	"[object V4ReferenceObject]"	undefined
+TextArea.implicitWidth	number:16	number:0
+TextArea.implicitHeight	number:29	number:0
+TextArea.background	object	null
+TextField.data	list:2	list:0
+TextField.children	list:2	list:0
+TextField.width	number:200	number:0
+TextField.height	number:40	number:0
+TextField.visibleChildren	list:2	list:0
+TextField.childrenRect	"QRectF(0, 0, 200, 40)"	"QRectF(0, 0, 0, 0)"
+TextField.childrenRect.width	number:200	number:0
+TextField.childrenRect.height	number:40	number:0
+TextField.childrenRect.right	number:200	number:0
+TextField.childrenRect.bottom	number:40	number:0
+TextField.baselineOffset	number:18.8125	number:0
+TextField.transformOriginPoint	"QPointF(100, 20)"	"QPointF(0, 0)"
+TextField.transformOriginPoint.x	number:100	number:0
+TextField.transformOriginPoint.y	number:20	number:0
+TextField.implicitWidth	number:200	number:0
+TextField.implicitHeight	number:40	number:0
+TextField.implicitWidth	number:200	number:0
+TextField.implicitHeight	number:40	number:0
+TextField.cursorRectangle	"QRectF(10, 11.5, 1, 17)"	"QRectF(0, 0, 0, 0)"
+TextField.cursorRectangle.x	number:10	number:0
+TextField.cursorRectangle.y	number:11.5	number:0
+TextField.cursorRectangle.width	number:1	number:0
+TextField.cursorRectangle.height	number:17	number:0
+TextField.cursorRectangle.left	number:10	number:0
+TextField.cursorRectangle.right	number:11	number:0
+TextField.cursorRectangle.top	number:11.5	number:0
+TextField.cursorRectangle.bottom	number:28.5	number:0
+TextField.contentHeight	number:17	number:0
+TextField.implicitWidth	number:200	number:0
+TextField.implicitHeight	number:40	number:0
+TextField.background	object	null
+TextField.implicitBackgroundWidth	number:200	number:0
+TextField.implicitBackgroundHeight	number:40	number:0
+ToolTip.width	number:12	number:0
+ToolTip.height	number:29	number:0
+ToolTip.implicitWidth	number:12	number:0
+ToolTip.implicitHeight	number:29	number:0
+ToolTip.contentHeight	number:17	number:0
+ToolTip.availableHeight	number:17	number:0
+ToolTip.background	object	null
+ToolTip.contentItem	object	null
+ToolTip.implicitContentHeight	number:17	number:0
+RectangularShadow.material	object	null
+ColorOverlay.data	list:3	list:0	the inside of Qt's QML file of the effect
+ColorOverlay.children	list:3	list:0	the inside of Qt's QML file of the effect
+ColorOverlay.visibleChildren	list:2	list:0	the inside of Qt's QML file of the effect
+Desaturate.data	list:3	list:0	the inside of Qt's QML file of the effect
+Desaturate.children	list:3	list:0	the inside of Qt's QML file of the effect
+Desaturate.visibleChildren	list:2	list:0	the inside of Qt's QML file of the effect
+DropShadow.data	list:1	list:0	the inside of Qt's QML file of the effect
+DropShadow.children	list:1	list:0	the inside of Qt's QML file of the effect
+DropShadow.visibleChildren	list:1	list:0	the inside of Qt's QML file of the effect
+GaussianBlur.data	list:5	list:0	the inside of Qt's QML file of the effect
+GaussianBlur.children	list:5	list:0	the inside of Qt's QML file of the effect
+GaussianBlur.visibleChildren	list:2	list:0	the inside of Qt's QML file of the effect
+GaussianBlur._paddedTexWidth	number:0	undefined	the inside of Qt's QML file of the effect
+GaussianBlur._paddedTexHeight	number:0	undefined	the inside of Qt's QML file of the effect
+GaussianBlur._kernelRadius	number:4	undefined	the inside of Qt's QML file of the effect
+GaussianBlur._kernelSize	number:9	undefined	the inside of Qt's QML file of the effect
+GaussianBlur._dpr	number:1	undefined	the inside of Qt's QML file of the effect
+GaussianBlur._alphaOnly	boolean:false	undefined	the inside of Qt's QML file of the effect
+GaussianBlur._thickness	number:0	undefined	the inside of Qt's QML file of the effect
+GaussianBlur._componentIsComplete	boolean:false	undefined	the inside of Qt's QML file of the effect
+GaussianBlur._output	null	undefined	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect	"QRectF(0, 0, 0, 0)"	undefined	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.x	number:0	!TypeError: Cannot read property 'x' of undefined	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.y	number:0	!TypeError: Cannot read property 'y' of undefined	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.width	number:0	!TypeError: Cannot read property 'width' of undefined	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.height	number:0	!TypeError: Cannot read property 'height' of undefined	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.left	number:0	!TypeError: Cannot read property 'left' of undefined	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.right	number:0	!TypeError: Cannot read property 'right' of undefined	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.top	number:0	!TypeError: Cannot read property 'top' of undefined	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.bottom	number:0	!TypeError: Cannot read property 'bottom' of undefined	the inside of Qt's QML file of the effect
+GaussianBlur._color	"#000000"	undefined	the inside of Qt's QML file of the effect
+OpacityMask.data	list:4	list:0	the inside of Qt's QML file of the effect
+OpacityMask.children	list:4	list:0	the inside of Qt's QML file of the effect
+OpacityMask.visibleChildren	list:3	list:0	the inside of Qt's QML file of the effect
+RadialGradient.data	list:4	list:0	the inside of Qt's QML file of the effect
+RadialGradient.children	list:4	list:0	the inside of Qt's QML file of the effect
+RadialGradient.visibleChildren	list:2	list:0	the inside of Qt's QML file of the effect
+FolderListModel.folder	"file:///src"	""	shell unset_window
+FolderListModel.parentFolder	"file:///"	""	shell unset_window

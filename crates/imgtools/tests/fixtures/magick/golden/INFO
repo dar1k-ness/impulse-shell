@@ -1,0 +1,31 @@
+alpha.webp WEBP DirectClass sRGB Alpha 8 srgba 4.0
+bilevel.png PNG PseudoClass Gray  1 gray  2.0
+cmyk.jpg JPEG DirectClass CMYK  8 cmyk  4.0
+exact256.png PNG DirectClass sRGB  8 srgb  3.0
+exif_rot6.jpg JPEG DirectClass sRGB  8 srgb  3.0
+gray.jpg JPEG PseudoClass Gray  8 gray  2.0
+gray.png PNG PseudoClass Gray  8 gray  2.0
+gray16.png PNG DirectClass Gray  16 gray  1.0
+graya.png PNG DirectClass Gray Alpha 8 graya 2.0
+lossless.webp WEBP DirectClass sRGB  8 srgb  3.0
+lossy.webp WEBP DirectClass sRGB  8 srgb  3.0
+onepx.png PNG DirectClass sRGB  8 srgb  3.0
+palette.png PNG PseudoClass sRGB  8 srgb  4.0
+palette_trns.png PNG PseudoClass sRGB Alpha 8 srgba 5.0
+progressive.jpg JPEG DirectClass sRGB  8 srgb  3.0
+rgb.png PNG DirectClass sRGB  8 srgb  3.0
+rgb16.png PNG DirectClass sRGB  16 srgb  3.0
+rgb16_reducible.png PNG DirectClass sRGB  16 srgb  3.0
+rgb420.jpg JPEG DirectClass sRGB  8 srgb  3.0
+rgb422.jpg JPEG DirectClass sRGB  8 srgb  3.0
+rgb444.jpg JPEG DirectClass sRGB  8 srgb  3.0
+rgba.png PNG DirectClass sRGB Alpha 8 srgba 4.0
+rgba16.png PNG DirectClass sRGB Alpha 16 srgba 4.0
+rgba_opaque.png PNG DirectClass sRGB Alpha 8 srgba 4.0
+small.png PNG DirectClass sRGB  8 srgb  3.0
+small_rgba.png PNG DirectClass sRGB Alpha 8 srgba 4.0
+square.png PNG DirectClass sRGB  8 srgb  3.0
+tall.jpg JPEG DirectClass sRGB  8 srgb  3.0
+tall.png PNG DirectClass sRGB  8 srgb  3.0
+wide.jpg JPEG DirectClass sRGB  8 srgb  3.0
+wide.png PNG DirectClass sRGB  8 srgb  3.0

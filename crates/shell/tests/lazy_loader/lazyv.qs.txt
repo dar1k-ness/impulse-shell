@@ -1,0 +1,59 @@
+qml: v2 inst completed x false
+qml: v1 inst completed a false false
+qml: init 1 false false
+qml: v1 a xa obj completed
+qml: v1 a xa active true
+qml: v1 a xb loading true
+qml: v1 a xc obj completed
+qml: v1 a xc inner obj completed
+qml: v2 x ya obj completed
+qml: v2 x yb obj completed
+qml: v1 a xb obj completed
+qml: v1 a xb active true
+qml: v1 a xb loading false
+qml: -- state
+qml: true true true
+qml: -- v1 append
+qml: v1 inst completed b false false
+qml: v1 b xa obj completed
+qml: v1 b xa active true
+qml: v1 b xb loading true
+qml: v1 b xc obj completed
+qml: v1 b xc inner obj completed
+qml: after 2 true true false
+qml: v1 b xb obj completed
+qml: v1 b xb active true
+qml: v1 b xb loading false
+qml: -- state
+qml: true false true
+qml: -- v2 append
+qml: v2 inst completed y false
+qml: v2 y ya obj completed
+qml: v2 y yb obj completed
+qml: after 2 true
+qml: -- state
+qml: true
+qml: -- outer.active=true
+qml: v3 inst completed p
+qml: v3 inst completed q
+qml: outer obj completed 2
+qml: outer active true
+qml: after 2 false false
+qml: v3 p zb obj completed
+qml: v3 p za obj completed
+qml: v3 q zb obj completed
+qml: v3 q za obj completed
+qml: outer oz obj completed
+qml: outer oa obj completed
+qml: -- state
+qml: true true
+qml: -- outer2.loading=true
+qml: after false
+qml: v4 r wa obj completed
+qml: -- state
+qml: true
+qml: v4 s wa obj completed
+qml: after model 2 true
+qml: -- state
+qml: true
+qml: done

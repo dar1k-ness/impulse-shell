@@ -1,0 +1,2575 @@
+@ TZ=Asia/Kolkata
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LANG=
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LANG=C
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LANG=POSIX
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LANG=C.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LANG=POSIX.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LANG=en_US.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:en_US/C
+@ TZ=Asia/Kolkata LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LANG=ru_RU
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LANG=ru
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LANG=ccp_BD.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:𑄃𑄨𑄚𑄴𑄘𑄨𑄠𑄬 𑄟𑄚𑄧𑄇𑄴 𑄃𑄧𑄇𑄴𑄖𑄧
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ccp_BD/C
+@ TZ=Asia/Kolkata LANG=de_DE.UTF-8@euro
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:de_DE/C
+@ TZ=Asia/Kolkata LANG=sr_RS.UTF-8@latin
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно време
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно време
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно време
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:sr_RS/C
+@ TZ=Asia/Kolkata LANG=sr_RS@latin
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно време
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно време
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно време
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:sr_RS/C
+@ TZ=Asia/Kolkata LANG=no_NO@nynorsk
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:indisk tid
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:nb_NO/C
+@ TZ=Asia/Kolkata LANG=ru@x.y
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LANG=xx_YY.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LANG=garbage
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LANG=!!
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_MESSAGES=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LC_MESSAGES=
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_MESSAGES=C
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_MESSAGES=POSIX
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LC_ALL=
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL=C
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL=POSIX
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL=C.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL=ccp_BD.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:𑄃𑄨𑄚𑄴𑄘𑄨𑄠𑄬 𑄟𑄚𑄧𑄇𑄴 𑄃𑄧𑄇𑄴𑄖𑄧
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ccp_BD/C
+@ TZ=Asia/Kolkata LC_ALL=garbage
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LANGUAGE=ru
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LANGUAGE=ru LANG=en_US.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LANGUAGE=ru LANG=C
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL= LANG=ru_RU.UTF-8 LC_IDENTIFICATION=no_SUCH
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LC_ALL= LANG=C.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL= LANG=C.UTF-8 LC_IDENTIFICATION=no_SUCH
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL= LC_MESSAGES=ru_RU.UTF-8 LC_IDENTIFICATION=no_SUCH
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LC_ALL= LC_MESSAGES=C.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL= LC_MESSAGES= LANG=C.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL=C LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL=C LC_MESSAGES=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL=POSIX LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL=C.UTF-8 LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_ALL=de_DE.UTF-8 LC_MESSAGES=ru_RU.UTF-8 LANG=fr_FR.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:de_DE/C
+@ TZ=Asia/Kolkata LC_MESSAGES= LANG=ru_RU.UTF-8 LC_IDENTIFICATION=no_SUCH
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LC_MESSAGES= LANG=C.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_MESSAGES=C LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_MESSAGES=POSIX LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_MESSAGES=C.UTF-8 LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_MESSAGES=de_DE.UTF-8 LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:de_DE/C
+@ TZ=Asia/Kolkata LC_MESSAGES=ru_RU.UTF-8 LANG=C
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LC_MESSAGES=ru_RU.UTF-8 LANG=
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LC_CTYPE=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Asia/Kolkata LC_TIME=ru_RU.UTF-8 LANG=en_US.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:en_US/C
+@ TZ=Asia/Kolkata LC_COLLATE=ru_RU.UTF-8 LANG=en_US.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:en_US/C
+@ TZ=Asia/Kolkata LC_CTYPE=tr_TR.UTF-8 LANG=en_US.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:en_US/C
+@ TZ=Asia/Kolkata LC_TIME=no_SUCH LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LC_ALL=cs_CZ.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:indický čas
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:cs_CZ/C
+@ TZ=Asia/Kolkata LANG=ca_ES.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Hora de l’Índia
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ca_ES/C
+@ TZ=Asia/Kolkata LANG=cy_GB.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Amser India
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:cy_GB/C
+@ TZ=Asia/Kolkata LANG=chr_US.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:ᎢᏂᏗᎢᎠ ᎠᏟᎶᏍᏗ ᎠᏟᎢᎵᏒ
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:chr_US/C
+@ TZ=Asia/Kolkata LANG=Cs_CZ.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:indický čas
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:cs_CZ/C
+@ TZ=Asia/Kolkata LANG=zh_TW.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:印度標準時間
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:印度標準時間
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:印度標準時間
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:印度標準時間
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:印度標準時間
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:印度標準時間
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:印度標準時間
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:印度標準時間
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:zh_TW/C
+@ TZ=Asia/Kolkata LANG=zh_Hant_HK
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:印度時間
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:印度時間
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:印度時間
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:印度時間
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:印度時間
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:印度時間
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:印度時間
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:印度時間
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:zh_HK/C
+@ TZ=Asia/Kolkata LANG=uz_UZ.UTF-8@cyrillic
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Hindiston standart vaqti
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Hindiston standart vaqti
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Hindiston standart vaqti
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Hindiston standart vaqti
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Hindiston standart vaqti
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Hindiston standart vaqti
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Hindiston standart vaqti
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Hindiston standart vaqti
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:uz_UZ/C
+@ TZ=Asia/Kolkata LANG=en_GB.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:en_GB/C
+@ TZ=Asia/Kolkata LANG=ar_EG.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:توقيت الهند
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:توقيت الهند
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:توقيت الهند
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:توقيت الهند
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:توقيت الهند
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:توقيت الهند
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:توقيت الهند
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:توقيت الهند
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ar_EG/C
+@ TZ=Asia/Kolkata LANG=en
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:en_US/C
+@ TZ=Asia/Kolkata LANG=ru_XX.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индия
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индия
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Asia/Kolkata LANG=ja_JP.eucJP
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:インド標準時
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:インド標準時
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:インド標準時
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:インド標準時
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:インド標準時
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:インド標準時
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:インド標準時
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:インド標準時
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ja_JP/C
+@ TZ=Europe/Berlin
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Central European Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Central European Summer Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Central European Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Central European Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Central European Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Central European Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Central European Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Central European Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Mitteleuropäische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 CET
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Europe/Berlin LANG=
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+01:00
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+02:00
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+01:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+01:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+01:00
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+01:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+01:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+01:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Mitteleuropäische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 CET
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Europe/Berlin LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Центральная Европа, стандартное время
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Центральная Европа, летнее время
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Центральная Европа, стандартное время
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Центральная Европа, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Центральная Европа, стандартное время
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Центральная Европа, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Центральная Европа, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Центральная Европа, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Mitteleuropäische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 CET
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Europe/Berlin LANG=ccp_BD.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+01:00
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+02:00
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+01:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+01:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+01:00
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+01:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+01:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:𑄟𑄧𑄖𑄴𑄙𑄳𑄠 𑄃𑄨𑄃𑄪𑄢𑄮𑄝𑄮𑄢𑄴 𑄟𑄚𑄧𑄇𑄴 𑄃𑄧𑄇𑄴𑄖𑄧
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Mitteleuropäische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 CET
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ccp_BD/C
+@ TZ=America/St_Johns
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Newfoundland Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Newfoundland Daylight Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Newfoundland Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Newfoundland Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Newfoundland Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Newfoundland Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Newfoundland Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Newfoundland Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Neufundland-Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 NST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=America/St_Johns LANG=
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT-03:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT-02:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT-03:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT-03:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT-03:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT-03:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT-03:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT-03:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Neufundland-Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 NST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=America/St_Johns LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Ньюфаундленд, стандартное время
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Ньюфаундленд, летнее время
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Ньюфаундленд, стандартное время
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Ньюфаундленд, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Ньюфаундленд, стандартное время
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Ньюфаундленд, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Ньюфаундленд, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Ньюфаундленд, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Neufundland-Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 NST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=America/St_Johns LANG=ccp_BD.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT-03:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT-02:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT-03:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT-03:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT-03:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT-03:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT-03:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:𑄚𑄨𑄃𑄪𑄜𑄃𑄪𑄚𑄴𑄣𑄳𑄠𑄚𑄴𑄓𑄨 𑄟𑄚𑄧𑄇𑄴 𑄃𑄧𑄇𑄴𑄖𑄧
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Neufundland-Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 NST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ccp_BD/C
+@ TZ=Australia/Lord_Howe
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Lord Howe Daylight Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Lord Howe Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Lord Howe Daylight Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Lord Howe Daylight Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Lord Howe Daylight Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Lord Howe Daylight Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Lord Howe Daylight Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Lord Howe Daylight Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Lord-Howe-Sommerzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 +11
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Australia/Lord_Howe LANG=
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+11:00
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+10:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+11:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+11:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+11:00
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+11:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+11:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+11:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Lord-Howe-Sommerzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 +11
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Australia/Lord_Howe LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Лорд-Хау, летнее время
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Лорд-Хау, стандартное время
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Лорд-Хау, летнее время
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Лорд-Хау, летнее время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Лорд-Хау, летнее время
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Лорд-Хау, летнее время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Лорд-Хау, летнее время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Лорд-Хау, летнее время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Lord-Howe-Sommerzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 +11
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Australia/Lord_Howe LANG=ccp_BD.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+11:00
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+10:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+11:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+11:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+11:00
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+11:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+11:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:𑄣𑄧𑄢𑄴𑄓𑄴 𑄦𑄤𑄬 𑄘𑄨𑄚𑄮𑄃𑄣𑄮𑄢𑄴 𑄃𑄧𑄇𑄴𑄖𑄧
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Lord-Howe-Sommerzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 +11
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ccp_BD/C
+@ TZ=Europe/Moscow
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Moscow Standard Time
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Moscow Standard Time
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Moscow Standard Time
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Moscow Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Moscow Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Moscow Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Moscow Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Moscow Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Moskauer Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 MSK
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Europe/Moscow LANG=
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+03:00
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+03:00
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+03:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+03:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+03:00
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+03:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+03:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+03:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Moskauer Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 MSK
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:C/C
+@ TZ=Europe/Moscow LANG=ru_RU.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Москва, стандартное время
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Москва, стандартное время
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Москва, стандартное время
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Москва, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Москва, стандартное время
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Москва, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Москва, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Москва, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Moskauer Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 MSK
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ru_RU/C
+@ TZ=Europe/Moscow LANG=ccp_BD.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+03:00
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+03:00
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+03:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+03:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+03:00
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+03:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+03:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:𑄟𑄧𑄥𑄴𑄇𑄮 𑄟𑄚𑄧𑄇𑄴 𑄃𑄧𑄇𑄴𑄖𑄧
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Moskauer Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 MSK
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ccp_BD/C
+@ TZ=Asia/Kolkata LANG=iw_IL.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:שעון הודו
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:שעון הודו
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:שעון הודו
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:שעון הודו
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:שעון הודו
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:שעון הודו
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:שעון הודו
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:שעון הודו
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:he_IL/C
+@ TZ=Asia/Kolkata LANG=in_ID.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Waktu India
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Waktu India
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Waktu India
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Waktu India
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Waktu India
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Waktu India
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Waktu India
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Waktu India
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:id_ID/C
+@ TZ=Asia/Kolkata LANG=sh_RS
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:sr_RS/C
+@ TZ=Asia/Kolkata LANG=tl_PH.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Standard na Oras sa India
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Standard na Oras sa India
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Standard na Oras sa India
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Standard na Oras sa India
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Standard na Oras sa India
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Standard na Oras sa India
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Standard na Oras sa India
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Standard na Oras sa India
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:fil_PH/C
+@ TZ=Asia/Kolkata LANG=mo_MD
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Ora Indiei
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Ora Indiei
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Ora Indiei
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Ora Indiei
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Ora Indiei
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Ora Indiei
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Ora Indiei
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Ora Indiei
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:ro_MD/C
+@ TZ=Asia/Kolkata LANG=ji
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:yi_UA/C
+@ TZ=Asia/Kolkata LANG=no
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:indisk tid
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:nb_NO/C
+@ TZ=Asia/Kolkata LANG=nn_NO.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:indisk tid
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:indisk tid
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:nn_NO/C
+@ TZ=Asia/Kolkata LANG=sh
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:sr_RS/C
+@ TZ=Asia/Kolkata LANG=sh_ME
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:sr_ME/C
+@ TZ=Asia/Kolkata LANG=sh_YU
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:sr_RS/C
+@ TZ=Asia/Kolkata LANG=sh_RS.UTF-8
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:sr_RS/C
+@ TZ=Asia/Kolkata LANG=sr_ME
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:sr_ME/C
+@ TZ=Asia/Kolkata LANG=sr_BA
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно вријеме
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно вријеме
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно вријеме
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Индијско стандардно вријеме
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Индијско стандардно вријеме
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Индијско стандардно вријеме
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Индијско стандардно вријеме
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индијско стандардно вријеме
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:sr_BA/C
+@ TZ=Asia/Kolkata LANG=uz_UZ@cyrillic
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Hindiston standart vaqti
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Hindiston standart vaqti
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Hindiston standart vaqti
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Hindiston standart vaqti
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Hindiston standart vaqti
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Hindiston standart vaqti
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Hindiston standart vaqti
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Hindiston standart vaqti
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:uz_UZ/C
+@ TZ=Asia/Kolkata LANG=SH_RS
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:Indijsko standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:Индијско стандардно време
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:sr_RS/C
+@ TZ=Asia/Kolkata LANG=pa_Arab_PK
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+۰۵:۳۰
+Qt.formatDateTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+۰۵:۳۰
+Qt.formatTime(new Date(2024, 6, 10, 9, 5, 7), "tttt")
+=> string:GMT+۰۵:۳۰
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "tttt")
+=> string:GMT+۰۵:۳۰
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("C"), "tttt")
+=> string:GMT+۰۵:۳۰
+new Date(2024, 6, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), "tttt")
+=> string:GMT+۰۵:۳۰
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("xx_YY"), "tttt")
+=> string:GMT+۰۵:۳۰
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale(), "tttt")
+=> string:GMT+۰۵:۳۰
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("de_DE"), "tttt")
+=> string:Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.LongFormat)
+=> string:09:05:07 IST
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("C"), Locale.ShortFormat)
+=> string:09:05
+Qt.locale().name + "/" + Qt.locale("C").name
+=> string:pa_PK/C

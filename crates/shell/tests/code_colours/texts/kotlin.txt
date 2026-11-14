@@ -1,0 +1,24 @@
+package com.example
+
+import kotlinx.coroutines.*
+
+/** A user. */
+data class User(val id: Long, var name: String? = null, val tags: List<String> = emptyList())
+
+sealed interface Result<out T> { object Loading : Result<Nothing> }
+
+@JvmStatic
+suspend fun <T : Any> fetch(url: String, retries: Int = 3): T? = coroutineScope {
+    val x = 0x1F + 1_000L + 2.5f
+    when {
+        retries <= 0 -> null
+        url.startsWith("https://") && x > 10 -> withContext(Dispatchers.IO) { TODO("load $url ${x + 1}") }
+        else -> throw IllegalArgumentException("bad: '$url'\n")
+    }
+}
+
+fun main(args: Array<String>) {
+    val users = listOf(User(1, "a"), User(2))
+    for ((i, u) in users.withIndex()) println("$i: ${u.name ?: "anon"} ${'c'}")
+    users.filter { it.name != null }.forEach(::println) // done
+}

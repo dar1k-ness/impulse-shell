@@ -1,0 +1,30 @@
+import QtQuick.tooling 1.2
+
+// Fuzzy search (the fuzzysort algorithm): `go(search, targets, options)` ranks `targets`
+// (strings, prepared targets or objects read by `options.key` / `options.keys`) against
+// `search`; `prepare(target)` precomputes a target that is searched many times.
+// Implemented natively by ri (crates/qml/src/jslibs/fuzzysort.rs).
+Module {
+    Component {
+        file: "fuzzysort.rs"
+        name: "ImpulseFuzzySort"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/FuzzySort 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Method {
+            name: "go"
+            type: "QVariant"
+            Parameter { name: "search"; type: "QVariant" }
+            Parameter { name: "targets"; type: "QVariant" }
+            Parameter { name: "options"; type: "QVariant" }
+        }
+        Method {
+            name: "prepare"
+            type: "QVariant"
+            Parameter { name: "target"; type: "QVariant" }
+        }
+    }
+}

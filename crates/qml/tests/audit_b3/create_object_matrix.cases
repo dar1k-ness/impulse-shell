@@ -1,0 +1,807 @@
+# Every pair of twenty properties and twenty values as an initial property of
+# Component.createObject: `refused` where Qt 6.12 made no object. property_write_matrix
+# holds the same pairs as plain writes, which follow another rule.
+@property Component comp: Component { QtObject { property url u; property string s; property var v; property int i; property color c; property point p; property date d; property real r; property bool b; property font f; property list<int> li; property QtObject o } }
+@property Component ic: Component { Item { } }
+@property Component tc: Component { Text { } }
+@property Component rec: Component { Rectangle { } }
+@property Component tmc: Component { Timer { } }
+@function rd(o, k) { if (!o) return "refused"; var x = o[k]; return x === root ? "root" : (x === null ? "null" : typeof x) + ":" + (k === "d" && x ? x.getTime() : k === "f" ? x.family : x) }
+rd(root.comp.createObject(root, {u: 1}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: 1.7}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: "5"}), "u")
+=> string:object:5
+rd(root.comp.createObject(root, {u: "x"}), "u")
+=> string:object:x
+rd(root.comp.createObject(root, {u: ""}), "u")
+=> string:object:
+rd(root.comp.createObject(root, {u: true}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: null}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: undefined}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: {}}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: [1, 2]}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: new Date(0)}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: Qt.point(1, 2)}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: function() {}}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: root}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: /a/}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {u: "red"}), "u")
+=> string:object:red
+rd(root.comp.createObject(root, {u: "1,2"}), "u")
+=> string:object:1,2
+rd(root.comp.createObject(root, {u: "2020-01-02"}), "u")
+=> string:object:2020-01-02
+rd(root.comp.createObject(root, {u: Qt.url("a.png")}), "u")
+=> string:object:a.png
+rd(root.comp.createObject(root, {u: Qt.rgba(1, 0, 0, 1)}), "u")
+=> string:refused
+rd(root.comp.createObject(root, {s: 1}), "s")
+=> string:string:1
+rd(root.comp.createObject(root, {s: 1.7}), "s")
+=> string:string:1.7
+rd(root.comp.createObject(root, {s: "5"}), "s")
+=> string:string:5
+rd(root.comp.createObject(root, {s: "x"}), "s")
+=> string:string:x
+rd(root.comp.createObject(root, {s: ""}), "s")
+=> string:string:
+rd(root.comp.createObject(root, {s: true}), "s")
+=> string:string:true
+rd(root.comp.createObject(root, {s: null}), "s")
+=> string:string:
+rd(root.comp.createObject(root, {s: undefined}), "s")
+=> string:refused
+rd(root.comp.createObject(root, {s: {}}), "s")
+=> string:refused
+rd(root.comp.createObject(root, {s: [1, 2]}), "s")
+=> string:string:
+rd(root.comp.createObject(root, {s: new Date(0)}), "s")
+=> string:string:1970-01-01T03:00:00.000
+rd(root.comp.createObject(root, {s: Qt.point(1, 2)}), "s")
+=> string:refused
+rd(root.comp.createObject(root, {s: function() {}}), "s")
+=> string:refused
+rd(root.comp.createObject(root, {s: root}), "s")
+=> string:refused
+rd(root.comp.createObject(root, {s: /a/}), "s")
+=> string:refused
+rd(root.comp.createObject(root, {s: "red"}), "s")
+=> string:string:red
+rd(root.comp.createObject(root, {s: "1,2"}), "s")
+=> string:string:1,2
+rd(root.comp.createObject(root, {s: "2020-01-02"}), "s")
+=> string:string:2020-01-02
+rd(root.comp.createObject(root, {s: Qt.url("a.png")}), "s")
+=> string:string:a.png
+rd(root.comp.createObject(root, {s: Qt.rgba(1, 0, 0, 1)}), "s")
+=> string:string:#ff0000
+rd(root.comp.createObject(root, {i: 1}), "i")
+=> string:number:1
+rd(root.comp.createObject(root, {i: 1.7}), "i")
+=> string:number:2
+rd(root.comp.createObject(root, {i: "5"}), "i")
+=> string:number:5
+rd(root.comp.createObject(root, {i: "x"}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: ""}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: true}), "i")
+=> string:number:1
+rd(root.comp.createObject(root, {i: null}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: undefined}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: {}}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: [1, 2]}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: new Date(0)}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: Qt.point(1, 2)}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: function() {}}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: root}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: /a/}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: "red"}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: "1,2"}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: "2020-01-02"}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: Qt.url("a.png")}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: Qt.rgba(1, 0, 0, 1)}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {r: 1}), "r")
+=> string:number:1
+rd(root.comp.createObject(root, {r: 1.7}), "r")
+=> string:number:1.7
+rd(root.comp.createObject(root, {r: "5"}), "r")
+=> string:number:5
+rd(root.comp.createObject(root, {r: "x"}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: ""}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: true}), "r")
+=> string:number:1
+rd(root.comp.createObject(root, {r: null}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: undefined}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: {}}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: [1, 2]}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: new Date(0)}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: Qt.point(1, 2)}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: function() {}}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: root}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: /a/}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: "red"}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: "1,2"}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: "2020-01-02"}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: Qt.url("a.png")}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: Qt.rgba(1, 0, 0, 1)}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {b: 1}), "b")
+=> string:boolean:true
+rd(root.comp.createObject(root, {b: 1.7}), "b")
+=> string:boolean:true
+rd(root.comp.createObject(root, {b: "5"}), "b")
+=> string:boolean:true
+rd(root.comp.createObject(root, {b: "x"}), "b")
+=> string:boolean:true
+rd(root.comp.createObject(root, {b: ""}), "b")
+=> string:boolean:false
+rd(root.comp.createObject(root, {b: true}), "b")
+=> string:boolean:true
+rd(root.comp.createObject(root, {b: null}), "b")
+=> string:refused
+rd(root.comp.createObject(root, {b: undefined}), "b")
+=> string:refused
+rd(root.comp.createObject(root, {b: {}}), "b")
+=> string:refused
+rd(root.comp.createObject(root, {b: [1, 2]}), "b")
+=> string:refused
+rd(root.comp.createObject(root, {b: new Date(0)}), "b")
+=> string:refused
+rd(root.comp.createObject(root, {b: Qt.point(1, 2)}), "b")
+=> string:refused
+rd(root.comp.createObject(root, {b: function() {}}), "b")
+=> string:refused
+rd(root.comp.createObject(root, {b: root}), "b")
+=> string:refused
+rd(root.comp.createObject(root, {b: /a/}), "b")
+=> string:refused
+rd(root.comp.createObject(root, {b: "red"}), "b")
+=> string:boolean:true
+rd(root.comp.createObject(root, {b: "1,2"}), "b")
+=> string:boolean:true
+rd(root.comp.createObject(root, {b: "2020-01-02"}), "b")
+=> string:boolean:true
+rd(root.comp.createObject(root, {b: Qt.url("a.png")}), "b")
+=> string:refused
+rd(root.comp.createObject(root, {b: Qt.rgba(1, 0, 0, 1)}), "b")
+=> string:refused
+rd(root.comp.createObject(root, {c: 1}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: 1.7}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: "5"}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: "x"}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: ""}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: true}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: null}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: undefined}), "c")
+=> string:refused
+rd(root.comp.createObject(root, {c: {}}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: [1, 2]}), "c")
+=> string:refused
+rd(root.comp.createObject(root, {c: new Date(0)}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: Qt.point(1, 2)}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: function() {}}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: root}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: /a/}), "c")
+=> string:refused
+rd(root.comp.createObject(root, {c: "red"}), "c")
+=> string:object:#ff0000
+rd(root.comp.createObject(root, {c: "1,2"}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: "2020-01-02"}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: Qt.url("a.png")}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: Qt.rgba(1, 0, 0, 1)}), "c")
+=> string:object:#ff0000
+rd(root.comp.createObject(root, {p: 1}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: 1.7}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: "5"}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: "x"}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: ""}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: true}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: null}), "p")
+=> string:object:QPointF(0, 0)
+rd(root.comp.createObject(root, {p: undefined}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: {}}), "p")
+=> string:object:QPointF(0, 0)
+rd(root.comp.createObject(root, {p: [1, 2]}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: new Date(0)}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: Qt.point(1, 2)}), "p")
+=> string:object:QPointF(1, 2)
+rd(root.comp.createObject(root, {p: function() {}}), "p")
+=> string:object:QPointF(0, 0)
+rd(root.comp.createObject(root, {p: root}), "p")
+=> string:object:QPointF(0, 0)
+rd(root.comp.createObject(root, {p: /a/}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: "red"}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: "1,2"}), "p")
+=> string:object:QPointF(1, 2)
+rd(root.comp.createObject(root, {p: "2020-01-02"}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: Qt.url("a.png")}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: Qt.rgba(1, 0, 0, 1)}), "p")
+=> string:object:QPointF(0, 0)
+rd(root.comp.createObject(root, {d: 1}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: 1.7}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: "5"}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: "x"}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: ""}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: true}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: null}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: undefined}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: {}}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: [1, 2]}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: new Date(0)}), "d")
+=> string:object:0
+rd(root.comp.createObject(root, {d: Qt.point(1, 2)}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: function() {}}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: root}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: /a/}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: "red"}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: "1,2"}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: "2020-01-02"}), "d")
+=> string:object:1577912400000
+rd(root.comp.createObject(root, {d: Qt.url("a.png")}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: Qt.rgba(1, 0, 0, 1)}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {f: 1}), "f")
+=> string:refused
+rd(root.comp.createObject(root, {f: 1.7}), "f")
+=> string:refused
+rd(root.comp.createObject(root, {f: "5"}), "f")
+=> string:object:5
+rd(root.comp.createObject(root, {f: "x"}), "f")
+=> string:object:x
+rd(root.comp.createObject(root, {f: ""}), "f")
+=> string:refused
+rd(root.comp.createObject(root, {f: true}), "f")
+=> string:refused
+rd(root.comp.createObject(root, {f: null}), "f")
+=> string:object:Sans Serif
+rd(root.comp.createObject(root, {f: undefined}), "f")
+=> string:refused
+rd(root.comp.createObject(root, {f: {}}), "f")
+=> string:object:Sans Serif
+rd(root.comp.createObject(root, {f: [1, 2]}), "f")
+=> string:refused
+rd(root.comp.createObject(root, {f: new Date(0)}), "f")
+=> string:refused
+rd(root.comp.createObject(root, {f: Qt.point(1, 2)}), "f")
+=> string:object:Sans Serif
+rd(root.comp.createObject(root, {f: function() {}}), "f")
+=> string:object:Sans Serif
+rd(root.comp.createObject(root, {f: root}), "f")
+=> string:object:Sans Serif
+rd(root.comp.createObject(root, {f: /a/}), "f")
+=> string:refused
+rd(root.comp.createObject(root, {f: "red"}), "f")
+=> string:object:red
+rd(root.comp.createObject(root, {f: "1,2"}), "f")
+=> string:object:1
+rd(root.comp.createObject(root, {f: "2020-01-02"}), "f")
+=> string:object:2020-01-02
+rd(root.comp.createObject(root, {f: Qt.url("a.png")}), "f")
+=> string:refused
+rd(root.comp.createObject(root, {f: Qt.rgba(1, 0, 0, 1)}), "f")
+=> string:object:Sans Serif
+rd(root.comp.createObject(root, {li: 1}), "li")
+=> string:object:1
+rd(root.comp.createObject(root, {li: 1.7}), "li")
+=> string:object:2
+rd(root.comp.createObject(root, {li: "5"}), "li")
+=> string:object:53
+rd(root.comp.createObject(root, {li: "x"}), "li")
+=> string:object:120
+rd(root.comp.createObject(root, {li: ""}), "li")
+=> string:object:
+rd(root.comp.createObject(root, {li: true}), "li")
+=> string:object:1
+rd(root.comp.createObject(root, {li: null}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {li: undefined}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {li: {}}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {li: [1, 2]}), "li")
+=> string:object:1,2
+rd(root.comp.createObject(root, {li: new Date(0)}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {li: Qt.point(1, 2)}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {li: function() {}}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {li: root}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {li: /a/}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {li: "red"}), "li")
+=> string:object:114,101,100
+rd(root.comp.createObject(root, {li: "1,2"}), "li")
+=> string:object:49,44,50
+rd(root.comp.createObject(root, {li: "2020-01-02"}), "li")
+=> string:object:50,48,50,48,45,48,49,45,48,50
+rd(root.comp.createObject(root, {li: Qt.url("a.png")}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {li: Qt.rgba(1, 0, 0, 1)}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {o: 1}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: 1.7}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: "5"}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: "x"}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: ""}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: true}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: null}), "o")
+=> string:null:null
+rd(root.comp.createObject(root, {o: undefined}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: {}}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: [1, 2]}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: new Date(0)}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: Qt.point(1, 2)}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: function() {}}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: root}), "o")
+=> string:root
+rd(root.comp.createObject(root, {o: /a/}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: "red"}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: "1,2"}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: "2020-01-02"}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: Qt.url("a.png")}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {o: Qt.rgba(1, 0, 0, 1)}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {v: 1}), "v")
+=> string:number:1
+rd(root.comp.createObject(root, {v: 1.7}), "v")
+=> string:number:1.7
+rd(root.comp.createObject(root, {v: "5"}), "v")
+=> string:string:5
+rd(root.comp.createObject(root, {v: "x"}), "v")
+=> string:string:x
+rd(root.comp.createObject(root, {v: ""}), "v")
+=> string:string:
+rd(root.comp.createObject(root, {v: true}), "v")
+=> string:boolean:true
+rd(root.comp.createObject(root, {v: null}), "v")
+=> string:null:null
+rd(root.comp.createObject(root, {v: undefined}), "v")
+=> string:undefined:undefined
+rd(root.comp.createObject(root, {v: {}}), "v")
+=> string:object:[object V4ReferenceObject]
+rd(root.comp.createObject(root, {v: [1, 2]}), "v")
+=> string:object:1,2
+rd(root.comp.createObject(root, {v: new Date(0)}), "v")
+=> string:object:Thu Jan 1 03:00:00 1970 GMT+0300
+rd(root.comp.createObject(root, {v: Qt.point(1, 2)}), "v")
+=> string:object:QPointF(1, 2)
+rd(root.comp.createObject(root, {v: function() {}}), "v")
+=> string:function:function v() { [native code] }
+rd(root.comp.createObject(root, {v: root}), "v")
+=> string:root
+rd(root.comp.createObject(root, {v: /a/}), "v")
+=> string:object:/a/
+rd(root.comp.createObject(root, {v: "red"}), "v")
+=> string:string:red
+rd(root.comp.createObject(root, {v: "1,2"}), "v")
+=> string:string:1,2
+rd(root.comp.createObject(root, {v: "2020-01-02"}), "v")
+=> string:string:2020-01-02
+rd(root.comp.createObject(root, {v: Qt.url("a.png")}), "v")
+=> string:object:a.png
+rd(root.comp.createObject(root, {v: Qt.rgba(1, 0, 0, 1)}), "v")
+=> string:object:#ff0000
+rd(root.ic.createObject(root, {width: 1}), "width")
+=> string:number:1
+rd(root.ic.createObject(root, {width: 1.7}), "width")
+=> string:number:1.7
+rd(root.ic.createObject(root, {width: "5"}), "width")
+=> string:number:5
+rd(root.ic.createObject(root, {width: "x"}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: ""}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: true}), "width")
+=> string:number:1
+rd(root.ic.createObject(root, {width: null}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: undefined}), "width")
+=> string:number:0
+rd(root.ic.createObject(root, {width: {}}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: [1, 2]}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: new Date(0)}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: Qt.point(1, 2)}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: function() {}}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: root}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: /a/}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: "red"}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: "1,2"}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: "2020-01-02"}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: Qt.url("a.png")}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {width: Qt.rgba(1, 0, 0, 1)}), "width")
+=> string:refused
+rd(root.ic.createObject(root, {visible: 1}), "visible")
+=> string:boolean:true
+rd(root.ic.createObject(root, {visible: 1.7}), "visible")
+=> string:boolean:true
+rd(root.ic.createObject(root, {visible: "5"}), "visible")
+=> string:boolean:true
+rd(root.ic.createObject(root, {visible: "x"}), "visible")
+=> string:boolean:true
+rd(root.ic.createObject(root, {visible: ""}), "visible")
+=> string:boolean:false
+rd(root.ic.createObject(root, {visible: true}), "visible")
+=> string:boolean:true
+rd(root.ic.createObject(root, {visible: null}), "visible")
+=> string:refused
+rd(root.ic.createObject(root, {visible: undefined}), "visible")
+=> string:refused
+rd(root.ic.createObject(root, {visible: {}}), "visible")
+=> string:refused
+rd(root.ic.createObject(root, {visible: [1, 2]}), "visible")
+=> string:refused
+rd(root.ic.createObject(root, {visible: new Date(0)}), "visible")
+=> string:refused
+rd(root.ic.createObject(root, {visible: Qt.point(1, 2)}), "visible")
+=> string:refused
+rd(root.ic.createObject(root, {visible: function() {}}), "visible")
+=> string:refused
+rd(root.ic.createObject(root, {visible: root}), "visible")
+=> string:refused
+rd(root.ic.createObject(root, {visible: /a/}), "visible")
+=> string:refused
+rd(root.ic.createObject(root, {visible: "red"}), "visible")
+=> string:boolean:true
+rd(root.ic.createObject(root, {visible: "1,2"}), "visible")
+=> string:boolean:true
+rd(root.ic.createObject(root, {visible: "2020-01-02"}), "visible")
+=> string:boolean:true
+rd(root.ic.createObject(root, {visible: Qt.url("a.png")}), "visible")
+=> string:refused
+rd(root.ic.createObject(root, {visible: Qt.rgba(1, 0, 0, 1)}), "visible")
+=> string:refused
+rd(root.ic.createObject(root, {objectName: 1}), "objectName")
+=> string:string:1
+rd(root.ic.createObject(root, {objectName: 1.7}), "objectName")
+=> string:string:1.7
+rd(root.ic.createObject(root, {objectName: "5"}), "objectName")
+=> string:string:5
+rd(root.ic.createObject(root, {objectName: "x"}), "objectName")
+=> string:string:x
+rd(root.ic.createObject(root, {objectName: ""}), "objectName")
+=> string:string:
+rd(root.ic.createObject(root, {objectName: true}), "objectName")
+=> string:string:true
+rd(root.ic.createObject(root, {objectName: null}), "objectName")
+=> string:string:
+rd(root.ic.createObject(root, {objectName: undefined}), "objectName")
+=> string:refused
+rd(root.ic.createObject(root, {objectName: {}}), "objectName")
+=> string:refused
+rd(root.ic.createObject(root, {objectName: [1, 2]}), "objectName")
+=> string:string:
+rd(root.ic.createObject(root, {objectName: new Date(0)}), "objectName")
+=> string:string:1970-01-01T03:00:00.000
+rd(root.ic.createObject(root, {objectName: Qt.point(1, 2)}), "objectName")
+=> string:refused
+rd(root.ic.createObject(root, {objectName: function() {}}), "objectName")
+=> string:refused
+rd(root.ic.createObject(root, {objectName: root}), "objectName")
+=> string:refused
+rd(root.ic.createObject(root, {objectName: /a/}), "objectName")
+=> string:refused
+rd(root.ic.createObject(root, {objectName: "red"}), "objectName")
+=> string:string:red
+rd(root.ic.createObject(root, {objectName: "1,2"}), "objectName")
+=> string:string:1,2
+rd(root.ic.createObject(root, {objectName: "2020-01-02"}), "objectName")
+=> string:string:2020-01-02
+rd(root.ic.createObject(root, {objectName: Qt.url("a.png")}), "objectName")
+=> string:string:a.png
+rd(root.ic.createObject(root, {objectName: Qt.rgba(1, 0, 0, 1)}), "objectName")
+=> string:string:#ff0000
+rd(root.tc.createObject(root, {text: 1}), "text")
+=> string:string:1
+rd(root.tc.createObject(root, {text: 1.7}), "text")
+=> string:string:1.7
+rd(root.tc.createObject(root, {text: "5"}), "text")
+=> string:string:5
+rd(root.tc.createObject(root, {text: "x"}), "text")
+=> string:string:x
+rd(root.tc.createObject(root, {text: ""}), "text")
+=> string:string:
+rd(root.tc.createObject(root, {text: true}), "text")
+=> string:string:true
+rd(root.tc.createObject(root, {text: null}), "text")
+=> string:string:
+rd(root.tc.createObject(root, {text: undefined}), "text")
+=> string:refused
+rd(root.tc.createObject(root, {text: {}}), "text")
+=> string:refused
+rd(root.tc.createObject(root, {text: [1, 2]}), "text")
+=> string:string:
+rd(root.tc.createObject(root, {text: new Date(0)}), "text")
+=> string:string:1970-01-01T03:00:00.000
+rd(root.tc.createObject(root, {text: Qt.point(1, 2)}), "text")
+=> string:refused
+rd(root.tc.createObject(root, {text: function() {}}), "text")
+=> string:refused
+rd(root.tc.createObject(root, {text: root}), "text")
+=> string:refused
+rd(root.tc.createObject(root, {text: /a/}), "text")
+=> string:refused
+rd(root.tc.createObject(root, {text: "red"}), "text")
+=> string:string:red
+rd(root.tc.createObject(root, {text: "1,2"}), "text")
+=> string:string:1,2
+rd(root.tc.createObject(root, {text: "2020-01-02"}), "text")
+=> string:string:2020-01-02
+rd(root.tc.createObject(root, {text: Qt.url("a.png")}), "text")
+=> string:string:a.png
+rd(root.tc.createObject(root, {text: Qt.rgba(1, 0, 0, 1)}), "text")
+=> string:string:#ff0000
+rd(root.rec.createObject(root, {color: 1}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: 1.7}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: "5"}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: "x"}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: ""}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: true}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: null}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: undefined}), "color")
+=> string:object:#ffffff
+rd(root.rec.createObject(root, {color: {}}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: [1, 2]}), "color")
+=> string:refused
+rd(root.rec.createObject(root, {color: new Date(0)}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: Qt.point(1, 2)}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: function() {}}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: root}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: /a/}), "color")
+=> string:refused
+rd(root.rec.createObject(root, {color: "red"}), "color")
+=> string:object:#ff0000
+rd(root.rec.createObject(root, {color: "1,2"}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: "2020-01-02"}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: Qt.url("a.png")}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {color: Qt.rgba(1, 0, 0, 1)}), "color")
+=> string:object:#ff0000
+rd(root.tmc.createObject(root, {interval: 1}), "interval")
+=> string:number:1
+rd(root.tmc.createObject(root, {interval: 1.7}), "interval")
+=> string:number:2
+rd(root.tmc.createObject(root, {interval: "5"}), "interval")
+=> string:number:5
+rd(root.tmc.createObject(root, {interval: "x"}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: ""}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: true}), "interval")
+=> string:number:1
+rd(root.tmc.createObject(root, {interval: null}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: undefined}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: {}}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: [1, 2]}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: new Date(0)}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: Qt.point(1, 2)}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: function() {}}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: root}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: /a/}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: "red"}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: "1,2"}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: "2020-01-02"}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: Qt.url("a.png")}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {interval: Qt.rgba(1, 0, 0, 1)}), "interval")
+=> string:refused
+rd(root.tmc.createObject(root, {running: 1}), "running")
+=> string:boolean:true
+rd(root.tmc.createObject(root, {running: 1.7}), "running")
+=> string:boolean:true
+rd(root.tmc.createObject(root, {running: "5"}), "running")
+=> string:boolean:true
+rd(root.tmc.createObject(root, {running: "x"}), "running")
+=> string:boolean:true
+rd(root.tmc.createObject(root, {running: ""}), "running")
+=> string:boolean:false
+rd(root.tmc.createObject(root, {running: true}), "running")
+=> string:boolean:true
+rd(root.tmc.createObject(root, {running: null}), "running")
+=> string:refused
+rd(root.tmc.createObject(root, {running: undefined}), "running")
+=> string:refused
+rd(root.tmc.createObject(root, {running: {}}), "running")
+=> string:refused
+rd(root.tmc.createObject(root, {running: [1, 2]}), "running")
+=> string:refused
+rd(root.tmc.createObject(root, {running: new Date(0)}), "running")
+=> string:refused
+rd(root.tmc.createObject(root, {running: Qt.point(1, 2)}), "running")
+=> string:refused
+rd(root.tmc.createObject(root, {running: function() {}}), "running")
+=> string:refused
+rd(root.tmc.createObject(root, {running: root}), "running")
+=> string:refused
+rd(root.tmc.createObject(root, {running: /a/}), "running")
+=> string:refused
+rd(root.tmc.createObject(root, {running: "red"}), "running")
+=> string:boolean:true
+rd(root.tmc.createObject(root, {running: "1,2"}), "running")
+=> string:boolean:true
+rd(root.tmc.createObject(root, {running: "2020-01-02"}), "running")
+=> string:boolean:true
+rd(root.tmc.createObject(root, {running: Qt.url("a.png")}), "running")
+=> string:refused
+rd(root.tmc.createObject(root, {running: Qt.rgba(1, 0, 0, 1)}), "running")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: 1}), "horizontalAlignment")
+=> string:number:1
+rd(root.tc.createObject(root, {horizontalAlignment: 1.7}), "horizontalAlignment")
+=> string:number:2
+rd(root.tc.createObject(root, {horizontalAlignment: "5"}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: "x"}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: ""}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: true}), "horizontalAlignment")
+=> string:number:1
+rd(root.tc.createObject(root, {horizontalAlignment: null}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: {}}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: [1, 2]}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: new Date(0)}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: Qt.point(1, 2)}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: function() {}}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: root}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: /a/}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: "red"}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: "1,2"}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: "2020-01-02"}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: Qt.url("a.png")}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: Qt.rgba(1, 0, 0, 1)}), "horizontalAlignment")
+=> string:refused

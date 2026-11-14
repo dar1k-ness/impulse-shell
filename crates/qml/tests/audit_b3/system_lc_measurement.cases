@@ -1,0 +1,75 @@
+# Qt 6.12 under: LANG=en_US.UTF-8 LC_MEASUREMENT=de_DE.UTF-8
+Qt.locale().name
+=> string:en_US
+Qt.locale().firstDayOfWeek
+=> number:0
+(1234567.89).toLocaleString(Qt.locale())
+=> string:1,234,567.89
+(1234567.89).toLocaleString()
+=> string:1.23457e+06
+Qt.locale().decimalPoint
+=> string:.
+Qt.locale().groupSeparator
+=> string:,
+Qt.locale().dayName(1)
+=> string:Monday
+Qt.locale().monthName(0)
+=> string:January
+Qt.locale().dateFormat(Locale.ShortFormat)
+=> string:M/d/yy
+Qt.locale().toString(new Date(2024, 0, 5, 13, 4, 5), "dddd MMMM")
+=> string:Friday January
+new Date(2024, 0, 5, 13, 4, 5).toLocaleDateString()
+=> string:Friday, January 5, 2024
+Qt.locale().nativeLanguageName
+=> string:American English
+Qt.locale().nativeTerritoryName
+=> string:United States
+Qt.locale().measurementSystem
+=> number:0
+Qt.locale().uiLanguages.join("|")
+=> string:en-Latn-US|en-US|en-Latn|en
+Qt.locale().currencySymbol()
+=> string:$
+Qt.locale().currencySymbol(Locale.CurrencyIsoCode)
+=> string:USD
+(12.5).toLocaleCurrencyString(Qt.locale())
+=> string:$12.50
+(12.5).toLocaleCurrencyString()
+=> string:12.5
+Qt.locale().weekDays.join(",")
+=> string:1,2,3,4,5
+Qt.locale().textDirection
+=> number:0
+Qt.locale().amText
+=> string:AM
+Qt.locale().zeroDigit + Qt.locale().negativeSign + Qt.locale().positiveSign + Qt.locale().percent + Qt.locale().exponential
+=> string:0-+%E
+String(Qt.locale())
+=> string:QLocale::system()/* English, Latin, United States */
+Qt.locale().toString(1234567.891, "f", 1)
+=> string:1,234,567.9
+Qt.locale().toString(1234567.891)
+=> string:1.23457e+06
+Qt.locale() == Qt.locale()
+=> boolean:true
+Qt.locale() == Qt.locale(Qt.locale().name)
+=> boolean:false
+Qt.uiLanguage
+=> string:en
+"я".localeCompare("z")
+=> number:1
+Qt.locale().createSeparatedList(["a", "b", "c"])
+=> string:a, b, and c
+Qt.locale().formattedDataSize(123456789)
+=> string:117.74 MiB
+Number.fromLocaleString("1.234,5")
+=> THROW Error: Locale: Number.fromLocaleString(): Invalid format
+Number.fromLocaleString(Qt.locale(), "1.234,5")
+=> THROW Error: Locale: Number.fromLocaleString(): Invalid format
+Qt.locale().numberOptions
+=> number:0
+Qt.locale().standaloneMonthName(4)
+=> string:May
+Qt.locale().timeFormat()
+=> string:h:mm:ss Ap tttt

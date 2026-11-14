@@ -1,0 +1,19 @@
+// Fetch users
+import { readFile } from "node:fs/promises";
+const RE = /^[a-z]+\d*$/gi;
+/** @param {string} id */
+export async function getUser(id, opts = {}) {
+  const res = await fetch(`https://api.example.com/users/${id}?v=${1 + 2}`);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  let n = 0x1f + 1.5e3 + 10n;
+  return { ...(await res.json()), n, ok: true, x: null, y: undefined };
+}
+class Queue extends Array {
+  #size = 0;
+  static from(xs) { return new Queue(...xs); }
+  get size() { return this.#size; }
+}
+for (const [k, v] of Object.entries(window.localStorage)) {
+  console.log(k, typeof v === "string" ? v.replace(RE, "") : NaN);
+}
+document.querySelector("#app").addEventListener("click", (e) => e.preventDefault());

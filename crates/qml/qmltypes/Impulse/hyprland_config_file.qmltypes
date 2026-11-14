@@ -1,0 +1,34 @@
+import QtQuick.tooling 1.2
+
+// A Hyprland Lua config file of `hl.config({...})` lines, one per option, implemented natively
+// (crates/qml/src/hyprconf.rs). `set(entries)` writes each key of the object `entries`
+// ("general:gaps_in" -> value) as its line, replacing the line the key already has; the value
+// "[[EMPTY]]" removes it. `reset(keys)` removes the lines of the listed keys. Edits are
+// written in the order they were made, each as an atomic replace of the file.
+Module {
+    Component {
+        file: "hyprconf.rs"
+        name: "ImpulseHyprlandConfigFile"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/HyprlandConfigFile 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "path"
+            type: "QString"
+            read: "path"
+            write: "setPath"
+            notify: "pathChanged"
+            index: 0
+        }
+        Signal { name: "pathChanged" }
+        Method {
+            name: "set"
+            Parameter { name: "entries"; type: "QVariant" }
+        }
+        Method {
+            name: "reset"
+            Parameter { name: "keys"; type: "QVariant" }
+        }
+    }
+}

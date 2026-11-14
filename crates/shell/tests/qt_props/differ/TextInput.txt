@@ -1,0 +1,10 @@
+b.width	default
+b.anchors.left	size: default
+b.anchors.right	size: default
+b.anchors.horizontalCenter	size: default
+b.anchors.top	size: default
+b.anchors.bottom	size: default
+b.anchors.verticalCenter	size: default
+b.anchors.baseline	size: default
+b.anchors.fill	size: default
+b.anchors.centerIn	size: default

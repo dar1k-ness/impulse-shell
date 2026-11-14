@@ -1,0 +1,715 @@
+# Component.createObject, more initial properties than create_object_matrix has: value
+# types, lists, object and enum properties, properties of Item, Text and Rectangle,
+# methods, signals and their handlers, dotted names, what a `var` keeps of a script value,
+# and the arguments createObject takes.
+@property Component comp: Component { QtObject { property url u; property string s; property var v; property int i; property color c; property point p; property size sz; property rect rc; property vector3d v3; property date d; property real r; property bool b; property font f; property list<int> li; property list<string> ls; property list<real> lr; property list<bool> lb; property list<var> lv; property list<url> lu; property list<QtObject> lo; property QtObject o; property Item it; property Timer tm; function fn() {} signal sig(); property QtObject inner: QtObject { property int z: 3; property point ip } } }
+@property Component ic: Component { Item { } }
+@property Component tc: Component { Text { } }
+@property Component rec: Component { Rectangle { } }
+@property Item kid: Item { x: 5; y: 6; width: 7; height: 8 }
+@property QtObject plain: QtObject { }
+@function rd(o, k) { if (!o) return "refused"; var x = o[k]; return x === root ? "root" : x === root.kid ? "kid" : x === root.plain ? "plain" : (x === null ? "null" : typeof x) + ":" + (k === "d" && x ? x.getTime() : k === "f" || k === "font" ? [x.family, x.pixelSize, x.pointSize, x.bold].join("/") : k === "lo" || k === "children" || k === "data" || k === "states" ? x.length : x) }
+rd(root.comp.createObject(root, {i: "1.7"}), "i")
+=> string:number:2
+rd(root.comp.createObject(root, {i: " 5 "}), "i")
+=> string:number:5
+rd(root.comp.createObject(root, {i: "5 "}), "i")
+=> string:number:5
+rd(root.comp.createObject(root, {i: "1e2"}), "i")
+=> string:number:100
+rd(root.comp.createObject(root, {i: "0x10"}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: "-3"}), "i")
+=> string:number:-3
+rd(root.comp.createObject(root, {i: 2147483648}), "i")
+=> string:number:-2147483648
+rd(root.comp.createObject(root, {i: -2147483649}), "i")
+=> string:number:2147483647
+rd(root.comp.createObject(root, {i: -1.5}), "i")
+=> string:number:-2
+rd(root.comp.createObject(root, {i: 2.5}), "i")
+=> string:number:3
+rd(root.comp.createObject(root, {i: 0.5}), "i")
+=> string:number:1
+rd(root.comp.createObject(root, {i: -0.5}), "i")
+=> string:number:-1
+rd(root.comp.createObject(root, {i: NaN}), "i")
+=> string:refused
+rd(root.comp.createObject(root, {i: Infinity}), "i")
+=> string:number:-1
+rd(root.comp.createObject(root, {i: 1e20}), "i")
+=> string:number:-1
+rd(root.comp.createObject(root, {i: "2147483648"}), "i")
+=> string:number:-2147483648
+rd(root.comp.createObject(root, {r: "1e2"}), "r")
+=> string:number:100
+rd(root.comp.createObject(root, {r: " 5 "}), "r")
+=> string:number:5
+rd(root.comp.createObject(root, {r: "0x10"}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: "1,5"}), "r")
+=> string:refused
+rd(root.comp.createObject(root, {r: NaN}), "r")
+=> string:number:NaN
+rd(root.comp.createObject(root, {r: "nan"}), "r")
+=> string:number:NaN
+rd(root.comp.createObject(root, {r: "inf"}), "r")
+=> string:number:Infinity
+rd(root.comp.createObject(root, {r: ".5"}), "r")
+=> string:number:0.5
+rd(root.comp.createObject(root, {b: "0"}), "b")
+=> string:boolean:false
+rd(root.comp.createObject(root, {b: "false"}), "b")
+=> string:boolean:false
+rd(root.comp.createObject(root, {b: "FALSE"}), "b")
+=> string:boolean:false
+rd(root.comp.createObject(root, {b: "true"}), "b")
+=> string:boolean:true
+rd(root.comp.createObject(root, {b: " "}), "b")
+=> string:boolean:true
+rd(root.comp.createObject(root, {b: 0}), "b")
+=> string:boolean:false
+rd(root.comp.createObject(root, {b: NaN}), "b")
+=> string:boolean:false
+rd(root.comp.createObject(root, {b: 0.4}), "b")
+=> string:boolean:false
+rd(root.comp.createObject(root, {s: Qt.size(1, 2)}), "s")
+=> string:refused
+rd(root.comp.createObject(root, {s: Qt.font({family: "A"})}), "s")
+=> string:string:A,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0
+rd(root.comp.createObject(root, {s: new Date(NaN)}), "s")
+=> string:string:
+rd(root.comp.createObject(root, {s: -0}), "s")
+=> string:string:0
+rd(root.comp.createObject(root, {s: 1e21}), "s")
+=> string:string:1e+21
+rd(root.comp.createObject(root, {s: 0.1}), "s")
+=> string:string:0.1
+rd(root.comp.createObject(root, {s: ["a", "b"]}), "s")
+=> string:string:
+rd(root.comp.createObject(root, {s: [65, 66]}), "s")
+=> string:string:AB
+rd(root.comp.createObject(root, {s: [1.5]}), "s")
+=> string:string:
+rd(root.comp.createObject(root, {s: []}), "s")
+=> string:string:
+rd(root.comp.createObject(root, {s: Qt.locale()}), "s")
+=> string:refused
+rd(root.comp.createObject(root, {s: 1e-7}), "s")
+=> string:string:1e-07
+rd(root.comp.createObject(root, {s: NaN}), "s")
+=> string:string:nan
+rd(root.comp.createObject(root, {s: 123456789012}), "s")
+=> string:string:123456789012
+rd(root.comp.createObject(root, {s: Qt.vector3d(1, 2, 3)}), "s")
+=> string:refused
+rd(root.comp.createObject(root, {s: Symbol("q")}), "s")
+=> string:string:Symbol(q)
+rd(root.comp.createObject(root, {c: {r: 1, g: 0, b: 0}}), "c")
+=> string:object:#ff0000
+rd(root.comp.createObject(root, {c: "transparent"}), "c")
+=> string:object:#00000000
+rd(root.comp.createObject(root, {c: "#80ff0000"}), "c")
+=> string:object:#80ff0000
+rd(root.comp.createObject(root, {c: 0xff0000}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: Qt.vector3d(1, 0, 0)}), "c")
+=> string:object:#000000
+rd(root.comp.createObject(root, {c: "RED"}), "c")
+=> string:object:#ff0000
+rd(root.comp.createObject(root, {c: " red"}), "c")
+=> string:object:#ff0000
+rd(root.comp.createObject(root, {c: Qt.hsla(0.5, 1, 0.5, 1)}), "c")
+=> string:object:#00ffff
+rd(root.comp.createObject(root, {p: {x: 3, y: 4}}), "p")
+=> string:object:QPointF(3, 4)
+rd(root.comp.createObject(root, {p: root.kid}), "p")
+=> string:object:QPointF(5, 6)
+rd(root.comp.createObject(root, {p: Qt.size(3, 4)}), "p")
+=> string:object:QPointF(0, 0)
+rd(root.comp.createObject(root, {p: Qt.rect(1, 2, 3, 4)}), "p")
+=> string:object:QPointF(1, 2)
+rd(root.comp.createObject(root, {p: "1, 2"}), "p")
+=> string:object:QPointF(1, 2)
+rd(root.comp.createObject(root, {p: "1,2,3"}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {p: Qt.vector2d(1, 2)}), "p")
+=> string:object:QPointF(1, 2)
+rd(root.comp.createObject(root, {p: " 1,2 "}), "p")
+=> string:object:QPointF(1, 2)
+rd(root.comp.createObject(root, {p: "1.5,-2e1"}), "p")
+=> string:object:QPointF(1.5, -20)
+rd(root.comp.createObject(root, {p: {x: "3"}}), "p")
+=> string:object:QPointF(3, 0)
+rd(root.comp.createObject(root, {p: Qt.locale()}), "p")
+=> string:object:QPointF(0, 0)
+rd(root.comp.createObject(root, {p: Symbol("q")}), "p")
+=> string:refused
+rd(root.comp.createObject(root, {sz: "3x4"}), "sz")
+=> string:object:QSizeF(3, 4)
+rd(root.comp.createObject(root, {sz: "3,4"}), "sz")
+=> string:refused
+rd(root.comp.createObject(root, {sz: {width: 3, height: 4}}), "sz")
+=> string:object:QSizeF(3, 4)
+rd(root.comp.createObject(root, {sz: Qt.point(1, 2)}), "sz")
+=> string:object:QSizeF(-1, -1)
+rd(root.comp.createObject(root, {sz: null}), "sz")
+=> string:object:QSizeF(-1, -1)
+rd(root.comp.createObject(root, {sz: root.kid}), "sz")
+=> string:object:QSizeF(7, 8)
+rd(root.comp.createObject(root, {sz: 5}), "sz")
+=> string:refused
+rd(root.comp.createObject(root, {rc: "1,2,3x4"}), "rc")
+=> string:object:QRectF(1, 2, 3, 4)
+rd(root.comp.createObject(root, {rc: "1,2,3,4"}), "rc")
+=> string:refused
+rd(root.comp.createObject(root, {rc: {x: 1, y: 2, width: 3, height: 4}}), "rc")
+=> string:object:QRectF(1, 2, 3, 4)
+rd(root.comp.createObject(root, {rc: root.kid}), "rc")
+=> string:object:QRectF(5, 6, 7, 8)
+rd(root.comp.createObject(root, {rc: null}), "rc")
+=> string:object:QRectF(0, 0, 0, 0)
+rd(root.comp.createObject(root, {rc: Qt.size(1, 2)}), "rc")
+=> string:object:QRectF(0, 0, 1, 2)
+rd(root.comp.createObject(root, {v3: "1,2,3"}), "v3")
+=> string:object:QVector3D(1, 2, 3)
+rd(root.comp.createObject(root, {v3: "1,2"}), "v3")
+=> string:object:QVector3D(0, 0, 0)
+rd(root.comp.createObject(root, {v3: {x: 1, y: 2, z: 3}}), "v3")
+=> string:object:QVector3D(1, 2, 3)
+rd(root.comp.createObject(root, {v3: Qt.vector2d(1, 2)}), "v3")
+=> string:object:QVector3D(1, 2, 0)
+rd(root.comp.createObject(root, {v3: null}), "v3")
+=> string:object:QVector3D(0, 0, 0)
+rd(root.comp.createObject(root, {v3: 5}), "v3")
+=> string:refused
+rd(root.comp.createObject(root, {v3: Qt.vector4d(1, 2, 3, 4)}), "v3")
+=> string:object:QVector3D(1, 2, 3)
+rd(root.comp.createObject(root, {d: "2020-01-02T03:04:05"}), "d")
+=> string:object:1577923445000
+rd(root.comp.createObject(root, {d: "2020-01-02T03:04:05Z"}), "d")
+=> string:object:1577934245000
+rd(root.comp.createObject(root, {d: "2020-01-02T03:04:05.678+02:00"}), "d")
+=> string:object:1577927045678
+rd(root.comp.createObject(root, {d: new Date(NaN)}), "d")
+=> string:object:NaN
+rd(root.comp.createObject(root, {d: 0}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: "Thu Jan 1 1970"}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: "2020-13-02"}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: "03:04:05"}), "d")
+=> string:refused
+rd(root.comp.createObject(root, {d: new Date(1.9)}), "d")
+=> string:object:1
+rd(root.comp.createObject(root, {f: Qt.font({family: "A", pixelSize: 9})}), "f")
+=> string:object:A/9/6.75/false
+rd(root.comp.createObject(root, {f: {family: "A", pixelSize: 3}}), "f")
+=> string:object:A/3/2.25/false
+rd(root.comp.createObject(root, {f: "A,12"}), "f")
+=> string:object:A/16/12/false
+rd(root.comp.createObject(root, {f: "A,12,-1,5,50,0,0,0,0,0"}), "f")
+=> string:object:A/16/12/false
+rd(root.comp.createObject(root, {f: " "}), "f")
+=> string:refused
+rd(root.comp.createObject(root, {f: Qt.size(1, 2)}), "f")
+=> string:object:Sans Serif/12/9/false
+rd(root.comp.createObject(root, {f: []}), "f")
+=> string:refused
+rd(root.comp.createObject(root, {f: {pixelSize: "x"}}), "f")
+=> string:object:Sans Serif/12/9/false
+rd(root.comp.createObject(root, {u: "a b"}), "u")
+=> string:object:a b
+rd(root.comp.createObject(root, {u: "/abs/p"}), "u")
+=> string:object:/abs/p
+rd(root.comp.createObject(root, {u: "http://h/p?q#f"}), "u")
+=> string:object:http://h/p?q#f
+rd(root.comp.createObject(root, {li: [1.5, true, null, "7", {}]}), "li")
+=> string:object:2,1,1,7,7
+rd(root.comp.createObject(root, {li: []}), "li")
+=> string:object:
+rd(root.comp.createObject(root, {li: [[1]]}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {li: [2147483648]}), "li")
+=> string:object:-2147483648
+rd(root.comp.createObject(root, {li: Qt.size(1, 2)}), "li")
+=> string:object:0
+rd(root.comp.createObject(root, {ls: [1, "a", null, true, 1.5]}), "ls")
+=> string:object:1,a,,true,1.5
+rd(root.comp.createObject(root, {ls: 5}), "ls")
+=> string:object:5
+rd(root.comp.createObject(root, {ls: "ab"}), "ls")
+=> string:object:a,b
+rd(root.comp.createObject(root, {ls: null}), "ls")
+=> string:object:
+rd(root.comp.createObject(root, {ls: undefined}), "ls")
+=> string:object:
+rd(root.comp.createObject(root, {ls: {}}), "ls")
+=> string:object:
+rd(root.comp.createObject(root, {ls: [new Date(0)]}), "ls")
+=> string:object:1970-01-01T03:00:00.000
+rd(root.comp.createObject(root, {ls: true}), "ls")
+=> string:object:true
+rd(root.comp.createObject(root, {lr: "x"}), "lr")
+=> string:object:0
+rd(root.comp.createObject(root, {lr: 1}), "lr")
+=> string:object:1
+rd(root.comp.createObject(root, {lr: [1, "2", "x"]}), "lr")
+=> string:object:1,2,0
+rd(root.comp.createObject(root, {lr: null}), "lr")
+=> string:object:0
+rd(root.comp.createObject(root, {lr: 1.5}), "lr")
+=> string:object:1.5
+rd(root.comp.createObject(root, {lr: true}), "lr")
+=> string:object:1
+rd(root.comp.createObject(root, {lb: "x"}), "lb")
+=> string:object:true
+rd(root.comp.createObject(root, {lb: 1}), "lb")
+=> string:object:true
+rd(root.comp.createObject(root, {lb: [0, "", "a", null]}), "lb")
+=> string:object:false,false,true,true
+rd(root.comp.createObject(root, {lb: null}), "lb")
+=> string:object:false
+rd(root.comp.createObject(root, {lv: 5}), "lv")
+=> string:object:5
+rd(root.comp.createObject(root, {lv: [1, "a"]}), "lv")
+=> string:object:1,a
+rd(root.comp.createObject(root, {lv: "x"}), "lv")
+=> string:object:x
+rd(root.comp.createObject(root, {lv: null}), "lv")
+=> string:object:
+rd(root.comp.createObject(root, {lv: undefined}), "lv")
+=> string:object:
+rd(root.comp.createObject(root, {lv: {}}), "lv")
+=> string:object:[object V4ReferenceObject]
+rd(root.comp.createObject(root, {lu: "a"}), "lu")
+=> string:object:a
+rd(root.comp.createObject(root, {lu: ["a", "b"]}), "lu")
+=> string:object:
+rd(root.comp.createObject(root, {lu: 5}), "lu")
+=> string:object:
+rd(root.comp.createObject(root, {lu: null}), "lu")
+=> string:object:
+rd(root.comp.createObject(root, {lu: [1]}), "lu")
+=> string:object:
+rd(root.comp.createObject(root, {lu: Qt.url("z")}), "lu")
+=> string:object:z
+rd(root.comp.createObject(root, {lu: [Qt.url("z"), "y"]}), "lu")
+=> string:object:
+rd(root.comp.createObject(root, {lo: root}), "lo")
+=> string:object:1
+rd(root.comp.createObject(root, {lo: [root, null]}), "lo")
+=> string:object:2
+rd(root.comp.createObject(root, {lo: 5}), "lo")
+=> string:object:1
+rd(root.comp.createObject(root, {lo: null}), "lo")
+=> string:object:1
+rd(root.comp.createObject(root, {lo: [root, 5]}), "lo")
+=> string:object:2
+rd(root.comp.createObject(root, {lo: undefined}), "lo")
+=> string:object:1
+rd(root.comp.createObject(root, {lo: []}), "lo")
+=> string:object:0
+rd(root.comp.createObject(root, {lo: "x"}), "lo")
+=> string:object:1
+rd(root.comp.createObject(root, {lo: {}}), "lo")
+=> string:object:1
+rd(root.comp.createObject(root, {lo: [root.kid, root.plain]}), "lo")
+=> string:object:2
+rd(root.comp.createObject(root, {o: root.kid}), "o")
+=> string:kid
+rd(root.comp.createObject(root, {o: root.plain}), "o")
+=> string:plain
+rd(root.comp.createObject(root, {o: Math}), "o")
+=> string:refused
+rd(root.comp.createObject(root, {it: root}), "it")
+=> string:root
+rd(root.comp.createObject(root, {it: root.kid}), "it")
+=> string:kid
+rd(root.comp.createObject(root, {it: root.plain}), "it")
+=> string:refused
+rd(root.comp.createObject(root, {it: null}), "it")
+=> string:null:null
+rd(root.comp.createObject(root, {it: undefined}), "it")
+=> string:refused
+rd(root.comp.createObject(root, {tm: root}), "tm")
+=> string:refused
+rd(root.comp.createObject(root, {tm: root.plain}), "tm")
+=> string:refused
+rd(root.comp.createObject(root, {tm: null}), "tm")
+=> string:null:null
+rd(root.comp.createObject(root, {fn: 5}), "fn")
+=> string:function:function fn() { [native code] }
+rd(root.comp.createObject(root, {fn: function() {}}), "fn")
+=> string:function:function fn() { [native code] }
+rd(root.comp.createObject(root, {sig: 5}), "sig")
+=> string:function:function() { [native code] }
+rd(root.comp.createObject(root, {sig: function() {}}), "sig")
+=> string:function:function() { [native code] }
+rd(root.comp.createObject(root, {onSig: 5}), "onSig")
+=> string:refused
+rd(root.comp.createObject(root, {onSig: function() {}}), "onSig")
+=> string:refused
+rd(root.comp.createObject(root, {onSig: null}), "onSig")
+=> string:refused
+rd(root.comp.createObject(root, {destroy: 5}), "destroy")
+=> string:function:function() { [native code] }
+rd(root.comp.createObject(root, {toString: 5}), "toString")
+=> string:function:function() { [native code] }
+rd(root.comp.createObject(root, {objectNameChanged: 5}), "objectNameChanged")
+=> string:function:function() { [native code] }
+rd(root.comp.createObject(root, {onObjectNameChanged: 5}), "onObjectNameChanged")
+=> string:refused
+rd(root.comp.createObject(root, {inner: root.plain}), "inner")
+=> string:plain
+rd(root.comp.createObject(root, {inner: null}), "inner")
+=> string:null:null
+rd(root.comp.createObject(root, {inner: 5}), "inner")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: 2}), "horizontalAlignment")
+=> string:number:2
+rd(root.tc.createObject(root, {horizontalAlignment: 99}), "horizontalAlignment")
+=> string:number:99
+rd(root.tc.createObject(root, {horizontalAlignment: "Text.AlignRight"}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: 2.0}), "horizontalAlignment")
+=> string:number:2
+rd(root.tc.createObject(root, {horizontalAlignment: 2.5}), "horizontalAlignment")
+=> string:number:3
+rd(root.tc.createObject(root, {horizontalAlignment: "2"}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: "alignright"}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: "AlignRight|AlignLeft"}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: false}), "horizontalAlignment")
+=> string:number:0
+rd(root.tc.createObject(root, {horizontalAlignment: NaN}), "horizontalAlignment")
+=> string:refused
+rd(root.tc.createObject(root, {horizontalAlignment: 1e10}), "horizontalAlignment")
+=> string:number:1410065408
+rd(root.tc.createObject(root, {color: undefined}), "color")
+=> string:refused
+rd(root.tc.createObject(root, {color: null}), "color")
+=> string:object:#000000
+rd(root.tc.createObject(root, {color: "transparent"}), "color")
+=> string:object:#00000000
+rd(root.tc.createObject(root, {font: undefined}), "font")
+=> string:refused
+rd(root.tc.createObject(root, {font: null}), "font")
+=> string:object:Sans Serif/12/9/false
+rd(root.tc.createObject(root, {font: "A"}), "font")
+=> string:object:A/12/9/false
+rd(root.tc.createObject(root, {font: 5}), "font")
+=> string:refused
+rd(root.tc.createObject(root, {font: {bold: true}}), "font")
+=> string:object:Sans Serif/12/9/true
+rd(root.tc.createObject(root, {elide: "ElideRight"}), "elide")
+=> string:number:1
+rd(root.tc.createObject(root, {elide: Text.ElideMiddle}), "elide")
+=> string:number:2
+rd(root.tc.createObject(root, {elide: 1.2}), "elide")
+=> string:number:1
+rd(root.tc.createObject(root, {wrapMode: "WordWrap"}), "wrapMode")
+=> string:number:1
+rd(root.tc.createObject(root, {wrapMode: "NoWrap"}), "wrapMode")
+=> string:number:0
+rd(root.tc.createObject(root, {wrapMode: 4}), "wrapMode")
+=> string:number:4
+rd(root.tc.createObject(root, {lineHeight: "2"}), "lineHeight")
+=> string:number:2
+rd(root.tc.createObject(root, {lineHeight: undefined}), "lineHeight")
+=> string:refused
+rd(root.tc.createObject(root, {lineHeight: true}), "lineHeight")
+=> string:number:1
+rd(root.tc.createObject(root, {textFormat: undefined}), "textFormat")
+=> string:refused
+rd(root.tc.createObject(root, {textFormat: "RichText"}), "textFormat")
+=> string:number:1
+rd(root.ic.createObject(root, {opacity: undefined}), "opacity")
+=> string:refused
+rd(root.ic.createObject(root, {opacity: "x"}), "opacity")
+=> string:refused
+rd(root.ic.createObject(root, {opacity: null}), "opacity")
+=> string:refused
+rd(root.ic.createObject(root, {opacity: "0.25"}), "opacity")
+=> string:number:0.25
+rd(root.ic.createObject(root, {opacity: true}), "opacity")
+=> string:number:1
+rd(root.ic.createObject(root, {x: undefined}), "x")
+=> string:refused
+rd(root.ic.createObject(root, {x: "3"}), "x")
+=> string:number:3
+rd(root.ic.createObject(root, {x: null}), "x")
+=> string:refused
+rd(root.ic.createObject(root, {height: undefined}), "height")
+=> string:number:0
+rd(root.ic.createObject(root, {height: "4"}), "height")
+=> string:number:4
+rd(root.ic.createObject(root, {implicitWidth: undefined}), "implicitWidth")
+=> string:refused
+rd(root.ic.createObject(root, {implicitWidth: "4"}), "implicitWidth")
+=> string:number:4
+rd(root.ic.createObject(root, {implicitWidth: 9}), "implicitWidth")
+=> string:number:9
+rd(root.ic.createObject(root, {visible: "0"}), "visible")
+=> string:boolean:false
+rd(root.ic.createObject(root, {visible: "false"}), "visible")
+=> string:boolean:false
+rd(root.ic.createObject(root, {visible: 0}), "visible")
+=> string:boolean:false
+rd(root.ic.createObject(root, {enabled: undefined}), "enabled")
+=> string:refused
+rd(root.ic.createObject(root, {enabled: 0}), "enabled")
+=> string:boolean:false
+rd(root.ic.createObject(root, {enabled: "false"}), "enabled")
+=> string:boolean:false
+rd(root.ic.createObject(root, {clip: 1}), "clip")
+=> string:boolean:true
+rd(root.ic.createObject(root, {clip: null}), "clip")
+=> string:refused
+rd(root.ic.createObject(root, {z: "x"}), "z")
+=> string:refused
+rd(root.ic.createObject(root, {z: "2"}), "z")
+=> string:number:2
+rd(root.ic.createObject(root, {z: undefined}), "z")
+=> string:refused
+rd(root.ic.createObject(root, {parent: undefined}), "parent")
+=> string:refused
+rd(root.ic.createObject(root, {parent: root.kid}), "parent")
+=> string:kid
+rd(root.ic.createObject(root, {parent: root.plain}), "parent")
+=> string:refused
+rd(root.ic.createObject(root, {parent: "x"}), "parent")
+=> string:refused
+rd(root.ic.createObject(root, {children: 5}), "children")
+=> string:object:0
+rd(root.ic.createObject(root, {children: root.kid}), "children")
+=> string:object:1
+rd(root.ic.createObject(root, {children: [root.plain]}), "children")
+=> string:object:0
+rd(root.ic.createObject(root, {children: null}), "children")
+=> string:object:0
+rd(root.ic.createObject(root, {children: undefined}), "children")
+=> string:object:0
+rd(root.ic.createObject(root, {children: "x"}), "children")
+=> string:object:0
+rd(root.ic.createObject(root, {data: 5}), "data")
+=> string:object:0
+rd(root.ic.createObject(root, {data: root.plain}), "data")
+=> string:object:1
+rd(root.ic.createObject(root, {data: [root.plain, root.kid]}), "data")
+=> string:object:2
+rd(root.ic.createObject(root, {data: null}), "data")
+=> string:object:0
+rd(root.ic.createObject(root, {states: 5}), "states")
+=> string:object:1
+rd(root.ic.createObject(root, {states: null}), "states")
+=> string:object:1
+rd(root.ic.createObject(root, {states: []}), "states")
+=> string:object:0
+rd(root.ic.createObject(root, {states: root.plain}), "states")
+=> string:object:1
+rd(root.ic.createObject(root, {state: 5}), "state")
+=> string:string:5
+rd(root.ic.createObject(root, {state: null}), "state")
+=> string:string:
+rd(root.ic.createObject(root, {state: undefined}), "state")
+=> string:refused
+rd(root.ic.createObject(root, {transformOrigin: "Center"}), "transformOrigin")
+=> string:number:4
+rd(root.ic.createObject(root, {transformOrigin: "TopLeft"}), "transformOrigin")
+=> string:number:0
+rd(root.ic.createObject(root, {transformOrigin: 0}), "transformOrigin")
+=> string:number:0
+rd(root.ic.createObject(root, {transformOrigin: "nope"}), "transformOrigin")
+=> string:refused
+rd(root.ic.createObject(root, {rotation: "90"}), "rotation")
+=> string:number:90
+rd(root.ic.createObject(root, {rotation: undefined}), "rotation")
+=> string:refused
+rd(root.ic.createObject(root, {focus: 1}), "focus")
+=> string:boolean:true
+rd(root.ic.createObject(root, {focus: "x"}), "focus")
+=> string:boolean:true
+rd(root.ic.createObject(root, {layer: 5}), "layer")
+=> string:refused
+rd(root.ic.createObject(root, {anchors: undefined}), "anchors")
+=> string:refused
+rd(root.ic.createObject(root, {anchors: root}), "anchors")
+=> string:refused
+rd(root.ic.createObject(root, {baselineOffset: undefined}), "baselineOffset")
+=> string:refused
+rd(root.ic.createObject(root, {baselineOffset: "2"}), "baselineOffset")
+=> string:number:2
+rd(root.ic.createObject(root, {activeFocus: true}), "activeFocus")
+=> string:boolean:false
+rd(root.ic.createObject(root, {width: Infinity}), "width")
+=> string:number:Infinity
+rd(root.ic.createObject(root, {width: "1e2"}), "width")
+=> string:number:100
+rd(root.rec.createObject(root, {radius: undefined}), "radius")
+=> string:refused
+rd(root.rec.createObject(root, {radius: "x"}), "radius")
+=> string:refused
+rd(root.rec.createObject(root, {radius: true}), "radius")
+=> string:number:1
+rd(root.rec.createObject(root, {border: 5}), "border")
+=> string:refused
+rd(root.rec.createObject(root, {gradient: undefined}), "gradient")
+=> string:undefined:undefined
+rd(root.rec.createObject(root, {color: "transparent"}), "color")
+=> string:object:#00000000
+rd(root.rec.createObject(root, {color: {r: 1, g: 0, b: 0}}), "color")
+=> string:object:#ff0000
+rd(root.rec.createObject(root, {color: 0xff0000}), "color")
+=> string:object:#000000
+rd(root.rec.createObject(root, {antialiasing: undefined}), "antialiasing")
+=> string:boolean:false
+rd(root.rec.createObject(root, {antialiasing: "x"}), "antialiasing")
+=> string:boolean:true
+rd(root.rec.createObject(root, {antialiasing: 0}), "antialiasing")
+=> string:boolean:false
+w(function() { var o = root.comp.createObject(root, {"inner.z": "x"}); return o ? "" + (o.inner.z) : "refused" })
+=> string:refused
+w(function() { var o = root.comp.createObject(root, {"inner.z": 6.7}); return o ? "" + (o.inner.z) : "refused" })
+=> string:7
+w(function() { var o = root.comp.createObject(root, {"inner.nope": 1}); return o ? "" + (o.inner.nope) : "refused" })
+=> string:refused
+w(function() { var o = root.comp.createObject(root, {"i.z": 1}); return o ? "" + (o.i) : "refused" })
+=> string:refused
+w(function() { var o = root.comp.createObject(root, {"nope.z": 1}); return o ? "" + (o.i) : "refused" })
+=> string:refused
+w(function() { var o = root.comp.createObject(root, {"v.z": 1}); return o ? "" + (o.v) : "refused" })
+=> string:refused
+w(function() { var o = root.comp.createObject(root, {"o.z": 1}); return o ? "" + (o.o) : "refused" })
+=> string:refused
+w(function() { var o = root.comp.createObject(root, {"p.x": 5}); return o ? "" + (o.p) : "refused" })
+=> string:QPointF(5, 0)
+w(function() { var o = root.comp.createObject(root, {"p.x": "x"}); return o ? "" + (o.p) : "refused" })
+=> string:refused
+w(function() { var o = root.comp.createObject(root, {"p.nope": 5}); return o ? "" + (o.p) : "refused" })
+=> string:QPointF(0, 0)
+w(function() { var o = root.comp.createObject(root, {"inner.ip.x": 5}); return o ? "" + (o.inner.ip) : "refused" })
+=> string:QPointF(5, 0)
+w(function() { var o = root.comp.createObject(root, {"inner.ip": Qt.point(1, 2)}); return o ? "" + (o.inner.ip) : "refused" })
+=> string:QPointF(1, 2)
+w(function() { var o = root.comp.createObject(root, {"inner.ip": "1,2"}); return o ? "" + (o.inner.ip) : "refused" })
+=> string:QPointF(1, 2)
+w(function() { var o = root.comp.createObject(root, {"inner.z": Qt.binding(function() { return 4 })}); return o ? "" + (o.inner.z) : "refused" })
+=> string:4
+w(function() { var o = root.comp.createObject(root, {"inner.z": undefined}); return o ? "" + (o.inner.z) : "refused" })
+=> string:refused
+w(function() { var o = root.comp.createObject(root, {"c.r": 1}); return o ? "" + (o.c) : "refused" })
+=> string:#ff0000
+w(function() { var o = root.comp.createObject(root, {"f.bold": true}); return o ? "" + (o.f.bold) : "refused" })
+=> string:true
+w(function() { var o = root.comp.createObject(root, {"f.pixelSize": 1.7}); return o ? "" + (o.f.pixelSize) : "refused" })
+=> string:2
+w(function() { var o = root.comp.createObject(root, {"rc.width": "5"}); return o ? "" + (o.rc) : "refused" })
+=> string:QRectF(0, 0, 5, 0)
+w(function() { var o = root.comp.createObject(root, {".i": 1}); return o ? "" + (o.i) : "refused" })
+=> string:refused
+w(function() { var o = root.comp.createObject(root, {"i.": 1}); return o ? "" + (o.i) : "refused" })
+=> string:refused
+w(function() { var o = root.comp.createObject(root, {"": 1}); return o ? "" + (o.i) : "refused" })
+=> string:0
+w(function() { var o = root.ic.createObject(root, {"anchors.fill": root}); return o ? "" + (o.anchors.fill === root) : "refused" })
+=> string:true
+w(function() { var o = root.ic.createObject(root, {"anchors.fill": 5}); return o ? "" + (o.anchors.fill) : "refused" })
+=> string:refused
+w(function() { var o = root.ic.createObject(root, {"anchors.fill": undefined}); return o ? "" + (o.anchors.fill) : "refused" })
+=> string:null
+w(function() { var o = root.ic.createObject(root, {"anchors.leftMargin": 1.5}); return o ? "" + (o.anchors.leftMargin) : "refused" })
+=> string:1.5
+w(function() { var o = root.ic.createObject(root, {"anchors.margins": undefined}); return o ? "" + (o.anchors.margins) : "refused" })
+=> string:refused
+w(function() { var o = root.ic.createObject(root, {"anchors.margins": null}); return o ? "" + (o.anchors.margins) : "refused" })
+=> string:refused
+w(function() { var o = root.ic.createObject(root, {"anchors.left": root.left}); return o ? "" + (typeof o.anchors.left) : "refused" })
+=> string:object
+w(function() { var o = root.ic.createObject(root, {"anchors.left": 5}); return o ? "" + (typeof o.anchors.left) : "refused" })
+=> string:refused
+w(function() { var o = root.ic.createObject(root, {"parent.objectName": "set"}); return o ? "" + (root.objectName) : "refused" })
+=> string:set
+w(function() { var o = root.ic.createObject(root, {"childrenRect.x": 5}); return o ? "" + (o.childrenRect.x) : "refused" })
+=> string:0
+w(function() { var o = root.ic.createObject(root, {"layer.enabled": true}); return o ? "" + (o.layer.enabled) : "refused" })
+=> string:true
+w(function() { var o = root.ic.createObject(root, {"layer.enabled": "x"}); return o ? "" + (o.layer.enabled) : "refused" })
+=> string:true
+w(function() { var o = root.tc.createObject(root, {"font.family": 5}); return o ? "" + (o.font.family) : "refused" })
+=> string:5
+w(function() { var o = root.tc.createObject(root, {"font.bold": "x"}); return o ? "" + (o.font.bold) : "refused" })
+=> string:true
+w(function() { var o = root.tc.createObject(root, {"font.pixelSize": 1.7}); return o ? "" + (o.font.pixelSize) : "refused" })
+=> string:2
+w(function() { var o = root.tc.createObject(root, {"font.pixelSize": "9"}); return o ? "" + (o.font.pixelSize) : "refused" })
+=> string:9
+w(function() { var o = root.tc.createObject(root, {"font.weight": "Bold"}); return o ? "" + (o.font.weight) : "refused" })
+=> string:refused
+w(function() { var o = root.tc.createObject(root, {"font.capitalization": Font.AllUppercase}); return o ? "" + (o.font.capitalization) : "refused" })
+=> string:1
+w(function() { var o = root.tc.createObject(root, {"font.letterSpacing": null}); return o ? "" + (o.font.letterSpacing) : "refused" })
+=> string:refused
+w(function() { var o = root.rec.createObject(root, {"border.width": 1.7}); return o ? "" + (o.border.width) : "refused" })
+=> string:1.7
+w(function() { var o = root.rec.createObject(root, {"border.width": "x"}); return o ? "" + (o.border.width) : "refused" })
+=> string:refused
+w(function() { var o = root.rec.createObject(root, {"border.color": 5}); return o ? "" + ("" + o.border.color) : "refused" })
+=> string:#000000
+w(function() { var o = root.rec.createObject(root, {"border.color": undefined}); return o ? "" + ("" + o.border.color) : "refused" })
+=> string:refused
+w(function() { var src = {k: 1}; var o = root.comp.createObject(root, {v: src}); src.k = 2; return [o.v.k, o.v === src, Object.keys(o.v).join()].join("|") })
+=> string:1|false|k
+w(function() { var d = new Date(5); var o = root.comp.createObject(root, {v: d}); return [o.v === d, o.v.getTime(), o.v instanceof Date].join("|") })
+=> string:false|5|true
+w(function() { var f = function() { return 7 }; var o = root.comp.createObject(root, {v: f}); return [o.v === f, typeof o.v, o.v()].join("|") })
+=> string:true|function|7
+w(function() { var o = root.comp.createObject(root, {v: {a: {b: [1, {c: 2}]}, f: function() { return 3 }, d: new Date(0), u: undefined, n: null}}); return [JSON.stringify(o.v.a), typeof o.v.f, o.v.d instanceof Date, "u" in o.v, o.v.n].join("|") })
+=> string:{"b":[1,{"c":2}]}|function|true|true|
+w(function() { var o = root.comp.createObject(root, {v: Symbol("q")}); return o ? typeof o.v : "refused" })
+=> string:string
+w(function() { var o = root.comp.createObject(root, {v: Qt.point(1, 2)}); o.v.x = 9; return "" + o.v })
+=> string:QPointF(9, 2)
+w(function() { var p = Qt.point(1, 2); var o = root.comp.createObject(root, {p: p}); p.x = 9; return "" + o.p })
+=> string:QPointF(1, 2)
+w(function() { var a = [1, 2]; var o = root.comp.createObject(root, {li: a}); a.push(3); return [o.li.length, o.li === a].join("|") })
+=> string:2|false
+w(function() { var o = root.comp.createObject(root, {s: "a", S: "b", i: 1, I: 2}); return [o.s, o.i].join("|") })
+=> string:a|1
+w(function() { var o = root.comp.createObject(root, {1: "a", s: "b"}); return o ? o.s : "refused" })
+=> string:b
+w(function() { var o = root.comp.createObject(root, {i: 3, i: "x"}); return o ? o.i : "refused" })
+=> string:refused
+w(function() { var p = {i: 3}; Object.defineProperty(p, "s", {get: function() { throw new Error("boom") }, enumerable: true}); var o = root.comp.createObject(root, p); return o ? [o.i, o.s].join("|") : "refused" })
+=> string:THROW Error: boom
+w(function() { class K { constructor() { this.i = 4 } get s() { return "g" } }; var o = root.comp.createObject(root, new K()); return o ? [o.i, o.s].join("|") : "refused" })
+=> string:4|
+w(function() { var o = root.comp.createObject(root, new Map([["i", 4]])); return o ? o.i : "refused" })
+=> number:0
+w(function() { var o = root.comp.createObject(root, Object.create(null)); return o ? o.i : "refused" })
+=> number:0
+w(function() { var p = Object.create(null); p.i = 4; var o = root.comp.createObject(root, p); return o ? o.i : "refused" })
+=> number:4
+w(function() { var o = root.comp.createObject(root, JSON.parse('{"i": 4, "s": 5}')); return o ? [o.i, typeof o.s + o.s].join("|") : "refused" })
+=> string:4|string5
+w(function() { var o = root.comp.createObject(root, root); return o ? o.i : "refused" })
+=> number:0
+w(function() { var o = root.comp.createObject(root, Qt.point(1, 2)); return o ? o.i : "refused" })
+=> number:0
+w(function() { var o = root.comp.createObject(root, /a/); return o ? o.i : "refused" })
+=> number:0
+w(function() { var o = root.comp.createObject(root.plain, {i: 4}); return o ? [o.i, o.parent === undefined].join("|") : "refused" })
+=> string:4|true
+w(function() { var o = root.ic.createObject(root.kid, {width: 4}); return o ? [o.width, o.parent === root.kid].join("|") : "refused" })
+=> string:4|true
+w(function() { var o = root.ic.createObject(root.kid, {width: "x"}); return [o === null, root.kid.children.length].join("|") })
+=> string:true|2
+w(function() { var o = root.ic.createObject(root, {width: Qt.binding(function() { return root.kid.width * 2 })}); var r = [o.width]; root.kid.width = 9; r.push(o.width); root.kid.width = 7; return r.join("|") })
+=> string:14|18
+w(function() { var o = root.comp.createObject(root, {v: Qt.binding(function() { return this.i + 1 }), i: 4}); return o ? o.v : "refused" })
+=> number:5
+w(function() { var o = root.comp.createObject(root, {"inner.z": 5, inner: root.plain}); return o ? [o.inner === root.plain].join("|") : "refused" })
+=> string:refused

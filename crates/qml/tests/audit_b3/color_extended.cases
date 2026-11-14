@@ -1,0 +1,77 @@
+@property color c
+@property color d: "red"
+@property var vc
+@property int nc: 0
+@onCChanged: nc += 1
+w(function(){ c = "red"; c.r = 2; return [c, c.r, c.g, c.b, c.a, c.valid, c.hsvHue, c.hsvSaturation, c.hsvValue, c.hslHue, c.hslSaturation, c.hslLightness].join("|") })
+=> string:#ff0000|2|0|0|1|true|0|1|1|0|1|0.5000076293945312
+w(function(){ return [c == d, c === d, Qt.colorEqual(c, d), Qt.colorEqual(c, "red"), c == "#ff0000", String(c) == String(d)].join("|") })
+=> string:false|false|false|false|true|true
+w(function(){ var n = nc; c = "red"; var m = nc; c = "red"; return (m - n) + "|" + (nc - m) + "|" + (c == d) })
+=> string:1|0|true
+w(function(){ c = "red"; c.r = 1.5; var n = nc; c.r = 1.5; var m = nc; c.r = 0.5; return (m - n) + "|" + (nc - m) + "|" + c + "|" + c.r + "|" + (c == Qt.rgba(0.5, 0, 0, 1)) })
+=> string:0|1|#800000|0.5|false
+w(function(){ c = "red"; c.g = -0.5; return [c, c.r, c.g, c.b, c.a, c.hsvHue, c.hsvSaturation, c.hsvValue].join("|") })
+=> string:#ff0000|1|-0.5|0|1|0|1|1
+w(function(){ c = "red"; c.b = 1.00001; return [c, c.r, c.g, c.b, c.a].join("|") })
+=> string:#ff00ff|1|0|1|1
+w(function(){ c = "red"; c.r = Infinity; return [c, c.r, c.g, c.b, c.a, c.valid].join("|") })
+=> string:#ff0000|Infinity|0|0|1|true
+w(function(){ c = "red"; c.r = -Infinity; return [c, c.r, c.g, c.b, c.a, c.valid].join("|") })
+=> string:#000000|-Infinity|0|0|1|true
+w(function(){ c = "red"; c.r = NaN; return [c, c.r, c.g, c.b, c.a, c.valid].join("|") })
+=> string:#000000|0|0|0|1|true
+w(function(){ c = "red"; c.r = 1e10; return [c, c.r, c.g].join("|") })
+=> string:#ff0000|Infinity|0
+w(function(){ c = "red"; c.r = 65504; return [c, c.r].join("|") })
+=> string:#ff0000|65504
+w(function(){ c = "red"; c.r = 65520; return [c, c.r].join("|") })
+=> string:#ff0000|Infinity
+w(function(){ c = "red"; c.r = 1.1; return [c, c.r, c.g].join("|") })
+=> string:#ff0000|1.099609375|0
+w(function(){ c = "red"; c.r = 1.0001; return [c, c.r].join("|") })
+=> string:#ff0000|1
+w(function(){ c = "red"; c.r = -1e-7; return [c, c.r].join("|") })
+=> string:#000000|-1.1920928955078125e-7
+w(function(){ c = "red"; c.r = -1e-9; return [c, c.r, 1 / c.r].join("|") })
+=> string:#000000|0|-Infinity
+w(function(){ c = "#80102030"; c.r = 2; return [c, c.r, c.g, c.b, c.a].join("|") })
+=> string:#80ff2030|2|0.12548828125|0.188232421875|0.501953125
+w(function(){ c = "red"; c.r = 2; c.a = 0.5; return [c, c.r, c.a].join("|") })
+=> string:#80ff0000|2|0.5
+w(function(){ c = "red"; c.r = 2; c.a = 2; return [c, c.r, c.a, c.valid].join("|") })
+=> string:#ff0000|2|1|true
+w(function(){ c = "red"; c.r = 2; c.a = -1; return [c, c.r, c.a, c.valid].join("|") })
+=> string:#00ff0000|2|0|true
+w(function(){ c = "red"; c.r = 2; c.g = 0.3; return [c, c.r, c.g, c.b].join("|") })
+=> string:#ff4d00|2|0.300048828125|0
+w(function(){ c = "red"; c.r = 2; c.hsvHue = 0.5; return [c, c.r, c.g, c.b, c.hsvHue].join("|") })
+=> string:#00ffff|0|1|1|0.5
+w(function(){ c = "red"; c.r = 2; c.hsvValue = 0.5; return [c, c.r, c.g, c.b].join("|") })
+=> string:#800000|0.5000076293945312|0|0
+w(function(){ c = "red"; c.r = 2; c.hslLightness = 0.25; return [c, c.r, c.g, c.b].join("|") })
+=> string:#800000|0.5000076293945312|0|0
+w(function(){ c = "red"; c.r = 2; c.r = 1; return [c, c.r, c == d, c == "red"].join("|") })
+=> string:#ff0000|1|true|false
+w(function(){ c = Qt.hsva(0.5, 1, 1, 1); c.r = 2; return [c, c.r, c.g, c.b].join("|") })
+=> string:#ffffff|2|1|1
+w(function(){ c = Qt.hsla(0.5, 1, 0.5, 0.5); c.g = 2; return [c, c.r, c.g, c.b, c.a].join("|") })
+=> string:#8000ffff|0|2|1|0.5
+w(function(){ c = "red"; c.r = 2; return [Qt.lighter(c), Qt.darker(c), Qt.tint(c, "#800000ff"), Qt.alpha(c, 0.5), Qt.lighter(c).r].join("|") })
+=> string:#ff8080|#800000|#7f0080|#80ff0000|1
+w(function(){ c = "red"; c.r = 2; vc = c; return [vc, vc.r, vc == c, typeof vc].join("|") })
+=> string:#ff0000|2|true|object
+w(function(){ c = "red"; c.r = 2; var x = c; return [x, x.r, JSON.stringify(x), x.toString(), "" + x].join("|") })
+=> string:#ff0000|2|{"r":2,"g":0,"b":0,"a":1,"hsvHue":0,"hsvSaturation":1,"hsvValue":1,"hslHue":0,"hslSaturation":1,"hslLightness":0.5000076293945312,"valid":true,"rgba":-65536}|#ff0000|#ff0000
+w(function(){ c = "transparent"; c.r = 2; return [c, c.r, c.a].join("|") })
+=> string:#00ff0000|2|0
+w(function(){ c = "red"; c.g = 2; c.b = 3; c.r = 4; return [c, c.r, c.g, c.b].join("|") })
+=> string:#ffffff|4|2|3
+w(function(){ c = "red"; c.r = 0.1; c.g = 2; return [c, c.r, c.g].join("|") })
+=> string:#1aff00|0.10003662109375|2
+w(function(){ c = "red"; c.r = 2; c.r = 0.1; return [c, c.r].join("|") })
+=> string:#190000|0.0999755859375
+w(function(){ c = "red"; c.r = 2; c.g = 0.2; c.b = 0.7; return [c, c.r, c.g, c.b].join("|") })
+=> string:#ff33b3|2|0.199951171875|0.7001953125
+w(function(){ c = "red"; c.r = 2; return [Qt.rgba(c.r, c.g, c.b, c.a), Qt.rgba(2, 0, 0, 1), Qt.rgba(2, 0, 0, 1).r, Qt.rgba(-1, 0.5, 0.5, 1), Qt.rgba(0.5, 0.5, 0.5, 2), Qt.rgba(0.5, 0.5, 0.5, 2).a].join("|") })
+=> string:#ff0000|#ff0000|1|#008080|#808080|1

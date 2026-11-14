@@ -1,0 +1,14 @@
+import QtQuick.tooling 1.2
+
+// Exits 0 when `checkupdates` is on PATH.
+// A Process whose work is native (crates/qml/src/procs.rs): `running`, `exited`, `stdout` as Process.
+Module {
+    Component {
+        file: "procs.rs"
+        name: "ImpulseUpdatesProbe"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/UpdatesProbe 1.0"]
+        exportMetaObjectRevisions: [256]
+    }
+}

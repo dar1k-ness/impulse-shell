@@ -1,0 +1,5 @@
+900 700 #fef7ff
+20 20 128 128 100 1 0 /usr/share/icons/hicolor/256x256/apps/kitty.png
+300 120 128 128 64 1 0 /usr/share/icons/hicolor/256x256/apps/kitty.png pad=1
+640 120 128 128 33 1 0 /usr/share/icons/hicolor/256x256/apps/kitty.png pad=1
+120 470 128 128 100 1 0 /usr/share/icons/hicolor/256x256/apps/kitty.png pad=1

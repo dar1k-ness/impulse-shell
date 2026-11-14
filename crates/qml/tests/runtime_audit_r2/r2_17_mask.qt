@@ -1,0 +1,15 @@
+a false "5"
+a2 true
+a3 false "abc"
+b false
+b2 true
+c false
+c2 true
+c3 false
+d "1-" "1_-__" false 0 5
+d2 "12-34" "12-34" true
+e "AB-1" "AB -1  " false
+f false
+f2 true
+f3 true
+d3 "" 32767

@@ -1,0 +1,9 @@
+640 360 #fef7ff
+10 10 48 48 stretch 1 /usr/share/icons/hicolor/256x256/apps/kitty.png 48:48
+70 10 64 64 fit 1 /usr/share/icons/hicolor/256x256/apps/kitty.png 40:40
+150 10 100 100 stretch 1 /usr/share/icons/hicolor/256x256/apps/kitty.png 37:0
+260 10 120 80 crop 1 /tmp/st_a.png 120:80
+400 10 200 130 fit 1 /tmp/st_rgb.png 60:0
+10 150 300 200 crop 1 /tmp/st_rgb.png 300:200
+330 150 97 61 stretch 0 /tmp/st_a.png 50:0
+330 230 30 30 stretch 1 /usr/share/icons/hicolor/256x256/apps/kitty.png 30:30

@@ -1,0 +1,29 @@
+import QtQuick.tooling 1.2
+
+// Builders of rounded polygons (closed outlines of cubic curves). A polygon has `cubics`,
+// `features`, `center`, `transformed(f)`, `normalized()`, `calculateBounds()`.
+// Implemented natively by ri (crates/qml/src/shapes/geom.rs, shapes/js.rs).
+Module {
+    Component {
+        file: "js.rs"
+        name: "ImpulseRoundedPolygon"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/RoundedPolygon 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Method {
+            name: "star"
+            type: "QVariant"
+            Parameter { name: "numVerticesPerRadius"; type: "double" }
+            Parameter { name: "radius"; type: "double" }
+            Parameter { name: "innerRadius"; type: "double" }
+            Parameter { name: "rounding"; type: "QVariant" }
+            Parameter { name: "innerRounding"; type: "QVariant" }
+            Parameter { name: "perVertexRounding"; type: "QVariant" }
+            Parameter { name: "centerX"; type: "double" }
+            Parameter { name: "centerY"; type: "double" }
+        }
+    }
+}

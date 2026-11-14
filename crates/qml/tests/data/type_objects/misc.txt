@@ -1,0 +1,128 @@
+String(Qt)	Qt(0x)
+typeof Qt	object
+Qt.toString()	Qt(0x)
+"" + Qt	Qt(0x)
+`${Qt}`	Qt(0x)
+Object.prototype.toString.call(Qt)	[object QMLTypeWrapper]
+Qt === Qt	boolean:true
+Qt == Qt	boolean:true
+Object.keys(Qt).length > 10	boolean:true
+Qt.objectName	
+typeof Qt.rgba	function
+typeof Qt.call	undefined
+Qt.name	undefined:undefined
+Object.getPrototypeOf(Qt) === Object.prototype	boolean:false
+typeof Object.getPrototypeOf(Qt)	object
+String(Object.getPrototypeOf(Qt))	undefined
+JSON.stringify(Qt).length > 100	boolean:true
+Qt.foo	undefined:undefined
+(Qt.foo = 1, Qt.foo)	undefined:undefined
+Qt instanceof Object	boolean:true
+Qt.hasOwnProperty("rgba")	boolean:true
+Qt.hasOwnProperty("objectName")	boolean:true
+"rgba" in Qt	boolean:true
+Qt.valueOf() === Qt	boolean:true
+Qt.toLocaleString()	Qt(0x)
+Number(Qt)	number:NaN
+Qt.LeftButton	number:1
+Qt.Key_A	number:65
+typeof Qt.application	object
+typeof Qt.platform	object
+typeof Qt.inputMethod	object
+typeof Qt.styleHints	object
+Object.getOwnPropertyNames(Qt).length > 10	boolean:true
+Object.getOwnPropertyNames(Qt).indexOf("rgba") >= 0	boolean:true
+Object.keys(Qt).indexOf("rgba") >= 0	boolean:true
+Object.keys(Qt).indexOf("LeftButton") >= 0	boolean:false
+Object.keys(Qt).indexOf("objectName") >= 0	boolean:true
+Qt.toString === Object.prototype.toString	boolean:false
+Qt.toString === root.toString	boolean:false
+String(new QtObject()).replace(/0x[0-9a-f]+/, "0x")	QObject(0x)
+(function(){ var o = new QtObject(root); return String(o).replace(/0x[0-9a-f]+/g, "0x") })()	QObject(0x)
+(function(){ var o = QtObject(); return typeof o })()	!TypeError: Function can only be called with |new|.
+(function(){ var o = new Timer(); return typeof o + ":" + String(o).replace(/0x[0-9a-f]+/g, "0x") + ":" + o.interval })()	!TypeError: Type error
+(function(){ var o = new Item(); return typeof o })()	!TypeError: Type error
+(function(){ var o = new ListModel(); return typeof o + ":" + o.count })()	!TypeError: Type error
+(function(){ var o = new Rectangle(); return typeof o })()	!TypeError: Type error
+(function(){ var o = new Sub(); return typeof o })()	!TypeError: Type error
+(function(){ var o = new Q.QtObject(); return typeof o })()	object
+(function(){ var o = new Component(); return typeof o })()	!TypeError: Type error
+(function(){ var o = new Connections(); return typeof o })()	!TypeError: Type error
+(function(){ var o = new Binding(); return typeof o })()	!TypeError: Type error
+QtObject.length	number:0
+QtObject.name	
+QtObject.prototype	undefined:undefined
+typeof QtObject.call	function
+QtObject.call(null)	!TypeError: Function can only be called with |new|.
+QtObject.apply(null, [])	!TypeError: Function can only be called with |new|.
+QtObject.bind(null)()	!TypeError: Function can only be called with |new|.
+String(QtObject)	QML/QtObject
+QtObject === Item	boolean:true
+QtObject === Timer	boolean:true
+QtObject === QtObject	boolean:true
+Object.prototype.toString.call(QtObject)	[object QMLTypeWrapper]
+Function.prototype.toString.call(QtObject)	function() { [native code] }
+Object.getOwnPropertyNames(QtObject).join(",")	
+QtObject instanceof Function	boolean:true
+new QtObject() === new QtObject()	boolean:false
+(function(){ function F() {} F.prototype = QtObject; return typeof new F() })()	object
+[QtObject].map(f => new f()).length	number:1
+String(ListView)	QQuickListViewAttached(0x)
+String(GridView)	QQuickGridViewAttached(0x)
+String(PathView)	QQuickPathViewAttached(0x)
+String(Q.ListView)	QQuickListViewAttached(0x)
+ListView.Horizontal	number:1
+ListView.Vertical	number:2
+GridView.FlowTopToBottom	number:2
+typeof ListView.view	object
+String(ListView.view)	null
+ListView.delayRemove	boolean:false
+ListView.nope	undefined:undefined
+typeof GridView.view	object
+Q.ListView.Horizontal	number:1
+typeof Q.ListView.view	object
+ListView.view === GridView.view	boolean:true
+ListView == GridView	boolean:false
+ListView != GridView	boolean:true
+[ListView].indexOf(GridView)	number:-1
+[ListView].indexOf(Q.ListView)	number:0
+new Set([ListView, GridView, Q.ListView]).size	number:2
+Keys.BeforeItem	number:0
+typeof TextInput.cursorPosition	undefined
+Item.TopLeft	number:0
+Item.Center	number:4
+Text.AlignHCenter	number:4
+typeof Item.width	undefined
+Item.width	undefined:undefined
+Item.nope	undefined:undefined
+Rectangle.color	undefined:undefined
+typeof Text.text	undefined
+typeof Timer.interval	undefined
+(function(){ return root.Keys === root.Keys })()	boolean:true
+typeof root.ListView	object
+root.ListView === ListView	boolean:true
+root.ListView.Horizontal	number:1
+typeof root.ListView.view	object
+other.kk() === Keys	boolean:false
+other.kk() === other.kk()	boolean:true
+other.ll() === ListView	boolean:false
+other.ii() === Item	boolean:true
+other.ks() === String(Keys)	boolean:false
+other.kk() == Keys	boolean:false
+other.kk().enabled	boolean:false
+Keys.enabled === other.kk().enabled	boolean:false
+other.Keys === other.kk()	boolean:true
+other.Keys === Keys	boolean:false
+other.Keys.enabled	boolean:false
+typeof other.Layout.fillWidth	boolean
+other.Layout.fillWidth	boolean:true
+ListView.FlowTopToBottom	undefined:undefined
+ListView.Vertical	number:2
+ListView.Contain	number:4
+ListView.SnapOneItem	number:2
+GridView.Horizontal	undefined:undefined
+GridView.Contain	number:4
+GridView.FlowLeftToRight	number:0
+Q.GridView.FlowTopToBottom	number:2
+Q.GridView.Horizontal	undefined:undefined
+Q.ListView.FlowTopToBottom	undefined:undefined

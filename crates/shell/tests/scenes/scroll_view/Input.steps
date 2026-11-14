@@ -1,0 +1,22 @@
+move 255 40
+wheel 100 40
+call endA
+key Return 3
+call homeA
+move 255 200
+wheel 100 200
+call endB
+key Return 3
+call homeB
+move 255 40
+drag 255 160 30
+key Ctrl+Home 1
+key Ctrl+End 1
+key Ctrl+Home 1
+call downB
+key Left 1
+key Home 1
+key Ctrl+End 1
+call downB
+key Right 1
+key End 1

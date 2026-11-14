@@ -1,0 +1,41 @@
+import QtQuick.tooling 1.2
+
+// Impulse/GoogleVision: a Process that has Google Vision read the text in the image file
+// `image` and prints its answer (crates/qml/src/jobs_wall_gcloud_trans/gcloud_api.rs `vision`).
+Module {
+    Component {
+        file: "jobs_wall_gcloud_trans/gcloud_api.rs"
+        name: "ImpulseGoogleVision"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/GoogleVision 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "token"
+            type: "QString"
+            read: "token"
+            write: "setToken"
+            notify: "tokenChanged"
+            index: 0
+        }
+        Property {
+            name: "project"
+            type: "QString"
+            read: "project"
+            write: "setProject"
+            notify: "projectChanged"
+            index: 1
+        }
+        Property {
+            name: "image"
+            type: "QString"
+            read: "image"
+            write: "setImage"
+            notify: "imageChanged"
+            index: 2
+        }
+        Signal { name: "tokenChanged" }
+        Signal { name: "projectChanged" }
+        Signal { name: "imageChanged" }
+    }
+}

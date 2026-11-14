@@ -1,0 +1,111 @@
+# what kind of object a Locale and its lists are
+(function(){ var l = Qt.locale("en_US"); return l.monthName === l.monthName })()
+=> boolean:false
+(function(){ var l = Qt.locale("en_US"); return l.toString === l.toString })()
+=> boolean:false
+(function(){ var l = Qt.locale("en_US"); var f = l.monthName; return f(0) })()
+=> string:January
+(function(){ var l = Qt.locale("en_US"); var f = l.monthName; return f.call(Qt.locale("de_DE"), 0) })()
+=> string:January
+(function(){ var f = Qt.locale("en_US").monthName; try { return f.call({}, 0) } catch (e) { return "THROW " + e } })()
+=> string:January
+Object.keys(Qt.locale("en_US")).length
+=> number:19
+Object.keys(Qt.locale("en_US")).join(",")
+=> string:firstDayOfWeek,measurementSystem,textDirection,weekDays,uiLanguages,name,nativeLanguageName,nativeCountryName,nativeTerritoryName,decimalPoint,groupSeparator,percent,zeroDigit,negativeSign,positiveSign,exponential,amText,pmText,numberOptions
+Object.getOwnPropertyNames(Qt.locale("en_US")).join(",")
+=> string:firstDayOfWeek,measurementSystem,textDirection,weekDays,uiLanguages,name,nativeLanguageName,nativeCountryName,nativeTerritoryName,decimalPoint,groupSeparator,percent,zeroDigit,negativeSign,positiveSign,exponential,amText,pmText,numberOptions
+Object.getPrototypeOf(Qt.locale("en_US")) === Object.getPrototypeOf(Qt.locale("de_DE"))
+=> boolean:true
+Object.getPrototypeOf(Qt.locale("en_US")) === Object.prototype
+=> boolean:false
+Object.keys(Object.getPrototypeOf(Qt.locale("en_US"))).join(",")
+=> string:
+Object.getOwnPropertyNames(Object.getPrototypeOf(Qt.locale("en_US"))).join(",")
+=> string:toString
+Object.prototype.toString.call(Qt.locale("en_US"))
+=> string:[object QMLValueTypeWrapper]
+Object.prototype.toString.call(Qt.locale("en_US").weekDays)
+=> string:[object V4Sequence]
+Object.prototype.toString.call(Qt.locale("en_US").uiLanguages)
+=> string:[object V4Sequence]
+Object.prototype.toString.call(Qt.locale("en_US").monthName)
+=> string:[object Function]
+Qt.locale("en_US").hasOwnProperty("monthName")
+=> boolean:true
+Qt.locale("en_US").hasOwnProperty("toString")
+=> boolean:true
+Qt.locale("en_US").hasOwnProperty("name")
+=> boolean:true
+Qt.locale("en_US").hasOwnProperty("valueOf")
+=> boolean:false
+Qt.locale("en_US").hasOwnProperty("nope")
+=> boolean:false
+"monthName" in Qt.locale("en_US")
+=> boolean:false
+"toString" in Qt.locale("en_US")
+=> boolean:true
+"hasOwnProperty" in Qt.locale("en_US")
+=> boolean:true
+typeof Qt.locale("en_US").valueOf
+=> string:function
+Qt.locale("en_US").monthName.name
+=> string:
+Qt.locale("en_US").monthName.length
+=> number:0
+Qt.locale("en_US").toString.name
+=> string:
+String(Qt.locale("en_US").monthName)
+=> string:function() { [native code] }
+(function(){ var l = Qt.locale("en_US"); var d = Object.getOwnPropertyDescriptor(l, "monthName"); return d ? [typeof d.value, d.writable, d.enumerable, d.configurable].join(",") : "none" })()
+=> string:function,true,true,true
+(function(){ var l = Qt.locale("en_US"); var d = Object.getOwnPropertyDescriptor(l, "name"); return d ? [typeof d.value, d.writable, d.enumerable, d.configurable].join(",") : "none" })()
+=> string:string,true,true,true
+(function(){ var l = Qt.locale("en_US"); var k = []; for (var p in l) k.push(p); return k.length + ":" + k.join(",") })()
+=> string:19:firstDayOfWeek,measurementSystem,textDirection,weekDays,uiLanguages,name,nativeLanguageName,nativeCountryName,nativeTerritoryName,decimalPoint,groupSeparator,percent,zeroDigit,negativeSign,positiveSign,exponential,amText,pmText,numberOptions
+JSON.stringify(Qt.locale("en_US")).length > 50
+=> boolean:true
+JSON.stringify(Object.keys(JSON.parse(JSON.stringify(Qt.locale("en_US")))))
+=> string:["firstDayOfWeek","measurementSystem","textDirection","weekDays","uiLanguages","name","nativeLanguageName","nativeCountryName","nativeTerritoryName","decimalPoint","groupSeparator","percent","zeroDigit","negativeSign","positiveSign","exponential","amText","pmText","numberOptions"]
+(function(){ var w = Qt.locale("en_US").weekDays; return [typeof w, w.length, Array.isArray(w), w instanceof Array, typeof w.join, typeof w.map, w.join("-"), String(w), JSON.stringify(w)].join("|") })()
+=> string:object|5|false|true|function|function|1-2-3-4-5|1,2,3,4,5|[1,2,3,4,5]
+(function(){ var w = Qt.locale("en_US").uiLanguages; return [typeof w, w.length, Array.isArray(w), w instanceof Array, typeof w.join, typeof w.map, w.join("-"), String(w), JSON.stringify(w)].join("|") })()
+=> string:object|4|false|true|function|function|en-Latn-US-en-US-en-Latn-en|en-Latn-US,en-US,en-Latn,en|["en-Latn-US","en-US","en-Latn","en"]
+(function(){ var w = Qt.locale("en_US").weekDays; return Object.keys(w).join(",") + "|" + (Object.getPrototypeOf(w) === Array.prototype) + "|" + w.concat([9]).length + "|" + Array.isArray(w.slice()) + "|" + Array.isArray(w.map(function(x){ return x })) })()
+=> string:0,1,2,3,4|false|6|true|true
+(function(){ var w = Qt.locale("en_US").uiLanguages; return Object.keys(w).join(",") + "|" + (Object.getPrototypeOf(w) === Array.prototype) + "|" + w.concat(["x"]).length + "|" + Array.isArray(w.slice()) + "|" + Array.isArray(w.filter(function(x){ return true })) })()
+=> string:0,1,2,3|false|5|true|true
+(function(){ var l = Qt.locale("en_US"); return l.weekDays === l.weekDays })()
+=> boolean:true
+(function(){ var l = Qt.locale("en_US"); var w = l.weekDays; w.push(9); return w.length + "|" + l.weekDays.length })()
+=> THROW TypeError: Type error
+(function(){ var l = Qt.locale("en_US"); var w = l.weekDays; w[0] = 6; return w[0] + "|" + l.weekDays[0] })()
+=> THROW TypeError: Cannot insert into a readonly container
+(function(){ var l = Qt.locale("en_US"); var w = l.uiLanguages; w.push("x"); w[0] = "y"; return w.join(",") + "|" + l.uiLanguages.join(",") })()
+=> THROW TypeError: Type error
+(function(){ var l = Qt.locale("en_US"); l.monthName = 5; return typeof l.monthName })()
+=> THROW Error: Cannot assign int to QString
+(function(){ var l = Qt.locale("en_US"); try { "use strict"; l.zzz = 5 } catch (e) { return "THROW " + e } return typeof l.zzz })()
+=> string:undefined
+(function(){ var l = Qt.locale("en_US"); delete l.monthName; return typeof l.monthName })()
+=> string:function
+Qt.locale("en_US") instanceof Object
+=> boolean:true
+typeof Qt.locale("en_US")
+=> string:object
+Qt.locale("en_US").constructor === Object
+=> boolean:true
+String(Qt.locale("en_US").constructor).slice(0, 30)
+=> string:function Object() { [native co
+Qt.locale("en_US").toString()
+=> string:QLocale(English, Latin, United States)
+String(Qt.locale("en_US"))
+=> string:QLocale(English, Latin, United States)
+"" + Qt.locale("en_US")
+=> string:QLocale(English, Latin, United States)
+Qt.locale("en_US").toLocaleString === Qt.locale("en_US").toLocaleString
+=> boolean:true
+Qt.locale("en_US").isPrototypeOf === Object.prototype.isPrototypeOf
+=> boolean:true
+Qt.locale("en_US").hasOwnProperty === Object.prototype.hasOwnProperty
+=> boolean:true

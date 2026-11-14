@@ -1,0 +1,725 @@
+// Runtime helpers for rigen-generated code (`crate::rt`); mirrors `qml::eval::Interp`.
+
+use std::rc::Rc;
+
+use qml::eval::{BinOp, Callable, Ex, R};
+use qml::jsrt::{self, Cx, Env};
+use qml::runtime::Sym;
+use qml::value::Value;
+
+/// Completion of a `try` with `finally`.
+pub enum Cpl {
+    N,
+    R(Value),
+    J(u32),
+    T(Ex),
+}
+
+/// `sym!`: the inlined fast path is one load; the initializer is shared by every call site
+/// (a closure per site would monomorphize `OnceLock::get_or_init` tens of thousands of times).
+#[inline(always)]
+pub fn sym(cell: &'static std::sync::OnceLock<Sym>, s: &'static str) -> Sym {
+    match cell.get() {
+        Some(&n) => n,
+        None => sym_init(cell, s),
+    }
+}
+
+#[cold]
+#[inline(never)]
+fn sym_init(cell: &'static std::sync::OnceLock<Sym>, s: &'static str) -> Sym {
+    *cell.get_or_init(|| Sym::new(s))
+}
+
+/// A generated module's string literals (`LITS`, deduplicated, indexed at generation time) and
+/// this thread's `Rc<str>` of each, made on first use.
+pub struct LitCells {
+    lits: &'static [&'static str],
+    cells: Box<[std::cell::OnceCell<Rc<str>>]>,
+}
+
+impl LitCells {
+    pub fn new(lits: &'static [&'static str]) -> Self {
+        LitCells { lits, cells: lits.iter().map(|_| std::cell::OnceCell::new()).collect() }
+    }
+
+    #[inline]
+    fn get(&self, i: u32) -> Value {
+        let i = i as usize;
+        Value::Str(self.cells[i].get_or_init(|| Rc::from(self.lits[i])).clone())
+    }
+}
+
+/// `js_str!`: literal `i` of the module whose cells are `cells`. Shared by every site.
+#[inline(never)]
+pub fn lit(cells: &'static std::thread::LocalKey<LitCells>, i: u32) -> Value {
+    cells.with(|c| c.get(i))
+}
+
+#[inline]
+pub fn tick(cx: &mut Cx) -> R<()> {
+    if cx.interrupted() {
+        return cx.throw("Error", "Interrupted");
+    }
+    Ok(())
+}
+
+#[inline]
+pub fn nullish(v: &Value) -> bool {
+    matches!(v, Value::Undefined | Value::Null)
+}
+
+#[inline]
+pub fn callable(v: &Value) -> bool {
+    matches!(v, Value::Obj(o) if o.borrow().call.is_some())
+}
+
+/// QML scope `(item, ctx)` of a body (`qs__`, read once per call).
+pub type Qs = Option<(usize, usize)>;
+
+#[inline]
+pub fn qscope(env: &Env) -> Qs {
+    env.root.qs
+}
+
+/// A JS global var `n`: a library's `.import` alias or top-level declaration (QML code
+/// cannot create globals, see [`assign`]).
+#[inline]
+fn global(cx: &Cx, n: &str) -> Option<Value> {
+    cx.global.borrow().vars.get(n).cloned()
+}
+
+/// Value of a free name that is no built-in global: global var, else [`jsrt::lookup_qml`]
+/// (the QML scope frame holds no other vars for compiled bodies).
+#[inline(never)]
+pub fn qml(cx: &mut Cx, env: &Env, n: Sym) -> R<Value> {
+    match global(cx, &n) {
+        Some(v) => Ok(v),
+        None => jsrt::lookup_qml(cx, env, n),
+    }
+}
+
+/// `n = v` for a [`qml`] name.
+pub fn assign_qml(cx: &mut Cx, env: &Env, n: Sym, v: Value) -> R<()> {
+    if let Some(slot) = cx.global.borrow_mut().vars.get_mut(&*n) {
+        *slot = v;
+        return Ok(());
+    }
+    jsrt::assign_qml(cx, env, n, v)
+}
+
+/// `n(args)` for a [`qml`] name.
+pub fn call_qml(cx: &mut Cx, env: &Env, n: Sym, argv: &[Value], optional: bool) -> R<Value> {
+    match global(cx, &n) {
+        Some(f) => call_local(cx, &f, argv, optional),
+        None => jsrt::call_qml(cx, env, n, argv, optional),
+    }
+}
+
+/// `typeof name` for a [`qml`] name: never throws.
+pub fn type_of_qml(cx: &mut Cx, env: &Env, n: Sym) -> Value {
+    if global(cx, &n).is_none() && cx.names_uncreated_singleton(env.root.qs, &n) {
+        return Value::str("object");
+    }
+    match qml(cx, env, n) {
+        Ok(v) => Value::str(v.type_of()),
+        Err(_) => Value::str("undefined"),
+    }
+}
+
+/// After an in-place mutating builtin on a [`qml`] name's value.
+pub fn write_back_qml(cx: &mut Cx, env: &Env, n: Sym, arr: &Value) {
+    if global(cx, &n).is_some() {
+        jsrt::write_back_owner(cx, arr);
+    } else if matches!(arr, Value::Obj(x) if x.borrow().array.is_some())
+        && let Some((item, ctx)) = env.root.qs
+    {
+        cx.host.write_back(item, ctx, &n, arr.clone());
+    }
+}
+
+/// A free name that is no by-name var or global: QML scope, then the value globals.
+fn qml_name(cx: &mut Cx, qs: Qs, n: Sym) -> R<Value> {
+    if let Some(v) = cx.host_lookup(qs, &n) {
+        return Ok(v);
+    }
+    match &*n {
+        "undefined" => Ok(Value::Undefined),
+        "NaN" => Ok(Value::Num(f64::NAN)),
+        "Infinity" => Ok(Value::Num(f64::INFINITY)),
+        _ => cx.throw("ReferenceError", format!("{n} is not defined")),
+    }
+}
+
+/// Value of a free name (`Interp::lookup` with the QML scope already known).
+#[inline(never)]
+pub fn name(cx: &mut Cx, env: &Env, qs: Qs, n: Sym) -> R<Value> {
+    match env.var(cx, &n) {
+        Some(v) => Ok(v),
+        None => qml_name(cx, qs, n),
+    }
+}
+
+/// `typeof name` for a free name: never throws.
+pub fn type_of_name(cx: &mut Cx, env: &Env, qs: Qs, n: Sym) -> Value {
+    if env.var(cx, &n).is_none() && cx.names_uncreated_singleton(qs, &n) {
+        return Value::str("object");
+    }
+    match name(cx, env, qs, n) {
+        Ok(v) => Value::str(v.type_of()),
+        Err(_) => Value::str("undefined"),
+    }
+}
+
+/// Value `v` of the `let`/`const`/`class` binding `n`, which may still be in its temporal
+/// dead zone (`Interp::local`).
+#[inline]
+pub fn bound(cx: &mut Cx, v: Value, n: &str) -> R<Value> {
+    match v {
+        Value::Empty => cx.uninitialized(n),
+        v => Ok(v),
+    }
+}
+
+/// `super(...)` in an arrow function: QV4's ReferenceError (`Interp::call_expr`).
+#[cold]
+pub fn super_called(cx: &mut Cx) -> R<Value> {
+    cx.throw("ReferenceError", "super() already called.")
+}
+
+/// The `this` of a `super.x` reference: QV4's ReferenceError in a derived constructor before
+/// `super(...)` (`Interp::super_this`).
+#[inline]
+pub fn super_this(cx: &mut Cx, v: Value) -> R<Value> {
+    match v {
+        Value::Empty => cx.throw("ReferenceError", "Missing call to super()."),
+        v => Ok(v),
+    }
+}
+
+/// A store to `this.name` of a derived constructor, whose `this` is `v`: QV4's TypeError
+/// before `super(...)`.
+#[inline]
+pub fn unbound_store(cx: &mut Cx, v: &Value) -> R<()> {
+    match v {
+        Value::Empty => cx.throw("TypeError", "Type error"),
+        _ => Ok(()),
+    }
+}
+
+/// `this` as the base of the call `this.name(...)`: QV4 prints the unbound one as the number
+/// it holds there (`Interp::callee_base`).
+#[inline]
+pub fn this_callee(cx: &mut Cx, v: Value, name: &str) -> R<Value> {
+    match v {
+        Value::Empty => cx.not_a_method(&Value::Num(0.0), name),
+        v => Ok(v),
+    }
+}
+
+/// A write to the binding `n` holding `v` is allowed: it is out of its temporal dead zone.
+#[inline]
+pub fn assignable(cx: &mut Cx, v: &Value, n: &str) -> R<()> {
+    match v {
+        Value::Empty => cx.uninitialized(n),
+        _ => Ok(()),
+    }
+}
+
+/// Free name write (`Interp::assign_var` with the QML scope already known): declared scope
+/// var, else QML property in scope, else QV4's "Invalid write to global property" error.
+pub fn assign(cx: &mut Cx, env: &Env, qs: Qs, n: Sym, v: Value) -> R<()> {
+    let n: &str = &n;
+    let v = match env.store_var(cx, n, v) {
+        qml::eval::Stored::Done => return Ok(()),
+        qml::eval::Stored::Uninitialized => return cx.uninitialized(n),
+        qml::eval::Stored::Undeclared(v) => v,
+    };
+    if let Some((item, ctx)) = qs
+        && cx.host_assign(item, ctx, n, v)?
+    {
+        return Ok(());
+    }
+    cx.invalid_global_write(n)
+}
+
+pub fn up(env: &Env, hops: u32) -> Env {
+    env.up(hops)
+}
+
+/// The environment of a handler written as a function (see `qml::ir::is_function_handler`):
+/// without the by-name signal parameters, which only its formals receive.
+pub fn without_signal_params(env: &Env) -> Env {
+    Env::new(env.root.qs, None)
+}
+
+/// Handler parameter `i`: the call argument, else the name from the QML scope.
+pub fn arg_or_lookup(cx: &mut Cx, env: &Env, qs: Qs, args: &[Value], i: usize, n: Sym) -> Value {
+    match args.get(i) {
+        Some(v) => v.clone(),
+        None => name(cx, env, qs, n).unwrap_or_default(),
+    }
+}
+
+/// `x + y`: numbers here, everything else (concatenation, ToPrimitive) via the interpreter.
+#[inline(never)]
+pub fn add(cx: &mut Cx, x: Value, y: Value) -> R<Value> {
+    if let (Value::Num(a), Value::Num(b)) = (&x, &y) {
+        return Ok(Value::Num(a + b));
+    }
+    cx.binary(BinOp::Add, x, y)
+}
+
+/// A value no operator converts through ToPrimitive (ECMA-262 §7.1.1): numeric and relational
+/// operators on two of these need no call and cannot throw.
+#[inline]
+fn prim(v: &Value) -> bool {
+    matches!(
+        v,
+        Value::Undefined | Value::Null | Value::Bool(_) | Value::Num(_) | Value::Str(_) | Value::Str16(_)
+    )
+}
+
+#[inline]
+fn num(v: &Value) -> f64 {
+    match v {
+        Value::Num(n) => *n,
+        _ => v.to_number(),
+    }
+}
+
+/// ToNumber of an operand: objects via `valueOf`/`toString`, which may throw.
+#[inline(never)]
+pub fn to_num(cx: &mut Cx, v: &Value) -> R<f64> {
+    if prim(v) { Ok(num(v)) } else { cx.to_numeric(v) }
+}
+
+/// A numeric operator: primitives here, objects (ToPrimitive) via `Interp::binary`.
+#[inline(always)]
+fn arith(cx: &mut Cx, op: BinOp, x: &Value, y: &Value) -> R<Value> {
+    if prim(x) && prim(y) {
+        return Ok(Value::Num(qml::eval::num_arith(op, num(x), num(y))));
+    }
+    cx.binary(op, x.clone(), y.clone())
+}
+
+/// A relational operator: primitives here, objects (ToPrimitive) via `Interp::binary`.
+#[inline(always)]
+fn rel(cx: &mut Cx, op: BinOp, x: &Value, y: &Value) -> R<Value> {
+    if prim(x) && prim(y) {
+        return Ok(Value::Bool(qml::eval::rel_prim(op, x, y)));
+    }
+    cx.binary(op, x.clone(), y.clone())
+}
+
+macro_rules! ops {
+    ($via:ident: $($name:ident $op:ident),*) => {$(
+        #[inline(never)]
+        pub fn $name(cx: &mut Cx, x: &Value, y: &Value) -> R<Value> {
+            $via(cx, BinOp::$op, x, y)
+        }
+    )*};
+}
+ops!(arith: sub Sub, mul Mul, div Div, rem Rem, exp Exp, band BitAnd, bor BitOr, bxor BitXor, shl Shl, shr Shr, ushr UShr);
+ops!(rel: lt Lt, gt Gt, le Le, ge Ge);
+
+#[inline(never)]
+pub fn in_op(cx: &mut Cx, x: &Value, y: &Value) -> R<Value> {
+    cx.binary(BinOp::In, x.clone(), y.clone())
+}
+
+#[inline(never)]
+pub fn instance_of(cx: &mut Cx, x: &Value, y: &Value) -> R<Value> {
+    cx.binary(BinOp::InstanceOf, x.clone(), y.clone())
+}
+
+#[inline(never)]
+pub fn neg(cx: &mut Cx, v: &Value) -> R<Value> {
+    Ok(Value::Num(-to_num(cx, v)?))
+}
+
+#[inline(never)]
+pub fn pos(cx: &mut Cx, v: &Value) -> R<Value> {
+    Ok(Value::Num(to_num(cx, v)?))
+}
+
+#[inline(never)]
+pub fn bnot(cx: &mut Cx, v: &Value) -> R<Value> {
+    Ok(Value::Num(!qml::eval::to_i32(to_num(cx, v)?) as f64))
+}
+
+#[inline(never)]
+pub fn seq(x: &Value, y: &Value) -> Value {
+    Value::Bool(x.strict_eq(y))
+}
+
+#[inline(never)]
+pub fn sne(x: &Value, y: &Value) -> Value {
+    Value::Bool(!x.strict_eq(y))
+}
+
+#[inline(never)]
+pub fn leq(cx: &mut Cx, x: &Value, y: &Value) -> R<Value> {
+    Ok(Value::Bool(cx.loose_eq(x, y)?))
+}
+
+#[inline(never)]
+pub fn lne(cx: &mut Cx, x: &Value, y: &Value) -> R<Value> {
+    Ok(Value::Bool(!cx.loose_eq(x, y)?))
+}
+
+#[inline(never)]
+pub fn not(v: &Value) -> Value {
+    Value::Bool(!v.truthy())
+}
+
+/// [`member`] of a temporary: out of line, so its drop is not inlined at every site.
+#[inline(never)]
+pub fn member_of(cx: &mut Cx, o: Value, name: &str, sym: Sym) -> R<Value> {
+    member(cx, &o, name, sym)
+}
+
+#[inline]
+pub fn member(cx: &mut Cx, o: &Value, name: &str, sym: Sym) -> R<Value> {
+    match o {
+        Value::Item(i) => cx.item_get(*i, sym),
+        _ => cx.get(o, name),
+    }
+}
+
+#[inline(never)]
+pub fn index(cx: &mut Cx, o: &Value, k: &Value) -> R<Value> {
+    if let (Value::Obj(ob), Value::Num(n)) = (o, k) {
+        if *n >= 0.0
+            && *n < u32::MAX as f64
+            && n.fract() == 0.0
+            && let Some(e) = ob.borrow().dense_element(*n as usize)
+        {
+            return Ok(e);
+        }
+    }
+    cx.get_key(o, k)
+}
+
+/// `super.name` in a method with [[HomeObject]] `home`, `this` the receiver of a getter.
+pub fn super_member(cx: &mut Cx, home: &Value, this: &Value, name: &str) -> R<Value> {
+    cx.super_get(home, this, &jsrt::PropKey::Str(name.into()))
+}
+
+/// `super[k]` in a method with [[HomeObject]] `home`.
+pub fn super_index(cx: &mut Cx, home: &Value, this: &Value, k: &Value) -> R<Value> {
+    cx.super_get(home, this, &jsrt::PropKey::of(k))
+}
+
+/// A Super Reference (MakeSuperPropertyReference, ECMA-262 §13.3.7.3) without its key: the
+/// super base read and the `this` a write lands on.
+pub struct SuperRef {
+    pub base: Value,
+    pub this: Value,
+}
+
+/// The super base of `home` now (GetSuperBase), with receiver `this`.
+pub fn super_ref(cx: &mut Cx, home: &Value, this: Value) -> SuperRef {
+    SuperRef { base: cx.super_base(home), this }
+}
+
+/// GetValue of `super[k]`, `k` already a property key value.
+pub fn super_ref_get(cx: &mut Cx, r: &SuperRef, k: &Value) -> R<Value> {
+    cx.super_get_from(r.base.clone(), &r.this, &jsrt::PropKey::of(k))
+}
+
+/// PutValue of `super[k] = v`: [[Set]] on the super base with receiver `this`.
+pub fn super_put(cx: &mut Cx, r: &SuperRef, k: &Value, v: Value, strict: bool) -> R<()> {
+    cx.super_put(&r.base, &r.this, k, v, strict)
+}
+
+const MUTATING: [&str; 9] =
+    ["push", "pop", "shift", "unshift", "splice", "sort", "reverse", "fill", "copyWithin"];
+
+/// [`call_method`] of a temporary receiver whose in-place mutation needs no write-back.
+#[inline(never)]
+pub fn call_method_of(cx: &mut Cx, o: Value, sym: Sym, argv: &[Value], optional: bool) -> R<Value> {
+    Ok(call_method(cx, &o, sym, argv, optional)?.0)
+}
+
+/// `o.name(...)`; the flag says a builtin mutated `o` in place (caller writes back).
+pub fn call_method(cx: &mut Cx, o: &Value, sym: Sym, argv: &[Value], optional: bool) -> R<(Value, bool)> {
+    let name: &str = &sym;
+    if let Some(r) = qml::builtins::method(cx, o, name, argv)? {
+        return Ok((r, MUTATING.contains(&name)));
+    }
+    cx.nullish_call(o, name)?;
+    let f = match o {
+        Value::Item(i) => cx.item_get(*i, sym)?,
+        _ => cx.get(o, name)?,
+    };
+    if let (Value::Item(i), Value::Undefined) = (o, &f)
+        && let Some(r) = cx.host_call(*i, name, argv)
+    {
+        return Ok((r?, false));
+    }
+    if optional && nullish(&f) {
+        return Err(Ex::Short);
+    }
+    if !callable(&f) {
+        return cx.not_a_method(o, name);
+    }
+    Ok((cx.call(&f, o.clone(), argv)?, false))
+}
+
+/// ECMA-262 OptionalChain: an optional `o.name(..)` resolves its callee before the
+/// arguments and ends the chain on a nullish one. `Some(f)`: the property's value; `None`: a
+/// builtin or native method [`call_method`] dispatches.
+pub fn opt_method(cx: &mut Cx, o: &Value, sym: Sym) -> R<Option<Value>> {
+    if qml::builtins::has_method(cx, o, &sym) {
+        return Ok(None);
+    }
+    let f = match o {
+        Value::Item(i) => cx.item_get(*i, sym)?,
+        _ => cx.get(o, &sym)?,
+    };
+    if nullish(&f) {
+        return Err(Ex::Short);
+    }
+    Ok(Some(f))
+}
+
+/// [`call_method`] (optional) with the callee [`opt_method`] resolved.
+pub fn call_method_pre(cx: &mut Cx, o: &Value, sym: Sym, f: Option<Value>, argv: &[Value]) -> R<(Value, bool)> {
+    let Some(f) = f else {
+        return call_method(cx, o, sym, argv, true);
+    };
+    let name: &str = &sym;
+    if let Some(r) = qml::builtins::method(cx, o, name, argv)? {
+        return Ok((r, MUTATING.contains(&name)));
+    }
+    if !callable(&f) {
+        return cx.not_a_method(o, name);
+    }
+    Ok((cx.call(&f, o.clone(), argv)?, false))
+}
+
+/// [`opt_method`] for `o[k](..)`.
+pub fn opt_index(cx: &mut Cx, o: &Value, k: &Value) -> R<Option<Value>> {
+    if let Value::Symbol(s) = k {
+        let f = cx.get_sym(o, s)?;
+        return if nullish(&f) { Err(Ex::Short) } else { Ok(Some(f)) };
+    }
+    let name = k.to_js_string();
+    if qml::builtins::has_method(cx, o, &name) {
+        return Ok(None);
+    }
+    let f = cx.get(o, &name)?;
+    if nullish(&f) {
+        return Err(Ex::Short);
+    }
+    Ok(Some(f))
+}
+
+/// [`call_index`] (optional) with the callee [`opt_index`] resolved.
+pub fn call_index_pre(cx: &mut Cx, o: &Value, k: &Value, f: Option<Value>, argv: &[Value]) -> R<Value> {
+    let Some(f) = f else {
+        return call_index(cx, o, k, argv, true);
+    };
+    if let Value::Symbol(_) = k {
+        return cx.call(&f, o.clone(), argv);
+    }
+    let name = k.to_js_string();
+    if let Some(r) = qml::builtins::method(cx, o, &name, argv)? {
+        return Ok(r);
+    }
+    cx.call(&f, o.clone(), argv)
+}
+
+/// Optional `n(..)` of a free name ([`call_name`]): ends the chain before the arguments when
+/// the callee is nullish.
+pub fn opt_name(cx: &mut Cx, env: &Env, qs: Qs, sym: Sym) -> R<()> {
+    let f = match env.var(cx, &sym) {
+        Some(f) => f,
+        None if qs.is_some_and(|(item, _)| cx.host.has_method(item, &sym)) => return Ok(()),
+        None => qml_name(cx, qs, sym)?,
+    };
+    if nullish(&f) { Err(Ex::Short) } else { Ok(()) }
+}
+
+/// [`opt_name`] for a [`qml`] name ([`call_qml`]).
+pub fn opt_qml(cx: &mut Cx, env: &Env, n: Sym) -> R<()> {
+    let f = match global(cx, &n) {
+        Some(f) => f,
+        None if env.root.qs.is_some_and(|(item, _)| cx.host.has_method(item, &n)) => return Ok(()),
+        None => jsrt::lookup_qml(cx, env, n)?,
+    };
+    if nullish(&f) { Err(Ex::Short) } else { Ok(()) }
+}
+
+/// `o.name = v` with a static `name`.
+#[inline]
+pub fn put_member(cx: &mut Cx, o: &Value, name: Sym, v: Value) -> R<()> {
+    cx.put(o, &name, v)
+}
+
+pub fn put_member_strict(cx: &mut Cx, o: &Value, name: Sym, v: Value) -> R<()> {
+    cx.put_or_throw(o, &name, v)
+}
+
+/// The call of `super[k](...)` with `f` the method read.
+pub fn call_super_method(cx: &mut Cx, f: Value, this: &Value, k: &jsrt::PropKey, argv: &[Value], optional: bool) -> R<Value> {
+    cx.call_super_method(&f, this, k, argv, optional)
+}
+
+pub fn call_index(cx: &mut Cx, o: &Value, k: &Value, argv: &[Value], optional: bool) -> R<Value> {
+    if let Value::Symbol(s) = k {
+        let f = cx.get_sym(o, s)?;
+        if optional && nullish(&f) {
+            return Err(Ex::Short);
+        }
+        return cx.call(&f, o.clone(), argv);
+    }
+    let name = k.to_js_string();
+    if let Some(r) = qml::builtins::method(cx, o, &name, argv)? {
+        return Ok(r);
+    }
+    let f = cx.get(o, &name)?;
+    if optional && nullish(&f) {
+        return Err(Ex::Short);
+    }
+    cx.call(&f, o.clone(), argv)
+}
+
+/// Call of a lexically bound name. QV4 names the value, not the variable.
+pub fn call_local(cx: &mut Cx, f: &Value, argv: &[Value], optional: bool) -> R<Value> {
+    if optional && nullish(f) {
+        return Err(Ex::Short);
+    }
+    if !callable(f) {
+        return cx.not_a_function(f);
+    }
+    cx.call(f, Value::Undefined, argv)
+}
+
+/// Call of any other callee expression.
+pub fn call_value(cx: &mut Cx, f: &Value, argv: &[Value], optional: bool) -> R<Value> {
+    if optional && nullish(f) {
+        return Err(Ex::Short);
+    }
+    cx.call(f, Value::Undefined, argv)
+}
+
+/// Call of a free name: by-name var or global, else a QML scope method or function
+/// ([`jsrt::call_scope_name`]: `this` = scope item for its own JS methods, as QV4).
+pub fn call_name(cx: &mut Cx, env: &Env, qs: Qs, sym: Sym, argv: &[Value], optional: bool) -> R<Value> {
+    match env.var(cx, &sym) {
+        Some(f) => call_local(cx, &f, argv, optional),
+        None => jsrt::call_scope_name(cx, qs, sym, argv, optional),
+    }
+}
+
+/// `super(...)` in the derived constructor `active` (ECMA-262 §13.3.7.1): Construct of its
+/// prototype for NewTarget `nt`; the constructed object.
+pub fn super_construct(cx: &mut Cx, active: &Value, args: &[Value], nt: &Value) -> R<Value> {
+    cx.super_construct(active, args, nt)
+}
+
+fn prototype_of(f: &Value) -> Option<qml::value::Obj> {
+    let Value::Obj(fo) = f else { return None };
+    qml::eval::fn_prototype(fo)
+}
+
+/// Prototype wiring of a class value to its `extends` heritage; returns its prototype object.
+pub fn class_proto(cx: &mut Cx, cv: &Value, parent: Option<&Value>) -> R<Value> {
+    let proto = prototype_of(cv).unwrap();
+    if let Some(p) = parent {
+        cx.class_heritage(cv, &proto, p)?;
+    }
+    Ok(Value::Obj(proto))
+}
+
+pub fn define_method(target: &Value, name: &str, kind: &str, f: Value) {
+    if let Value::Obj(o) = target {
+        qml::eval::define_method(o, name, kind, f);
+    }
+}
+
+/// [`define_method`] for a computed key.
+pub fn define_method_pk(target: &Value, name: &jsrt::PropKey, kind: &str, f: Value) {
+    if let Value::Obj(o) = target {
+        qml::eval::define_method_pk(o, name, kind, f);
+    }
+}
+
+/// After an in-place mutating builtin on a free name's value.
+pub fn write_back_name(cx: &mut Cx, env: &Env, qs: Qs, n: Sym, arr: &Value) {
+    let n: &str = &n;
+    if env.var(cx, n).is_none() {
+        if matches!(arr, Value::Obj(x) if x.borrow().array.is_some())
+            && let Some((item, ctx)) = qs
+        {
+            cx.host.write_back(item, ctx, n, arr.clone());
+        }
+    } else {
+        jsrt::write_back_owner(cx, arr);
+    }
+}
+
+/// After `o.k = v`: notify the item property that owns the sequence `o`. A value type
+/// notifies its owner in the write itself.
+pub fn notify_owner(cx: &mut Cx, o: &Value) {
+    let owner = match o {
+        Value::Obj(x) => {
+            let b = x.borrow();
+            (!matches!(b.internal, qml::value::Internal::ValueType(_)))
+                .then(|| b.owner.clone())
+                .flatten()
+        }
+        _ => None,
+    };
+    if let Some((i, p)) = owner {
+        cx.host.notify(i, &p);
+    }
+}
+
+/// The length of the array `o`, read around `o.length = n`: writing the length an array
+/// already has changes nothing, so its property is not notified.
+pub fn seq_len(o: &Value) -> Option<usize> {
+    match o {
+        Value::Obj(x) => x.borrow().array.as_ref().map(Vec::len),
+        _ => None,
+    }
+}
+
+/// RequireObjectCoercible of an object pattern's value.
+pub fn require_object_coercible(cx: &mut Cx, v: &Value) -> R<()> {
+    match v {
+        Value::Undefined | Value::Null => {
+            cx.throw("TypeError", "Cannot destructure 'undefined' or 'null'")
+        }
+        _ => Ok(()),
+    }
+}
+
+/// `...rest` of an object pattern whose keys are all static: CopyDataProperties of `v`
+/// into a new object, `used` excluded.
+pub fn object_rest(cx: &mut Cx, v: &Value, used: &[&str]) -> R<Value> {
+    let used: Vec<jsrt::PropKey> = used.iter().map(|k| jsrt::PropKey::Str(k.to_string())).collect();
+    object_rest_pk(cx, v, &used)
+}
+
+/// [`object_rest`] of a pattern with computed keys.
+pub fn object_rest_pk(cx: &mut Cx, v: &Value, used: &[jsrt::PropKey]) -> R<Value> {
+    let o = qml::eval::new_obj();
+    cx.copy_data_properties(&o, v, used)?;
+    Ok(Value::Obj(o))
+}
+
+pub fn for_in(cx: &mut Cx, v: &Value) -> qml::eval::ForIn {
+    cx.for_in(v)
+}
+
+#[inline(never)]
+pub fn for_in_next(cx: &mut Cx, s: &mut qml::eval::ForIn) -> R<Option<Value>> {
+    Ok(cx.for_in_next(s)?.map(|k| Value::str(&k)))
+}
+
+pub fn unsupported(cx: &mut Cx, what: &str) -> R<Value> {
+    cx.throw("SyntaxError", format!("unsupported construct {what}"))
+}

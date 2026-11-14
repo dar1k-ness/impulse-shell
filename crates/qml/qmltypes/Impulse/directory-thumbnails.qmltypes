@@ -1,0 +1,54 @@
+import QtQuick.tooling 1.2
+
+// Freedesktop thumbnails of size `size` (normal, large, x-large, xx-large) for the files in
+// `directory`. Setting `running` starts the work off the main thread; `finished` ends it.
+// A thumbnail is made when the file has none or changed since (Thumb::MTime). `progress` and
+// `fileGenerated` report every file as it is done.
+// Implemented natively by ri (crates/qml/src/imgjobs.rs, crates/imgtools/src/thumbs.rs).
+Module {
+    Component {
+        file: "imgjobs.rs"
+        name: "ImpulseDirectoryThumbnails"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/DirectoryThumbnails 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "directory"
+            type: "QString"
+            read: "directory"
+            write: "setDirectory"
+            notify: "directoryChanged"
+            index: 0
+        }
+        Property {
+            name: "size"
+            type: "QString"
+            read: "size"
+            write: "setSize"
+            notify: "sizeChanged"
+            index: 1
+        }
+        Property {
+            name: "running"
+            type: "bool"
+            read: "running"
+            write: "setRunning"
+            notify: "runningChanged"
+            index: 2
+        }
+        Signal { name: "directoryChanged" }
+        Signal { name: "sizeChanged" }
+        Signal { name: "runningChanged" }
+        Signal {
+            name: "progress"
+            Parameter { name: "completed"; type: "int" }
+            Parameter { name: "total"; type: "int" }
+        }
+        Signal {
+            name: "fileGenerated"
+            Parameter { name: "path"; type: "QString" }
+        }
+        Signal { name: "finished" }
+    }
+}

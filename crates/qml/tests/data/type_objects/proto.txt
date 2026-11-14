@@ -1,0 +1,736 @@
+typeof Item.call	function
+typeof Item.bind	function
+typeof Item.apply	function
+typeof Item.name	string
+Item.name	
+Item.length	number:0
+typeof Item.prototype	undefined
+typeof Item.constructor	function
+Item.constructor === Function	boolean:true
+Item.constructor === Object	boolean:false
+typeof Item.hasOwnProperty	function
+Item instanceof Function	boolean:true
+Item instanceof Object	boolean:true
+Object.getPrototypeOf(Item) === Function.prototype	boolean:false
+Object.getPrototypeOf(Item) === Object.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(Item)) === Function.prototype	boolean:true
+Object.getPrototypeOf(Object.getPrototypeOf(Item)) === Object.prototype	boolean:false
+Object.getPrototypeOf(Item) === Object.getPrototypeOf(Item)	boolean:true
+Object.getOwnPropertyNames(Item).join(",")	
+Object.getOwnPropertyNames(Object.getPrototypeOf(Item)).join(",")	toString
+Object.prototype.toString.call(Item)	[object QMLTypeWrapper]
+Item.hasOwnProperty("toString")	boolean:true
+Item.hasOwnProperty("name")	boolean:true
+"name" in Item	boolean:true
+"call" in Item	boolean:true
+"prototype" in Item	boolean:false
+typeof Item[Symbol.hasInstance]	function
+Item.call === Function.prototype.call	boolean:true
+Item.toString === Function.prototype.toString	boolean:false
+Item.toString === Item.toString	boolean:true
+Item.toString()	QtQuick/Item
+Function.prototype.toString.call(Item)	!TypeError: Type error
+Item.call()	!TypeError: Type error
+Item.call(null)	!TypeError: Type error
+Item.apply(null, [])	!TypeError: Type error
+typeof Item.bind()	!TypeError: Type error
+String(Item.bind())	!TypeError: Type error
+new Item()	!TypeError: Type error
+typeof new Item()	!TypeError: Type error
+String(new Item())	!TypeError: Type error
+new Item() instanceof Item	!TypeError: Type error
+Item.foo	undefined:undefined
+(Item.foo = 1, Item.foo)	undefined:undefined
+(function(){ "use strict"; Item.foo = 1; return Item.foo })()	!TypeError: Type error
+(Item.toString = 1, typeof Item.toString)	function
+(Item.name = "z", Item.name)	
+delete Item.foo	boolean:true
+delete Item.toString	boolean:true
+Object.isExtensible(Item)	boolean:true
+Object.isFrozen(Item)	boolean:false
+Object.isSealed(Item)	boolean:false
+Object.keys(Item).join(",")	
+JSON.stringify(Item)	{}
+Item.valueOf === Object.prototype.valueOf	boolean:true
+Item.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:true
+Item.toLocaleString()	QtQuick/Item
+Object.getOwnPropertyDescriptor(Item, "toString")	object:[object Object]
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Item), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+(function(){ var n = 0; for (var k in Item) n++; return n })()	number:0
+Reflect.ownKeys(Item).length	number:0
+Item.toString.call(Item)	QtQuick/Item
+Object.prototype.hasOwnProperty.call(Item, "x")	boolean:false
+Object.prototype.propertyIsEnumerable.call(Item, "toString")	boolean:true
+String(Object.getPrototypeOf(Item))	undefined
+typeof Object.getPrototypeOf(Item)	object
+Object.prototype.toString.call(Object.getPrototypeOf(Item))	[object Object]
+Object.setPrototypeOf(Item, null) === Item	boolean:true
+Object.defineProperty(Item, "zz", {value: 1}).zz	number:1
+Object.freeze(Item) === Item	boolean:true
+Object.preventExtensions(Item) === Item	boolean:true
+typeof QtObject.call	function
+typeof QtObject.bind	function
+typeof QtObject.apply	function
+typeof QtObject.name	string
+QtObject.name	
+QtObject.length	number:0
+typeof QtObject.prototype	undefined
+typeof QtObject.constructor	function
+QtObject.constructor === Function	boolean:true
+QtObject.constructor === Object	boolean:false
+typeof QtObject.hasOwnProperty	function
+QtObject instanceof Function	boolean:true
+QtObject instanceof Object	boolean:true
+Object.getPrototypeOf(QtObject) === Function.prototype	boolean:false
+Object.getPrototypeOf(QtObject) === Object.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(QtObject)) === Function.prototype	boolean:true
+Object.getPrototypeOf(Object.getPrototypeOf(QtObject)) === Object.prototype	boolean:false
+Object.getPrototypeOf(QtObject) === Object.getPrototypeOf(Item)	boolean:true
+Object.getOwnPropertyNames(QtObject).join(",")	
+Object.getOwnPropertyNames(Object.getPrototypeOf(QtObject)).join(",")	toString
+Object.prototype.toString.call(QtObject)	[object QMLTypeWrapper]
+QtObject.hasOwnProperty("toString")	boolean:true
+QtObject.hasOwnProperty("name")	boolean:true
+"name" in QtObject	boolean:true
+"call" in QtObject	boolean:true
+"prototype" in QtObject	boolean:false
+typeof QtObject[Symbol.hasInstance]	function
+QtObject.call === Function.prototype.call	boolean:true
+QtObject.toString === Function.prototype.toString	boolean:false
+QtObject.toString === Item.toString	boolean:true
+QtObject.toString()	QML/QtObject
+Function.prototype.toString.call(QtObject)	function() { [native code] }
+QtObject.call()	!TypeError: Function can only be called with |new|.
+QtObject.call(null)	!TypeError: Function can only be called with |new|.
+QtObject.apply(null, [])	!TypeError: Function can only be called with |new|.
+typeof QtObject.bind()	function
+QtObject()	!TypeError: Function can only be called with |new|.
+new QtObject()	object:QObject(0x)
+typeof new QtObject()	object
+String(new QtObject())	QObject(0x)
+QtObject.foo	undefined:undefined
+(QtObject.foo = 1, QtObject.foo)	undefined:undefined
+(function(){ "use strict"; QtObject.foo = 1; return QtObject.foo })()	!TypeError: Type error
+(QtObject.toString = 1, typeof QtObject.toString)	function
+(QtObject.name = "z", QtObject.name)	
+delete QtObject.foo	boolean:true
+delete QtObject.toString	boolean:true
+Object.isExtensible(QtObject)	boolean:true
+Object.isFrozen(QtObject)	boolean:false
+Object.isSealed(QtObject)	boolean:false
+Object.keys(QtObject).join(",")	
+JSON.stringify(QtObject)	undefined:undefined
+QtObject.valueOf === Object.prototype.valueOf	boolean:true
+QtObject.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:true
+QtObject.toLocaleString()	QML/QtObject
+Object.getOwnPropertyDescriptor(QtObject, "toString")	object:[object Object]
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(QtObject), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+(function(){ var n = 0; for (var k in QtObject) n++; return n })()	number:0
+Reflect.ownKeys(QtObject).length	number:0
+QtObject.toString.call(QtObject)	QML/QtObject
+Object.prototype.hasOwnProperty.call(QtObject, "x")	boolean:false
+Object.prototype.propertyIsEnumerable.call(QtObject, "toString")	boolean:true
+String(Object.getPrototypeOf(QtObject))	undefined
+typeof Object.getPrototypeOf(QtObject)	object
+Object.prototype.toString.call(Object.getPrototypeOf(QtObject))	[object Object]
+Object.setPrototypeOf(QtObject, null) === QtObject	boolean:true
+Object.defineProperty(QtObject, "zz", {value: 1}).zz	number:1
+Object.freeze(QtObject) === QtObject	boolean:true
+Object.preventExtensions(QtObject) === QtObject	boolean:true
+typeof ListView.call	undefined
+typeof ListView.bind	undefined
+typeof ListView.apply	undefined
+typeof ListView.name	undefined
+ListView.name	undefined:undefined
+ListView.length	undefined:undefined
+typeof ListView.prototype	undefined
+typeof ListView.constructor	function
+ListView.constructor === Function	boolean:false
+ListView.constructor === Object	boolean:true
+typeof ListView.hasOwnProperty	function
+Object.getPrototypeOf(ListView) === Function.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(ListView)) === Object.prototype	boolean:false
+ListView.hasOwnProperty("toString")	boolean:true
+ListView.hasOwnProperty("name")	boolean:false
+"prototype" in ListView	boolean:false
+ListView[Symbol.hasInstance] === Function.prototype[Symbol.hasInstance]	boolean:false
+ListView.call === Function.prototype.call	boolean:false
+ListView.toString === Function.prototype.toString	boolean:false
+ListView.toString === Item.toString	boolean:false
+ListView.toString()	QQuickListViewAttached(0x)
+ListView.foo	undefined:undefined
+delete ListView.foo	boolean:true
+delete ListView.toString	boolean:true
+Object.isExtensible(ListView)	boolean:true
+Object.isFrozen(ListView)	boolean:false
+Object.isSealed(ListView)	boolean:false
+ListView.valueOf === Object.prototype.valueOf	boolean:true
+ListView.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:true
+Object.getOwnPropertyDescriptor(ListView, "toString")	object:[object Object]
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(ListView), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+typeof ListView.caller	undefined
+typeof ListView.arguments	undefined
+Object.prototype.propertyIsEnumerable.call(ListView, "toString")	boolean:true
+typeof Object.getPrototypeOf(ListView)	object
+Object.prototype.toString.call(Object.getPrototypeOf(ListView))	[object Object]
+Object.setPrototypeOf(ListView, null) === ListView	boolean:true
+typeof Keys.call	undefined
+typeof Keys.bind	undefined
+typeof Keys.apply	undefined
+typeof Keys.name	undefined
+Keys.name	undefined:undefined
+Keys.length	undefined:undefined
+typeof Keys.prototype	undefined
+typeof Keys.constructor	function
+Keys.constructor === Function	boolean:false
+Keys.constructor === Object	boolean:true
+typeof Keys.hasOwnProperty	function
+Keys instanceof Object	boolean:true
+Object.getPrototypeOf(Keys) === Function.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(Keys)) === Object.prototype	boolean:false
+Object.prototype.toString.call(Keys)	[object QMLTypeWrapper]
+Keys.hasOwnProperty("toString")	boolean:true
+Keys.hasOwnProperty("name")	boolean:false
+"prototype" in Keys	boolean:false
+Keys[Symbol.hasInstance] === Function.prototype[Symbol.hasInstance]	boolean:false
+Keys.call === Function.prototype.call	boolean:false
+Keys.toString === Function.prototype.toString	boolean:false
+Keys.toString === Item.toString	boolean:false
+Keys.toString()	QQuickKeysAttached(0x)
+Function.prototype.toString.call(Keys)	!TypeError: Type error
+new Keys()	!TypeError: Type error
+typeof new Keys()	!TypeError: Type error
+String(new Keys())	!TypeError: Type error
+new Keys() instanceof Keys	!TypeError: Type error
+Keys.foo	undefined:undefined
+(Keys.foo = 1, Keys.foo)	undefined:undefined
+(function(){ "use strict"; Keys.foo = 1; return Keys.foo })()	!TypeError: Type error
+(Keys.toString = 1, typeof Keys.toString)	function
+(Keys.name = "z", Keys.name)	undefined:undefined
+delete Keys.foo	boolean:true
+delete Keys.toString	boolean:true
+Object.isExtensible(Keys)	boolean:true
+Object.isFrozen(Keys)	boolean:false
+Object.isSealed(Keys)	boolean:false
+Keys.valueOf === Object.prototype.valueOf	boolean:true
+Keys.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:true
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Keys), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+typeof Keys.caller	undefined
+typeof Keys.arguments	undefined
+Object.prototype.hasOwnProperty.call(Keys, "x")	boolean:false
+typeof Object.getPrototypeOf(Keys)	object
+Object.prototype.toString.call(Object.getPrototypeOf(Keys))	[object Object]
+Object.setPrototypeOf(Keys, null) === Keys	boolean:true
+Object.freeze(Keys) === Keys	boolean:true
+Object.preventExtensions(Keys) === Keys	boolean:true
+typeof Q.call	function
+typeof Q.bind	function
+typeof Q.apply	function
+typeof Q.name	string
+Q.name	
+Q.length	number:0
+typeof Q.prototype	undefined
+typeof Q.constructor	function
+Q.constructor === Function	boolean:true
+Q.constructor === Object	boolean:false
+typeof Q.hasOwnProperty	function
+Q instanceof Function	boolean:true
+Q instanceof Object	boolean:true
+Object.getPrototypeOf(Q) === Function.prototype	boolean:false
+Object.getPrototypeOf(Q) === Object.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(Q)) === Function.prototype	boolean:true
+Object.getPrototypeOf(Object.getPrototypeOf(Q)) === Object.prototype	boolean:false
+Object.getPrototypeOf(Q) === Object.getPrototypeOf(Item)	boolean:true
+Object.getOwnPropertyNames(Q).join(",")	
+Object.getOwnPropertyNames(Object.getPrototypeOf(Q)).join(",")	toString
+Object.prototype.toString.call(Q)	[object QMLTypeWrapper]
+Q.hasOwnProperty("toString")	boolean:true
+Q.hasOwnProperty("name")	boolean:true
+"name" in Q	boolean:true
+"call" in Q	boolean:true
+"prototype" in Q	boolean:false
+typeof Q[Symbol.hasInstance]	function
+Q.call === Function.prototype.call	boolean:true
+Q.toString === Function.prototype.toString	boolean:false
+Q.toString === Item.toString	boolean:true
+Q.toString()	Unknown Type
+Function.prototype.toString.call(Q)	!TypeError: Type error
+Q.call()	!TypeError: Type error
+Q.call(null)	!TypeError: Type error
+Q.apply(null, [])	!TypeError: Type error
+typeof Q.bind()	!TypeError: Type error
+String(Q.bind())	!TypeError: Type error
+new Q()	!TypeError: Type error
+typeof new Q()	!TypeError: Type error
+String(new Q())	!TypeError: Type error
+new Q() instanceof Q	!TypeError: Type error
+Q.foo	undefined:undefined
+(Q.foo = 1, Q.foo)	undefined:undefined
+(function(){ "use strict"; Q.foo = 1; return Q.foo })()	!TypeError: Type error
+(Q.toString = 1, typeof Q.toString)	function
+(Q.name = "z", Q.name)	
+delete Q.foo	boolean:true
+delete Q.toString	boolean:true
+Object.isExtensible(Q)	boolean:true
+Object.isFrozen(Q)	boolean:false
+Object.isSealed(Q)	boolean:false
+Object.keys(Q).join(",")	
+JSON.stringify(Q)	{}
+Q.valueOf === Object.prototype.valueOf	boolean:true
+Q.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:true
+Q.toLocaleString()	Unknown Type
+Object.getOwnPropertyDescriptor(Q, "toString")	object:[object Object]
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Q), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+(function(){ var n = 0; for (var k in Q) n++; return n })()	number:0
+Reflect.ownKeys(Q).length	number:0
+Q.toString.call(Q)	Unknown Type
+Object.prototype.hasOwnProperty.call(Q, "x")	boolean:false
+Object.prototype.propertyIsEnumerable.call(Q, "toString")	boolean:true
+String(Object.getPrototypeOf(Q))	undefined
+typeof Object.getPrototypeOf(Q)	object
+Object.prototype.toString.call(Object.getPrototypeOf(Q))	[object Object]
+Object.setPrototypeOf(Q, null) === Q	boolean:false
+Object.freeze(Q) === Q	boolean:false
+Object.preventExtensions(Q) === Q	boolean:false
+typeof Here.call	object
+typeof Here.bind	object
+typeof Here.apply	object
+typeof Here.name	object
+Here.name	object:name
+Here.length	object:length
+typeof Here.prototype	object
+typeof Here.constructor	object
+Here.constructor === Function	boolean:false
+Here.constructor === Object	boolean:false
+typeof Here.hasOwnProperty	object
+Here instanceof Function	boolean:true
+Here instanceof Object	boolean:true
+Object.getPrototypeOf(Here) === Function.prototype	boolean:false
+Object.getPrototypeOf(Here) === Object.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(Here)) === Function.prototype	boolean:true
+Object.getPrototypeOf(Object.getPrototypeOf(Here)) === Object.prototype	boolean:false
+Object.getPrototypeOf(Here) === Object.getPrototypeOf(Item)	boolean:true
+Object.getOwnPropertyNames(Here).join(",")	
+Object.getOwnPropertyNames(Object.getPrototypeOf(Here)).join(",")	toString
+Object.prototype.toString.call(Here)	[object QMLTypeWrapper]
+"name" in Here	boolean:true
+"call" in Here	boolean:true
+"prototype" in Here	boolean:true
+typeof Here[Symbol.hasInstance]	function
+Here.call === Function.prototype.call	boolean:false
+Here.toString === Function.prototype.toString	boolean:false
+Here.toString === Item.toString	boolean:false
+Function.prototype.toString.call(Here)	!TypeError: Type error
+new Here()	!TypeError: Type error
+typeof new Here()	!TypeError: Type error
+String(new Here())	!TypeError: Type error
+new Here() instanceof Here	!TypeError: Type error
+Here.foo	object:foo
+(Here.foo = 1, Here.foo)	object:foo
+(function(){ "use strict"; Here.foo = 1; return Here.foo })()	!TypeError: Type error
+(Here.toString = 1, typeof Here.toString)	object
+(Here.name = "z", Here.name)	object:name
+delete Here.foo	boolean:true
+delete Here.toString	boolean:true
+Object.isExtensible(Here)	boolean:true
+Object.isFrozen(Here)	boolean:false
+Object.isSealed(Here)	boolean:false
+Object.keys(Here).join(",")	
+JSON.stringify(Here)	{}
+Here.valueOf === Object.prototype.valueOf	boolean:false
+Here.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:false
+Object.getOwnPropertyDescriptor(Here, "toString")	object:[object Object]
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Here), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+(function(){ var n = 0; for (var k in Here) n++; return n })()	number:0
+Reflect.ownKeys(Here).length	number:0
+typeof Here.caller	object
+typeof Here.arguments	object
+Here.toString.call(Here)	!TypeError: Type error
+Object.prototype.hasOwnProperty.call(Here, "x")	boolean:true
+Object.prototype.propertyIsEnumerable.call(Here, "toString")	boolean:true
+String(Object.getPrototypeOf(Here))	undefined
+typeof Object.getPrototypeOf(Here)	object
+Object.prototype.toString.call(Object.getPrototypeOf(Here))	[object Object]
+Object.setPrototypeOf(Here, null) === Here	boolean:false
+Object.freeze(Here) === Here	boolean:false
+Object.preventExtensions(Here) === Here	boolean:false
+typeof Here.Nope.call	function
+typeof Here.Nope.bind	function
+typeof Here.Nope.apply	function
+typeof Here.Nope.name	string
+Here.Nope.name	
+Here.Nope.length	number:0
+typeof Here.Nope.prototype	undefined
+typeof Here.Nope.constructor	function
+Here.Nope.constructor === Function	boolean:true
+Here.Nope.constructor === Object	boolean:false
+typeof Here.Nope.hasOwnProperty	function
+Here.Nope instanceof Function	boolean:true
+Here.Nope instanceof Object	boolean:true
+Object.getPrototypeOf(Here.Nope) === Function.prototype	boolean:false
+Object.getPrototypeOf(Here.Nope) === Object.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(Here.Nope)) === Function.prototype	boolean:true
+Object.getPrototypeOf(Object.getPrototypeOf(Here.Nope)) === Object.prototype	boolean:false
+Object.getPrototypeOf(Here.Nope) === Object.getPrototypeOf(Item)	boolean:true
+Object.getOwnPropertyNames(Here.Nope).join(",")	
+Object.getOwnPropertyNames(Object.getPrototypeOf(Here.Nope)).join(",")	toString
+Object.prototype.toString.call(Here.Nope)	[object QMLTypeWrapper]
+Here.Nope.hasOwnProperty("toString")	boolean:true
+Here.Nope.hasOwnProperty("name")	boolean:true
+"name" in Here.Nope	boolean:true
+"call" in Here.Nope	boolean:true
+"prototype" in Here.Nope	boolean:false
+typeof Here.Nope[Symbol.hasInstance]	function
+Here.Nope.call === Function.prototype.call	boolean:true
+Here.Nope.toString === Function.prototype.toString	boolean:false
+Here.Nope.toString === Item.toString	boolean:true
+Here.Nope.toString()	Nope
+Function.prototype.toString.call(Here.Nope)	!TypeError: Type error
+Here.Nope.call()	!TypeError: Type error
+Here.Nope.call(null)	!TypeError: Type error
+Here.Nope.apply(null, [])	!TypeError: Type error
+typeof Here.Nope.bind()	!TypeError: Type error
+String(Here.Nope.bind())	!TypeError: Type error
+new Here.Nope()	!TypeError: Type error
+typeof new Here.Nope()	!TypeError: Type error
+String(new Here.Nope())	!TypeError: Type error
+new Here.Nope() instanceof Here.Nope	!TypeError: Type error
+Here.Nope.foo	undefined:undefined
+(Here.Nope.foo = 1, Here.Nope.foo)	undefined:undefined
+(function(){ "use strict"; Here.Nope.foo = 1; return Here.Nope.foo })()	!TypeError: Type error
+(Here.Nope.toString = 1, typeof Here.Nope.toString)	function
+(Here.Nope.name = "z", Here.Nope.name)	
+delete Here.Nope.foo	boolean:true
+delete Here.Nope.toString	boolean:true
+Object.isExtensible(Here.Nope)	boolean:true
+Object.isFrozen(Here.Nope)	boolean:false
+Object.isSealed(Here.Nope)	boolean:false
+Object.keys(Here.Nope).join(",")	
+JSON.stringify(Here.Nope)	{}
+Here.Nope.valueOf === Object.prototype.valueOf	boolean:true
+Here.Nope.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:true
+Here.Nope.toLocaleString()	Nope
+Object.getOwnPropertyDescriptor(Here.Nope, "toString")	object:[object Object]
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Here.Nope), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+(function(){ var n = 0; for (var k in Here.Nope) n++; return n })()	number:0
+Reflect.ownKeys(Here.Nope).length	number:0
+Here.Nope.toString.call(Here.Nope)	Nope
+Object.prototype.hasOwnProperty.call(Here.Nope, "x")	boolean:false
+Object.prototype.propertyIsEnumerable.call(Here.Nope, "toString")	boolean:true
+String(Object.getPrototypeOf(Here.Nope))	undefined
+typeof Object.getPrototypeOf(Here.Nope)	object
+Object.prototype.toString.call(Object.getPrototypeOf(Here.Nope))	[object Object]
+Object.setPrototypeOf(Here.Nope, null) === Here.Nope	boolean:true
+Object.defineProperty(Here.Nope, "zz", {value: 1}).zz	number:1
+Object.freeze(Here.Nope) === Here.Nope	boolean:true
+Object.preventExtensions(Here.Nope) === Here.Nope	boolean:true
+typeof Sub.call	function
+typeof Sub.bind	function
+typeof Sub.apply	function
+typeof Sub.name	string
+Sub.name	
+Sub.length	number:0
+typeof Sub.prototype	undefined
+typeof Sub.constructor	function
+Sub.constructor === Function	boolean:true
+Sub.constructor === Object	boolean:false
+typeof Sub.hasOwnProperty	function
+Sub instanceof Function	boolean:true
+Sub instanceof Object	boolean:true
+Object.getPrototypeOf(Sub) === Function.prototype	boolean:false
+Object.getPrototypeOf(Sub) === Object.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(Sub)) === Function.prototype	boolean:true
+Object.getPrototypeOf(Object.getPrototypeOf(Sub)) === Object.prototype	boolean:false
+Object.getPrototypeOf(Sub) === Object.getPrototypeOf(Item)	boolean:true
+Object.getOwnPropertyNames(Sub).join(",")	
+Object.getOwnPropertyNames(Object.getPrototypeOf(Sub)).join(",")	toString
+Object.prototype.toString.call(Sub)	[object QMLTypeWrapper]
+Sub.hasOwnProperty("toString")	boolean:true
+Sub.hasOwnProperty("name")	boolean:true
+"name" in Sub	boolean:true
+"call" in Sub	boolean:true
+"prototype" in Sub	boolean:false
+typeof Sub[Symbol.hasInstance]	function
+Sub.call === Function.prototype.call	boolean:true
+Sub.toString === Function.prototype.toString	boolean:false
+Sub.toString === Item.toString	boolean:true
+Sub.toString()	Sub
+Function.prototype.toString.call(Sub)	!TypeError: Type error
+Sub.call()	!TypeError: Type error
+Sub.call(null)	!TypeError: Type error
+Sub.apply(null, [])	!TypeError: Type error
+typeof Sub.bind()	!TypeError: Type error
+String(Sub.bind())	!TypeError: Type error
+new Sub()	!TypeError: Type error
+typeof new Sub()	!TypeError: Type error
+String(new Sub())	!TypeError: Type error
+new Sub() instanceof Sub	!TypeError: Type error
+Sub.foo	undefined:undefined
+(Sub.foo = 1, Sub.foo)	undefined:undefined
+(function(){ "use strict"; Sub.foo = 1; return Sub.foo })()	!TypeError: Type error
+(Sub.toString = 1, typeof Sub.toString)	function
+(Sub.name = "z", Sub.name)	
+delete Sub.foo	boolean:true
+delete Sub.toString	boolean:true
+Object.isExtensible(Sub)	boolean:true
+Object.isFrozen(Sub)	boolean:false
+Object.isSealed(Sub)	boolean:false
+Object.keys(Sub).join(",")	
+JSON.stringify(Sub)	{}
+Sub.valueOf === Object.prototype.valueOf	boolean:true
+Sub.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:true
+Sub.toLocaleString()	Sub
+Object.getOwnPropertyDescriptor(Sub, "toString")	object:[object Object]
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Sub), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+(function(){ var n = 0; for (var k in Sub) n++; return n })()	number:0
+Reflect.ownKeys(Sub).length	number:0
+Sub.toString.call(Sub)	Sub
+Object.prototype.hasOwnProperty.call(Sub, "x")	boolean:false
+Object.prototype.propertyIsEnumerable.call(Sub, "toString")	boolean:true
+String(Object.getPrototypeOf(Sub))	undefined
+typeof Object.getPrototypeOf(Sub)	object
+Object.prototype.toString.call(Object.getPrototypeOf(Sub))	[object Object]
+Object.setPrototypeOf(Sub, null) === Sub	boolean:true
+Object.defineProperty(Sub, "zz", {value: 1}).zz	number:1
+Object.freeze(Sub) === Sub	boolean:true
+Object.preventExtensions(Sub) === Sub	boolean:true
+typeof Qt.call	undefined
+typeof Qt.bind	undefined
+typeof Qt.apply	undefined
+typeof Qt.name	undefined
+Qt.name	undefined:undefined
+Qt.length	undefined:undefined
+typeof Qt.prototype	undefined
+typeof Qt.constructor	function
+Qt.constructor === Function	boolean:false
+Qt.constructor === Object	boolean:true
+typeof Qt.hasOwnProperty	function
+Qt instanceof Function	boolean:true
+Qt instanceof Object	boolean:true
+Object.getPrototypeOf(Qt) === Function.prototype	boolean:false
+Object.getPrototypeOf(Qt) === Object.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(Qt)) === Function.prototype	boolean:true
+Object.getPrototypeOf(Object.getPrototypeOf(Qt)) === Object.prototype	boolean:false
+Object.getPrototypeOf(Qt) === Object.getPrototypeOf(Item)	boolean:true
+Object.getOwnPropertyNames(Object.getPrototypeOf(Qt)).join(",")	toString
+Object.prototype.toString.call(Qt)	[object QMLTypeWrapper]
+Qt.hasOwnProperty("toString")	boolean:true
+Qt.hasOwnProperty("name")	boolean:false
+"name" in Qt	boolean:true
+"call" in Qt	boolean:true
+"prototype" in Qt	boolean:false
+typeof Qt[Symbol.hasInstance]	function
+Qt.call === Function.prototype.call	boolean:false
+Qt.toString === Function.prototype.toString	boolean:false
+Qt.toString === Item.toString	boolean:false
+Qt.toString()	Qt(0x)
+Function.prototype.toString.call(Qt)	!TypeError: Type error
+new Qt()	!TypeError: Type error
+typeof new Qt()	!TypeError: Type error
+String(new Qt())	!TypeError: Type error
+new Qt() instanceof Qt	!TypeError: Type error
+Qt.foo	undefined:undefined
+(Qt.foo = 1, Qt.foo)	undefined:undefined
+(function(){ "use strict"; Qt.foo = 1; return Qt.foo })()	!TypeError: Type error
+(Qt.name = "z", Qt.name)	undefined:undefined
+delete Qt.foo	boolean:true
+delete Qt.toString	boolean:true
+Object.isExtensible(Qt)	boolean:true
+Object.isFrozen(Qt)	boolean:false
+Object.isSealed(Qt)	boolean:false
+Object.keys(Qt).join(",")	objectName,application,platform,inputMethod,styleHints,uiLanguage,objectNameChanged,uiLanguageChanged,include,isQtObject,color,rgba,hsla,hsva,colorEqual,rect,point,size,vector2d,vector3d,vector4d,quaternion,matrix4x4,lighter,darker,alpha,tint,formatDate,formatTime,formatDateTime,locale,url,resolvedUrl,openUrlExternally,font,fontFamilies,md5,btoa,atob,escapeHtml,quit,exit,createQmlObject,createComponent,binding,callLater,enumStringToValue,enumValueToString,enumValueToStrings
+Qt.valueOf === Object.prototype.valueOf	boolean:true
+Qt.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:true
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Qt), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+(function(){ var n = 0; for (var k in Qt) n++; return n })()	number:49
+typeof Qt.caller	undefined
+typeof Qt.arguments	undefined
+Object.prototype.hasOwnProperty.call(Qt, "x")	boolean:false
+String(Object.getPrototypeOf(Qt))	undefined
+typeof Object.getPrototypeOf(Qt)	object
+Object.prototype.toString.call(Object.getPrototypeOf(Qt))	[object Object]
+Object.setPrototypeOf(Qt, null) === Qt	boolean:true
+Object.freeze(Qt) === Qt	boolean:true
+Object.preventExtensions(Qt) === Qt	boolean:true
+typeof Single.call	undefined
+typeof Single.bind	undefined
+typeof Single.apply	undefined
+typeof Single.name	undefined
+Single.name	undefined:undefined
+Single.length	undefined:undefined
+typeof Single.prototype	undefined
+typeof Single.constructor	function
+Single.constructor === Function	boolean:false
+Single.constructor === Object	boolean:true
+typeof Single.hasOwnProperty	function
+Object.getPrototypeOf(Single) === Function.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(Single)) === Object.prototype	boolean:false
+Object.getOwnPropertyNames(Single).join(",")	objectName,v,objectNameChanged,vChanged
+Single.hasOwnProperty("toString")	boolean:true
+Single.hasOwnProperty("name")	boolean:false
+"prototype" in Single	boolean:false
+Single[Symbol.hasInstance] === Function.prototype[Symbol.hasInstance]	boolean:false
+Single.call === Function.prototype.call	boolean:false
+Single.toString === Function.prototype.toString	boolean:false
+Single.toString === Item.toString	boolean:false
+Single.foo	undefined:undefined
+delete Single.foo	boolean:true
+delete Single.toString	boolean:true
+Object.isExtensible(Single)	boolean:true
+Object.isFrozen(Single)	boolean:false
+Object.isSealed(Single)	boolean:false
+Object.keys(Single).join(",")	objectName,v,objectNameChanged,vChanged
+JSON.stringify(Single)	{"objectName":"","v":7}
+Single.valueOf === Object.prototype.valueOf	boolean:true
+Single.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:true
+Object.getOwnPropertyDescriptor(Single, "toString")	object:[object Object]
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Single), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+(function(){ var n = 0; for (var k in Single) n++; return n })()	number:4
+Reflect.ownKeys(Single).length	number:4
+typeof Single.caller	undefined
+typeof Single.arguments	undefined
+Object.prototype.hasOwnProperty.call(Single, "x")	boolean:false
+Object.prototype.propertyIsEnumerable.call(Single, "toString")	boolean:true
+typeof Object.getPrototypeOf(Single)	object
+Object.prototype.toString.call(Object.getPrototypeOf(Single))	[object Object]
+Object.setPrototypeOf(Single, null) === Single	boolean:true
+typeof Q.Item.call	function
+typeof Q.Item.bind	function
+typeof Q.Item.apply	function
+typeof Q.Item.name	string
+Q.Item.name	
+Q.Item.length	number:0
+typeof Q.Item.prototype	undefined
+typeof Q.Item.constructor	function
+Q.Item.constructor === Function	boolean:true
+Q.Item.constructor === Object	boolean:false
+typeof Q.Item.hasOwnProperty	function
+Q.Item instanceof Function	boolean:true
+Q.Item instanceof Object	boolean:true
+Object.getPrototypeOf(Q.Item) === Function.prototype	boolean:false
+Object.getPrototypeOf(Q.Item) === Object.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(Q.Item)) === Function.prototype	boolean:true
+Object.getPrototypeOf(Object.getPrototypeOf(Q.Item)) === Object.prototype	boolean:false
+Object.getPrototypeOf(Q.Item) === Object.getPrototypeOf(Item)	boolean:true
+Object.getOwnPropertyNames(Q.Item).join(",")	
+Object.getOwnPropertyNames(Object.getPrototypeOf(Q.Item)).join(",")	toString
+Object.prototype.toString.call(Q.Item)	[object QMLTypeWrapper]
+Q.Item.hasOwnProperty("toString")	boolean:true
+Q.Item.hasOwnProperty("name")	boolean:true
+"name" in Q.Item	boolean:true
+"call" in Q.Item	boolean:true
+"prototype" in Q.Item	boolean:false
+typeof Q.Item[Symbol.hasInstance]	function
+Q.Item.call === Function.prototype.call	boolean:true
+Q.Item.toString === Function.prototype.toString	boolean:false
+Q.Item.toString === Item.toString	boolean:true
+Q.Item.toString()	QtQuick/Item
+Function.prototype.toString.call(Q.Item)	!TypeError: Type error
+Q.Item.call()	!TypeError: Type error
+Q.Item.call(null)	!TypeError: Type error
+Q.Item.apply(null, [])	!TypeError: Type error
+typeof Q.Item.bind()	!TypeError: Type error
+String(Q.Item.bind())	!TypeError: Type error
+new Q.Item()	!TypeError: Type error
+typeof new Q.Item()	!TypeError: Type error
+String(new Q.Item())	!TypeError: Type error
+new Q.Item() instanceof Q.Item	!TypeError: Type error
+Q.Item.foo	undefined:undefined
+(Q.Item.foo = 1, Q.Item.foo)	undefined:undefined
+(function(){ "use strict"; Q.Item.foo = 1; return Q.Item.foo })()	!TypeError: Type error
+(Q.Item.toString = 1, typeof Q.Item.toString)	function
+(Q.Item.name = "z", Q.Item.name)	
+delete Q.Item.foo	boolean:true
+delete Q.Item.toString	boolean:true
+Object.isExtensible(Q.Item)	boolean:true
+Object.isFrozen(Q.Item)	boolean:false
+Object.isSealed(Q.Item)	boolean:false
+Object.keys(Q.Item).join(",")	
+JSON.stringify(Q.Item)	{}
+Q.Item.valueOf === Object.prototype.valueOf	boolean:true
+Q.Item.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:true
+Q.Item.toLocaleString()	QtQuick/Item
+Object.getOwnPropertyDescriptor(Q.Item, "toString")	object:[object Object]
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Q.Item), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+(function(){ var n = 0; for (var k in Q.Item) n++; return n })()	number:0
+Reflect.ownKeys(Q.Item).length	number:0
+Q.Item.toString.call(Q.Item)	QtQuick/Item
+Object.prototype.hasOwnProperty.call(Q.Item, "x")	boolean:false
+Object.prototype.propertyIsEnumerable.call(Q.Item, "toString")	boolean:true
+String(Object.getPrototypeOf(Q.Item))	undefined
+typeof Object.getPrototypeOf(Q.Item)	object
+Object.prototype.toString.call(Object.getPrototypeOf(Q.Item))	[object Object]
+Object.setPrototypeOf(Q.Item, null) === Q.Item	boolean:true
+Object.defineProperty(Q.Item, "zz", {value: 1}).zz	number:1
+Object.freeze(Q.Item) === Q.Item	boolean:true
+Object.preventExtensions(Q.Item) === Q.Item	boolean:true
+typeof Text.call	function
+typeof Text.bind	function
+typeof Text.apply	function
+typeof Text.name	string
+Text.name	
+Text.length	number:0
+typeof Text.prototype	undefined
+typeof Text.constructor	function
+Text.constructor === Function	boolean:true
+Text.constructor === Object	boolean:false
+typeof Text.hasOwnProperty	function
+Text instanceof Function	boolean:true
+Text instanceof Object	boolean:true
+Object.getPrototypeOf(Text) === Function.prototype	boolean:false
+Object.getPrototypeOf(Text) === Object.prototype	boolean:false
+Object.getPrototypeOf(Object.getPrototypeOf(Text)) === Function.prototype	boolean:true
+Object.getPrototypeOf(Object.getPrototypeOf(Text)) === Object.prototype	boolean:false
+Object.getPrototypeOf(Text) === Object.getPrototypeOf(Item)	boolean:true
+Object.getOwnPropertyNames(Text).join(",")	
+Object.getOwnPropertyNames(Object.getPrototypeOf(Text)).join(",")	toString
+Object.prototype.toString.call(Text)	[object QMLTypeWrapper]
+Text.hasOwnProperty("toString")	boolean:true
+Text.hasOwnProperty("name")	boolean:true
+"name" in Text	boolean:true
+"call" in Text	boolean:true
+"prototype" in Text	boolean:false
+typeof Text[Symbol.hasInstance]	function
+Text.call === Function.prototype.call	boolean:true
+Text.toString === Function.prototype.toString	boolean:false
+Text.toString === Item.toString	boolean:true
+Text.toString()	QtQuick/Text
+Function.prototype.toString.call(Text)	!TypeError: Type error
+Text.call()	!TypeError: Type error
+Text.call(null)	!TypeError: Type error
+Text.apply(null, [])	!TypeError: Type error
+typeof Text.bind()	!TypeError: Type error
+String(Text.bind())	!TypeError: Type error
+new Text()	!TypeError: Type error
+typeof new Text()	!TypeError: Type error
+String(new Text())	!TypeError: Type error
+new Text() instanceof Text	!TypeError: Type error
+Text.foo	undefined:undefined
+(Text.foo = 1, Text.foo)	undefined:undefined
+(function(){ "use strict"; Text.foo = 1; return Text.foo })()	!TypeError: Type error
+(Text.toString = 1, typeof Text.toString)	function
+(Text.name = "z", Text.name)	
+delete Text.foo	boolean:true
+delete Text.toString	boolean:true
+Object.isExtensible(Text)	boolean:true
+Object.isFrozen(Text)	boolean:false
+Object.isSealed(Text)	boolean:false
+Object.keys(Text).join(",")	
+JSON.stringify(Text)	{}
+Text.valueOf === Object.prototype.valueOf	boolean:true
+Text.isPrototypeOf === Object.prototype.isPrototypeOf	boolean:true
+Text.toLocaleString()	QtQuick/Text
+Object.getOwnPropertyDescriptor(Text, "toString")	object:[object Object]
+JSON.stringify(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Text), "toString"))	{"writable":true,"enumerable":false,"configurable":true}
+(function(){ var n = 0; for (var k in Text) n++; return n })()	number:0
+Reflect.ownKeys(Text).length	number:0
+Text.toString.call(Text)	QtQuick/Text
+Object.prototype.hasOwnProperty.call(Text, "x")	boolean:false
+Object.prototype.propertyIsEnumerable.call(Text, "toString")	boolean:true
+String(Object.getPrototypeOf(Text))	undefined
+typeof Object.getPrototypeOf(Text)	object
+Object.prototype.toString.call(Object.getPrototypeOf(Text))	[object Object]
+Object.setPrototypeOf(Text, null) === Text	boolean:true
+Object.defineProperty(Text, "zz", {value: 1}).zz	number:1
+Object.freeze(Text) === Text	boolean:true
+Object.preventExtensions(Text) === Text	boolean:true

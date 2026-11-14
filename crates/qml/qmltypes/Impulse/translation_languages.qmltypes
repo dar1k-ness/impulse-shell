@@ -1,0 +1,24 @@
+import QtQuick.tooling 1.2
+
+// Impulse/TranslationLanguages: a Process that prints the language codes with a translation
+// file (<code>.json) in directory `path`, one per line (crates/qml/src/jobs_lists.rs
+// `translation_languages`).
+Module {
+    Component {
+        file: "jobs_lists.rs"
+        name: "ImpulseTranslationLanguages"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/TranslationLanguages 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "path"
+            type: "QString"
+            read: "path"
+            write: "setPath"
+            notify: "pathChanged"
+            index: 0
+        }
+        Signal { name: "pathChanged" }
+    }
+}

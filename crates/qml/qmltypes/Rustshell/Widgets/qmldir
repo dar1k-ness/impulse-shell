@@ -1,0 +1,15 @@
+module Rustshell.Widgets
+linktarget rustshell-widgetsplugin
+optional plugin rustshell-widgetsplugin
+classname Rustshell_WidgetsPlugin
+typeinfo rustshell-widgets.qmltypes
+prefer :/qt/qml/Rustshell/Widgets/
+IconImage 0.0 IconImage.qml
+ClippingRectangle 0.0 ClippingRectangle.qml
+WrapperItem 0.0 WrapperItem.qml
+WrapperMouseArea 0.0 WrapperMouseArea.qml
+WrapperRectangle 0.0 WrapperRectangle.qml
+ClippingWrapperRectangle 0.0 ClippingWrapperRectangle.qml
+ClippingWrapperRectangleInternal 0.0 ClippingWrapperRectangleInternal.qml
+depends QtQuick
+

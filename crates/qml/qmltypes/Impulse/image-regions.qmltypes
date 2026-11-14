@@ -1,0 +1,58 @@
+import QtQuick.tooling 1.2
+
+// The content regions (windows, pictures, panels) of the image at `imagePath`, none larger
+// than `maxWidth` x `maxHeight`. Setting `running` starts the search off the main thread;
+// `found` carries the list of `{ at: [x, y], size: [width, height] }`. An image that cannot
+// be read ends the run without `found`.
+// Implemented natively by ri (crates/qml/src/imgjobs.rs, crates/imgtools/src/regions.rs).
+Module {
+    Component {
+        file: "imgjobs.rs"
+        name: "ImpulseImageRegions"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/ImageRegions 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "imagePath"
+            type: "QString"
+            read: "imagePath"
+            write: "setImagePath"
+            notify: "imagePathChanged"
+            index: 0
+        }
+        Property {
+            name: "maxWidth"
+            type: "int"
+            read: "maxWidth"
+            write: "setMaxWidth"
+            notify: "maxWidthChanged"
+            index: 1
+        }
+        Property {
+            name: "maxHeight"
+            type: "int"
+            read: "maxHeight"
+            write: "setMaxHeight"
+            notify: "maxHeightChanged"
+            index: 2
+        }
+        Property {
+            name: "running"
+            type: "bool"
+            read: "running"
+            write: "setRunning"
+            notify: "runningChanged"
+            index: 3
+        }
+        Signal { name: "imagePathChanged" }
+        Signal { name: "maxWidthChanged" }
+        Signal { name: "maxHeightChanged" }
+        Signal { name: "runningChanged" }
+        Signal {
+            name: "found"
+            Parameter { name: "regions"; type: "QVariant" }
+        }
+        Signal { name: "finished" }
+    }
+}

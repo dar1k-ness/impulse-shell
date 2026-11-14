@@ -1,0 +1,10 @@
+FolderListModel.folder	"file://$CWD"
+FolderListModel.parentFolder	"file://$UP"
+FolderListModel.count	number:3
+FolderListModel.status	number:1
+ApplicationWindow.transientParent	object
+TextArea.baseUrl	"file://$DIR/x.qml"
+Shape.rendererType	number:3
+Shape.status	number:1
+Canvas.available	boolean:true
+Text.baseUrl	"file://$DIR/x.qml"

@@ -1,0 +1,78 @@
+method_call destination=org.kde.KWin path=/org/kde/KWin/BlendChanges; interface=org.kde.KWin.BlendChanges; member=start
+   int32 300
+error error_name=org.freedesktop.DBus.Error.ServiceUnknown
+   string "The name org.kde.KWin was not provided by any .service files"
+signal path=/kdeglobals; interface=org.kde.kconfig.notify; member=ConfigChanged
+   array [
+      dict entry(
+         string "ColorEffects:Disabled"
+         array [
+            array of bytes "ChangeSelectionColor"
+            array of bytes "Color"
+            array of bytes "ColorAmount"
+            array of bytes "ColorEffect"
+            array of bytes "ContrastAmount"
+            array of bytes "ContrastEffect"
+            array of bytes "Enable"
+            array of bytes "IntensityAmount"
+            array of bytes "IntensityEffect"
+         ]
+      )
+      dict entry(
+         string "ColorEffects:Inactive"
+         array [
+            array of bytes "ChangeSelectionColor"
+            array of bytes "Color"
+            array of bytes "ColorAmount"
+            array of bytes "ColorEffect"
+            array of bytes "ContrastAmount"
+            array of bytes "ContrastEffect"
+            array of bytes "Enable"
+            array of bytes "IntensityAmount"
+            array of bytes "IntensityEffect"
+         ]
+      )
+      dict entry(
+         string "General"
+         array [
+            array of bytes "ColorScheme"
+         ]
+      )
+      dict entry(
+         string "KDE"
+         array [
+            array of bytes "contrast"
+            array of bytes "frameContrast"
+         ]
+      )
+   ]
+signal path=/KGlobalSettings; interface=org.kde.KGlobalSettings; member=notifyChange
+   int32 0
+   int32 0
+method_call destination=org.kde.KWin path=/org/kde/KWin/BlendChanges; interface=org.kde.KWin.BlendChanges; member=start
+   int32 300
+error error_name=org.freedesktop.DBus.Error.ServiceUnknown
+   string "The name org.kde.KWin was not provided by any .service files"
+signal path=/kdeglobals; interface=org.kde.kconfig.notify; member=ConfigChanged
+   array [
+      dict entry(
+         string "General"
+         array [
+            array of bytes "ColorScheme"
+         ]
+      )
+   ]
+signal path=/KGlobalSettings; interface=org.kde.KGlobalSettings; member=notifyChange
+   int32 0
+   int32 0
+signal path=/KlassyDecoration; interface=org.kde.Klassy.Style; member=updateDecorationColorCache
+method_call destination=org.freedesktop.DBus path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=ListNames
+method_call destination=org.freedesktop.DBus path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=GetNameOwner
+   string "org.kde.KWin"
+error error_name=org.freedesktop.DBus.Error.NameHasNoOwner
+   string "Could not get owner of name 'org.kde.KWin': no such name"
+method_call destination=org.freedesktop.DBus path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=StartServiceByName
+   string "org.kde.KWin"
+   uint32 0
+error error_name=org.freedesktop.DBus.Error.ServiceUnknown
+   string "The name org.kde.KWin was not provided by any .service files"

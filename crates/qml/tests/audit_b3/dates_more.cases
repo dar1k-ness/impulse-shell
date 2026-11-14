@@ -1,0 +1,159 @@
+# Qt's own layouts of the Date texts
+new Date(Date.UTC(2024, 0, 2, 3, 4, 5, 6)).toUTCString()
+=> string:Tue Jan 2 03:04:05 2024 GMT
+new Date(Date.UTC(2024, 0, 2, 3, 4, 5, 6)).toGMTString()
+=> string:Tue Jan 2 03:04:05 2024 GMT
+new Date(Date.UTC(-5, 0, 1)).toUTCString()
+=> string:Sun Jan 1 00:00:00 -006 GMT
+new Date(Date.UTC(12345, 0, 1)).toUTCString()
+=> string:Mon Jan 1 00:00:00 12345 GMT
+new Date(Date.UTC(50, 0, 1)).toUTCString()
+=> string:Sun Jan 1 00:00:00 1950 GMT
+new Date(NaN).toUTCString()
+=> string:Invalid Date
+new Date(NaN).toGMTString()
+=> string:Invalid Date
+new Date(NaN).toTimeString()
+=> string:
+new Date(NaN).toDateString()
+=> string:
+new Date(NaN).toString()
+=> string:Invalid Date
+String(new Date(NaN))
+=> string:Invalid Date
+"" + new Date(NaN)
+=> string:Invalid Date
+new Date(NaN).toLocaleString()
+=> string:
+new Date(NaN).toLocaleDateString()
+=> string:
+new Date(NaN).toLocaleTimeString()
+=> string:
+(function(){ try { return new Date(NaN).toISOString() } catch (e) { return "THROW " + e } })()
+=> string:THROW RangeError: Invalid Date out of range
+new Date(NaN).toJSON()
+=> null
+JSON.stringify(new Date(NaN))
+=> string:null
+new Date(NaN).setUTCFullYear(2020, 1)
+=> number:NaN
+new Date(NaN).setFullYear(2020, 1)
+=> number:1580504400000
+new Date(NaN).setUTCFullYear(2020)
+=> number:NaN
+new Date(NaN).setFullYear(2020)
+=> number:1577826000000
+new Date(NaN).setMonth(1)
+=> number:NaN
+new Date(NaN).setUTCHours(1)
+=> number:NaN
+new Date(NaN).setYear(99)
+=> number:915138000000
+new Date(NaN).setTime(5)
+=> number:5
+new Date(2024, 0, 2, 3, 4, 5).toTimeString()
+=> string:03:04:05
+new Date(2024, 6, 15, 23, 59, 59).toString()
+=> string:Mon Jul 15 23:59:59 2024 GMT+0300
+new Date(2024, 6, 15, 23, 59, 59).toDateString()
+=> string:Mon Jul 15 2024
+new Date(0, 0, 1).toDateString()
+=> string:Mon Jan 1 1900
+new Date(-1, 11, 31).toDateString()
+=> string:Fri Dec 31 -002
+(function(){ var d = new Date(2024, 0, 1); d.setFullYear(0); return d.toDateString() })()
+=> string:Sat Jan 1 -001
+(function(){ var d = new Date(2024, 0, 1); d.setFullYear(1); return d.toDateString() })()
+=> string:Mon Jan 1 0001
+(function(){ var d = new Date(2024, 0, 1); d.setFullYear(-1); return d.toDateString() })()
+=> string:Fri Jan 1 -002
+(function(){ var d = new Date(2024, 0, 1); d.setFullYear(50); return String(d) })()
+=> string:Sat Jan 1 00:00:00 0050 GMT+0230
+(function(){ var d = new Date(2024, 0, 1); d.setFullYear(0); return String(d) })()
+=> string:Sat Jan 1 00:00:00 -001 GMT+0230
+(function(){ var d = new Date(2024, 0, 1); d.setFullYear(999); return d.toDateString() })()
+=> string:Tue Jan 1 0999
+(function(){ var d = new Date(Date.UTC(2024, 0, 1)); d.setUTCFullYear(0); return d.toUTCString() })()
+=> string:Sat Jan 1 00:00:00 -001 GMT
+(function(){ var d = new Date(Date.UTC(2024, 0, 1)); d.setUTCFullYear(-1); return d.toUTCString() })()
+=> string:Fri Jan 1 00:00:00 -002 GMT
+new Date(Date.UTC(275760, 8, 13)).toUTCString()
+=> string:Sat Sep 13 00:00:00 275760 GMT
+new Date(-8.64e15).toUTCString()
+=> string:Tue Apr 20 00:00:00 -271822 GMT
+Date.parse(String(new Date(2024, 0, 5, 3, 4, 5)))
+=> number:1704413045000
+Date.parse(new Date(2024, 0, 5, 3, 4, 5).toDateString())
+=> number:NaN
+Date.parse(new Date(Date.UTC(2024, 0, 2, 3, 4, 5)).toUTCString())
+=> number:1704164645000
+Date.parse(String(new Date(10000, 0, 1)))
+=> number:253402290000000
+Date.parse(String(new Date(-12345, 0, 1)))
+=> number:-451737743400000
+Date.parse("Fri Jan 5 03:04:05 2024 GMT+0300")
+=> number:1704413045000
+Date.parse("Fri Jan 05 2024 03:04:05 GMT+0300")
+=> number:1704413045000
+Date.parse("Tue Jan 2 03:04:05 2024 GMT")
+=> number:1704164645000
+Date.parse("Tue, 02 Jan 2024 03:04:05 GMT")
+=> number:1704164645000
+Date().length > 20
+=> boolean:true
+/^\w{3} \w{3} \d{1,2} \d\d:\d\d:\d\d \d{4} GMT\+0300$/.test(Date())
+=> boolean:true
+typeof Date()
+=> string:string
+new Date(2024, 0, 5, 3, 4, 5).toLocaleString(Qt.locale("C"))
+=> string:Friday, 5 January 2024 03:04:05 MSK
+String(new Date(1e12))
+=> string:Sun Sep 9 05:46:40 2001 GMT+0400
+new Date(1e12).toString() === String(new Date(1e12))
+=> boolean:true
+new Date(2010, 2, 28, 2, 30).toString()
+=> string:Sun Mar 28 01:30:00 2010 GMT+0300
+new Date(2010, 2, 28, 3, 30).toString()
+=> string:Sun Mar 28 03:30:00 2010 GMT+0400
+new Date(2010, 6, 1, 12, 0).toString()
+=> string:Thu Jul 1 12:00:00 2010 GMT+0400
+new Date(2010, 6, 1, 12, 0).toTimeString()
+=> string:12:00:00
+new Date(2010, 9, 31, 2, 30).toString()
+=> string:Sun Oct 31 02:30:00 2010 GMT+0300
+new Date(2010, 9, 31, 1, 30).getTime()
+=> number:1288474200000
+new Date(2010, 9, 31, 3, 30).getTime()
+=> number:1288485000000
+new Date(2010, 2, 28, 1, 59, 59).getTime()
+=> number:1269730799000
+new Date(2010, 2, 28, 3, 0, 0).getTime()
+=> number:1269730800000
+new Date(2010, 2, 27, 23, 0, 0).getTime()
+=> number:1269720000000
+new Date(2010, 2, 28, 0, 0, 0).getTime()
+=> number:1269723600000
+(function(){ var d = new Date(2010, 2, 28, 1, 0); d.setHours(2, 30); return d.getTime() })()
+=> number:1269729000000
+(function(){ var d = new Date(2010, 2, 27, 2, 30); d.setDate(28); return d.getTime() })()
+=> number:1269729000000
+(function(){ var d = new Date(2010, 2, 28, 12, 0); d.setHours(2); return d.getHours() + " " + d.getTime() })()
+=> string:1 1269727200000
+new Date("2010-03-28T02:30:00").toString()
+=> string:Sun Mar 28 01:30:00 2010 GMT+0300
+new Date(1981, 3, 1, 0, 30).getTime()
+=> number:354918600000
+new Date(1981, 9, 1, 0, 30).getTime()
+=> number:370733400000
+new Date(1991, 2, 31, 2, 30).getTime()
+=> number:670375800000
+new Date(1992, 0, 19, 2, 30).getTime()
+=> number:695781000000
+new Date(2011, 2, 27, 2, 30).getTime()
+=> number:1301178600000
+new Date(2014, 9, 26, 1, 30).getTime()
+=> number:1414276200000
+new Date(1919, 6, 1, 2, 30).getTime()
+=> number:-1593828079000
+new Date(1930, 5, 21, 0, 30).getTime()
+=> number:-1247535000000

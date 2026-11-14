@@ -1,0 +1,21 @@
+-- config
+local M = {}
+local uv = vim.loop or require("luv")
+--[[ block
+comment ]]
+M.opts = { width = 80, ratio = 0.5, hex = 0xFF, name = 'x', on = true, off = nil }
+function M.setup(opts)
+  opts = opts or {}
+  for k, v in pairs(opts) do
+    if type(v) == "table" and #v > 0 then
+      M.opts[k] = vim.tbl_extend("force", M.opts[k] or {}, v)
+    elseif v ~= nil then
+      M.opts[k] = v
+    end
+  end
+  local s = [[long
+string]] .. string.format("%d%%\n", 10 // 3)
+  repeat s = s:sub(2) until #s < 3 or not s
+  return setmetatable(M, { __index = function(_, key) return rawget(M.opts, key) end })
+end
+return M

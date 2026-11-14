@@ -1,0 +1,724 @@
+class	method	types	call	calls in qml/	same name, receiver unknown	may be this method	on a type qml/ may hold
+BoundComponent	onComponentDestroyed	1	throws	0	0	0	
+BoundComponent	onIncubationCompleted	1	throws	0	0	0	
+BoundComponent	onIncubationFailed	1	throws	0	0	0	
+BoundComponent	updateImplicitSize	1	throws	0	0	0	
+BoundComponent	updateSize	1	throws	0	0	0	
+ColorQuantizer	operationFinished	1	throws	0	0	0	ColorQuantizer
+DataStream	onBytesAvailable	2	throws	0	0	0	
+DataStream	onReaderDestroyed	2	throws	0	0	0	
+EasingCurve	interpolate	1	throws	0	0	0	
+EasingCurve	valueAt	1	throws	0	0	0	
+ElapsedTimer	elapsed	1	throws	0	0	0	
+ElapsedTimer	elapsedMs	1	throws	0	0	0	
+ElapsedTimer	elapsedNs	1	throws	0	0	0	
+ElapsedTimer	restart	1	throws	0	3	0	
+ElapsedTimer	restartMs	1	throws	0	0	0	
+ElapsedTimer	restartNs	1	throws	0	0	0	
+FloatingWindowInterface	onWindowConnected	1	throws	0	0	0	FloatingWindow
+FloatingWindowInterface	onWindowStateChanged	1	throws	0	0	0	FloatingWindow
+FloatingWindowInterface	startSystemMove	1	throws	0	0	0	FloatingWindow
+FloatingWindowInterface	startSystemResize	1	throws	0	0	0	FloatingWindow
+Greetd	cancelSession	1	throws	0	0	0	
+Greetd	createSession	1	throws	0	0	0	
+Greetd	launch	1	throws	0	0	0	
+Greetd	respond	1	throws	0	0	0	
+ImpulseTestProbe	undefined	1	throws	0	0	0	
+LazyLoader	onComponentDestroyed	1	throws	0	0	0	LazyLoader
+LazyLoader	onIncubationCompleted	1	throws	0	0	0	LazyLoader
+LazyLoader	onIncubationFailed	1	throws	0	0	0	LazyLoader
+LocationSingleton	circle	1	throws	0	0	0	QtPositioning
+LocationSingleton	coordToMercator	1	throws	0	0	0	QtPositioning
+LocationSingleton	coordinate	1	throws	0	0	0	QtPositioning
+LocationSingleton	mercatorToCoord	1	throws	0	0	0	QtPositioning
+LocationSingleton	path	1	throws	0	0	0	QtPositioning
+LocationSingleton	polygon	1	throws	0	0	0	QtPositioning
+LocationSingleton	rectangle	1	throws	0	0	0	QtPositioning
+LocationSingleton	shape	1	throws	0	0	0	QtPositioning
+LocationSingleton	shapeToCircle	1	throws	0	0	0	QtPositioning
+LocationSingleton	shapeToPath	1	throws	0	0	0	QtPositioning
+LocationSingleton	shapeToPolygon	1	throws	0	0	0	QtPositioning
+LocationSingleton	shapeToRectangle	1	throws	0	0	0	QtPositioning
+PamContext	onCompleted	1	throws	0	0	0	PamContext
+PamContext	onError	1	throws	0	0	0	PamContext
+PamContext	onMessage	1	throws	0	0	0	PamContext
+PendingRegion	onChildDestroyed	1	throws	0	0	0	Region
+PendingRegion	onItemDestroyed	1	throws	0	0	0	Region
+PopupAnchor	onItemDestroyed	1	throws	0	0	0	PopupAnchor
+PopupAnchor	onItemWindowChanged	1	throws	0	0	0	PopupAnchor
+PopupAnchor	onWindowDestroyed	1	throws	0	0	0	PopupAnchor
+PostReloadHook	postReload	26	throws	0	0	0	AiTranslation Download FileMimeType GeoClueCheck GlobalShortcut GoogleCloudToken GoogleTranslate GoogleVision ImageDownload ImageSize IpcHandler MicroTexRender NotificationServer PathKind Process RandomWallpaper TextTranslation TextTranslationLanguages TranslationLanguages UpdatesCount UpdatesProbe WallpaperPicker WallpaperSwitch WeatherFetch
+Process	onErrorOccurred	22	throws	0	0	0	AiTranslation Download FileMimeType GeoClueCheck GoogleCloudToken GoogleTranslate GoogleVision ImageDownload ImageSize MicroTexRender PathKind Process RandomWallpaper TextTranslation TextTranslationLanguages TranslationLanguages UpdatesCount UpdatesProbe WallpaperPicker WallpaperSwitch WeatherFetch
+Process	onFinished	22	throws	0	0	0	AiTranslation Download FileMimeType GeoClueCheck GoogleCloudToken GoogleTranslate GoogleVision ImageDownload ImageSize MicroTexRender PathKind Process RandomWallpaper TextTranslation TextTranslationLanguages TranslationLanguages UpdatesCount UpdatesProbe WallpaperPicker WallpaperSwitch WeatherFetch
+Process	onGlobalWorkingDirectoryChanged	22	throws	0	0	0	AiTranslation Download FileMimeType GeoClueCheck GoogleCloudToken GoogleTranslate GoogleVision ImageDownload ImageSize MicroTexRender PathKind Process RandomWallpaper TextTranslation TextTranslationLanguages TranslationLanguages UpdatesCount UpdatesProbe WallpaperPicker WallpaperSwitch WeatherFetch
+Process	onStarted	22	throws	0	0	0	AiTranslation Download FileMimeType GeoClueCheck GoogleCloudToken GoogleTranslate GoogleVision ImageDownload ImageSize MicroTexRender PathKind Process RandomWallpaper TextTranslation TextTranslationLanguages TranslationLanguages UpdatesCount UpdatesProbe WallpaperPicker WallpaperSwitch WeatherFetch
+Process	onStderrParserDestroyed	22	throws	0	0	0	AiTranslation Download FileMimeType GeoClueCheck GoogleCloudToken GoogleTranslate GoogleVision ImageDownload ImageSize MicroTexRender PathKind Process RandomWallpaper TextTranslation TextTranslationLanguages TranslationLanguages UpdatesCount UpdatesProbe WallpaperPicker WallpaperSwitch WeatherFetch
+Process	onStderrReadyRead	22	throws	0	0	0	AiTranslation Download FileMimeType GeoClueCheck GoogleCloudToken GoogleTranslate GoogleVision ImageDownload ImageSize MicroTexRender PathKind Process RandomWallpaper TextTranslation TextTranslationLanguages TranslationLanguages UpdatesCount UpdatesProbe WallpaperPicker WallpaperSwitch WeatherFetch
+Process	onStdoutParserDestroyed	22	throws	0	0	0	AiTranslation Download FileMimeType GeoClueCheck GoogleCloudToken GoogleTranslate GoogleVision ImageDownload ImageSize MicroTexRender PathKind Process RandomWallpaper TextTranslation TextTranslationLanguages TranslationLanguages UpdatesCount UpdatesProbe WallpaperPicker WallpaperSwitch WeatherFetch
+Process	onStdoutReadyRead	22	throws	0	0	0	AiTranslation Download FileMimeType GeoClueCheck GoogleCloudToken GoogleTranslate GoogleVision ImageDownload ImageSize MicroTexRender PathKind Process RandomWallpaper TextTranslation TextTranslationLanguages TranslationLanguages UpdatesCount UpdatesProbe WallpaperPicker WallpaperSwitch WeatherFetch
+ProxyPopupWindow	onClosed	1	throws	0	0	0	PopupWindow
+ProxyPopupWindow	onParentWindowChanged	1	throws	0	0	0	PopupWindow
+ProxyPopupWindow	reposition	1	throws	0	0	0	PopupWindow
+ProxyWindowBase	itemPosition	2	throws	0	0	0	PopupWindow
+ProxyWindowBase	itemRect	2	throws	0	0	0	PopupWindow
+ProxyWindowBase	onExposed	2	throws	0	0	0	PopupWindow
+ProxyWindowBase	onHeightChanged	2	throws	0	0	0	PopupWindow
+ProxyWindowBase	onMaskChanged	2	throws	0	0	0	PopupWindow
+ProxyWindowBase	onMaskDestroyed	2	throws	0	0	0	PopupWindow
+ProxyWindowBase	onPolished	2	throws	0	0	0	PopupWindow
+ProxyWindowBase	onSceneGraphError	2	throws	0	0	0	PopupWindow
+ProxyWindowBase	onScreenDestroyed	2	throws	0	0	0	PopupWindow
+ProxyWindowBase	onVisibleChanged	2	throws	0	0	0	PopupWindow
+ProxyWindowBase	onWidthChanged	2	throws	0	0	0	PopupWindow
+QAbstractItemModel	canFetchMore	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	columnCount	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	data	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	fetchMore	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	flags	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	hasChildren	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	hasIndex	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	headerData	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	index	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	insertColumn	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	insertColumns	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	insertRow	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	insertRows	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	moveColumn	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	moveColumns	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	moveRow	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	moveRows	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	parent	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	removeColumn	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	removeColumns	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	removeRow	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	removeRows	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	resetInternalData	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	revert	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	rowCount	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	setData	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractItemModel	sibling	10	throws	0	0	0	FolderListModel ObjectModel ScriptModel
+QAbstractProxyModel	mapSelectionFromSource	1	throws	0	0	0	
+QAbstractProxyModel	mapSelectionToSource	1	throws	0	0	0	
+QDeclarativePositionSource	backendProperty	1	throws	0	0	0	PositionSource
+QDeclarativePositionSource	setBackendProperty	1	throws	0	0	0	PositionSource
+QDeclarativeSatelliteSource	backendProperty	1	throws	0	0	0	
+QDeclarativeSatelliteSource	setBackendProperty	1	throws	0	0	0	
+QDeclarativeSatelliteSource	start	1	throws	0	1	0	
+QDeclarativeSatelliteSource	stop	1	throws	0	4	0	
+QDeclarativeSatelliteSource	update	1	throws	0	0	0	
+QGeoCircle	extendCircle	1	throws	0	0	0	
+QGeoCircle	translate	1	throws	0	1	0	
+QGeoCircle	translated	1	throws	0	0	0	
+QGeoCoordinate	atDistanceAndAzimuth	1	throws	0	0	0	geoCoordinate
+QGeoCoordinate	azimuthTo	1	throws	0	0	0	geoCoordinate
+QGeoCoordinate	distanceTo	1	throws	0	0	0	geoCoordinate
+QGeoPath	addCoordinate	1	throws	0	0	0	
+QGeoPath	containsCoordinate	1	throws	0	0	0	
+QGeoPath	coordinateAt	1	throws	0	0	0	
+QGeoPath	insertCoordinate	1	throws	0	0	0	
+QGeoPath	length	1	throws	0	0	0	
+QGeoPath	removeCoordinate	1	throws	0	0	0	
+QGeoPath	replaceCoordinate	1	throws	0	0	0	
+QGeoPath	size	1	throws	0	1	0	
+QGeoPath	translate	1	throws	0	1	0	
+QGeoPath	translated	1	throws	0	0	0	
+QGeoPolygon	addCoordinate	1	throws	0	0	0	
+QGeoPolygon	addHole	1	throws	0	0	0	
+QGeoPolygon	containsCoordinate	1	throws	0	0	0	
+QGeoPolygon	coordinateAt	1	throws	0	0	0	
+QGeoPolygon	hole	1	throws	0	0	0	
+QGeoPolygon	holesCount	1	throws	0	0	0	
+QGeoPolygon	insertCoordinate	1	throws	0	0	0	
+QGeoPolygon	length	1	throws	0	0	0	
+QGeoPolygon	removeCoordinate	1	throws	0	0	0	
+QGeoPolygon	removeHole	1	throws	0	0	0	
+QGeoPolygon	replaceCoordinate	1	throws	0	0	0	
+QGeoPolygon	size	1	throws	0	1	0	
+QGeoPolygon	translate	1	throws	0	1	0	
+QGeoPolygon	translated	1	throws	0	0	0	
+QGeoRectangle	extendRectangle	1	throws	0	0	0	
+QGeoRectangle	intersects	1	throws	0	0	0	
+QGeoRectangle	translate	1	throws	0	1	0	
+QGeoRectangle	translated	1	throws	0	0	0	
+QGeoRectangle	united	1	throws	0	0	0	
+QGeoSatelliteInfo	attribute	2	throws	0	0	0	GeoSatelliteInfo
+QGeoSatelliteInfo	hasAttribute	2	throws	0	0	0	GeoSatelliteInfo
+QGeoShape	boundingGeoRectangle	5	throws	0	0	0	
+QGeoShape	contains	5	throws	0	0	0	
+QGfxShaderBuilder	buildFragmentShader	1	throws	0	0	0	
+QGfxShaderBuilder	buildVertexShader	1	throws	0	0	0	
+QGfxShaderBuilder	gaussianBlur	1	throws	0	0	0	
+QInputMethod	commit	1	throws	0	0	0	InputMethod
+QInputMethod	hide	1	throws	0	0	0	InputMethod
+QInputMethod	invokeAction	1	throws	0	0	0	InputMethod
+QInputMethod	reset	1	throws	0	0	0	InputMethod
+QInputMethod	show	1	throws	0	0	0	InputMethod
+QInputMethod	update	1	throws	0	0	0	InputMethod
+QItemSelectionModel	clear	1	throws	0	2	0	
+QItemSelectionModel	clearCurrentIndex	1	throws	0	0	0	
+QItemSelectionModel	clearSelection	1	throws	0	0	0	
+QItemSelectionModel	columnIntersectsSelection	1	throws	0	0	0	
+QItemSelectionModel	isColumnSelected	1	throws	0	0	0	
+QItemSelectionModel	isRowSelected	1	throws	0	0	0	
+QItemSelectionModel	isSelected	1	throws	0	0	0	
+QItemSelectionModel	reset	1	throws	0	0	0	
+QItemSelectionModel	rowIntersectsSelection	1	throws	0	0	0	
+QItemSelectionModel	select	1	throws	0	0	0	
+QItemSelectionModel	selectedColumns	1	throws	0	0	0	
+QItemSelectionModel	selectedRows	1	throws	0	0	0	
+QItemSelectionModel	setCurrentIndex	1	throws	0	0	0	
+QObject	destroy	2	throws	0	6	0	
+QQmlApplication	setDomain	1	throws	0	0	0	Application
+QQmlApplication	setName	1	throws	0	0	0	Application
+QQmlApplication	setOrganization	1	throws	0	0	0	Application
+QQmlApplication	setVersion	1	throws	0	0	0	Application
+QQmlBluetoothPermission	request	1	throws	0	0	0	
+QQmlCalendarPermission	request	1	throws	0	0	0	
+QQmlCameraPermission	request	1	throws	0	0	0	
+QQmlComponent	errorString	3	throws	0	0	0	Component DelegateChooser
+QQmlComponent	incubateObject	2	throws	0	0	0	DelegateChooser
+QQmlComponent	loadFromModule	3	throws	0	0	0	Component DelegateChooser
+QQmlComponent	loadUrl	3	throws	0	0	0	Component DelegateChooser
+QQmlComponent	setData	3	throws	0	0	0	Component DelegateChooser
+QQmlContactsPermission	request	1	throws	0	0	0	
+QQmlDelegateModel	modelIndex	1	throws	0	0	0	
+QQmlDelegateModel	parentModelIndex	1	throws	0	0	0	
+QQmlDelegateModelGroup	addGroups	1	throws	0	0	0	
+QQmlDelegateModelGroup	create	1	throws	0	0	0	
+QQmlDelegateModelGroup	get	1	throws	0	2	0	
+QQmlDelegateModelGroup	insert	1	throws	0	0	0	
+QQmlDelegateModelGroup	move	1	throws	0	0	0	
+QQmlDelegateModelGroup	remove	1	throws	0	0	0	
+QQmlDelegateModelGroup	removeGroups	1	throws	0	0	0	
+QQmlDelegateModelGroup	resolve	1	throws	0	0	0	
+QQmlDelegateModelGroup	setGroups	1	throws	0	0	0	
+QQmlFilterBase	invalidate	9	throws	0	0	0	
+QQmlMicrophonePermission	request	1	throws	0	0	0	
+QQmlQLocationPermission	request	1	throws	0	0	0	
+QQmlRangeFilter	exclusive	1	throws	0	0	0	
+QQmlSettings	setValue	1	throws	0	0	0	
+QQmlSettings	sync	1	throws	0	0	0	
+QQmlSettings	value	1	throws	0	0	0	
+QQmlSortFilterProxyModel	invalidate	1	throws	0	0	0	
+QQmlSortFilterProxyModel	invalidateSorter	1	throws	0	0	0	
+QQmlSortFilterProxyModel	mapFromSource	1	throws	0	0	0	
+QQmlSortFilterProxyModel	mapToSource	1	throws	0	0	0	
+QQmlSortFilterProxyModel	setPrimarySorter	1	throws	0	0	0	
+QQmlSorterBase	invalidate	4	throws	0	0	0	
+QQmlStandardPaths	displayName	1	throws	0	0	0	
+QQmlStandardPaths	findExecutable	1	throws	0	0	0	
+QQmlStandardPaths	locate	1	throws	0	0	0	
+QQmlStandardPaths	locateAll	1	throws	0	0	0	
+QQmlXmlListModel	errorString	1	throws	0	0	0	
+QQmlXmlListModel	reload	1	throws	0	0	0	
+QQuickAbstractAnimation	complete	5	throws	0	0	0	
+QQuickAbstractAnimation	pause	5	throws	0	1	0	
+QQuickAbstractAnimation	restart	5	throws	0	3	0	
+QQuickAbstractAnimation	resume	5	throws	0	0	0	
+QQuickAbstractAnimation	start	5	throws	0	1	0	
+QQuickAbstractAnimation	stop	5	throws	0	4	0	
+QQuickAbstractButton	accessiblePressAction	19	throws	0	0	0	Button ItemDelegate MenuItem RadioButton Switch TabButton
+QQuickAbstractButton	accessibleToggleAction	19	throws	0	0	0	Button ItemDelegate MenuItem RadioButton Switch TabButton
+QQuickAbstractButton	animateClick	19	throws	0	0	0	Button ItemDelegate MenuItem RadioButton Switch TabButton
+QQuickAbstractButton	click	8	throws	0	0	0	
+QQuickAccessibleAttached	announce	1	throws	0	0	0	Accessible
+QQuickAccessibleAttached	cursorPositionChanged	1	throws	0	0	0	Accessible
+QQuickAccessibleAttached	setIgnored	1	throws	0	0	0	Accessible
+QQuickAccessibleAttached	stripHtml	1	throws	0	0	0	Accessible
+QQuickAccessibleAttached	valueChanged	1	throws	0	0	0	Accessible
+QQuickAction	toggle	1	throws	0	0	0	Action
+QQuickAction	trigger	1	throws	0	0	0	Action
+QQuickActionGroup	addAction	1	throws	0	0	0	
+QQuickActionGroup	removeAction	1	throws	0	0	0	
+QQuickAnimatedSprite	advance	1	throws	0	0	0	
+QQuickAnimatedSprite	pause	1	throws	0	1	0	
+QQuickAnimatedSprite	reset	1	throws	0	0	0	
+QQuickAnimatedSprite	resetFrameDuration	1	throws	0	0	0	
+QQuickAnimatedSprite	resetFrameRate	1	throws	0	0	0	
+QQuickAnimatedSprite	restart	1	throws	0	3	0	
+QQuickAnimatedSprite	resume	1	throws	0	0	0	
+QQuickAnimatedSprite	setCurrentFrame	1	throws	0	0	0	
+QQuickAnimatedSprite	setFrameCount	1	throws	0	0	0	
+QQuickAnimatedSprite	setFrameDuration	1	throws	0	0	0	
+QQuickAnimatedSprite	setFrameHeight	1	throws	0	0	0	
+QQuickAnimatedSprite	setFrameRate	1	throws	0	0	0	
+QQuickAnimatedSprite	setFrameSync	1	throws	0	0	0	
+QQuickAnimatedSprite	setFrameWidth	1	throws	0	0	0	
+QQuickAnimatedSprite	setFrameX	1	throws	0	0	0	
+QQuickAnimatedSprite	setFrameY	1	throws	0	0	0	
+QQuickAnimatedSprite	setInterpolate	1	throws	0	0	0	
+QQuickAnimatedSprite	setLoops	1	throws	0	0	0	
+QQuickAnimatedSprite	setPaused	1	throws	0	0	0	
+QQuickAnimatedSprite	setReverse	1	throws	0	0	0	
+QQuickAnimatedSprite	setRunning	1	throws	0	0	0	
+QQuickAnimatedSprite	setSource	1	throws	0	0	0	
+QQuickAnimatedSprite	start	1	throws	0	1	0	
+QQuickAnimatedSprite	stop	1	throws	0	4	0	
+QQuickAnimationController	completeToBeginning	1	throws	0	0	0	
+QQuickAnimationController	completeToEnd	1	throws	0	0	0	
+QQuickAnimationController	reload	1	throws	0	0	0	
+QQuickApplication	updateScreens	1	throws	0	0	0	Application
+QQuickBasePositioner	forceLayout	5	throws	0	0	0	Column Flow Grid Row
+QQuickBasePositioner	prePositioning	5	throws	0	0	0	Column Flow Grid Row
+QQuickButtonGroup	addButton	1	throws	0	0	0	
+QQuickButtonGroup	removeButton	1	throws	0	0	0	
+QQuickCalendarModel	indexOf	1	throws	0	29	0	
+QQuickCalendarModel	monthAt	1	throws	0	0	0	
+QQuickCalendarModel	yearAt	1	throws	0	0	0	
+QQuickCanvasItem	cancelRequestAnimationFrame	1	throws	0	0	0	Canvas
+QQuickCanvasItem	isImageError	1	throws	0	0	0	Canvas
+QQuickCanvasItem	isImageLoaded	1	throws	0	0	0	Canvas
+QQuickCanvasItem	isImageLoading	1	throws	0	0	0	Canvas
+QQuickCanvasItem	loadImage	1	throws	0	0	0	Canvas
+QQuickCanvasItem	requestAnimationFrame	1	throws	0	0	0	Canvas
+QQuickCanvasItem	toDataURL	1	throws	0	0	0	Canvas
+QQuickCanvasItem	unloadImage	1	throws	0	0	0	Canvas
+QQuickColor	blend	1	throws	0	0	0	Color
+QQuickColor	darker	1	throws	0	0	0	Color
+QQuickColor	equal	1	throws	0	0	0	Color
+QQuickColor	fromString	1	throws	0	0	0	Color
+QQuickColor	hsla	1	throws	0	0	0	Color
+QQuickColor	hsva	1	throws	0	0	0	Color
+QQuickColor	lighter	1	throws	0	0	0	Color
+QQuickColor	rgba	1	throws	0	0	0	Color
+QQuickColor	tint	1	throws	0	0	0	Color
+QQuickColor	transparent	1	throws	0	0	0	Color
+QQuickComboBox	decrementCurrentIndex	1	throws	0	0	0	ComboBox
+QQuickComboBox	incrementCurrentIndex	1	throws	0	0	0	ComboBox
+QQuickComboBox	indexOfValue	1	throws	0	0	0	ComboBox
+QQuickComboBox	textAt	1	throws	0	0	0	ComboBox
+QQuickComboBox	valueAt	1	throws	0	0	0	ComboBox
+QQuickDial	decrease	1	throws	0	0	0	
+QQuickDial	increase	1	throws	0	0	0	
+QQuickDialog	accept	1	throws	0	0	0	
+QQuickDialog	done	1	throws	0	0	0	
+QQuickDialog	reject	1	throws	0	0	0	
+QQuickDialog	standardButton	1	throws	0	0	0	
+QQuickDialogButtonBox	standardButton	1	throws	0	0	0	
+QQuickDoubleSpinBox	decrease	1	throws	0	0	0	
+QQuickDoubleSpinBox	increase	1	throws	0	0	0	
+QQuickDragEvent	accept	1	throws	0	0	0	DragEvent
+QQuickDragEvent	acceptProposedAction	1	throws	0	0	0	DragEvent
+QQuickDragEvent	getDataAsArrayBuffer	1	throws	0	0	0	DragEvent
+QQuickDragEvent	getDataAsString	1	throws	0	0	0	DragEvent
+QQuickFlickable	flickTo	8	throws	0	0	0	Flickable GridView ListView
+QQuickFlickable	flickToChild	8	throws	0	0	0	Flickable GridView ListView
+QQuickFlickable	movementEnding	8	throws	0	0	0	Flickable GridView ListView
+QQuickFlickable	movementStarting	8	throws	0	0	0	Flickable GridView ListView
+QQuickFlickable	positionViewAtChild	8	throws	0	0	0	Flickable GridView ListView
+QQuickFlickable	resizeContent	8	throws	0	0	0	Flickable GridView ListView
+QQuickFlickable	timelineCompleted	8	throws	0	0	0	Flickable GridView ListView
+QQuickFlickable	velocityTimelineCompleted	8	throws	0	0	0	Flickable GridView ListView
+QQuickFolderListModel	isFolder	1	throws	0	0	0	FolderListModel
+QQuickGrabGestureEvent	grab	1	throws	0	0	0	GestureEvent
+QQuickGraphicsInfo	setWindow	1	throws	0	0	0	GraphicsInfo
+QQuickGraphicsInfo	updateInfo	1	throws	0	0	0	GraphicsInfo
+QQuickGridView	moveCurrentIndexDown	1	throws	0	0	0	GridView
+QQuickGridView	moveCurrentIndexLeft	1	throws	0	0	0	GridView
+QQuickGridView	moveCurrentIndexRight	1	throws	0	0	0	GridView
+QQuickGridView	moveCurrentIndexUp	1	throws	0	0	0	GridView
+QQuickItem	childAt	120	throws	0	0	0	AnimatedImage Button Canvas ColorOverlay Column ColumnLayout ComboBox Desaturate DesktopContainer DropArea DropShadow Flickable Flow GaussianBlur Grid GridLayout GridView Image Item ItemDelegate ListView Loader MenuItem MouseArea MultiEffect OpacityMask PaintedItem ProgressBar RadialGradient RadioButton Rectangle RectangularShadow Repeater Row RowLayout ScreencopyView ScrollBar ScrollView Shape Slider StackView SwipeView Switch TabBar TabButton Text TextArea TextField TextInput WidgetHost
+QQuickItem	contains	120	throws	0	0	0	AnimatedImage Button Canvas ColorOverlay Column ColumnLayout ComboBox Desaturate DesktopContainer DropArea DropShadow Flickable Flow GaussianBlur Grid GridLayout GridView Image Item ItemDelegate ListView Loader MenuItem MouseArea MultiEffect OpacityMask PaintedItem ProgressBar RadialGradient RadioButton Rectangle RectangularShadow Repeater Row RowLayout ScreencopyView ScrollBar ScrollView Shape Slider StackView SwipeView Switch TabBar TabButton Text TextArea TextField TextInput WidgetHost
+QQuickItem	dumpItemTree	120	throws	0	0	0	AnimatedImage Button Canvas ColorOverlay Column ColumnLayout ComboBox Desaturate DesktopContainer DropArea DropShadow Flickable Flow GaussianBlur Grid GridLayout GridView Image Item ItemDelegate ListView Loader MenuItem MouseArea MultiEffect OpacityMask PaintedItem ProgressBar RadialGradient RadioButton Rectangle RectangularShadow Repeater Row RowLayout ScreencopyView ScrollBar ScrollView Shape Slider StackView SwipeView Switch TabBar TabButton Text TextArea TextField TextInput WidgetHost
+QQuickItem	ensurePolished	120	throws	0	0	0	AnimatedImage Button Canvas ColorOverlay Column ColumnLayout ComboBox Desaturate DesktopContainer DropArea DropShadow Flickable Flow GaussianBlur Grid GridLayout GridView Image Item ItemDelegate ListView Loader MenuItem MouseArea MultiEffect OpacityMask PaintedItem ProgressBar RadialGradient RadioButton Rectangle RectangularShadow Repeater Row RowLayout ScreencopyView ScrollBar ScrollView Shape Slider StackView SwipeView Switch TabBar TabButton Text TextArea TextField TextInput WidgetHost
+QQuickItem	grabToImage	120	throws	0	0	0	AnimatedImage Button Canvas ColorOverlay Column ColumnLayout ComboBox Desaturate DesktopContainer DropArea DropShadow Flickable Flow GaussianBlur Grid GridLayout GridView Image Item ItemDelegate ListView Loader MenuItem MouseArea MultiEffect OpacityMask PaintedItem ProgressBar RadialGradient RadioButton Rectangle RectangularShadow Repeater Row RowLayout ScreencopyView ScrollBar ScrollView Shape Slider StackView SwipeView Switch TabBar TabButton Text TextArea TextField TextInput WidgetHost
+QQuickItem	nextItemInFocusChain	120	throws	0	0	0	AnimatedImage Button Canvas ColorOverlay Column ColumnLayout ComboBox Desaturate DesktopContainer DropArea DropShadow Flickable Flow GaussianBlur Grid GridLayout GridView Image Item ItemDelegate ListView Loader MenuItem MouseArea MultiEffect OpacityMask PaintedItem ProgressBar RadialGradient RadioButton Rectangle RectangularShadow Repeater Row RowLayout ScreencopyView ScrollBar ScrollView Shape Slider StackView SwipeView Switch TabBar TabButton Text TextArea TextField TextInput WidgetHost
+QQuickItem	update	120	throws	0	0	0	AnimatedImage Button Canvas ColorOverlay Column ColumnLayout ComboBox Desaturate DesktopContainer DropArea DropShadow Flickable Flow GaussianBlur Grid GridLayout GridView Image Item ItemDelegate ListView Loader MenuItem MouseArea MultiEffect OpacityMask PaintedItem ProgressBar RadialGradient RadioButton Rectangle RectangularShadow Repeater Row RowLayout ScreencopyView ScrollBar ScrollView Shape Slider StackView SwipeView Switch TabBar TabButton Text TextArea TextField TextInput WidgetHost
+QQuickItemView	animStopped	3	throws	0	0	0	GridView ListView
+QQuickItemView	createdItem	3	throws	0	0	0	GridView ListView
+QQuickItemView	destroyRemoved	3	throws	0	0	0	GridView ListView
+QQuickItemView	destroyingItem	3	throws	0	0	0	GridView ListView
+QQuickItemView	forceLayout	1	throws	0	0	0	
+QQuickItemView	indexAt	3	throws	0	0	0	GridView ListView
+QQuickItemView	initItem	3	throws	0	0	0	GridView ListView
+QQuickItemView	itemAt	3	throws	0	0	0	GridView ListView
+QQuickItemView	itemAtIndex	1	throws	0	1	0	
+QQuickItemView	modelUpdated	3	throws	0	0	0	GridView ListView
+QQuickItemView	onItemPooled	3	throws	0	0	0	GridView ListView
+QQuickItemView	onItemReused	3	throws	0	0	0	GridView ListView
+QQuickItemView	trackedPositionChanged	3	throws	0	0	0	GridView ListView
+QQuickKeyEvent	matches	1	throws	0	0	0	KeyEvent
+QQuickLayout	_q_dumpLayoutTree	6	throws	0	0	0	ColumnLayout GridLayout RowLayout
+QQuickLayout	invalidateSenderItem	6	throws	0	0	0	ColumnLayout GridLayout RowLayout
+QQuickLayoutItemProxy	effectiveTarget	1	throws	0	0	0	
+QQuickLayoutItemProxy	updatePos	1	throws	0	0	0	
+QQuickMaterialStyle	buttonColor	1	throws	0	0	0	Material
+QQuickMaterialStyle	buttonLeftPadding	1	throws	0	0	0	Material
+QQuickMaterialStyle	buttonRightPadding	1	throws	0	0	0	Material
+QQuickMaterialStyle	color	1	throws	0	0	0	Material
+QQuickMaterialStyle	shade	1	throws	0	0	0	Material
+QQuickMenu	actionAt	1	throws	0	0	0	Menu
+QQuickMenu	addAction	1	throws	0	0	0	Menu
+QQuickMenu	addMenu	1	throws	0	0	0	Menu
+QQuickMenu	insertAction	1	throws	0	0	0	Menu
+QQuickMenu	insertMenu	1	throws	0	0	0	Menu
+QQuickMenu	menuAt	1	throws	0	0	0	Menu
+QQuickMenu	removeAction	1	throws	0	0	0	Menu
+QQuickMenu	removeMenu	1	throws	0	0	0	Menu
+QQuickMenu	takeAction	1	throws	0	0	0	Menu
+QQuickMenu	takeMenu	1	throws	0	0	0	Menu
+QQuickMenuBar	addMenu	1	throws	0	0	0	
+QQuickMenuBar	insertMenu	1	throws	0	0	0	
+QQuickMenuBar	menuAt	1	throws	0	0	0	
+QQuickMenuBar	removeMenu	1	throws	0	0	0	
+QQuickMenuBar	takeMenu	1	throws	0	0	0	
+QQuickPaintedItem	invalidateSceneGraph	1	throws	0	0	0	PaintedItem
+QQuickPalette	setActive	1	throws	0	0	0	Palette
+QQuickPalette	setDisabled	1	throws	0	0	0	Palette
+QQuickPalette	setInactive	1	throws	0	0	0	Palette
+QQuickPath	pointAtPercent	2	throws	0	0	0	ShapePath
+QQuickPath	processPath	2	throws	0	0	0	ShapePath
+QQuickPathView	decrementCurrentIndex	1	throws	0	0	0	
+QQuickPathView	incrementCurrentIndex	1	throws	0	0	0	
+QQuickPathView	indexAt	1	throws	0	0	0	
+QQuickPathView	itemAt	1	throws	0	0	0	
+QQuickPathView	itemAtIndex	1	throws	0	1	0	
+QQuickPathView	positionViewAtIndex	1	throws	0	0	0	
+QQuickPlanarTransform	fromAffineMatrix	1	throws	0	0	0	
+QQuickPlanarTransform	fromRotate	1	throws	0	0	0	
+QQuickPlanarTransform	fromScale	1	throws	0	0	0	
+QQuickPlanarTransform	fromShear	1	throws	0	0	0	
+QQuickPlanarTransform	fromTranslate	1	throws	0	0	0	
+QQuickPlanarTransform	identity	1	throws	0	0	0	
+QQuickPointerDeviceHandler	setAcceptedButtons	6	throws	0	0	0	DragHandler WheelHandler
+QQuickPointerDeviceHandler	setAcceptedDevices	6	throws	0	0	0	DragHandler WheelHandler
+QQuickPointerDeviceHandler	setAcceptedModifiers	6	throws	0	0	0	DragHandler WheelHandler
+QQuickPointerDeviceHandler	setAcceptedPointerTypes	6	throws	0	0	0	DragHandler WheelHandler
+QQuickRangeSlider	setValues	1	throws	0	0	0	
+QQuickRangeSlider	valueAt	1	throws	0	0	0	
+QQuickScrollBar	decrease	1	throws	0	0	0	ScrollBar
+QQuickScrollBar	increase	1	throws	0	0	0	ScrollBar
+QQuickScrollBar	setPosition	1	throws	0	0	0	ScrollBar
+QQuickScrollBar	setSize	1	throws	0	0	0	ScrollBar
+QQuickScrollIndicator	setPosition	1	throws	0	0	0	
+QQuickScrollIndicator	setSize	1	throws	0	0	0	
+QQuickSearchField	deselect	1	throws	0	0	0	
+QQuickSearchField	select	1	throws	0	0	0	
+QQuickSearchField	selectAll	1	throws	0	1	0	
+QQuickSearchField	selectWord	1	throws	0	0	0	
+QQuickShaderEffectSource	scheduleUpdate	1	throws	0	0	0	
+QQuickSlider	decrease	1	throws	0	0	0	Slider
+QQuickSlider	increase	1	throws	0	0	0	Slider
+QQuickSlider	valueAt	1	throws	0	0	0	Slider
+QQuickSpinBox	decrease	1	throws	0	0	0	
+QQuickSpinBox	increase	1	throws	0	0	0	
+QQuickSplitView	restoreState	1	throws	0	0	0	
+QQuickSplitView	saveState	1	throws	0	0	0	
+QQuickSprite	setFrameCount	1	throws	0	0	0	
+QQuickSprite	setFrameDuration	1	throws	0	0	0	
+QQuickSprite	setFrameDurationVariation	1	throws	0	0	0	
+QQuickSprite	setFrameHeight	1	throws	0	0	0	
+QQuickSprite	setFrameRate	1	throws	0	0	0	
+QQuickSprite	setFrameRateVariation	1	throws	0	0	0	
+QQuickSprite	setFrameSync	1	throws	0	0	0	
+QQuickSprite	setFrameWidth	1	throws	0	0	0	
+QQuickSprite	setFrameX	1	throws	0	0	0	
+QQuickSprite	setFrameY	1	throws	0	0	0	
+QQuickSprite	setFrames	1	throws	0	0	0	
+QQuickSprite	setReverse	1	throws	0	0	0	
+QQuickSprite	setSource	1	throws	0	0	0	
+QQuickSpriteSequence	jumpTo	1	throws	0	0	0	
+QQuickSpriteSequence	setGoalSprite	1	throws	0	0	0	
+QQuickSpriteSequence	setInterpolate	1	throws	0	0	0	
+QQuickSpriteSequence	setRunning	1	throws	0	0	0	
+QQuickStackLayout	itemAt	1	throws	0	0	0	
+QQuickStochasticState	setDuration	1	throws	0	0	0	
+QQuickStochasticState	setDurationVariation	1	throws	0	0	0	
+QQuickStochasticState	setName	1	throws	0	0	0	
+QQuickStochasticState	setRandomStart	1	throws	0	0	0	
+QQuickStochasticState	setTo	1	throws	0	0	0	
+QQuickTableView	cellAtIndex	3	throws	0	0	0	
+QQuickTableView	cellAtPos	4	throws	0	0	0	
+QQuickTableView	cellAtPosition	4	throws	0	0	0	
+QQuickTableView	clearColumnReordering	4	throws	0	0	0	
+QQuickTableView	clearColumnWidths	4	throws	0	0	0	
+QQuickTableView	clearRowHeights	4	throws	0	0	0	
+QQuickTableView	clearRowReordering	4	throws	0	0	0	
+QQuickTableView	closeEditor	4	throws	0	0	0	
+QQuickTableView	columnAtIndex	4	throws	0	0	0	
+QQuickTableView	columnWidth	4	throws	0	0	0	
+QQuickTableView	edit	4	throws	0	0	0	
+QQuickTableView	explicitColumnWidth	4	throws	0	0	0	
+QQuickTableView	explicitRowHeight	4	throws	0	0	0	
+QQuickTableView	forceLayout	4	throws	0	0	0	
+QQuickTableView	implicitColumnWidth	4	throws	0	0	0	
+QQuickTableView	implicitRowHeight	4	throws	0	0	0	
+QQuickTableView	index	4	throws	0	0	0	
+QQuickTableView	isColumnLoaded	4	throws	0	0	0	
+QQuickTableView	isRowLoaded	4	throws	0	0	0	
+QQuickTableView	itemAtCell	4	throws	0	0	0	
+QQuickTableView	itemAtIndex	4	throws	0	1	0	
+QQuickTableView	modelIndex	3	throws	0	0	0	
+QQuickTableView	moveColumn	4	throws	0	0	0	
+QQuickTableView	moveRow	4	throws	0	0	0	
+QQuickTableView	positionViewAtCell	4	throws	0	0	0	
+QQuickTableView	positionViewAtColumn	4	throws	0	0	0	
+QQuickTableView	positionViewAtRow	4	throws	0	0	0	
+QQuickTableView	rowAtIndex	4	throws	0	0	0	
+QQuickTableView	rowHeight	4	throws	0	0	0	
+QQuickTableView	setColumnWidth	4	throws	0	0	0	
+QQuickTableView	setRowHeight	4	throws	0	0	0	
+QQuickText	forceLayout	2	throws	0	0	0	Text
+QQuickText	linkAt	2	throws	0	0	0	Text
+QQuickTextDocument	save	1	throws	0	2	0	
+QQuickTextDocument	saveAs	1	throws	0	0	0	
+QQuickTextEdit	append	2	throws	0	0	0	TextArea
+QQuickTextEdit	getFormattedText	2	throws	0	0	0	TextArea
+QQuickTextEdit	inputMethodQuery	2	throws	0	0	0	TextArea
+QQuickTextEdit	isRightToLeft	2	throws	0	0	0	TextArea
+QQuickTextEdit	linkAt	2	throws	0	0	0	TextArea
+QQuickTextEdit	moveCursorSelection	2	throws	0	0	0	TextArea
+QQuickTextEdit	positionAt	2	throws	0	0	0	TextArea
+QQuickTextEdit	selectWord	2	throws	0	0	0	TextArea
+QQuickTextInput	ensureVisible	2	throws	0	0	0	TextField TextInput
+QQuickTextInput	inputMethodQuery	2	throws	0	0	0	TextField TextInput
+QQuickTextInput	isRightToLeft	2	throws	0	0	0	TextField TextInput
+QQuickTextInput	moveCursorSelection	2	throws	0	0	0	TextField TextInput
+QQuickTextInput	positionAt	2	throws	0	0	0	TextField TextInput
+QQuickTextInput	positionToRectangle	2	throws	0	0	0	TextField TextInput
+QQuickTextInput	selectWord	2	throws	0	0	0	TextField TextInput
+QQuickTextSelection	duplicate	1	throws	0	0	0	
+QQuickTextSelection	linkTo	1	throws	0	0	0	
+QQuickTextSelection	moveSelectionEnd	1	throws	0	0	0	
+QQuickTextSelection	moveSelectionStart	1	throws	0	0	0	
+QQuickToolTip	hide	1	throws	0	0	0	ToolTip
+QQuickToolTip	show	1	throws	0	0	0	ToolTip
+QQuickTransform	update	5	throws	0	0	0	Translate
+QQuickTreeView	cellAtIndex	1	throws	0	0	0	
+QQuickTreeView	collapse	1	throws	0	0	0	
+QQuickTreeView	collapseRecursively	1	throws	0	0	0	
+QQuickTreeView	depth	1	throws	0	0	0	
+QQuickTreeView	expand	1	throws	0	0	0	
+QQuickTreeView	expandRecursively	1	throws	0	0	0	
+QQuickTreeView	expandToIndex	1	throws	0	0	0	
+QQuickTreeView	isExpanded	1	throws	0	0	0	
+QQuickTreeView	modelIndex	1	throws	0	0	0	
+QQuickTreeView	toggleExpanded	1	throws	0	0	0	
+QQuickTumbler	positionViewAtIndex	1	throws	0	0	0	
+QQuickWindow	releaseResources	2	throws	0	0	0	ApplicationWindow
+QQuickWindow	update	2	throws	0	0	0	ApplicationWindow
+QQuickWorkerScript	sendMessage	1	throws	0	0	0	
+QRegularExpressionValidator	setRegularExpression	1	throws	0	0	0	
+QVirtualKeyboardAbstractInputMethod	clearInputMode	2	throws	0	0	0	
+QVirtualKeyboardAbstractInputMethod	reset	2	throws	0	0	0	
+QVirtualKeyboardAbstractInputMethod	update	2	throws	0	0	0	
+QVirtualKeyboardInputContext	clear	1	throws	0	2	0	
+QVirtualKeyboardInputContext	commit	1	throws	0	0	0	
+QVirtualKeyboardInputContext	sendKeyClick	1	throws	0	0	0	
+QVirtualKeyboardInputContext	setSelectionOnFocusObject	1	throws	0	0	0	
+QVirtualKeyboardInputContextPrivate	contains	1	throws	0	0	0	
+QVirtualKeyboardInputContextPrivate	fileExists	1	throws	0	0	0	
+QVirtualKeyboardInputContextPrivate	forceCursorPosition	1	throws	0	0	0	
+QVirtualKeyboardInputContextPrivate	hasEnterKeyAction	1	throws	0	0	0	
+QVirtualKeyboardInputContextPrivate	hideInputPanel	1	throws	0	0	0	
+QVirtualKeyboardInputContextPrivate	keyboardFunctionKey	1	throws	0	0	0	
+QVirtualKeyboardInputContextPrivate	onInputItemChanged	1	throws	0	0	0	
+QVirtualKeyboardInputContextPrivate	registerInputPanel	1	throws	0	0	0	
+QVirtualKeyboardInputContextPrivate	setKeyboardObserver	1	throws	0	0	0	
+QVirtualKeyboardInputContextPrivate	updateAvailableLocales	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	reselect	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	reset	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	shiftChanged	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	traceBegin	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	traceEnd	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	update	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	updateInputModes	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	updateSelectionListModels	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	virtualKeyCancel	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	virtualKeyClick	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	virtualKeyPress	1	throws	0	0	0	
+QVirtualKeyboardInputEngine	virtualKeyRelease	1	throws	0	0	0	
+QVirtualKeyboardSelectionListModel	dataAt	1	throws	0	0	0	
+QVirtualKeyboardSelectionListModel	dataSourceDestroyed	1	throws	0	0	0	
+QVirtualKeyboardSelectionListModel	removeItem	1	throws	0	0	0	
+QVirtualKeyboardSelectionListModel	selectItem	1	throws	0	0	0	
+QVirtualKeyboardSelectionListModel	selectionListActiveItemChanged	1	throws	0	0	0	
+QVirtualKeyboardSelectionListModel	selectionListChanged	1	throws	0	0	0	
+QVirtualKeyboardTrace	addPoint	1	throws	0	0	0	
+QVirtualKeyboardTrace	channelData	1	throws	0	0	0	
+QVirtualKeyboardTrace	points	1	throws	0	0	0	
+QVirtualKeyboardTrace	setChannelData	1	throws	0	0	0	
+QVirtualKeyboardTrace	startHideTimer	1	throws	0	0	0	
+QWindow	alert	2	throws	0	0	0	ApplicationWindow
+QWindow	lower	2	throws	0	0	0	ApplicationWindow
+QWindow	raise	2	throws	0	0	0	ApplicationWindow
+QWindow	requestActivate	2	throws	0	0	0	ApplicationWindow
+QWindow	requestUpdate	2	throws	0	0	0	ApplicationWindow
+QWindow	setGeometry	2	throws	0	0	0	ApplicationWindow
+QWindow	setHeight	2	throws	0	0	0	ApplicationWindow
+QWindow	setMaximumHeight	2	throws	0	0	0	ApplicationWindow
+QWindow	setMaximumWidth	2	throws	0	0	0	ApplicationWindow
+QWindow	setMinimumHeight	2	throws	0	0	0	ApplicationWindow
+QWindow	setMinimumWidth	2	throws	0	0	0	ApplicationWindow
+QWindow	setTitle	2	throws	0	0	0	ApplicationWindow
+QWindow	setVisible	2	throws	0	0	0	ApplicationWindow
+QWindow	setWidth	2	throws	0	0	0	ApplicationWindow
+QWindow	setX	2	throws	0	0	0	ApplicationWindow
+QWindow	setY	2	throws	0	0	0	ApplicationWindow
+QWindow	showFullScreen	2	throws	0	0	0	ApplicationWindow
+QWindow	showMaximized	2	throws	0	0	0	ApplicationWindow
+QWindow	showMinimized	2	throws	0	0	0	ApplicationWindow
+QWindow	startSystemMove	2	throws	0	0	0	ApplicationWindow
+QWindow	startSystemResize	2	throws	0	0	0	ApplicationWindow
+QtVirtualKeyboard::QQuickVirtualKeyboardSettings	convertVolume	1	throws	0	0	0	
+QtVirtualKeyboard::QQuickVirtualKeyboardSettings	resetStyle	1	throws	0	0	0	
+QtVirtualKeyboard::ShadowInputContext	setSelectionOnFocusObject	1	throws	0	0	0	
+QtVirtualKeyboard::ShadowInputContext	updateSelectionProperties	1	throws	0	0	0	
+QtVirtualKeyboard::ShiftHandler	autoCapitalize	1	throws	0	0	0	
+QtVirtualKeyboard::ShiftHandler	clearToggleShiftTimer	1	throws	0	0	0	
+QtVirtualKeyboard::ShiftHandler	inputMethodVisibleChanged	1	throws	0	0	0	
+QtVirtualKeyboard::ShiftHandler	localeChanged	1	throws	0	0	0	
+QtVirtualKeyboard::ShiftHandler	reset	1	throws	0	0	0	
+QtVirtualKeyboard::ShiftHandler	restart	1	throws	0	3	0	
+QtVirtualKeyboard::ShiftHandler	toggleShift	1	throws	0	0	0	
+Reloadable	onGenerationDestroyed	15	throws	0	0	0	FloatingWindow LazyLoader PanelWindow PopupWindow Scope ShellRoot Singleton Variants WlSessionLock WlSessionLockSurface
+Reloadable	onReloadFinished	15	throws	0	0	0	FloatingWindow LazyLoader PanelWindow PopupWindow Scope ShellRoot Singleton Variants WlSessionLock WlSessionLockSurface
+RetainableHook	forceUnlock	1	throws	0	0	0	Retainable
+RetainableHook	lock	1	throws	0	0	0	Retainable
+RetainableHook	unlock	1	throws	0	0	0	Retainable
+RetainableLock	onObjectDestroyed	1	throws	0	0	0	
+RustshellGlobal	cachePath	1	throws	0	0	0	Rustshell
+RustshellGlobal	configPath	1	throws	0	0	0	Rustshell
+RustshellGlobal	dataPath	1	throws	0	0	0	Rustshell
+RustshellGlobal	hasQtVersion	1	throws	0	0	0	Rustshell
+RustshellGlobal	hasThemeIcon	1	throws	0	0	0	Rustshell
+RustshellGlobal	hasVersion	1	throws	0	0	0	Rustshell
+RustshellGlobal	inhibitReloadPopup	1	throws	0	0	0	Rustshell
+RustshellGlobal	onClipboardChanged	1	throws	0	0	0	Rustshell
+RustshellGlobal	statePath	1	throws	0	0	0	Rustshell
+RustshellScreenInfo	screenDestroyed	1	throws	0	0	0	ShellScreen
+Socket	flush	1	throws	0	0	0	
+Socket	onSocketConnected	1	throws	0	0	0	
+Socket	onSocketDisconnected	1	throws	0	0	0	
+Socket	onSocketError	1	throws	0	0	0	
+Socket	write	1	throws	0	0	0	
+SocketServer	onNewConnection	1	throws	0	0	0	
+SystemClock	onTimeout	1	throws	0	0	0	SystemClock
+SystemTray	onItemRegistered	1	throws	0	0	0	SystemTray
+SystemTray	onItemUnregistered	1	throws	0	0	0	SystemTray
+TransformWatcher	aDestroyed	1	throws	0	0	0	
+TransformWatcher	bDestroyed	1	throws	0	0	0	
+TransformWatcher	itemDestroyed	1	throws	0	0	0	
+TransformWatcher	recalcChains	1	throws	0	0	0	
+WindowInterface	itemPosition	3	throws	0	0	0	FloatingWindow PanelWindow
+WindowInterface	itemRect	3	throws	0	0	0	FloatingWindow PanelWindow
+WlSessionLock	onScreensChanged	1	throws	0	0	0	WlSessionLock
+WlSessionLock	unlock	1	throws	0	0	0	WlSessionLock
+WlSessionLockSurface	onHeightChanged	1	throws	0	0	0	WlSessionLockSurface
+WlSessionLockSurface	onScreenDestroyed	1	throws	0	0	0	WlSessionLockSurface
+WlSessionLockSurface	onWidthChanged	1	throws	0	0	0	WlSessionLockSurface
+qs::dbus::dbusmenu::DBusMenu	onItemPropertiesUpdated	1	throws	0	0	0	
+qs::dbus::dbusmenu::DBusMenu	onLayoutUpdated	1	throws	0	0	0	
+qs::dbus::dbusmenu::DBusMenuItem	sendClosed	1	throws	0	0	0	
+qs::dbus::dbusmenu::DBusMenuItem	sendOpened	1	throws	0	0	0	
+qs::dbus::dbusmenu::DBusMenuItem	sendTriggered	1	throws	0	0	0	
+qs::dbus::dbusmenu::DBusMenuItem	updateLayout	1	throws	0	0	0	
+qs::hyprland::HyprlandFocusGrab	onGrabActivated	1	throws	0	0	0	HyprlandFocusGrab
+qs::hyprland::HyprlandFocusGrab	onGrabCleared	1	throws	0	0	0	HyprlandFocusGrab
+qs::hyprland::HyprlandFocusGrab	onObjectDestroyed	1	throws	0	0	0	HyprlandFocusGrab
+qs::hyprland::HyprlandFocusGrab	onProxyConnected	1	throws	0	0	0	HyprlandFocusGrab
+qs::hyprland::global_shortcuts::GlobalShortcut	onPressed	1	throws	0	0	0	GlobalShortcut
+qs::hyprland::global_shortcuts::GlobalShortcut	onReleased	1	throws	0	0	0	GlobalShortcut
+qs::hyprland::ipc::HyprlandIpcEvent	parse	1	throws	0	0	0	HyprlandEvent
+qs::hyprland::ipc::HyprlandIpcQml	refreshMonitors	1	throws	0	0	0	Hyprland
+qs::hyprland::ipc::HyprlandIpcQml	refreshToplevels	1	throws	0	0	0	Hyprland
+qs::hyprland::ipc::HyprlandIpcQml	refreshWorkspaces	1	throws	0	0	0	Hyprland
+qs::hyprland::ipc::HyprlandMonitor	onActiveWorkspaceDestroyed	1	throws	0	0	0	HyprlandMonitor
+qs::hyprland::ipc::HyprlandToplevel	onActivatedChanged	1	throws	0	0	0	HyprlandToplevel
+qs::hyprland::ipc::HyprlandWorkspace	onMonitorDestroyed	1	throws	0	0	0	HyprlandWorkspace
+qs::hyprland::ipc::HyprlandWorkspace	updateUrgent	1	throws	0	0	0	HyprlandWorkspace
+qs::hyprland::surface::HyprlandWindow	onProxyWindowDestroyed	1	throws	0	0	0	HyprlandWindow
+qs::hyprland::surface::HyprlandWindow	onVisibleMaskDestroyed	1	throws	0	0	0	HyprlandWindow
+qs::hyprland::surface::HyprlandWindow	onWaylandSurfaceCreated	1	throws	0	0	0	HyprlandWindow
+qs::hyprland::surface::HyprlandWindow	onWaylandSurfaceDestroyed	1	throws	0	0	0	HyprlandWindow
+qs::hyprland::surface::HyprlandWindow	onWaylandWindowDestroyed	1	throws	0	0	0	HyprlandWindow
+qs::hyprland::surface::HyprlandWindow	onWindowConnected	1	throws	0	0	0	HyprlandWindow
+qs::hyprland::surface::HyprlandWindow	onWindowPolished	1	throws	0	0	0	HyprlandWindow
+qs::hyprland::surface::HyprlandWindow	onWindowVisibleChanged	1	throws	0	0	0	HyprlandWindow
+qs::hyprland::surface::HyprlandWindow	updateVisibleMask	1	throws	0	0	0	HyprlandWindow
+qs::io::FileView	onAdapterDestroyed	1	throws	0	0	0	
+qs::io::FileView	operationFinished	1	throws	0	0	0	
+qs::io::FileView	setData	1	throws	0	0	0	
+qs::io::FileViewAdapter	onDataChanged	2	throws	0	0	0	JsonAdapter
+qs::io::JsonAdapter	onPropertyChanged	1	throws	0	0	0	JsonAdapter
+qs::io::ipc::IpcHandler	onSignalTriggered	1	throws	0	0	0	IpcHandler
+qs::menu::QsMenuAnchor	close	1	throws	0	9	0	
+qs::menu::QsMenuAnchor	onMenuChanged	1	throws	0	0	0	
+qs::menu::QsMenuAnchor	onMenuDestroyed	1	throws	0	0	0	
+qs::menu::QsMenuAnchor	open	1	throws	0	0	0	
+qs::menu::QsMenuEntry	display	1	throws	0	0	0	QsMenuEntry
+qs::menu::QsMenuOpener	onMenuDestroyed	1	throws	0	0	0	QsMenuOpener
+qs::network::Network	connect	1	throws	0	2	0	
+qs::network::Network	connectWithSettings	1	throws	0	0	0	
+qs::network::Network	disconnect	1	throws	0	2	0	
+qs::network::Network	forget	1	throws	0	1	0	
+qs::network::NetworkDevice	disconnect	3	throws	0	2	0	
+qs::network::NetworkingQml	checkConnectivity	1	throws	0	0	0	
+qs::network::WifiNetwork	connectWithPsk	1	throws	0	0	0	
+qs::service::mpris::MprisPlayer	onExportedPositionChanged	1	throws	0	0	0	MprisPlayer
+qs::service::mpris::MprisPlayer	onGetAllFinished	1	throws	0	0	0	MprisPlayer
+qs::service::mpris::MprisPlayer	onSeek	1	throws	0	0	0	MprisPlayer
+qs::service::mpris::MprisPlayer	openUri	1	throws	0	0	0	MprisPlayer
+qs::service::pipewire::Pipewire	onLinkAdded	1	throws	0	0	0	Pipewire
+qs::service::pipewire::Pipewire	onLinkGroupAdded	1	throws	0	0	0	Pipewire
+qs::service::pipewire::Pipewire	onLinkGroupRemoved	1	throws	0	0	0	Pipewire
+qs::service::pipewire::Pipewire	onLinkRemoved	1	throws	0	0	0	Pipewire
+qs::service::pipewire::Pipewire	onNodeAdded	1	throws	0	0	0	Pipewire
+qs::service::pipewire::Pipewire	onNodeRemoved	1	throws	0	0	0	Pipewire
+qs::service::pipewire::PwNodeLinkTracker	onLinkGroupCreated	1	throws	0	0	0	
+qs::service::pipewire::PwNodeLinkTracker	onLinkGroupDestroyed	1	throws	0	0	0	
+qs::service::pipewire::PwNodeLinkTracker	onNodeDestroyed	1	throws	0	0	0	
+qs::service::pipewire::PwNodePeakMonitor	onNodeDestroyed	1	throws	0	0	0	
+qs::service::pipewire::PwObjectIface	onObjectDestroying	2	throws	0	0	0	PwLink PwNode
+qs::service::pipewire::PwObjectTracker	objectDestroyed	1	throws	0	0	0	PwObjectTracker
+qs::service::polkit::AuthFlow	completed	1	throws	0	0	0	AuthFlow
+qs::service::polkit::AuthFlow	request	1	throws	0	0	0	AuthFlow
+qs::service::polkit::AuthFlow	showError	1	throws	0	0	0	AuthFlow
+qs::service::polkit::AuthFlow	showInfo	1	throws	0	0	0	AuthFlow
+qs::service::sni::StatusNotifierItem	display	1	throws	0	0	0	SystemTrayItem
+qs::service::sni::StatusNotifierItem	onGetAllFailed	1	throws	0	0	0	SystemTrayItem
+qs::service::sni::StatusNotifierItem	onGetAllFinished	1	throws	0	0	0	SystemTrayItem
+qs::service::upower::UPowerDevice	onGetAllFinished	1	throws	0	0	0	UPowerDevice
+qs::wayland::background_effect::BackgroundEffect	onBlurRegionDestroyed	1	throws	0	0	0	BackgroundEffect
+qs::wayland::background_effect::BackgroundEffect	onProxyWindowDestroyed	1	throws	0	0	0	BackgroundEffect
+qs::wayland::background_effect::BackgroundEffect	onWaylandSurfaceCreated	1	throws	0	0	0	BackgroundEffect
+qs::wayland::background_effect::BackgroundEffect	onWaylandSurfaceDestroyed	1	throws	0	0	0	BackgroundEffect
+qs::wayland::background_effect::BackgroundEffect	onWaylandWindowDestroyed	1	throws	0	0	0	BackgroundEffect
+qs::wayland::background_effect::BackgroundEffect	onWindowConnected	1	throws	0	0	0	BackgroundEffect
+qs::wayland::background_effect::BackgroundEffect	onWindowPolished	1	throws	0	0	0	BackgroundEffect
+qs::wayland::background_effect::BackgroundEffect	onWindowVisibleChanged	1	throws	0	0	0	BackgroundEffect
+qs::wayland::background_effect::BackgroundEffect	updateBlurRegion	1	throws	0	0	0	BackgroundEffect
+qs::wayland::idle_inhibit::IdleInhibitor	onWaylandSurfaceCreated	1	throws	0	0	0	IdleInhibitor
+qs::wayland::idle_inhibit::IdleInhibitor	onWaylandSurfaceDestroyed	1	throws	0	0	0	IdleInhibitor
+qs::wayland::idle_inhibit::IdleInhibitor	onWaylandWindowDestroyed	1	throws	0	0	0	IdleInhibitor
+qs::wayland::idle_inhibit::IdleInhibitor	onWindowDestroyed	1	throws	0	0	0	IdleInhibitor
+qs::wayland::idle_inhibit::IdleInhibitor	onWindowVisibilityChanged	1	throws	0	0	0	IdleInhibitor
+qs::wayland::layershell::WlrLayershell	onBridgeDestroyed	1	throws	0	0	0	
+qs::wayland::layershell::WlrLayershell	updateAutoExclusion	1	throws	0	0	0	
+qs::wayland::screencopy::ScreencopyView	captureFrame	1	throws	0	0	0	ScreencopyView
+qs::wayland::screencopy::ScreencopyView	destroyContextWithUpdate	1	throws	0	0	0	ScreencopyView
+qs::wayland::screencopy::ScreencopyView	onBuffersReady	1	throws	0	0	0	ScreencopyView
+qs::wayland::screencopy::ScreencopyView	onCaptureSourceDestroyed	1	throws	0	0	0	ScreencopyView
+qs::wayland::screencopy::ScreencopyView	onFrameCaptured	1	throws	0	0	0	ScreencopyView
+qs::wayland::shortcuts_inhibit::ShortcutInhibitor	onInhibitorActiveChanged	1	throws	0	0	0	
+qs::wayland::shortcuts_inhibit::ShortcutInhibitor	onWaylandSurfaceCreated	1	throws	0	0	0	
+qs::wayland::shortcuts_inhibit::ShortcutInhibitor	onWaylandSurfaceDestroyed	1	throws	0	0	0	
+qs::wayland::shortcuts_inhibit::ShortcutInhibitor	onWaylandWindowDestroyed	1	throws	0	0	0	
+qs::wayland::shortcuts_inhibit::ShortcutInhibitor	onWindowDestroyed	1	throws	0	0	0	
+qs::wayland::shortcuts_inhibit::ShortcutInhibitor	onWindowVisibilityChanged	1	throws	0	0	0	
+qs::wayland::toplevel::Toplevel	fullscreenOn	1	throws	0	0	0	Toplevel
+qs::wayland::toplevel::Toplevel	onClosed	1	throws	0	0	0	Toplevel
+qs::wayland::toplevel::Toplevel	onRectangleProxyConnected	1	throws	0	0	0	Toplevel
+qs::wayland::toplevel::Toplevel	onRectangleProxyDestroyed	1	throws	0	0	0	Toplevel
+qs::wayland::toplevel::Toplevel	setRectangle	1	throws	0	0	0	Toplevel
+qs::wayland::toplevel::Toplevel	unsetRectangle	1	throws	0	0	0	Toplevel
+qs::widgets::MarginWrapperManager	onChildImplicitHeightChanged	1	throws	0	0	0	
+qs::widgets::MarginWrapperManager	onChildImplicitWidthChanged	1	throws	0	0	0	
+qs::widgets::MarginWrapperManager	setWrapperImplicitHeight	1	throws	0	0	0	
+qs::widgets::MarginWrapperManager	setWrapperImplicitWidth	1	throws	0	0	0	
+qs::widgets::WrapperManager	onChildDestroyed	2	throws	0	0	0	
+qs::wm::WindowManagerQml	screenProjection	1	throws	0	0	0	
+qs::wm::Windowset	activate	1	throws	0	6	0	
+qs::wm::Windowset	deactivate	1	throws	0	0	0	
+qs::wm::Windowset	remove	1	throws	0	0	0	
+qs::wm::Windowset	setProjection	1	throws	0	0	0	

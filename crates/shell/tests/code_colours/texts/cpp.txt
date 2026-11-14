@@ -1,0 +1,23 @@
+#include <iostream>
+#include <vector>
+#pragma once
+namespace demo {
+template <typename T, std::size_t N = 3>
+class Stack final : public Base<T> {
+public:
+    explicit Stack(std::initializer_list<T> xs) : items_(xs) {}
+    [[nodiscard]] constexpr bool empty() const noexcept { return items_.empty(); }
+    auto top() -> T & override { return items_.back(); }
+private:
+    std::vector<T> items_{};
+};
+} // namespace demo
+int main() {
+    using namespace std::string_literals;
+    auto s = "raw: "s + R"(a\b)" + u8"x";
+    demo::Stack<int> st{1, 2, 0x2a, 1'000};
+    for (const auto &[k, v] : std::map<char, double>{{'a', 1.5f}, {'\n', nullptr ? 1 : 2}})
+        std::cout << k << ": " << v << std::endl;
+    try { throw std::runtime_error("boom"); } catch (const std::exception &e) { return 1; }
+    return static_cast<int>(st.empty());
+}

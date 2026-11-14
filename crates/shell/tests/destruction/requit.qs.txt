@@ -1,0 +1,9 @@
+qml: exit with 3
+qml: quit again
+qml: after both
+qml: destroyed a, quits
+qml: a after quit
+qml: destroyed b, exits with 5
+qml: b after exit
+qml: destroyed root
+status 5

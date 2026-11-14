@@ -1,0 +1,12 @@
+[WindowOutlineStyle]
+ThinWindowOutlineStyleActive=WindowOutlineCustomColor
+ThinWindowOutlineThickness=1
+ThinWindowOutlineStyleInactive=WindowOutlineCustomColor
+ThinWindowOutlineCustomColorActive=#256188
+ThinWindowOutlineCustomColorInactive=#c1c7ce
+WindowOutlineCustomColorOpacityActive=100
+WindowOutlineCustomColorOpacityInactive=100
+
+[Windeco]
+ButtonSize=Small
+

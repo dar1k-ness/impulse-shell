@@ -1,0 +1,14 @@
+derived objectName b1 b2 sub al d1 d2 dal objectNameChanged b1Changed b2Changed subChanged alChanged bs bf d1Changed d2Changed dalChanged ds df
+timer objectName interval running repeat triggeredOnStart parent objectNameChanged triggered runningChanged intervalChanged repeatChanged triggeredOnStartChanged start stop restart
+rect objectName parent data resources children x y z width height opacity enabled visible palette visibleChildren states transitions state childrenRect anchors left right horizontalCenter top bottom verticalCenter baseline baselineOffset clip focus activeFocus activeFocusOnTab focusPolicy rotation scale transformOrigin transformOriginPoint transform smooth antialiasing implicitWidth implicitHeight containmentMask mutabilityGroup layer color gradient border radius topLeftRadius topRightRadius bottomLeftRadius bottomRightRadius extra objectNameChanged childrenRectChanged baselineOffsetChanged stateChanged focusChanged activeFocusChanged focusPolicyChanged activeFocusOnTabChanged parentChanged transformOriginChanged smoothChanged antialiasingChanged clipChanged windowChanged childrenChanged opacityChanged enabledChanged visibleChanged visibleChildrenChanged rotationChanged scaleChanged xChanged yChanged widthChanged heightChanged zChanged implicitWidthChanged implicitHeightChanged containmentMaskChanged paletteChanged paletteCreated mutabilityGroupChanged update grabToImage contains mapFromItem mapToItem mapFromGlobal mapToGlobal forceActiveFocus nextItemInFocusChain childAt ensurePolished dumpItemTree colorChanged radiusChanged topLeftRadiusChanged topRightRadiusChanged bottomLeftRadiusChanged bottomRightRadiusChanged extraChanged
+json-d {"objectName":"","b1":1,"sub":{"objectName":"","x":3},"al":3,"d1":2,"d2":"s","dal":1}
+json-tm TypeError
+hasOwn true true true true true false true true false
+in true true false true true false
+typeof undefined function function function function function
+entries objectName:string b1:number b2:undefined sub:object al:number d1:number d2:string dal:number objectNameChanged:function b1Changed:function b2Changed:function subChanged:function alChanged:function bs:function bf:function d1Changed:function d2Changed:function dalChanged:function ds:function df:function
+assign objectName b1 b2 sub al d1 d2 dal objectNameChanged b1Changed b2Changed subChanged alChanged bs bf d1Changed d2Changed dalChanged ds df
+values 20
+getOwnNames objectName b1 b2 sub al d1 d2 dal objectNameChanged b1Changed b2Changed subChanged alChanged bs bf d1Changed d2Changed dalChanged ds df
+propIsEnum true true
+valueOf true

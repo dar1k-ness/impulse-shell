@@ -1,0 +1,5 @@
+Synchronizer.objectName	""
+Synchronizer.sourceObject	null
+Synchronizer.sourceProperty	""
+Synchronizer.targetObject	null
+Synchronizer.targetProperty	""

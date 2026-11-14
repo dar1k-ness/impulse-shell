@@ -1,0 +1,61 @@
+in lbl L0a
+in data 0 a [L0a]
+in + 0 a L0a
+in lbl L0b
+in data 0 b [L0b]
+in idx 1 b [L0b]
+in lbl L1b
+in + 1 b L1b
+lv n 0 p 0 undefined
+lv k 0 p 5 undefined
+lv model 0 p 5
+lv + 0 p 5
+lv n 0 q 0 undefined
+lv k 0 q 6 undefined
+lv idx 1 q 6 undefined
+lv model 1 q 6
+lv + 1 q 6
+rp k 0  1 undefined undefined
+rp n 0 x 1 undefined undefined
+rp lbl L0x
+rp data 0 x 1 undefined [L0x]
+rp model 0 x 1 object
+rp + 0 x 1 L0x
+rp k 0  2 undefined undefined
+rp n 0 y 2 undefined undefined
+rp lbl L0y
+rp data 0 y 2 undefined [L0y]
+rp idx 1 y 2 undefined [L0y]
+rp lbl L1y
+rp model 1 y 2 object
+rp + 1 y 2 L1y
+-- set
+in lbl L0a
+in data 0 a [L0a]
+in + 0 a L0a
+in lbl L0c
+in data 0 c [L0c]
+in idx 1 c [L0c]
+in lbl L1c
+in + 1 c L1c
+in lbl L0b
+in data 0 b [L0b]
+in idx 2 b [L0b]
+in lbl L2b
+in + 2 b L2b
+-- objs
+rp k 0  2 undefined undefined
+rp n 0 y 2 undefined undefined
+rp lbl L0y
+rp data 0 y 2 undefined [L0y]
+rp model 0 y 2 object
+rp + 0 y 2 L0y
+rp k 0  3 undefined undefined
+rp n 0 z 3 undefined undefined
+rp lbl L0z
+rp data 0 z 3 undefined [L0z]
+rp idx 1 z 3 undefined [L0z]
+rp lbl L1z
+rp model 1 z 3 object
+rp + 1 z 3 L1z
+end

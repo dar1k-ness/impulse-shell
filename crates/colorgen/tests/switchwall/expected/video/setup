@@ -1,0 +1,1 @@
+jq ".background.wallpaperPath = \"\"" $CFG > c && mv c $CFG

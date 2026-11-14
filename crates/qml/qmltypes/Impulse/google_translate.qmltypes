@@ -1,0 +1,50 @@
+import QtQuick.tooling 1.2
+
+// Impulse/GoogleTranslate: a Process that has Google Translate put `strings` into `language`
+// and prints its answer (crates/qml/src/jobs_wall_gcloud_trans/gcloud_api.rs `translate`).
+Module {
+    Component {
+        file: "jobs_wall_gcloud_trans/gcloud_api.rs"
+        name: "ImpulseGoogleTranslate"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/GoogleTranslate 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "token"
+            type: "QString"
+            read: "token"
+            write: "setToken"
+            notify: "tokenChanged"
+            index: 0
+        }
+        Property {
+            name: "project"
+            type: "QString"
+            read: "project"
+            write: "setProject"
+            notify: "projectChanged"
+            index: 1
+        }
+        Property {
+            name: "language"
+            type: "QString"
+            read: "language"
+            write: "setLanguage"
+            notify: "languageChanged"
+            index: 2
+        }
+        Property {
+            name: "strings"
+            type: "QStringList"
+            read: "strings"
+            write: "setStrings"
+            notify: "stringsChanged"
+            index: 3
+        }
+        Signal { name: "tokenChanged" }
+        Signal { name: "projectChanged" }
+        Signal { name: "languageChanged" }
+        Signal { name: "stringsChanged" }
+    }
+}

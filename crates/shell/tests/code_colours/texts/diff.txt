@@ -1,0 +1,15 @@
+diff --git a/src/main.rs b/src/main.rs
+index 1a2b3c4..5d6e7f8 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -1,7 +1,8 @@ fn main() {
+ use std::io;
+-fn old() {}
++fn new() {}
++// added
+ 
+ fn main() {
+-    old();
++    new();
+ }
+Only in b: notes.txt

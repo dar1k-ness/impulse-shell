@@ -1,0 +1,49 @@
+# The end of a path in leftover.txt (`Type.path`, `path`, or a group all of whose fields are
+# meant, as `locale`), a tab, the open PR that fixes it, or the test that holds the line where
+# what Qt gives depends on the directory it runs in or on a window.
+SwipeView.currentIndex	#193
+TabBar.currentIndex	#193
+locale	#162
+baseUrl	shell unset_window
+FolderListModel.folder	shell unset_window
+FolderListModel.parentFolder	shell unset_window
+# Qt5Compat.GraphicalEffects, whose effects are QML files in Qt. What the file of the effect is
+# made of (its items, GaussianBlur's `_` properties): the engine has no such file
+# (docs/qt-differences.md).
+ColorOverlay.data	the inside of Qt's QML file of the effect
+ColorOverlay.children	the inside of Qt's QML file of the effect
+ColorOverlay.visibleChildren	the inside of Qt's QML file of the effect
+Desaturate.data	the inside of Qt's QML file of the effect
+Desaturate.children	the inside of Qt's QML file of the effect
+Desaturate.visibleChildren	the inside of Qt's QML file of the effect
+DropShadow.data	the inside of Qt's QML file of the effect
+DropShadow.children	the inside of Qt's QML file of the effect
+DropShadow.visibleChildren	the inside of Qt's QML file of the effect
+GaussianBlur.data	the inside of Qt's QML file of the effect
+GaussianBlur.children	the inside of Qt's QML file of the effect
+GaussianBlur.visibleChildren	the inside of Qt's QML file of the effect
+GaussianBlur._paddedTexWidth	the inside of Qt's QML file of the effect
+GaussianBlur._paddedTexHeight	the inside of Qt's QML file of the effect
+GaussianBlur._kernelRadius	the inside of Qt's QML file of the effect
+GaussianBlur._kernelSize	the inside of Qt's QML file of the effect
+GaussianBlur._dpr	the inside of Qt's QML file of the effect
+GaussianBlur._alphaOnly	the inside of Qt's QML file of the effect
+GaussianBlur._thickness	the inside of Qt's QML file of the effect
+GaussianBlur._componentIsComplete	the inside of Qt's QML file of the effect
+GaussianBlur._output	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.x	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.y	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.width	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.height	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.left	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.right	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.top	the inside of Qt's QML file of the effect
+GaussianBlur._outputRect.bottom	the inside of Qt's QML file of the effect
+GaussianBlur._color	the inside of Qt's QML file of the effect
+OpacityMask.data	the inside of Qt's QML file of the effect
+OpacityMask.children	the inside of Qt's QML file of the effect
+OpacityMask.visibleChildren	the inside of Qt's QML file of the effect
+RadialGradient.data	the inside of Qt's QML file of the effect
+RadialGradient.children	the inside of Qt's QML file of the effect
+RadialGradient.visibleChildren	the inside of Qt's QML file of the effect

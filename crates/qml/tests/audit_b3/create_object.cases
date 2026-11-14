@@ -1,0 +1,145 @@
+# Component.createObject(parent, properties): a value its property refuses makes no object.
+# Qt 6.12 writes each initial property as QQmlProperty::write does (qqmlcomponent.cpp,
+# QQmlComponentPrivate::setInitialProperty), warns "Could not set initial property NAME",
+# completes the object, deletes it and returns null.
+@property Component comp: Component { QtObject { property url u; property string s; property var v; property int i; property color c; property point p; property date d; property real r; property bool b; property font f; property list<int> li; property QtObject o } }
+"" + root.comp.createObject(root, {u: 1})
+=> string:null
+w(function() { return root.comp.createObject(root, {u: 1}).u })
+=> string:THROW TypeError: Cannot read property 'u' of null
+w(function() { return root.comp.createObject(root, {u: null}).u })
+=> string:THROW TypeError: Cannot read property 'u' of null
+w(function() { return root.comp.createObject(root, {u: undefined}).u })
+=> string:THROW TypeError: Cannot read property 'u' of null
+w(function() { return root.comp.createObject(root, {u: {}}).u })
+=> string:THROW TypeError: Cannot read property 'u' of null
+w(function() { return root.comp.createObject(root, {u: true}).u })
+=> string:THROW TypeError: Cannot read property 'u' of null
+w(function() { return root.comp.createObject(root, {u: [1]}).u })
+=> string:THROW TypeError: Cannot read property 'u' of null
+w(function() { return root.comp.createObject(root, {u: new Date(0)}).u })
+=> string:THROW TypeError: Cannot read property 'u' of null
+w(function() { return root.comp.createObject(root, {u: Qt.point(1, 2)}).u })
+=> string:THROW TypeError: Cannot read property 'u' of null
+w(function() { return root.comp.createObject(root, {u: function() {}}).u })
+=> string:THROW TypeError: Cannot read property 'u' of null
+w(function() { return root.comp.createObject(root, {u: root}).u })
+=> string:THROW TypeError: Cannot read property 'u' of null
+w(function() { return root.comp.createObject(root, {u: /a/}).u })
+=> string:THROW TypeError: Cannot read property 'u' of null
+w(function() { return root.comp.createObject(root, {u: 1, s: "kept"}).s })
+=> string:THROW TypeError: Cannot read property 's' of null
+w(function() { return root.comp.createObject(root, {s: "kept", u: 1}).s })
+=> string:THROW TypeError: Cannot read property 's' of null
+w(function() { return "" + root.comp.createObject(root, {u: "a.png"}).u })
+=> string:a.png
+w(function() { return "" + root.comp.createObject(root, {u: Qt.url("a.png")}).u })
+=> string:a.png
+w(function() { return "" + root.comp.createObject(root, {u: Qt.resolvedUrl("a.png")}).u.toString().replace(/.*\//, "") })
+=> string:a.png
+w(function() { return "" + root.comp.createObject(root, {s: 1}).s })
+=> string:1
+w(function() { return "" + root.comp.createObject(root, {s: null}).s })
+=> string:
+w(function() { return "" + root.comp.createObject(root, {s: undefined}).s })
+=> string:THROW TypeError: Cannot read property 's' of null
+w(function() { return "" + root.comp.createObject(root, {s: {}}).s })
+=> string:THROW TypeError: Cannot read property 's' of null
+w(function() { return "" + root.comp.createObject(root, {s: [1, 2]}).s })
+=> string:
+w(function() { return "" + root.comp.createObject(root, {s: Qt.point(1, 2)}).s })
+=> string:THROW TypeError: Cannot read property 's' of null
+w(function() { return "" + root.comp.createObject(root, {s: root}).s })
+=> string:THROW TypeError: Cannot read property 's' of null
+w(function() { return "" + root.comp.createObject(root, {i: "5"}).i })
+=> string:5
+w(function() { return "" + root.comp.createObject(root, {i: "x"}).i })
+=> string:THROW TypeError: Cannot read property 'i' of null
+w(function() { return "" + root.comp.createObject(root, {i: 1.7}).i })
+=> string:2
+w(function() { return "" + root.comp.createObject(root, {i: null}).i })
+=> string:THROW TypeError: Cannot read property 'i' of null
+w(function() { return "" + root.comp.createObject(root, {i: undefined}).i })
+=> string:THROW TypeError: Cannot read property 'i' of null
+w(function() { return "" + root.comp.createObject(root, {i: {}}).i })
+=> string:THROW TypeError: Cannot read property 'i' of null
+w(function() { return "" + root.comp.createObject(root, {i: true}).i })
+=> string:1
+w(function() { return "" + root.comp.createObject(root, {r: "1.5"}).r })
+=> string:1.5
+w(function() { return "" + root.comp.createObject(root, {r: "x"}).r })
+=> string:THROW TypeError: Cannot read property 'r' of null
+w(function() { return "" + root.comp.createObject(root, {r: null}).r })
+=> string:THROW TypeError: Cannot read property 'r' of null
+w(function() { return "" + root.comp.createObject(root, {b: "x"}).b })
+=> string:true
+w(function() { return "" + root.comp.createObject(root, {b: 0}).b })
+=> string:false
+w(function() { return "" + root.comp.createObject(root, {b: null}).b })
+=> string:THROW TypeError: Cannot read property 'b' of null
+w(function() { return "" + root.comp.createObject(root, {b: {}}).b })
+=> string:THROW TypeError: Cannot read property 'b' of null
+w(function() { return "" + root.comp.createObject(root, {c: "red"}).c })
+=> string:#ff0000
+w(function() { return "" + root.comp.createObject(root, {c: "nope"}).c })
+=> string:#000000
+w(function() { return "" + root.comp.createObject(root, {c: 1}).c })
+=> string:#000000
+w(function() { return "" + root.comp.createObject(root, {c: null}).c })
+=> string:#000000
+w(function() { return "" + root.comp.createObject(root, {c: undefined}).c })
+=> string:THROW TypeError: Cannot read property 'c' of null
+w(function() { return "" + root.comp.createObject(root, {p: "1,2"}).p })
+=> string:QPointF(1, 2)
+w(function() { return "" + root.comp.createObject(root, {p: "x"}).p })
+=> string:THROW TypeError: Cannot read property 'p' of null
+w(function() { return "" + root.comp.createObject(root, {p: 1}).p })
+=> string:THROW TypeError: Cannot read property 'p' of null
+w(function() { return "" + root.comp.createObject(root, {p: [1, 2]}).p })
+=> string:THROW TypeError: Cannot read property 'p' of null
+w(function() { return "" + root.comp.createObject(root, {p: Qt.size(1, 2)}).p })
+=> string:QPointF(0, 0)
+w(function() { return "" + root.comp.createObject(root, {p: null}).p })
+=> string:QPointF(0, 0)
+w(function() { return "" + root.comp.createObject(root, {d: "2020-01-02"}).d.getTime() })
+=> string:1577912400000
+w(function() { return "" + root.comp.createObject(root, {d: "x"}).d })
+=> string:THROW TypeError: Cannot read property 'd' of null
+w(function() { return "" + root.comp.createObject(root, {d: 5}).d })
+=> string:THROW TypeError: Cannot read property 'd' of null
+w(function() { return "" + root.comp.createObject(root, {d: null}).d })
+=> string:THROW TypeError: Cannot read property 'd' of null
+w(function() { return "" + root.comp.createObject(root, {f: "x"}).f.family })
+=> string:x
+w(function() { return "" + root.comp.createObject(root, {f: 1}).f.family })
+=> string:THROW TypeError: Cannot read property 'f' of null
+w(function() { return "" + root.comp.createObject(root, {li: [1, "2", "x"]}).li })
+=> string:1,2,0
+w(function() { return "" + root.comp.createObject(root, {li: 5}).li })
+=> string:5
+w(function() { return "" + root.comp.createObject(root, {li: "x"}).li })
+=> string:120
+w(function() { return "" + root.comp.createObject(root, {li: null}).li })
+=> string:0
+w(function() { return "" + root.comp.createObject(root, {o: 1}).o })
+=> string:THROW TypeError: Cannot read property 'o' of null
+w(function() { return "" + root.comp.createObject(root, {o: "x"}).o })
+=> string:THROW TypeError: Cannot read property 'o' of null
+w(function() { return "" + root.comp.createObject(root, {o: null}).o })
+=> string:null
+w(function() { return "" + (root.comp.createObject(root, {o: root}).o === root) })
+=> string:true
+w(function() { return root.comp.createObject(root, {nope: 1}) !== null })
+=> boolean:true
+w(function() { return "" + root.comp.createObject(root, {v: 1, nope: 1}).v })
+=> string:1
+w(function() { return "" + root.comp.createObject(root, 5) })
+=> string:null
+w(function() { return "" + root.comp.createObject(root, null).s })
+=> string:THROW TypeError: Cannot read property 's' of null
+w(function() { return "" + root.comp.createObject(root, "x") })
+=> string:null
+w(function() { var o = root.comp.createObject(root, {u: "a"}); o.u = 1; return "" + o.u })
+=> string:THROW Error: Cannot assign int to QUrl
+w(function() { return "" + root.comp.createObject(null, {u: 1}) })
+=> string:null

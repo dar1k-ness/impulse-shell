@@ -1,0 +1,18 @@
+[package]
+name = "aotcheck"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+# Test-only tooling: the AOT differential checker runs the interpreter against compiled code,
+# so it needs qml's `interp` feature and never links into the release shell.
+[dependencies]
+elog = { path = "../elog" }
+qml = { path = "../qml", features = ["interp"] }
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true

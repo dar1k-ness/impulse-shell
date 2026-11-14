@@ -1,0 +1,6 @@
+move 255 60
+press 255 10 15
+release
+press 255 30 10
+release
+drag 255 40 25

@@ -1,0 +1,18 @@
+console: target 0
+console: target 10
+console: completed, here false false
+console: filled, here true false
+warning: undefined.qml:32:9: Unable to assign [undefined] to bool
+warning: undefined.qml:35:9: Unable to assign [undefined] to int
+console: timer 1 an object whose binding recovers
+console: made: completed
+console: timer 2 an object whose binding does not
+console: made: completed
+warning: undefined.qml:51:13: Unable to assign [undefined] to double
+console: timer 3 the list is emptied
+warning: undefined.qml:20:17: Unable to assign [undefined] to bool
+warning: undefined.qml:21:17: Unable to assign [undefined] to bool
+warning: undefined.qml:20:17: Unable to assign [undefined] to bool
+warning: undefined.qml:21:17: Unable to assign [undefined] to bool
+warning: undefined.qml:20:17: Unable to assign [undefined] to bool
+console: timer 4 the end, here true false

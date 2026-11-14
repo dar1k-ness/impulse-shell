@@ -1,0 +1,82 @@
+b count 0 -1
+a count 0 -1
+e item 2 d2
+c cur 0 3 d0
+c item 0 d0
+completed -1 -1 0 -1 2 -1 -1
+-- arr 3
+g cur 0 3
+a count 3 -1
+a cur 0 3 d0
+a item 0 d0
+a count 3 0
+-- a cur 2
+a cur 2 3 d2
+a item 2 d2
+-- arr 2
+g cur 0 2
+a item 2 null
+a count 2 2
+a cur 0 2 d0
+a item 0 d0
+a count 2 0
+-- arr 0
+g cur -1 0
+a item 0 null
+a cur -1 0 null
+a count 0 -1
+-- arr 1
+g cur 0 1
+a count 1 -1
+a cur 0 1 d0
+a item 0 d0
+a count 1 0
+-- lm append
+-- b cur 1
+b cur 0 3 d0
+b item 0 d0
+b count 3 0
+b cur 1 3 d1
+b item 1 d1
+-- lm insert 0
+-- lm insert 3
+-- lm remove 0
+-- lm remove cur
+-- lm remove last cur
+b item 1 null
+b item 1 d1
+b cur 2 3 d2
+b item 2 d2
+-- lm move
+b item 2 null
+b cur 1 2 d1
+b item 1 d1
+b count 2 1
+b cur 0 2 d0
+b item 0 d0
+QML ListModel: move: out of range
+-- lm clear
+-- lm append
+-- d model
+d cur 0 4
+-- e model
+e item 2 null
+e cur 0 2
+e item 0 d0
+-- h model
+h cur 0 2
+-- c cur 7
+c cur 7 3 null
+c item 7 null
+-- c cur -1
+c cur -1 3 null
+-- c model 0
+c cur -1 0 null
+-- c model 2
+c cur 0 2 d0
+c item 0 d0
+end 0 0 0 0 0 0 0
+b item 0 null
+b item 0 d0
+b count 1 0
+done

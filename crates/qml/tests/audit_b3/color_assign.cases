@@ -1,0 +1,83 @@
+@property color c: "red"
+@property int nc: 0
+@onCChanged: nc += 1
+w(function(){ c = "red"; c = undefined; return c + " " + c.valid })
+=> string:THROW Error: Cannot assign [undefined] to QColor
+w(function(){ c = "red"; c = null; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = 5; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = 0xff00ff00; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = -1; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = 1.5; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = NaN; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = true; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = "nope"; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = ""; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = "#12"; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = "transparent"; return c + " " + c.valid })
+=> string:#00000000 true
+w(function(){ c = "red"; c = " blue"; return c + " " + c.valid })
+=> string:#0000ff true
+w(function(){ c = "red"; c = "BLUE"; return c + " " + c.valid })
+=> string:#0000ff true
+w(function(){ c = "red"; c = {}; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = {r: 0, g: 1, b: 0, a: 1}; return c + " " + c.valid })
+=> string:#00ff00 true
+w(function(){ c = "red"; c = []; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = ["blue"]; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = [0, 0, 1]; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = new Date(0); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt.point(1, 2); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt.vector3d(0, 0, 1); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt.vector4d(0, 0, 1, 1); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt.resolvedUrl("blue"); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = function() { return "blue" }; return c + " " + c.valid })
+=> string:THROW Error: Cannot assign JavaScript function to QColor
+w(function(){ c = "red"; c = Math.max; return c + " " + c.valid })
+=> string:THROW Error: Cannot assign JavaScript function to QColor
+w(function(){ c = "red"; c = root; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Symbol("blue"); return c + " " + c.valid })
+=> string:THROW Error: Cannot assign QJSValue to QColor
+w(function(){ c = "red"; c = new String("blue"); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = new Number(255); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = {toString: function() { return "blue" }}; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = /blue/; return c + " " + c.valid })
+=> string:THROW Error: Cannot assign QRegularExpression to QColor
+w(function(){ c = "red"; c = Qt.rgba(0, 0, 1, 1); return c + " " + c.valid })
+=> string:#0000ff true
+w(function(){ c = "red"; c = Qt.hsva(0.5, 1, 1, 1); return c + " " + c.hsvHue })
+=> string:#00ffff 0.5
+w(function(){ c = "red"; var n = nc; c = "#ff0000"; var m = nc; c = "#f00"; return (m - n) + "|" + (nc - m) })
+=> string:0|0
+w(function(){ c = "red"; var n = nc; try { c = undefined } catch (e) {} var m = nc; try { c = "nope" } catch (e) {} return (m - n) + "|" + (nc - m) + "|" + c })
+=> string:0|1|#000000
+w(function(){ c = "red"; root.c = undefined; return c + " " + c.valid })
+=> string:THROW Error: Cannot assign [undefined] to QColor
+w(function(){ c = "red"; root["c"] = undefined; return c + " " + c.valid })
+=> string:THROW Error: Cannot assign [undefined] to QColor
+w(function(){ c = "red"; this.c = 5; return c + " " + c.valid })
+=> string:#ff0000 true
+w(function(){ c = "red"; c = Qt.binding(function() { return "blue" }); return c + " " + c.valid })
+=> string:#0000ff true

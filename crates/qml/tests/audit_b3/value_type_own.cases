@@ -1,0 +1,117 @@
+# what kind of object a value type is
+"times" in Qt.vector3d(1, 2, 3)
+=> boolean:false
+"x" in Qt.vector3d(1, 2, 3)
+=> boolean:true
+"toString" in Qt.vector3d(1, 2, 3)
+=> boolean:true
+"nope" in Qt.vector3d(1, 2, 3)
+=> boolean:false
+Qt.vector3d(1, 2, 3).hasOwnProperty("times")
+=> boolean:true
+Qt.vector3d(1, 2, 3).hasOwnProperty("x")
+=> boolean:true
+Qt.vector3d(1, 2, 3).hasOwnProperty("toString")
+=> boolean:true
+Qt.vector3d(1, 2, 3).hasOwnProperty("nope")
+=> boolean:false
+(function(){ var v = Qt.vector3d(1, 2, 3); var d = Object.getOwnPropertyDescriptor(v, "times"); return d ? [typeof d.value, d.writable, d.enumerable, d.configurable].join(",") : "none" })()
+=> string:function,true,true,true
+(function(){ var v = Qt.vector3d(1, 2, 3); var d = Object.getOwnPropertyDescriptor(v, "x"); return d ? [typeof d.value, d.writable, d.enumerable, d.configurable].join(",") : "none" })()
+=> string:number,true,true,true
+(function(){ var v = Qt.vector3d(1, 2, 3); return v.times === v.times })()
+=> boolean:false
+(function(){ var v = Qt.vector3d(1, 2, 3); var f = v.times; return String(f(2)) })()
+=> string:QVector3D(2, 4, 6)
+(function(){ var v = Qt.vector3d(1, 2, 3); var f = v.times; return String(f.call(Qt.vector3d(5, 5, 5), 2)) })()
+=> string:QVector3D(2, 4, 6)
+Object.keys(Qt.vector3d(1, 2, 3)).join(",")
+=> string:x,y,z
+Object.getOwnPropertyNames(Qt.vector3d(1, 2, 3)).join(",")
+=> string:x,y,z
+(function(){ var k = []; for (var p in Qt.vector3d(1, 2, 3)) k.push(p); return k.join(",") })()
+=> string:x,y,z
+Object.prototype.toString.call(Qt.vector3d(1, 2, 3))
+=> string:[object QMLValueTypeWrapper]
+Object.prototype.toString.call(Qt.point(1, 2))
+=> string:[object QMLValueTypeWrapper]
+Object.prototype.toString.call(Qt.rect(1, 2, 3, 4))
+=> string:[object QMLValueTypeWrapper]
+Object.prototype.toString.call(Qt.font({}))
+=> THROW Error: Qt.font(): Invalid argument: no valid font subproperties specified
+Object.prototype.toString.call(Qt.rgba(1, 0, 0, 1))
+=> string:[object QMLValueTypeWrapper]
+Object.prototype.toString.call(Qt.matrix4x4())
+=> string:[object QMLValueTypeWrapper]
+Object.prototype.toString.call(Qt.url("a"))
+=> string:[object Object]
+Object.prototype.toString.call(Qt.vector3d(1, 2, 3).times)
+=> string:[object Function]
+Qt.vector3d(1, 2, 3).times.name
+=> string:
+Qt.vector3d(1, 2, 3).times.length
+=> number:0
+"toString" in Qt.point(1, 2)
+=> boolean:true
+Qt.point(1, 2).hasOwnProperty("toString")
+=> boolean:true
+Qt.point(1, 2).hasOwnProperty("x")
+=> boolean:true
+"x" in Qt.point(1, 2)
+=> boolean:true
+Object.keys(Qt.point(1, 2)).join(",")
+=> string:x,y
+Object.keys(Qt.rect(1, 2, 3, 4)).join(",")
+=> string:x,y,width,height,left,right,top,bottom
+"left" in Qt.rect(1, 2, 3, 4)
+=> boolean:true
+Qt.rect(1, 2, 3, 4).hasOwnProperty("left")
+=> boolean:true
+Object.keys(Qt.font({})).length
+=> THROW Error: Qt.font(): Invalid argument: no valid font subproperties specified
+"family" in Qt.font({})
+=> THROW Error: Qt.font(): Invalid argument: no valid font subproperties specified
+Qt.font({}).hasOwnProperty("family")
+=> THROW Error: Qt.font(): Invalid argument: no valid font subproperties specified
+Qt.font({}).hasOwnProperty("toString")
+=> THROW Error: Qt.font(): Invalid argument: no valid font subproperties specified
+"toString" in Qt.font({})
+=> THROW Error: Qt.font(): Invalid argument: no valid font subproperties specified
+Object.keys(Qt.matrix4x4()).join(",")
+=> string:m11,m12,m13,m14,m21,m22,m23,m24,m31,m32,m33,m34,m41,m42,m43,m44
+"times" in Qt.matrix4x4()
+=> boolean:false
+Qt.matrix4x4().hasOwnProperty("times")
+=> boolean:true
+Qt.matrix4x4().hasOwnProperty("m11")
+=> boolean:true
+"r" in Qt.rgba(1, 0, 0, 1)
+=> boolean:true
+Qt.rgba(1, 0, 0, 1).hasOwnProperty("r")
+=> boolean:true
+Object.keys(Qt.rgba(1, 0, 0, 1)).join(",")
+=> string:r,g,b,a,hsvHue,hsvSaturation,hsvValue,hslHue,hslSaturation,hslLightness,valid,rgba
+"lighter" in Qt.rgba(1, 0, 0, 1)
+=> boolean:false
+Qt.rgba(1, 0, 0, 1).hasOwnProperty("lighter")
+=> boolean:true
+Object.getPrototypeOf(Qt.vector3d(1, 2, 3)) === Object.getPrototypeOf(Qt.vector3d(4, 5, 6))
+=> boolean:true
+Object.getPrototypeOf(Qt.vector3d(1, 2, 3)) === Object.getPrototypeOf(Qt.point(4, 5))
+=> boolean:true
+Object.getOwnPropertyNames(Object.getPrototypeOf(Qt.vector3d(1, 2, 3))).join(",")
+=> string:toString
+(function(){ var v = Qt.vector3d(1, 2, 3); v.times = 5; return typeof v.times })()
+=> THROW Error: Cannot assign int to 
+(function(){ var v = Qt.vector3d(1, 2, 3); delete v.times; return typeof v.times })()
+=> string:function
+(function(){ var v = Qt.vector3d(1, 2, 3); v.zzz = 5; return typeof v.zzz })()
+=> string:undefined
+JSON.stringify(Qt.vector3d(1, 2, 3))
+=> string:{"x":1,"y":2,"z":3}
+JSON.stringify(Qt.point(1, 2))
+=> string:{"x":1,"y":2}
+"dotProduct" in Qt.vector2d(1, 2)
+=> boolean:false
+"conjugated" in Qt.quaternion(1, 2, 3, 4)
+=> boolean:false

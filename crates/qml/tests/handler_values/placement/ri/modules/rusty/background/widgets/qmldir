@@ -1,0 +1,2 @@
+module ri.modules.rusty.background.widgets
+AbstractBackgroundWidget 1.0 AbstractBackgroundWidget.qml

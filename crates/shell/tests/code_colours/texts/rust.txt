@@ -1,0 +1,30 @@
+//! Crate docs.
+use std::collections::HashMap;
+use std::fmt::{self, Display};
+
+/// A shape. TODO: more
+#[derive(Debug, Clone, PartialEq)]
+pub enum Shape<'a, T: Display + ?Sized> {
+    Circle { r: f64 },
+    Named(&'a str, Box<T>),
+}
+
+impl<'a, T: Display> Shape<'a, T> {
+    pub const UNIT: f64 = 1.0e0;
+    pub fn area(&self) -> Option<f64> {
+        match self {
+            Shape::Circle { r } if *r > 0.0 => Some(std::f64::consts::PI * r * r),
+            _ => None,
+        }
+    }
+}
+
+async fn run(xs: &mut Vec<u8>) -> Result<(), Box<dyn std::error::Error>> {
+    let mut map: HashMap<String, usize> = HashMap::new();
+    for (i, x) in xs.iter().enumerate().filter(|(_, x)| **x != b'\n') {
+        *map.entry(format!("k{i:02}-{x:#x}")).or_insert(0) += 0xff_usize + 1_000;
+    }
+    let c = 'c'; let s = r#"raw "str""#; let b = b"bytes\x00";
+    println!("{:?} {c} {s} {}", map, unsafe { *xs.as_ptr() } as char);
+    Ok(())
+}

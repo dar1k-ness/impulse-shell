@@ -1,0 +1,52 @@
+1 Error: boom
+2 TypeError: Cannot read property 'x' of null
+3 RangeError: r TypeError SyntaxError: s ReferenceError: q URIError: u EvalError: e
+4 Custom: m
+5 Fri Jan 1 00:00:00 1971 GMT
+6 /ab+c/gi
+7 [1,[2,3]]
+8 [object Map] [object Set] [object WeakMap]
+9 custom
+10 function named() { [native code] }
+11 function() { [native code] } function() { [native code] } function max() { [native code] } function __bound function__() { [native code] } function args() { [native code] }
+12 Error: inner after
+13 5 after
+14 7
+15 TypeError: Type error after
+16 [1,[Circular]]
+17 [[1],[1]]
+18 [undefined,null,undefined,s,[object Object],[],[[]],true,0,1.5]
+19 [object Arguments]
+20 1,2 
+21 Symbol() Symbol(d) Symbol(Symbol.iterator)
+22 [Symbol(d)]
+23 Invalid Date
+24 #336699 http://a/b QPointF(1, 2)
+25 [1,2] [1,2,3]
+26 TypeError: Type error after
+27 undefined null true 0 0.1 1e+21 NaN s
+28 x 2 false
+29 [object Object] [object Object] [object Math] [object JSON]
+30 [el,Error: in]
+31 [Error: eth,2] after
+32 function gen() { [native code] } function K() { [native code] } function m() { [native code] }
+33 [object ProxyObject] 1,2
+34 prim:string
+35 [object Object] [a,b,c]
+36
+
+
+37 [object Array Iterator] [object Map Iterator]
+38 [object Promise] [object DataView]
+39 Error Error
+40 ovr
+41 [[1,[2,[3,[4]]]],[],[[],[]]]
+42 [1,2]
+43 [1]
+43w [2]
+43e [3]
+43d [4]
+44 [a,b,c] [1,2.5,1e+21,0]
+45 QQuickItem_QML_0(0x5b28e3f9ae80) 1
+46 Thu Jan 1 00:00:00 1970 GMT [Thu Jan 1 00:00:00 1970 GMT]
+47 1,2,3 Error: boom 1,2

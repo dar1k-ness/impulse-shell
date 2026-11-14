@@ -1,0 +1,476 @@
+@property point pt: Qt.point(1, 2)
+@property size sz: Qt.size(1, 2)
+@property rect rc: Qt.rect(1, 2, 3, 4)
+@property vector2d v2
+@property vector3d v3
+@property vector4d v4
+@property quaternion qn
+@property matrix4x4 mx
+@property font f
+@property point bs: "3,4"
+@property size bz: "3x4"
+@property rect br: "1,2,3x4"
+@property vector3d bv: "1,2,3"
+# B3-19 %g text
+String(Qt.point(100000.5, 100001.5))
+=> string:QPointF(100001, 100002)
+String(Qt.point(1000005, 10000005))
+=> string:QPointF(1.00001e+06, 1e+07)
+String(Qt.point(0.0000125, 1.000005))
+=> string:QPointF(1.25e-05, 1.00001)
+String(Qt.point(1234565, 0))
+=> string:QPointF(1.23457e+06, 0)
+String(Qt.point(1234575, 0.5))
+=> string:QPointF(1.23458e+06, 0.5)
+String(Qt.point(2.5, 3.5))
+=> string:QPointF(2.5, 3.5)
+String(Qt.point(0.125, 0.375))
+=> string:QPointF(0.125, 0.375)
+String(Qt.point(1.0000005, 2.0000015))
+=> string:QPointF(1, 2)
+String(Qt.point(999999.5, 99999.95))
+=> string:QPointF(1e+06, 99999.9)
+String(Qt.point(0.0001, 0.00001))
+=> string:QPointF(0.0001, 1e-05)
+String(Qt.point(0.000123456789, 123456789))
+=> string:QPointF(0.000123457, 1.23457e+08)
+String(Qt.point(1e-7, 1e21))
+=> string:QPointF(1e-07, 1e+21)
+String(Qt.point(-100000.5, -0.0000125))
+=> string:QPointF(-100001, -1.25e-05)
+String(Qt.point(1e100, 1.5e-100))
+=> string:QPointF(1e+100, 1.5e-100)
+String(Qt.point(NaN, Infinity))
+=> string:QPointF(nan, inf)
+String(Qt.point(-0, -Infinity))
+=> string:QPointF(0, -inf)
+String(Qt.size(100000.5, 0.0000125))
+=> string:QSizeF(100001, 1.25e-05)
+String(Qt.rect(100000.5, 1000005, 0.0000125, 1234565))
+=> string:QRectF(100001, 1.00001e+06, 1.25e-05, 1.23457e+06)
+String(Qt.vector2d(100000.5, 0.0000125))
+=> string:QVector2D(100001, 1.25e-05)
+String(Qt.vector3d(1000005, 1234565, 2.5))
+=> string:QVector3D(1.00001e+06, 1.23457e+06, 2.5)
+String(Qt.vector4d(0.15, 0.25, 0.35, 0.45))
+=> string:QVector4D(0.15, 0.25, 0.35, 0.45)
+String(Qt.quaternion(100000.5, 1.5, 2.5, 0.00001))
+=> string:QQuaternion(100001, 1.5, 2.5, 1e-05)
+"%1".arg(100000.5)
+=> string:100001
+"%1".arg(1234565)
+=> string:1234565
+"%1".arg(0.0000125)
+=> string:1.25e-05
+"%1".arg(0.00001)
+=> string:1e-05
+"%1".arg(1000005)
+=> string:1000005
+"%1".arg(2.5)
+=> string:2.5
+"%1".arg(123456.5)
+=> string:123457
+"%1".arg(0.1 + 0.2)
+=> string:0.3
+"%1 %2".arg(1e21).arg(-1234567.5)
+=> string:1e+21 -1.23457e+06
+"%1".arg(999999.5)
+=> string:1e+06
+"%1".arg(1e-5)
+=> string:1e-05
+"%1".arg(1e-4)
+=> string:0.0001
+"%1".arg(0.00012345675)
+=> string:0.000123457
+"%1".arg(123456789012)
+=> string:1.23457e+11
+# B3-20 shortest tie
+(28.2481231689453125).toString()
+=> string:28.248123168945312
+String(Qt.matrix4x4(28.2481231689453125, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1))
+=> string:QMatrix4x4(28.248123168945312, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+String(Qt.matrix4x4(0.1, 0.5, 1e21, 1e-7, 123456789, 1.5e10, 5e-324, 1, 0, 0, 1, 0, 0, 0, 0, 1))
+=> string:QMatrix4x4(0.10000000149011612, 0.5, 1000000020040877300000, 1.0000000116860974e-07, 123456792, 15000000512, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1)
+(0.5).toString() + " " + (5e-324).toString() + " " + (1.7976931348623157e308).toString() + " " + (9007199254740993).toString() + " " + (2.5e-7).toString()
+=> string:0.5 5e-324 1.7976931348623157e+308 9007199254740992 2.5e-7
+(4.35).toString() + " " + (0.000001).toString() + " " + (1e21).toString() + " " + (123456789012345680000).toString() + " " + (1.005).toString()
+=> string:4.35 0.000001 1e+21 123456789012345680000 1.005
+(5e-324 * 3).toString() + " " + (1.2345678901234567e-7).toString() + " " + (9.5e-7).toString()
+=> string:1.5e-323 1.2345678901234566e-7 9.5e-7
+(1152921504606846976).toString() + " " + (1.5e300).toString() + " " + (4.4501477170144023e-308).toString()
+=> string:1152921504606847000 1.5e+300 4.4501477170144023e-308
+(8.41e21).toString() + " " + (2.2250738585072014e-308).toString() + " " + (1e23).toString() + " " + (7.2057594037927936e16).toString()
+=> string:8.41e+21 2.2250738585072014e-308 1e+23 72057594037927940
+(5e-324).toString() + " " + (9.5).toString() + " " + (0.3).toString() + " " + (2e-323).toString() + " " + (4.9406564584124654e-324).toString()
+=> string:5e-324 9.5 0.3 2e-323 5e-324
+# B3-21 fuzzy equality
+Qt.point(1e-13, 0) == Qt.point(0, 0)
+=> boolean:true
+Qt.point(1, 0) == Qt.point(1 + 1e-13, 0)
+=> boolean:true
+Qt.point(1, 0) == Qt.point(1 + 1e-11, 0)
+=> boolean:false
+Qt.point(1e-11, 0) == Qt.point(0, 0)
+=> boolean:false
+Qt.point(1e-12, 0) == Qt.point(0, 0)
+=> boolean:true
+Qt.point(1e-12 * 1.01, 0) == Qt.point(0, 0)
+=> boolean:false
+Qt.point(1e6, 0) == Qt.point(1e6 + 1e-7, 0)
+=> boolean:true
+Qt.point(1e6, 0) == Qt.point(1e6 + 1e-5, 0)
+=> boolean:false
+Qt.point(0, 1e-13) == Qt.point(0, 0)
+=> boolean:true
+Qt.point(1e-13, 0) != Qt.point(0, 0)
+=> boolean:false
+Qt.point(1e-13, 0) === Qt.point(0, 0)
+=> boolean:true
+Qt.point(1, 2) == Qt.point(1, 2)
+=> boolean:true
+Qt.point(1, 2) === Qt.point(1, 2)
+=> boolean:true
+Qt.size(1e-13, 0) == Qt.size(0, 0)
+=> boolean:true
+Qt.size(1, 5) == Qt.size(1 + 1e-13, 5)
+=> boolean:true
+Qt.size(1, 5) == Qt.size(1 + 1e-9, 5)
+=> boolean:false
+Qt.rect(1e-13, 0, 1, 1) == Qt.rect(0, 0, 1, 1)
+=> boolean:true
+Qt.rect(0, 0, 1, 1) == Qt.rect(0, 0, 1 + 1e-13, 1)
+=> boolean:true
+Qt.rect(0, 0, 1, 1) == Qt.rect(0, 0, 1 + 1e-9, 1)
+=> boolean:false
+Qt.vector2d(1e-13, 0) == Qt.vector2d(0, 0)
+=> boolean:false
+Qt.vector3d(1e-13, 0, 0) == Qt.vector3d(0, 0, 0)
+=> boolean:false
+Qt.vector3d(1, 0, 0) == Qt.vector3d(1 + 1e-13, 0, 0)
+=> boolean:true
+Qt.vector3d(1, 0, 0) == Qt.vector3d(1.0000001, 0, 0)
+=> boolean:false
+Qt.vector4d(1e-13, 0, 0, 0) == Qt.vector4d(0, 0, 0, 0)
+=> boolean:false
+Qt.quaternion(1, 1e-13, 0, 0) == Qt.quaternion(1, 0, 0, 0)
+=> boolean:false
+Qt.vector3d(1, 2, 3).fuzzyEquals(Qt.vector3d(1.000001, 2, 3))
+=> boolean:true
+Qt.point(NaN, 0) == Qt.point(NaN, 0)
+=> boolean:false
+Qt.point(Infinity, 0) == Qt.point(Infinity, 0)
+=> boolean:false
+Qt.point(0, 0) == Qt.point(-0, 0)
+=> boolean:true
+Qt.point(1, 2) == Qt.size(1, 2)
+=> boolean:false
+Qt.point(1, 2) == Qt.vector2d(1, 2)
+=> boolean:false
+Qt.point(1e-13, 0) == "QPointF(0, 0)"
+=> boolean:false
+[Qt.point(1e-13, 0)].indexOf(Qt.point(0, 0))
+=> number:0
+[Qt.point(1e-13, 0)].includes(Qt.point(0, 0))
+=> boolean:true
+"x" in Qt.vector3d(1, 2, 3)
+=> boolean:true
+# B3-23, B3-24 conversion
+w(function(){ pt = "1,2"; return pt })
+=> object:QPointF(1, 2)
+w(function(){ pt = " 1 , 2 "; return pt })
+=> object:QPointF(1, 2)
+w(function(){ pt = "1.5,-2e1"; return pt })
+=> object:QPointF(1.5, -20)
+w(function(){ pt = "1,2,3"; return pt })
+=> string:THROW Error: Cannot assign QString to QPointF
+w(function(){ pt = "1"; return pt })
+=> string:THROW Error: Cannot assign QString to QPointF
+w(function(){ pt = "a,b"; return pt })
+=> string:THROW Error: Cannot assign QString to QPointF
+w(function(){ pt = ""; return pt })
+=> string:THROW Error: Cannot assign QString to QPointF
+w(function(){ pt = "1x2"; return pt })
+=> string:THROW Error: Cannot assign QString to QPointF
+w(function(){ pt = "1,2x"; return pt })
+=> string:THROW Error: Cannot assign QString to QPointF
+w(function(){ sz = "3x4"; return sz })
+=> object:QSizeF(3, 4)
+w(function(){ sz = "3,4"; return sz })
+=> string:THROW Error: Cannot assign QString to QSizeF
+w(function(){ sz = " 3 x 4 "; return sz })
+=> object:QSizeF(3, 4)
+w(function(){ sz = "3.5x-4"; return sz })
+=> object:QSizeF(3.5, -4)
+w(function(){ sz = "x"; return sz })
+=> string:THROW Error: Cannot assign QString to QSizeF
+w(function(){ rc = "1,2,3x4"; return rc })
+=> object:QRectF(1, 2, 3, 4)
+w(function(){ rc = "1,2,3,4"; return rc })
+=> string:THROW Error: Cannot assign QString to QRectF
+w(function(){ rc = " 1 , 2 , 3 x 4 "; return rc })
+=> object:QRectF(1, 2, 3, 4)
+w(function(){ rc = "1,2,3"; return rc })
+=> string:THROW Error: Cannot assign QString to QRectF
+w(function(){ v2 = "1,2"; return v2 })
+=> object:QVector2D(1, 2)
+w(function(){ v3 = "1,2,3"; return v3 })
+=> object:QVector3D(1, 2, 3)
+w(function(){ v3 = "a,b,c"; return v3 })
+=> object:QVector3D(0, 0, 0)
+w(function(){ v3 = "1,2"; return v3 })
+=> object:QVector3D(0, 0, 0)
+w(function(){ v3 = " 1 , 2 , 3 "; return v3 })
+=> object:QVector3D(1, 2, 3)
+w(function(){ v4 = "1,2,3,4"; return v4 })
+=> object:QVector4D(1, 2, 3, 4)
+w(function(){ qn = "1,2,3,4"; return qn })
+=> object:QQuaternion(1, 2, 3, 4)
+w(function(){ mx = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"; return mx })
+=> object:QMatrix4x4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+w(function(){ mx = "1,2"; return mx })
+=> object:QMatrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+w(function(){ pt = Qt.point(5, 6); pt = null; return pt })
+=> object:QPointF(0, 0)
+w(function(){ pt = Qt.point(5, 6); pt = undefined; return pt })
+=> string:THROW Error: Cannot assign [undefined] to QPointF
+w(function(){ sz = null; return sz })
+=> object:QSizeF(-1, -1)
+w(function(){ rc = null; return rc })
+=> object:QRectF(0, 0, 0, 0)
+w(function(){ v2 = Qt.vector2d(5, 5); v2 = null; return v2 })
+=> object:QVector2D(0, 0)
+w(function(){ v3 = Qt.vector3d(5, 5, 5); v3 = null; return v3 })
+=> object:QVector3D(0, 0, 0)
+w(function(){ v3 = undefined; return v3 })
+=> string:THROW Error: Cannot assign [undefined] to QVector3D
+w(function(){ v4 = null; return v4 })
+=> object:QVector4D(0, 0, 0, 0)
+w(function(){ qn = null; return qn })
+=> object:QQuaternion(1, 0, 0, 0)
+w(function(){ mx = null; return mx })
+=> object:QMatrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+w(function(){ pt = 5; return pt })
+=> string:THROW Error: Cannot assign int to QPointF
+w(function(){ pt = true; return pt })
+=> string:THROW Error: Cannot assign bool to QPointF
+w(function(){ pt = {x: 7, y: 8}; return pt })
+=> object:QPointF(7, 8)
+w(function(){ pt = {x: 7}; return pt })
+=> object:QPointF(7, 0)
+w(function(){ pt = {}; return pt })
+=> object:QPointF(0, 0)
+w(function(){ pt = Qt.size(3, 4); return pt })
+=> object:QPointF(0, 0)
+w(function(){ pt = Qt.vector2d(3, 4); return pt })
+=> object:QPointF(3, 4)
+w(function(){ v3 = 5; return v3 })
+=> string:THROW Error: Cannot assign int to QVector3D
+w(function(){ v3 = {x: 1, y: 2, z: 3}; return v3 })
+=> object:QVector3D(1, 2, 3)
+w(function(){ v3 = Qt.point(1, 2); return v3 })
+=> object:QVector3D(1, 2, 0)
+w(function(){ sz = {width: 2, height: 3}; return sz })
+=> object:QSizeF(2, 3)
+w(function(){ rc = {x: 1, y: 2, width: 3, height: 4}; return rc })
+=> object:QRectF(1, 2, 3, 4)
+typeof bs + " " + bs.x + " " + bs
+=> string:object 3 QPointF(3, 4)
+typeof bz + " " + bz.width + " " + bz
+=> string:object 3 QSizeF(3, 4)
+typeof br + " " + br.width + " " + br
+=> string:object 3 QRectF(1, 2, 3, 4)
+typeof bv + " " + bv.z + " " + bv
+=> string:object 3 QVector3D(1, 2, 3)
+# B3-25 font fields
+w(function(){ f.pixelSize = 14.6; return f.pixelSize })
+=> number:15
+w(function(){ f.pixelSize = 14.5; return f.pixelSize })
+=> number:15
+w(function(){ f.pixelSize = 13.5; return f.pixelSize })
+=> number:14
+w(function(){ f.pixelSize = -2.5; return f.pixelSize })
+=> number:14
+w(function(){ f.pixelSize = 0.4; return f.pixelSize })
+=> number:14
+w(function(){ f.pixelSize = 0; return f.pixelSize })
+=> number:14
+w(function(){ f.pixelSize = -3; return f.pixelSize })
+=> number:14
+w(function(){ f.pixelSize = null; return f.pixelSize })
+=> string:THROW Error: Cannot assign std::nullptr_t to int
+w(function(){ f.pixelSize = undefined; return f.pixelSize })
+=> number:14
+w(function(){ f.pixelSize = "12"; return f.pixelSize })
+=> number:12
+w(function(){ f.pixelSize = true; return f.pixelSize })
+=> number:1
+w(function(){ f.pixelSize = NaN; return f.pixelSize })
+=> string:THROW Error: Cannot assign double to int
+w(function(){ f.pixelSize = 1e10; return f.pixelSize })
+=> number:1410065408
+w(function(){ f.pixelSize = {}; return f.pixelSize })
+=> string:THROW Error: Cannot assign QJSValue to int
+w(function(){ f.pixelSize = 20; return f.pixelSize + " " + f.pointSize })
+=> string:20 15
+w(function(){ f.weight = 650.7; return f.weight })
+=> number:651
+w(function(){ f.weight = 650.5; return f.weight })
+=> number:651
+w(function(){ f.weight = 649.5; return f.weight })
+=> number:650
+w(function(){ f.weight = 2000; return f.weight })
+=> number:1000
+w(function(){ f.weight = 1000; return f.weight })
+=> number:1000
+w(function(){ f.weight = 1001; return f.weight })
+=> number:1000
+w(function(){ f.weight = 0; return f.weight })
+=> number:1
+w(function(){ f.weight = 1; return f.weight })
+=> number:1
+w(function(){ f.weight = -5; return f.weight })
+=> number:1
+w(function(){ f.weight = 0.4; return f.weight })
+=> number:1
+w(function(){ f.weight = 300; f.weight = null; return f.weight })
+=> string:THROW Error: Cannot assign std::nullptr_t to int
+w(function(){ f.weight = undefined; return f.weight })
+=> number:1
+w(function(){ f.weight = "700"; return f.weight })
+=> number:700
+w(function(){ f.weight = true; return f.weight })
+=> number:1
+w(function(){ f.weight = NaN; return f.weight })
+=> string:THROW Error: Cannot assign double to int
+w(function(){ f.weight = 700; return f.bold + " " + f.weight })
+=> string:true 700
+w(function(){ f.weight = 500; return f.bold + " " + f.weight })
+=> string:false 500
+w(function(){ f.weight = 600; return f.bold + " " + f.weight })
+=> string:true 600
+w(function(){ f.bold = true; return f.bold + " " + f.weight })
+=> string:true 700
+w(function(){ f.bold = false; return f.bold + " " + f.weight })
+=> string:false 400
+w(function(){ f.bold = null; return f.bold + " " + f.weight })
+=> string:false 400
+w(function(){ f.bold = "x"; return f.bold + " " + f.weight })
+=> string:true 700
+w(function(){ f.bold = 1; return f.bold + " " + f.weight })
+=> string:true 700
+w(function(){ f.family = null; return "[" + f.family + "]" })
+=> string:[]
+w(function(){ f.family = undefined; return "[" + f.family + "]" })
+=> string:[]
+w(function(){ f.family = 5; return "[" + f.family + "]" })
+=> string:[5]
+w(function(){ f.family = true; return "[" + f.family + "]" })
+=> string:[true]
+w(function(){ f.family = {}; return "[" + f.family + "]" })
+=> string:THROW Error: Cannot assign QJSValue to QString
+w(function(){ f.family = ["a", "b"]; return "[" + f.family + "]" })
+=> string:[ab]
+w(function(){ f.family = "Arial"; return "[" + f.family + "]" })
+=> string:[Arial]
+w(function(){ f.styleName = null; return "[" + f.styleName + "]" })
+=> string:[]
+w(function(){ f.styleName = 7; return "[" + f.styleName + "]" })
+=> string:[7]
+w(function(){ f.pointSize = 10.6; return f.pointSize + " " + f.pixelSize })
+=> string:15 20
+w(function(){ f.pointSize = null; return f.pointSize })
+=> number:15
+w(function(){ f.pointSize = undefined; return f.pointSize })
+=> number:15
+w(function(){ f.pointSize = "11"; return f.pointSize })
+=> number:15
+w(function(){ f.pointSize = -1; return f.pointSize })
+=> number:15
+w(function(){ f.pointSize = 0; return f.pointSize })
+=> number:15
+w(function(){ f.capitalization = 1.6; return f.capitalization })
+=> number:2
+w(function(){ f.capitalization = 9; return f.capitalization })
+=> number:1
+w(function(){ f.capitalization = null; return f.capitalization })
+=> string:THROW Error: Cannot assign std::nullptr_t to QQuickFontEnums::Capitalization
+w(function(){ f.capitalization = "1"; return f.capitalization })
+=> number:1
+w(function(){ f.hintingPreference = 2.5; return f.hintingPreference })
+=> number:3
+w(function(){ f.hintingPreference = null; return f.hintingPreference })
+=> string:THROW Error: Cannot assign std::nullptr_t to QQuickFontEnums::HintingPreference
+w(function(){ f.letterSpacing = 1.5; return f.letterSpacing })
+=> number:1.5
+w(function(){ f.letterSpacing = null; return f.letterSpacing })
+=> number:0
+w(function(){ f.letterSpacing = "2"; return f.letterSpacing })
+=> number:2
+w(function(){ f.wordSpacing = null; return f.wordSpacing })
+=> number:0
+w(function(){ f.italic = null; return f.italic })
+=> boolean:false
+w(function(){ f.italic = "x"; return f.italic })
+=> boolean:true
+w(function(){ f.italic = 2; return f.italic })
+=> boolean:true
+w(function(){ f.underline = undefined; return f.underline })
+=> boolean:false
+w(function(){ f.kerning = 0; return f.kerning })
+=> boolean:false
+w(function(){ f.kerning = "false"; return f.kerning })
+=> boolean:true
+w(function(){ f.strikeout = {}; return f.strikeout })
+=> boolean:true
+# B3-26 font assign
+w(function(){ f = "Arial"; return f.family })
+=> string:Arial
+w(function(){ f = "Arial,12"; return f.family + "|" + f.pointSize })
+=> string:Arial|12
+w(function(){ f = "Arial,12,-1,5,700,1,0,0,0,0"; return f.family + "|" + f.pointSize + "|" + f.weight + "|" + f.italic })
+=> string:Arial|12|900|true
+w(function(){ f = ""; return "[" + f.family + "]" })
+=> string:THROW Error: Cannot assign QString to QFont
+w(function(){ f = {family: "X"}; return f.family })
+=> string:X
+w(function(){ f = {family: "X", pixelSize: 20, bold: true}; return f.family + "|" + f.pixelSize + "|" + f.bold + "|" + f.weight })
+=> string:X|20|true|700
+w(function(){ f = {nosuch: 1}; return f.family == Qt.font({}).family })
+=> string:THROW Error: Qt.font(): Invalid argument: no valid font subproperties specified
+w(function(){ f = {pixelSize: "x"}; return f.pixelSize })
+=> number:12
+w(function(){ f = {}; return f.family == Qt.font({}).family })
+=> string:THROW Error: Qt.font(): Invalid argument: no valid font subproperties specified
+w(function(){ f = Qt.font({family: "Q", pixelSize: 30}); f = null; return (f.family == Qt.font({}).family) + "|" + (f.pixelSize == Qt.font({}).pixelSize) })
+=> string:THROW Error: Qt.font(): Invalid argument: no valid font subproperties specified
+w(function(){ f = undefined; return f.family == Qt.font({}).family })
+=> string:THROW Error: Cannot assign [undefined] to QFont
+w(function(){ f = 5; return f.family })
+=> string:THROW Error: Cannot assign int to QFont
+w(function(){ f = true; return f.family })
+=> string:THROW Error: Cannot assign bool to QFont
+w(function(){ f = Qt.font({family: "Z"}); return f.family })
+=> string:Z
+# B3-28 font string
+String(Qt.font({preferShaping: false})).split(",")[15]
+=> string:4097
+String(Qt.font({preferShaping: true})).split(",")[15]
+=> string:1
+String(Qt.font({})).split(",")[15]
+=> THROW Error: Qt.font(): Invalid argument: no valid font subproperties specified
+String(Qt.font({kerning: false, preferShaping: false})).split(",").slice(1).join(",")
+=> string:9,-1,5,400,0,0,0,0,0,0,0,0,0,0,4097,,0,0)
+String(Qt.font({contextFontMerging: true})).split(",")[15]
+=> string:8193
+String(Qt.font({preferTypoLineMetrics: true})).split(",")[15]
+=> string:1
+String(Qt.font({preferTypoLineMetrics: false})).split(",")[15]
+=> string:16385
+w(function(){ f = Qt.font({family: "A"}); f.preferTypoLineMetrics = true; return String(f).split(",")[15] })
+=> string:16385
+String(Qt.font({preferShaping: false, contextFontMerging: true, preferTypoLineMetrics: true})).split(",")[15]
+=> string:12289
+String(Qt.font({family: "A", pixelSize: 12, weight: 700, italic: true, underline: true, strikeout: true, overline: true, capitalization: 1, letterSpacing: 2, wordSpacing: 3, styleName: "S", hintingPreference: 2})).split(",").slice(0, 17).join(",")
+=> string:QFont(A,-1,12,5,700,1,1,1,0,0,1,1,2,3,0,1,S
+w(function(){ f = Qt.font({family: "A"}); f.preferShaping = false; return String(f).split(",")[15] })
+=> string:4097

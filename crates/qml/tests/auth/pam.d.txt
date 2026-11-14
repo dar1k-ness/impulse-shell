@@ -1,0 +1,12 @@
+# PAM services used by the manual authcheck runs (install under /etc/pam.d/<name>).
+# ri-native-test
+auth required pam_unix.so
+account required pam_unix.so
+# ri-native-multi2  (pam_iitest.so built from pam_iitest.c: gcc -fPIC -shared -o pam_iitest.so pam_iitest.c -lpam)
+auth required pam_iitest.so
+# ri-native-hang  (blocks until killed: with the authenticating process, or by abort)
+auth required pam_exec.so /usr/bin/setpriv --pdeathsig KILL -- /usr/bin/sleep infinity
+# ri-session  (systemd-run -p PAMName=ri-session gives polkit-run.sh a logind session)
+auth sufficient pam_rootok.so
+account required pam_permit.so
+session required pam_systemd.so

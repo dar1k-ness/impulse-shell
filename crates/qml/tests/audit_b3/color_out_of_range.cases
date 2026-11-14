@@ -1,0 +1,20 @@
+@property color c
+@property color d: "red"
+@property int nc: 0
+@onCChanged: nc += 1
+w(function(){ var h = Qt.hsva(0, 1, 1, 1), r = Qt.rgba(1, 0, 0, 1), l = Qt.hsla(0, 1, 0.5, 1); return [h == r, h === r, l == r, h == l, Qt.colorEqual(h, r), h == Qt.hsva(0, 1, 1, 1), h == Qt.hsva(1, 1, 1, 1), h != r].join("|") })
+=> string:false|false|false|false|false|true|true|true
+w(function(){ c = "red"; c.r = 2; c.r = NaN; return [c, c.r, c.g, c.valid].join("|") })
+=> string:#000000|0|0|true
+w(function(){ c = "red"; c.r = 2; c.g = NaN; return [c, c.r, c.g, c.valid].join("|") })
+=> string:#ff0000|2|0|true
+w(function(){ c = "red"; c.r = 2; c.a = NaN; return [c, c.r, c.a, c.valid].join("|") })
+=> string:#00ff0000|2|0|true
+w(function(){ c = "red"; c.r = Infinity; var n = nc; c.r = Infinity; return nc - n })
+=> number:1
+w(function(){ c = "red"; c.r = 2; var n = nc; c.r = 2.00001; var m = nc; c.r = 2.01; return (m - n) + "|" + (nc - m) })
+=> string:0|1
+w(function(){ c = Qt.hsva(0, 1, 1, 1); var n = nc; c = "red"; var m = nc; c = Qt.hsla(0, 1, 0.5, 1); return (m - n) + "|" + (nc - m) })
+=> string:1|1
+w(function(){ c = "red"; c.r = 2; var x = Qt.lighter(c, 1); var y = Qt.darker(c, 1); return [x, x.r, y, y.r, Qt.lighter(c, 1.5).g].join("|") })
+=> string:#ff0000|1|#ff0000|1|0.5

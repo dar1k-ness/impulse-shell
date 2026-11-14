@@ -1,0 +1,5 @@
+qml: quit
+qml: destroyed child, busy for 1 s: true
+qml: destroyed second child
+qml: destroyed root
+status 3

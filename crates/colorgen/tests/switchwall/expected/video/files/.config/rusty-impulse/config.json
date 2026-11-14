@@ -1,0 +1,97 @@
+{
+  "appearance": {
+    "extraBackgroundTint": true,
+    "fakeScreenRounding": 2,
+    "fonts": {
+      "expressive": "Space Grotesk",
+      "iconNerd": "JetBrains Mono NF",
+      "main": "Google Sans Flex",
+      "monospace": "JetBrains Mono NF",
+      "numbers": "Google Sans Flex",
+      "reading": "Readex Pro",
+      "title": "Google Sans Flex"
+    },
+    "palette": {
+      "accentColor": "",
+      "type": "auto"
+    },
+    "transparency": {
+      "automatic": true,
+      "backgroundTransparency": 0.11,
+      "contentTransparency": 0.57,
+      "enable": false
+    },
+    "wallpaperTheming": {
+      "enableAppsAndShell": true,
+      "enableQtApps": true,
+      "enableTerminal": true,
+      "terminalGenerationProps": {
+        "forceDarkMode": false,
+        "harmonizeThreshold": 100,
+        "harmony": 0.6,
+        "termFgBoost": 0.35
+      }
+    }
+  },
+  "background": {
+    "hideWhenFullscreen": true,
+    "parallax": {
+      "autoVertical": false,
+      "enableSidebar": false,
+      "enableWorkspace": false,
+      "vertical": false,
+      "widgetsFactor": 1.2,
+      "workspaceZoom": 1.07
+    },
+    "thumbnailPath": "@HOME@/.config/hypr/custom/scripts/mpvpaper_thumbnails/clip.mp4.jpg",
+    "wallpaperPath": "@HOME@/Pictures/Wallpapers/clip.mp4",
+    "widgets": {
+      "clock": {
+        "cookie": {
+          "aiStyling": false,
+          "constantlyRotate": false,
+          "dateInClock": true,
+          "dateStyle": "bubble",
+          "dialNumberStyle": "full",
+          "hourHandStyle": "fill",
+          "hourMarks": false,
+          "minuteHandStyle": "medium",
+          "secondHandStyle": "dot",
+          "sides": 14,
+          "timeIndicators": true,
+          "useSineCookie": false
+        },
+        "digital": {
+          "adaptiveAlignment": true,
+          "animateChange": true,
+          "font": {
+            "family": "Google Sans Flex",
+            "roundness": 0,
+            "size": 90,
+            "weight": 350,
+            "width": 100
+          },
+          "showDate": true,
+          "vertical": false
+        },
+        "enable": true,
+        "placementStrategy": "leastBusy",
+        "quote": {
+          "enable": false,
+          "text": ""
+        },
+        "showOnlyWhenLocked": false,
+        "style": "cookie",
+        "styleLocked": "cookie",
+        "x": 1135,
+        "y": 265
+      },
+      "weather": {
+        "enable": false,
+        "placementStrategy": "free",
+        "x": 400,
+        "y": 100
+      }
+    }
+  }
+}

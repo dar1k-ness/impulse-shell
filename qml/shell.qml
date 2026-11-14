@@ -1,0 +1,79 @@
+//@ pragma UseQApplication
+//@ pragma Env QS_NO_RELOAD_POPUP=1
+//@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
+//@ pragma Env QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
+
+// Remove two slashes below and adjust the value to change the UI scale
+////@ pragma Env QT_SCALE_FACTOR=1
+
+import "modules/common"
+import "services"
+import "panelFamilies"
+
+import QtQuick
+import QtQuick.Window
+import Rustshell
+import Rustshell.Io
+import Rustshell.Hyprland
+
+ShellRoot {
+    id: root
+
+    // Stuff for every panel family
+    ReloadPopup {}
+
+    Component.onCompleted: {
+        MaterialThemeLoader.reapplyTheme()
+        Hyprsunset.load()
+        FirstRunExperience.load()
+        ConflictKiller.load()
+        Cliphist.refresh()
+        Wallpapers.load()
+        Updates.load()
+    }
+
+
+    // Panel families
+    property list<string> families: ["rusty", "waffle"]
+    function cyclePanelFamily() {
+        const currentIndex = families.indexOf(Config.options.panelFamily)
+        const nextIndex = (currentIndex + 1) % families.length
+        Config.options.panelFamily = families[nextIndex]
+    }
+
+    component PanelFamilyLoader: LazyLoader {
+        required property string identifier
+        property bool extraCondition: true
+        property string oldIdentifier: ""
+        active: Config.ready && (Config.options.panelFamily === identifier || Config.options.panelFamily === oldIdentifier) && extraCondition
+    }
+    
+    PanelFamilyLoader {
+        identifier: "rusty"
+        oldIdentifier: "ii" // in a config written before the rename
+        component: RustyImpulseFamily {}
+    }
+
+    PanelFamilyLoader {
+        identifier: "waffle"
+        component: WaffleFamily {}
+    }
+
+
+    // Shortcuts
+    IpcHandler {
+        target: "panelFamily"
+
+        function cycle(): void {
+            root.cyclePanelFamily()
+        }
+    }
+
+    GlobalShortcut {
+        name: "panelFamilyCycle"
+        description: "Cycles panel family"
+
+        onPressed: root.cyclePanelFamily()
+    }
+}
+

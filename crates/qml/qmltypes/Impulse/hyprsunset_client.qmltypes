@@ -1,0 +1,33 @@
+import QtQuick.tooling 1.2
+
+// The hyprsunset daemon, implemented natively (crates/qml/src/hyprctl.rs, probe.rs).
+// `start()` starts hyprsunset unless one runs. `setTemperature(kelvin)` and `setGamma(percent)`
+// are its `temperature N` and `gamma N` requests; they reach it in the order they were made,
+// after a start asked for before them has settled. `readTemperature()` asks for the current
+// temperature: `temperatureRead(text)` carries the answer (an empty text without a Hyprland
+// instance, a "Couldn't ..." line when hyprsunset cannot be reached), and is not emitted when
+// `setTemperature` was called after the read was asked for.
+Module {
+    Component {
+        file: "hyprctl.rs"
+        name: "ImpulseHyprsunsetClient"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/HyprsunsetClient 1.0"]
+        exportMetaObjectRevisions: [256]
+        Signal {
+            name: "temperatureRead"
+            Parameter { name: "text"; type: "QString" }
+        }
+        Method { name: "start" }
+        Method {
+            name: "setTemperature"
+            Parameter { name: "kelvin"; type: "int" }
+        }
+        Method {
+            name: "setGamma"
+            Parameter { name: "percent"; type: "double" }
+        }
+        Method { name: "readTemperature" }
+    }
+}

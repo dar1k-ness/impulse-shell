@@ -1,0 +1,996 @@
+rl count 0
+rs count 0
+gl count 0
+gs count 0
+ll count 0
+ls count 0
+-- fill, remove first, insert at 0
+rs + a#0 0
+rs added 0 a#0
+rs idx b#-1 1
+rs + b#1 1
+rs added 1 b#1
+rs idx c#-1 2
+rs + c#2 2
+rs added 2 c#2
+rs count 3
+rs idx a#0 -1
+rs idx b#1 0
+rs idx c#2 1
+rs removed 0 a#0
+rs - a#0
+rs count 2
+rs idx b#1 1
+rs idx c#2 2
+rs + x#3 0
+rs added 0 x#3
+rs count 3
+rl + a#0 0
+rl added 0 a#0
+rl count 1
+rl idx b#-1 1
+rl + b#1 1
+rl added 1 b#1
+rl count 2
+rl idx c#-1 2
+rl + c#2 2
+rl added 2 c#2
+rl count 3
+rl idx a#0 -1
+rl idx b#1 0
+rl idx c#2 1
+rl removed 0 a#0
+rl - a#0
+rl count 2
+rl idx b#1 1
+rl idx c#2 2
+rl + x#3 0
+rl added 0 x#3
+rl count 3
+made
+ll + x#0 0
+ll idx b#-1 1
+ll + b#1 1
+ll idx c#-1 2
+ll + c#2 2
+ll onAdd x#0 0
+ll onAdd b#1 1
+ll onAdd c#2 2
+ll current 1
+ll currentItem b#1
+ll count 3
+gl + x#0 0
+gl idx b#-1 1
+gl + b#1 1
+gl idx c#-1 2
+gl + c#2 2
+gl onAdd x#0 0
+gl onAdd b#1 1
+gl onAdd c#2 2
+gl current 1
+gl currentItem b#1
+gl count 3
+ls + x#0 0
+ls idx b#-1 1
+ls + b#1 1
+ls idx c#-1 2
+ls + c#2 2
+ls onAdd x#0 0
+ls onAdd b#1 1
+ls onAdd c#2 2
+ls current 1
+ls currentItem b#1
+ls count 3
+gs + x#0 0
+gs idx b#-1 1
+gs + b#1 1
+gs idx c#-1 2
+gs + c#2 2
+gs onAdd x#0 0
+gs onAdd b#1 1
+gs onAdd c#2 2
+gs current 1
+gs currentItem b#1
+gs count 3
+now ["x","b","c"] 1 3 1 3 1 3 1 3 3 3
+-- append two, one at a time
+rs idx d#-1 3
+rs + d#4 3
+rs added 3 d#4
+rs count 4
+rs idx e#-1 4
+rs + e#5 4
+rs added 4 e#5
+rs count 5
+rl idx d#-1 3
+rl + d#4 3
+rl added 3 d#4
+rl count 4
+rl idx e#-1 4
+rl + e#5 4
+rl added 4 e#5
+rl count 5
+made
+ll idx d#-1 3
+ll + d#3 3
+ll idx e#-1 4
+ll + e#4 4
+ll onAdd d#3 3
+ll onAdd e#4 4
+ll count 5
+gl idx d#-1 3
+gl + d#3 3
+gl idx e#-1 4
+gl + e#4 4
+gl onAdd d#3 3
+gl onAdd e#4 4
+gl count 5
+ls idx d#-1 3
+ls + d#3 3
+ls idx e#-1 4
+ls + e#4 4
+ls onAdd d#3 3
+ls onAdd e#4 4
+ls count 5
+gs idx d#-1 3
+gs + d#3 3
+gs idx e#-1 4
+gs + e#4 4
+gs onAdd d#3 3
+gs onAdd e#4 4
+gs count 5
+now ["x","b","c","d","e"] 1 5 1 5 1 5 1 5 5 5
+-- move last to first, remove last
+rs idx x#3 1
+rs idx b#1 2
+rs idx c#2 3
+rs idx d#4 4
+rs idx e#5 0
+gs idx x#0 1
+gs idx b#1 2
+gs idx c#2 3
+gs idx d#3 4
+gs idx e#4 0
+ls idx x#0 1
+ls idx b#1 2
+ls idx c#2 3
+ls idx d#3 4
+ls idx e#4 0
+rs idx d#4 -1
+rs removed 4 d#4
+rs - d#4
+rs count 4
+gs idx d#3 -1
+ls idx d#3 -1
+rl idx x#3 1
+rl idx b#1 2
+rl idx c#2 3
+rl idx d#4 4
+rl idx e#5 0
+gl idx x#0 1
+gl idx b#1 2
+gl idx c#2 3
+gl idx d#3 4
+gl idx e#4 0
+ll idx x#0 1
+ll idx b#1 2
+ll idx c#2 3
+ll idx d#3 4
+ll idx e#4 0
+rl idx d#4 -1
+rl removed 4 d#4
+rl - d#4
+rl count 4
+gl idx d#3 -1
+ll idx d#3 -1
+made
+ll onRemove d#3 -1
+ll - d#3
+ll current 2
+ll count 4
+gl onRemove d#3 -1
+gl - d#3
+gl current 2
+gl count 4
+ls onRemove d#3 -1
+ls - d#3
+ls current 2
+ls count 4
+gs onRemove d#3 -1
+gs - d#3
+gs current 2
+gs count 4
+now ["e","x","b","c"] 2 4 2 4 2 4 2 4 4 4
+-- current 2
+made
+now ["e","x","b","c"] 2 4 2 4 2 4 2 4 4 4
+-- remove first, insert two at 0
+rs idx e#5 -1
+rs idx x#3 0
+rs idx b#1 1
+rs idx c#2 2
+rs removed 0 e#5
+rs - e#5
+rs count 3
+gs idx e#4 -1
+gs idx x#0 0
+gs idx b#1 1
+gs idx c#2 2
+ls idx e#4 -1
+ls idx x#0 0
+ls idx b#1 1
+ls idx c#2 2
+rs idx x#3 1
+rs idx b#1 2
+rs idx c#2 3
+rs + p#6 0
+rs added 0 p#6
+rs count 4
+gs idx x#0 1
+gs idx b#1 2
+gs idx c#2 3
+ls idx x#0 1
+ls idx b#1 2
+ls idx c#2 3
+rs idx p#6 1
+rs idx x#3 2
+rs idx b#1 3
+rs idx c#2 4
+rs + q#7 0
+rs added 0 q#7
+rs count 5
+gs idx x#0 2
+gs idx b#1 3
+gs idx c#2 4
+ls idx x#0 2
+ls idx b#1 3
+ls idx c#2 4
+rl idx e#5 -1
+rl idx x#3 0
+rl idx b#1 1
+rl idx c#2 2
+rl removed 0 e#5
+rl - e#5
+rl count 3
+gl idx e#4 -1
+gl idx x#0 0
+gl idx b#1 1
+gl idx c#2 2
+ll idx e#4 -1
+ll idx x#0 0
+ll idx b#1 1
+ll idx c#2 2
+rl idx x#3 1
+rl idx b#1 2
+rl idx c#2 3
+rl + p#6 0
+rl added 0 p#6
+rl count 4
+gl idx x#0 1
+gl idx b#1 2
+gl idx c#2 3
+ll idx x#0 1
+ll idx b#1 2
+ll idx c#2 3
+rl idx p#6 1
+rl idx x#3 2
+rl idx b#1 3
+rl idx c#2 4
+rl + q#7 0
+rl added 0 q#7
+rl count 5
+gl idx x#0 2
+gl idx b#1 3
+gl idx c#2 4
+ll idx x#0 2
+ll idx b#1 3
+ll idx c#2 4
+made
+ll onRemove e#4 -1
+ll + q#5 0
+ll idx p#-1 1
+ll + p#6 1
+ll onAdd q#5 0
+ll onAdd p#6 1
+ll - e#4
+ll current 3
+ll count 5
+gl onRemove e#4 -1
+gl + q#5 0
+gl idx p#-1 1
+gl + p#6 1
+gl onAdd q#5 0
+gl onAdd p#6 1
+gl - e#4
+gl current 3
+gl count 5
+ls onRemove e#4 -1
+ls + q#5 0
+ls idx p#-1 1
+ls + p#6 1
+ls onAdd q#5 0
+ls onAdd p#6 1
+ls - e#4
+ls current 3
+ls count 5
+gs onRemove e#4 -1
+gs + q#5 0
+gs idx p#-1 1
+gs + p#6 1
+gs onAdd q#5 0
+gs onAdd p#6 1
+gs - e#4
+gs current 3
+gs count 5
+now ["q","p","x","b","c"] 3 5 3 5 3 5 3 5 5 5
+-- remove current, insert at its place
+rs idx b#1 -1
+rs idx c#2 3
+rs removed 3 b#1
+rs - b#1
+rs count 4
+gs idx b#1 -1
+gs idx c#2 3
+ls idx b#1 -1
+ls idx c#2 3
+rs idx c#2 4
+rs idx B#-1 3
+rs + B#8 3
+rs added 3 B#8
+rs count 5
+gs idx c#2 4
+ls idx c#2 4
+rl idx b#1 -1
+rl idx c#2 3
+rl removed 3 b#1
+rl - b#1
+rl count 4
+gl idx b#1 -1
+gl idx c#2 3
+ll idx b#1 -1
+ll idx c#2 3
+rl idx c#2 4
+rl idx B#-1 3
+rl + B#8 3
+rl added 3 B#8
+rl count 5
+gl idx c#2 4
+ll idx c#2 4
+made
+ll onRemove b#1 -1
+ll idx B#-1 3
+ll + B#7 3
+ll onAdd B#7 3
+ll - b#1
+ll currentItem none
+ll current 4
+ll currentItem c#2
+gl onRemove b#1 -1
+gl idx B#-1 3
+gl + B#7 3
+gl onAdd B#7 3
+gl - b#1
+gl currentItem none
+gl current 4
+gl currentItem c#2
+ls onRemove b#1 -1
+ls idx B#-1 3
+ls + B#7 3
+ls onAdd B#7 3
+ls - b#1
+ls currentItem none
+ls current 4
+ls currentItem c#2
+gs onRemove b#1 -1
+gs idx B#-1 3
+gs + B#7 3
+gs onAdd B#7 3
+gs - b#1
+gs currentItem none
+gs current 4
+gs currentItem c#2
+now ["q","p","x","B","c"] 4 5 4 5 4 5 4 5 5 5
+-- move current to end, move it back
+rs idx B#8 4
+rs idx c#2 3
+gs idx B#7 4
+gs idx c#2 3
+ls idx B#7 4
+ls idx c#2 3
+rs idx c#2 4
+rs idx B#8 3
+gs idx c#2 4
+gs idx B#7 3
+ls idx c#2 4
+ls idx B#7 3
+rl idx B#8 4
+rl idx c#2 3
+gl idx B#7 4
+gl idx c#2 3
+ll idx B#7 4
+ll idx c#2 3
+rl idx c#2 4
+rl idx B#8 3
+gl idx c#2 4
+gl idx B#7 3
+ll idx c#2 4
+ll idx B#7 3
+made
+now ["q","p","x","B","c"] 4 5 4 5 4 5 4 5 5 5
+-- insert and remove the same row
+rs idx x#3 3
+rs idx B#8 4
+rs idx c#2 5
+rs idx z#-1 2
+rs + z#9 2
+rs added 2 z#9
+rs count 6
+gs idx x#0 3
+gs idx B#7 4
+gs idx c#2 5
+ls idx x#0 3
+ls idx B#7 4
+ls idx c#2 5
+rs idx z#9 -1
+rs idx x#3 2
+rs idx B#8 3
+rs idx c#2 4
+rs removed 2 z#9
+rs - z#9
+rs count 5
+gs idx x#0 2
+gs idx B#7 3
+gs idx c#2 4
+ls idx x#0 2
+ls idx B#7 3
+ls idx c#2 4
+rl idx x#3 3
+rl idx B#8 4
+rl idx c#2 5
+rl idx z#-1 2
+rl + z#9 2
+rl added 2 z#9
+rl count 6
+gl idx x#0 3
+gl idx B#7 4
+gl idx c#2 5
+ll idx x#0 3
+ll idx B#7 4
+ll idx c#2 5
+rl idx z#9 -1
+rl idx x#3 2
+rl idx B#8 3
+rl idx c#2 4
+rl removed 2 z#9
+rl - z#9
+rl count 5
+gl idx x#0 2
+gl idx B#7 3
+gl idx c#2 4
+ll idx x#0 2
+ll idx B#7 3
+ll idx c#2 4
+made
+now ["q","p","x","B","c"] 4 5 4 5 4 5 4 5 5 5
+-- remove the last two, the current one first
+rs idx B#8 -1
+rs idx c#2 3
+rs removed 3 B#8
+rs - B#8
+rs count 4
+gs idx B#7 -1
+gs idx c#2 3
+ls idx B#7 -1
+ls idx c#2 3
+rs idx c#2 -1
+rs removed 3 c#2
+rs - c#2
+rs count 3
+gs idx c#2 -1
+ls idx c#2 -1
+rl idx B#8 -1
+rl idx c#2 3
+rl removed 3 B#8
+rl - B#8
+rl count 4
+gl idx B#7 -1
+gl idx c#2 3
+ll idx B#7 -1
+ll idx c#2 3
+rl idx c#2 -1
+rl removed 3 c#2
+rl - c#2
+rl count 3
+gl idx c#2 -1
+ll idx c#2 -1
+made
+ll onRemove B#7 -1
+ll onRemove c#2 -1
+ll - B#7
+ll - c#2
+ll currentItem none
+ll current 2
+ll currentItem x#0
+ll count 3
+gl onRemove B#7 -1
+gl onRemove c#2 -1
+gl - B#7
+gl - c#2
+gl currentItem none
+gl current 2
+gl currentItem x#0
+gl count 3
+ls onRemove B#7 -1
+ls onRemove c#2 -1
+ls - B#7
+ls - c#2
+ls currentItem none
+ls current 2
+ls currentItem x#0
+ls count 3
+gs onRemove B#7 -1
+gs onRemove c#2 -1
+gs - B#7
+gs - c#2
+gs currentItem none
+gs current 2
+gs currentItem x#0
+gs count 3
+now ["q","p","x"] 2 3 2 3 2 3 2 3 3 3
+-- clear and fill
+rs idx q#7 -1
+rs idx p#6 -1
+rs idx x#3 -1
+rs removed 0 q#7
+rs - q#7
+rs removed 0 p#6
+rs - p#6
+rs removed 0 x#3
+rs - x#3
+rs count 0
+gs idx q#5 -1
+gs idx p#6 -1
+gs idx x#0 -1
+ls idx q#5 -1
+ls idx p#6 -1
+ls idx x#0 -1
+rs + r#10 0
+rs added 0 r#10
+rs idx s#-1 1
+rs + s#11 1
+rs added 1 s#11
+rs idx t#-1 2
+rs + t#12 2
+rs added 2 t#12
+rs count 3
+rl idx q#7 -1
+rl idx p#6 -1
+rl idx x#3 -1
+rl removed 0 q#7
+rl - q#7
+rl removed 0 p#6
+rl - p#6
+rl removed 0 x#3
+rl - x#3
+rl count 0
+gl idx q#5 -1
+gl idx p#6 -1
+gl idx x#0 -1
+ll idx q#5 -1
+ll idx p#6 -1
+ll idx x#0 -1
+rl + r#10 0
+rl added 0 r#10
+rl count 1
+rl idx s#-1 1
+rl + s#11 1
+rl added 1 s#11
+rl count 2
+rl idx t#-1 2
+rl + t#12 2
+rl added 2 t#12
+rl count 3
+made
+ll onRemove q#5 -1
+ll onRemove p#6 -1
+ll onRemove x#0 -1
+ll + r#8 0
+ll idx s#-1 1
+ll + s#9 1
+ll idx t#-1 2
+ll + t#10 2
+ll onAdd r#8 0
+ll onAdd s#9 1
+ll onAdd t#10 2
+ll - p#6
+ll - q#5
+ll - x#0
+ll currentItem none
+ll current 0
+ll currentItem r#8
+gl onRemove q#5 -1
+gl onRemove p#6 -1
+gl onRemove x#0 -1
+gl + r#8 0
+gl idx s#-1 1
+gl + s#9 1
+gl idx t#-1 2
+gl + t#10 2
+gl onAdd r#8 0
+gl onAdd s#9 1
+gl onAdd t#10 2
+gl - p#6
+gl - q#5
+gl - x#0
+gl currentItem none
+gl current 0
+gl currentItem r#8
+ls onRemove q#5 -1
+ls onRemove p#6 -1
+ls onRemove x#0 -1
+ls + r#8 0
+ls idx s#-1 1
+ls + s#9 1
+ls idx t#-1 2
+ls + t#10 2
+ls onAdd r#8 0
+ls onAdd s#9 1
+ls onAdd t#10 2
+ls - p#6
+ls - q#5
+ls - x#0
+ls currentItem none
+ls current 0
+ls currentItem r#8
+gs onRemove q#5 -1
+gs onRemove p#6 -1
+gs onRemove x#0 -1
+gs + r#8 0
+gs idx s#-1 1
+gs + s#9 1
+gs idx t#-1 2
+gs + t#10 2
+gs onAdd r#8 0
+gs onAdd s#9 1
+gs onAdd t#10 2
+gs - p#6
+gs - q#5
+gs - x#0
+gs currentItem none
+gs current 0
+gs currentItem r#8
+now ["r","s","t"] 0 3 0 3 0 3 0 3 3 3
+-- current 1
+ls current 1
+ls currentItem s#9
+ll current 1
+ll currentItem s#9
+gs current 1
+gs currentItem s#9
+gl current 1
+gl currentItem s#9
+made
+now ["r","s","t"] 1 3 1 3 1 3 1 3 3 3
+-- clear, fill, remove first, insert at 0
+rs idx r#10 -1
+rs idx s#11 -1
+rs idx t#12 -1
+rs removed 0 r#10
+rs - r#10
+rs removed 0 s#11
+rs - s#11
+rs removed 0 t#12
+rs - t#12
+rs count 0
+gs idx r#8 -1
+gs idx s#9 -1
+gs idx t#10 -1
+ls idx r#8 -1
+ls idx s#9 -1
+ls idx t#10 -1
+rs + a#13 0
+rs added 0 a#13
+rs idx b#-1 1
+rs + b#14 1
+rs added 1 b#14
+rs idx c#-1 2
+rs + c#15 2
+rs added 2 c#15
+rs count 3
+rs idx a#13 -1
+rs idx b#14 0
+rs idx c#15 1
+rs removed 0 a#13
+rs - a#13
+rs count 2
+rs idx b#14 1
+rs idx c#15 2
+rs + x#16 0
+rs added 0 x#16
+rs count 3
+rl idx r#10 -1
+rl idx s#11 -1
+rl idx t#12 -1
+rl removed 0 r#10
+rl - r#10
+rl removed 0 s#11
+rl - s#11
+rl removed 0 t#12
+rl - t#12
+rl count 0
+gl idx r#8 -1
+gl idx s#9 -1
+gl idx t#10 -1
+ll idx r#8 -1
+ll idx s#9 -1
+ll idx t#10 -1
+rl + a#13 0
+rl added 0 a#13
+rl count 1
+rl idx b#-1 1
+rl + b#14 1
+rl added 1 b#14
+rl count 2
+rl idx c#-1 2
+rl + c#15 2
+rl added 2 c#15
+rl count 3
+rl idx a#13 -1
+rl idx b#14 0
+rl idx c#15 1
+rl removed 0 a#13
+rl - a#13
+rl count 2
+rl idx b#14 1
+rl idx c#15 2
+rl + x#16 0
+rl added 0 x#16
+rl count 3
+made
+ll onRemove r#8 -1
+ll onRemove s#9 -1
+ll onRemove t#10 -1
+ll + x#11 0
+ll idx b#-1 1
+ll + b#12 1
+ll idx c#-1 2
+ll + c#13 2
+ll onAdd x#11 0
+ll onAdd b#12 1
+ll onAdd c#13 2
+ll - t#10
+ll - r#8
+ll - s#9
+ll currentItem none
+ll currentItem b#12
+gl onRemove r#8 -1
+gl onRemove s#9 -1
+gl onRemove t#10 -1
+gl + x#11 0
+gl idx b#-1 1
+gl + b#12 1
+gl idx c#-1 2
+gl + c#13 2
+gl onAdd x#11 0
+gl onAdd b#12 1
+gl onAdd c#13 2
+gl - t#10
+gl - r#8
+gl - s#9
+gl currentItem none
+gl currentItem b#12
+ls onRemove r#8 -1
+ls onRemove s#9 -1
+ls onRemove t#10 -1
+ls + x#11 0
+ls idx b#-1 1
+ls + b#12 1
+ls idx c#-1 2
+ls + c#13 2
+ls onAdd x#11 0
+ls onAdd b#12 1
+ls onAdd c#13 2
+ls - t#10
+ls - r#8
+ls - s#9
+ls currentItem none
+ls currentItem b#12
+gs onRemove r#8 -1
+gs onRemove s#9 -1
+gs onRemove t#10 -1
+gs + x#11 0
+gs idx b#-1 1
+gs + b#12 1
+gs idx c#-1 2
+gs + c#13 2
+gs onAdd x#11 0
+gs onAdd b#12 1
+gs onAdd c#13 2
+gs - t#10
+gs - r#8
+gs - s#9
+gs currentItem none
+gs currentItem b#12
+now ["x","b","c"] 1 3 1 3 1 3 1 3 3 3
+-- swap ends, then swap the middle in
+rs idx x#16 1
+rs idx b#14 2
+rs idx c#15 0
+gs idx x#11 1
+gs idx b#12 2
+gs idx c#13 0
+ls idx x#11 1
+ls idx b#12 2
+ls idx c#13 0
+rs idx x#16 2
+rs idx b#14 1
+gs idx x#11 2
+gs idx b#12 1
+ls idx x#11 2
+ls idx b#12 1
+rs idx c#15 1
+rs idx b#14 0
+gs idx c#13 1
+gs idx b#12 0
+ls idx c#13 1
+ls idx b#12 0
+rl idx x#16 2
+rl idx b#14 0
+rl idx c#15 1
+gl idx x#11 2
+gl idx b#12 0
+gl idx c#13 1
+ll idx x#11 2
+ll idx b#12 0
+ll idx c#13 1
+rl idx b#14 1
+rl idx c#15 0
+gl idx b#12 1
+gl idx c#13 0
+ll idx b#12 1
+ll idx c#13 0
+made
+ls current 0
+gs current 0
+now ["b","c","x"] 0 3 1 3 0 3 1 3 3 3
+-- change a row in place, then remove the one before
+rs idx c#15 2
+rs idx x#16 3
+rs idx C#-1 1
+rs + C#17 1
+rs added 1 C#17
+rs count 4
+gs idx c#13 2
+gs idx x#11 3
+ls idx c#13 2
+ls idx x#11 3
+rs idx c#15 -1
+rs idx x#16 2
+rs removed 2 c#15
+rs - c#15
+rs count 3
+gs idx c#13 -1
+gs idx x#11 2
+ls idx c#13 -1
+ls idx x#11 2
+rs idx b#14 -1
+rs idx C#17 0
+rs idx x#16 1
+rs removed 0 b#14
+rs - b#14
+rs count 2
+gs idx b#12 -1
+gs idx x#11 1
+ls idx b#12 -1
+ls idx x#11 1
+rl idx c#15 -1
+rl idx C#14 0
+rl idx x#16 1
+rl removed 0 c#15
+rl - c#15
+rl count 2
+gl idx c#13 -1
+gl idx C#12 0
+gl idx x#11 1
+ll idx c#13 -1
+ll idx C#12 0
+ll idx x#11 1
+made
+ll onRemove c#13 -1
+ll - c#13
+ll current 0
+ll count 2
+gl onRemove c#13 -1
+gl - c#13
+gl current 0
+gl count 2
+ls onRemove b#12 -1
+ls onRemove c#13 -1
+ls + C#14 0
+ls onAdd C#14 0
+ls - c#13
+ls - b#12
+ls currentItem none
+ls currentItem C#14
+ls count 2
+gs onRemove b#12 -1
+gs onRemove c#13 -1
+gs + C#14 0
+gs onAdd C#14 0
+gs - c#13
+gs - b#12
+gs currentItem none
+gs currentItem C#14
+gs count 2
+now ["C","x"] 0 2 0 2 0 2 0 2 2 2
+-- clear
+rs idx C#17 -1
+rs idx x#16 -1
+rs removed 0 C#17
+rs - C#17
+rs removed 0 x#16
+rs - x#16
+rs count 0
+gs idx C#14 -1
+gs idx x#11 -1
+ls idx C#14 -1
+ls idx x#11 -1
+rl idx C#14 -1
+rl idx x#16 -1
+rl removed 0 C#14
+rl - C#14
+rl removed 0 x#16
+rl - x#16
+rl count 0
+gl idx C#12 -1
+gl idx x#11 -1
+ll idx C#12 -1
+ll idx x#11 -1
+made
+ll onRemove C#12 -1
+ll onRemove x#11 -1
+ll - x#11
+ll - C#12
+ll currentItem none
+ll current -1
+ll count 0
+gl onRemove C#12 -1
+gl onRemove x#11 -1
+gl - x#11
+gl - C#12
+gl currentItem none
+gl current -1
+gl count 0
+ls onRemove C#14 -1
+ls onRemove x#11 -1
+ls - x#11
+ls - C#14
+ls currentItem none
+ls current -1
+ls count 0
+gs onRemove C#14 -1
+gs onRemove x#11 -1
+gs - x#11
+gs - C#14
+gs currentItem none
+gs current -1
+gs count 0
+now [] -1 0 -1 0 -1 0 -1 0 0 0
+-- fill and clear
+rs + a#18 0
+rs added 0 a#18
+rs count 1
+rs idx a#18 -1
+rs removed 0 a#18
+rs - a#18
+rs count 0
+rl + a#17 0
+rl added 0 a#17
+rl count 1
+rl idx a#17 -1
+rl removed 0 a#17
+rl - a#17
+rl count 0
+made
+now [] -1 0 -1 0 -1 0 -1 0 0 0
+done

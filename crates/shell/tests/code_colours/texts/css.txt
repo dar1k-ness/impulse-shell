@@ -1,0 +1,16 @@
+@import url("base.css");
+:root { --accent: #ff5500; --pad: 4px; }
+/* layout */
+.card, #main > .item:nth-child(2n+1)::before {
+  display: flex;
+  margin: 0 auto 1.5em;
+  padding: calc(var(--pad) * 2) 10%;
+  color: rgb(255 0 0 / 50%);
+  background: url(img/a.png) no-repeat, linear-gradient(to right, #fff, transparent);
+  transition: opacity .3s ease-in-out;
+  font-family: "Fira Code", monospace !important;
+}
+@media (max-width: 600px) and (prefers-color-scheme: dark) {
+  a:hover { text-decoration: underline; }
+}
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

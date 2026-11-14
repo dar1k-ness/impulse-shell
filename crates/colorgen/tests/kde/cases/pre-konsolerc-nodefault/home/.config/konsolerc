@@ -1,0 +1,5 @@
+[MainWindow]
+MenuBar=Disabled
+
+[Desktop Entry]
+Foo=bar

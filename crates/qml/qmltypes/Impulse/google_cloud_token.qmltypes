@@ -1,0 +1,24 @@
+import QtQuick.tooling 1.2
+
+// Impulse/GoogleCloudToken: a Process that gets an access token for the Google service
+// account whose key file is the JSON text `key`, printed as {"token": ..., "expiry": seconds}
+// (crates/qml/src/jobs_wall_gcloud_trans/gcloud.rs `token`).
+Module {
+    Component {
+        file: "jobs_wall_gcloud_trans/gcloud.rs"
+        name: "ImpulseGoogleCloudToken"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/GoogleCloudToken 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "key"
+            type: "QString"
+            read: "key"
+            write: "setKey"
+            notify: "keyChanged"
+            index: 0
+        }
+        Signal { name: "keyChanged" }
+    }
+}

@@ -1,0 +1,103 @@
+// Arrow functions QV4's way. In a derived constructor an arrow function never has a `this`
+// (QV4 copies the function's `this` for its arrow functions on entry, when a derived
+// constructor has none): reading it is a ReferenceError named `this`, before `super(...)`
+// and after it. `super(...)` in any arrow function is "already called" before its
+// arguments run, and `super.x` there takes the `this` the arrow function was called with.
+// A key of `this` by `[...]` reads `this` first, so before `super(...)` it is a
+// ReferenceError with an empty name and neither the key nor the arguments run. The text
+// between `object` and `is` of `this.m()` before `super(...)` depends on how Qt was built
+// and is masked.
+// v4: ["ReferenceError|this is not defined","ReferenceError|this is not defined","ReferenceError|this is not defined","ReferenceError|this is not defined","ReferenceError|this is not defined","ReferenceError|this is not defined","ReferenceError|super() already called.","ReferenceError|super() already called.","ReferenceError|super() already called.","ReferenceError|this is not defined","ReferenceError|this is not defined","ReferenceError|this is not defined","ReferenceError|this is not defined","ReferenceError| is not defined","ReferenceError| is not defined","0ReferenceError| is not defined","ReferenceError| is not defined","ReferenceError| is not defined","ReferenceError| is not defined","ReferenceError| is not defined","ReferenceError| is not defined","ReferenceError| is not defined","ReferenceError|this is not defined","undefined","true","1","1","2","7","super() already called./number","outer: is not defined","ReferenceError|this is not defined","ReferenceError|this is not defined","ReferenceError|this is not defined","ReferenceError|this is not defined","number","true","ReferenceError|this is not defined","ReferenceError|this is not defined","this is not defined","ReferenceError|this is not defined","1","true","amU","TypeError|Type error","ReferenceError|this is not defined","ReferenceError|this is not defined","5","5","ReferenceError|this is not defined","4","ReferenceError|this is not defined","ReferenceError|this is not defined","ReferenceError|super() already called.","true,function","8","ReferenceError|this is not defined","3","TypeError|Type error","function","ReferenceError|this is not defined","c:this is not defined","2","TypeError|Property 'm' of object ? is not a function","TypeError|Property 'm' of object ? is not a function","U","object","TypeError|Type error","5","U","U","U","U","3","1","function","TypeError|Type error","number","2","U","U","Type error/falsefalse","object","object","U","TypeError|Type error","3","undefined,undefined","function","function"]
+function kind(f) { try { return String(f()) } catch (e) { return e.name + "|" + e.message.replace(/object \w+ is/, "object ? is") } }
+var r = [];
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); var f = () => this.a; this.r = f() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var g = () => 1; super(); var f = () => this.a; this.r = f() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => this.a; super(); var h = () => this.a; this.r = h() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => () => this.a; super(); this.g = f() } } return new B().g() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => this.a; super(); this.r = f() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var q = 5; var g = function() { return q }; super(); var f = () => this.a; this.r = f() + g() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => { super() }; f(); this.r = this.a } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => { super(); return this.a }; this.r = f() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => { super() }; f(); var h = () => this.a; this.r = h() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); var f = () => () => this.a; this.r = f()() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => typeof this; var x = f(); super(); this.r = x } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => this["m"](); super(); this.r = f() } m() { return 3 } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); var f = () => this["m"](); this.r = f() } m() { return 3 } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var k = "m"; this[k] } } return new B() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { this["x"] = 1 } } return new B() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } var s = 0; class B extends A { constructor() { this[(s = 1, "m")]((s = 2)) } } try { new B() } catch (e) { return s + e.name + "|" + e.message } }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { this["m"]`a` } } return new B() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { this?.["m"]() } } return new B() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { this?.m() } } return new B() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { new this["m"]() } } return new B() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { delete this["x"]; return {} } } return new B() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { this[0]() } } return new B() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => { this.x = 1 }; super(); try { f() } catch (e) { this.r = e.name }; var h = () => { this.y = 2 }; h(); } } var b = new B(); return b.r + b.y }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => super.zz; super(); this.r = f() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => new.target === B; super(); this.r = f() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { var f = () => this.a; this.a = 1; this.r = f() } } return new A().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { m() { var f = () => this.a; return f() } } return new B().m() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); this.r = [1].map(x => x + 1)[0] } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); var f = function() { return this }; this.r = f.call(7) } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => { super(); }; try { f() } catch (e) { return {r: e.message + "/" + (function(){ try { return typeof this } catch (e2) { return e2.message } }).call(1)} } } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { var f = () => { super() }; try { f() } catch (e) {} ; try { this.q } catch (e) { return {r: "outer:" + e.message} } } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); var f = () => { this.x = 1 }; f() } } return new B().x }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); var f = () => this.m(); f() } m() {} } return new B().x }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); var f = () => delete this.a; this.r = f() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); var o = { g: () => this.a, h() { return this.z }, z: 4 }; this.r = o.h() + "," + o.g() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); function* g() { yield (() => this)() } this.r = typeof g.call(5).next().value } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); class C { constructor() { var f = () => this; this.ok = f() === this } } this.r = new C().ok } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } } class B extends A { constructor() { super(); class C extends A { constructor() { super(); var f = () => this; this.ok = f() === this } } this.r = new C().ok } } return new B().r }));
+r.push(kind(function () { function A() { this.a = 1 } class B extends A { constructor() { super(); var f = () => this.a; this.r = f() } } return new B().r }));
+r.push(kind(function () { class B extends null { constructor() { var f = () => this; return {r: (function() { try { return f() } catch (e) { return e.message } })()} } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); this.r = (() => (() => this.a)())() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { get g() { return (() => this.a)() } } return new B().g }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { static s() { return (() => this === B)() } } return B.s() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); this.r = (() => super.am())() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { var f = () => super.am(); this.r0 = f; super() } } return new B().r0() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); this.f = () => this.a } } return new B().f() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor(f = () => this) { super(); this.r = f() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor(f = () => 5) { super(); this.r = f() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); function g() { return (() => this)() } this.r = g.call(5) } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); [1].forEach(x => { this.s = x }) } } return new B().s }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); var o = { m() { return (() => this.z)() }, z: 4 }; this.r = o.m() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); try { throw 1 } catch (e) { this.r = (() => this.a)() } } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); for (var i = 0; i < 1; i++) { let j = i; this.r = (() => this.a + j)() } } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { var f = () => (() => { super() })(); f() } } return new B().a }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); this.r = (() => new.target === B)() + "," + (() => typeof super.am)() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class Z { constructor() { this.r = (() => this.q)() } } Z.prototype.q = 8; class B extends Z { constructor() { super() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { m() { class C extends A { constructor() { super(); this.r = (() => this.a)() } } return new C().r } } return new B().m() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); var f = () => { return 3 }; this.r = f() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); this.r = (() => { super.q = 5; return "set" })() } } var b = new B(); return b.r + "," + b.q }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { var f = () => this; return {f: f} } } return typeof new B().f }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); var f = (g = () => this) => g(); this.r = f() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { super(); this.r = (() => { try { return this.a } catch (e) { return "c:" + e.message } finally { } })() } } return new B().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } function F() { this.a = 2; this.r = (() => this.a)() } return new F().r }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { this.m(1) } m() {} } return new B() }));
+r.push(kind(function () { class A { constructor() { this.a = 1 } am() { return "am" + (this === undefined ? "U" : typeof this) } } class B extends A { constructor() { this.m`a` } m() {} } return new B() }));
+r.push(kind(function () { class A { am() { return this === undefined ? "U" : typeof this } } class B extends A { m() { return (() => super.am())() } } return new B().m() }));
+r.push(kind(function () { class A { am() { return this === undefined ? "U" : typeof this } } class B extends A { m() { return super.am() } } return new B().m() }));
+r.push(kind(function () { class A { } class B extends A { m() { (() => { super.q = 5 })(); return this.q } } return new B().m() }));
+r.push(kind(function () { class A { } class B extends A { m() { super.q = 5; return this.q } } return new B().m() }));
+r.push(kind(function () { class A { get g() { return this === undefined ? "U" : typeof this } } class B extends A { m() { return (() => super.g)() } } return new B().m() }));
+r.push(kind(function () { class A { static am() { return this === undefined ? "U" : typeof this } } class B extends A { static m() { return (() => super.am())() } } return B.m() }));
+r.push(kind(function () { class A { am() { return this === undefined ? "U" : typeof this } } class B extends A { m() { return (() => (() => super.am())())() } } return new B().m() }));
+r.push(kind(function () { class A { am() { return this === undefined ? "U" : typeof this } } class B extends A { m() { return (() => super["am"]())() } } return new B().m() }));
+r.push(kind(function () { var p = { am: 3 }; var o = { m() { return (() => super.am)() } }; Object.setPrototypeOf(o, p); return o.m() }));
+r.push(kind(function () { class A { am() { return 1 } } class B extends A { constructor() { var f = () => super.am(); var r = f(); super(); this.r = r } } return new B().r }));
+r.push(kind(function () { class A { am() { return 1 } } class B extends A { constructor() { var f = () => super.am; var r = typeof f(); super(); this.r = r } } return new B().r }));
+r.push(kind(function () { class A { am() { return 1 } } class B extends A { constructor() { var f = () => { super.z = 1 }; f(); super() } } return new B().z }));
+r.push(kind(function () { class A { am() { return this === undefined ? "U" : typeof this } } class B extends A { constructor() { super(); var f = () => super.am; this.r = f().call(5) } } return new B().r }));
+r.push(kind(function () { class A { static am() { return 2 } } class B extends A { static m() { return (() => super.am)()() } } return B.m() }));
+r.push(kind(function () { class A { am() { return this === undefined ? "U" : typeof this } } class B extends A { m() { return (() => super.am`x`)() } } return new B().m() }));
+r.push(kind(function () { class A { get g() { return this === undefined ? "U" : typeof this } set g(v) { A.seen = this === undefined ? "U" : typeof this } } class B extends A { m() { (() => { super.g = 1 })(); return A.seen } } return new B().m() }));
+r.push(kind(function () { class A { } class B extends A { m() { (() => { super.q = 5 })(); return this.q } } try { new B().m() } catch (e) { return e.message + "/" + ("q" in A.prototype) + ("q" in B.prototype) } }));
+r.push(kind(function () { class A { am() { return this === undefined ? "U" : typeof this } } class B extends A { m() { return (() => super.am.call(this))() } } return new B().m() }));
+r.push(kind(function () { class A { am() { return this === undefined ? "U" : typeof this } } class B extends A { m() { var o = { f: () => super.am() }; return o.f() } } return new B().m() }));
+r.push(kind(function () { class A { am() { return this === undefined ? "U" : typeof this } } class B extends A { m() { return (() => super.am?.())() } } return new B().m() }));
+r.push(kind(function () { class A { } A.prototype.v = 1; class B extends A { m() { return (() => { super.v++; return super.v })() } } return new B().m() }));
+r.push(kind(function () { var p = { am: 3 }; var o = { m() { return super.am } }; o.__proto__ = p; return o.m() }));
+r.push(kind(function () { var p = { am: 3 }; var o = { m() { return super.am } }; var q = Object.create(p); q.m = o.m; return q.m() + "," + o.m.call(q) }));
+r.push(kind(function () { var o = { m() { return typeof super.hasOwnProperty } }; return o.m() }));
+r.push(kind(function () { class A { m() { return 1 } } class B extends A { m() { return (() => super.m)() } } var f = new B().m(); return typeof f }));
+var result = JSON.stringify(r);

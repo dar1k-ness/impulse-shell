@@ -1,0 +1,138 @@
+@property date tokenExpiry
+@property date dt: "2024-03-10"
+@property date dt2: "2024-03-10T12:30:00"
+@property date dt3: new Date(2024, 0, 2, 3, 4, 5)
+@property date dw
+@property url u
+@property url u2: "a.qml"
+@property var vd: new Date(5)
+@property int nd: 0
+@onDwChanged: nd += 1
+# B3-27 date property
+new Date() >= tokenExpiry
+=> boolean:false
+String(tokenExpiry)
+=> string:Invalid Date
+typeof tokenExpiry
+=> string:object
+tokenExpiry === null
+=> boolean:false
+isNaN(tokenExpiry.getTime())
+=> boolean:true
+tokenExpiry instanceof Date
+=> boolean:true
+Object.prototype.toString.call(tokenExpiry)
+=> string:[object Date]
+dt.getTime()
+=> number:1710018000000
+dt2.getTime()
+=> number:1710063000000
+dt3.getTime()
+=> number:1704153845000
+typeof dt + " " + (dt instanceof Date)
+=> string:object true
+dt === dt
+=> boolean:false
+dt == dt
+=> boolean:false
+w(function(){ dw = 5000; return dw.getTime() })
+=> string:THROW Error: Cannot assign int to QDateTime
+w(function(){ dw = 5000.5; return dw.getTime() })
+=> string:THROW Error: Cannot assign double to QDateTime
+w(function(){ dw = true; return dw.getTime() })
+=> string:THROW Error: Cannot assign bool to QDateTime
+w(function(){ dw = {}; return dw.getTime() })
+=> string:THROW Error: Cannot assign QJSValue to QDateTime
+w(function(){ dw = []; return dw.getTime() })
+=> string:THROW Error: Cannot assign QJSValue to QDateTime
+w(function(){ dw = Qt.point(1, 2); return dw.getTime() })
+=> string:THROW Error: Cannot assign QPointF to QDateTime
+w(function(){ dw = "2024-03-10"; return dw.getTime() })
+=> number:1710018000000
+w(function(){ dw = "2024-03-10T01:02:03"; return dw.getTime() })
+=> number:1710021723000
+w(function(){ dw = "2024-03-10T01:02:03Z"; return dw.getTime() })
+=> number:1710032523000
+w(function(){ dw = "2024-03-10T01:02:03.456+02:00"; return dw.getTime() })
+=> number:1710025323456
+w(function(){ dw = "10 Mar 2024"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "Sun Mar 10 2024 01:02:03 GMT+0300"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10 01:02:03"; return dw.getTime() })
+=> number:1710021723000
+w(function(){ dw = "01:02:03"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "garbage"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = ""; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = new Date(7); dw = null; return dw.getTime() })
+=> string:THROW Error: Cannot assign std::nullptr_t to QDateTime
+w(function(){ dw = new Date(7); dw = undefined; return dw.getTime() })
+=> string:THROW Error: Cannot assign [undefined] to QDateTime
+w(function(){ dw = new Date(7); return dw.getTime() })
+=> number:7
+w(function(){ dw = new Date(NaN); return dw.getTime() })
+=> number:NaN
+w(function(){ dw = new Date(7); var x = dw; x.setTime(11); return dw.getTime() })
+=> number:7
+w(function(){ dw = new Date(7); dw.setTime(11); return dw.getTime() })
+=> number:11
+w(function(){ var d = new Date(7); dw = d; d.setTime(11); return dw.getTime() })
+=> number:7
+w(function(){ dw = new Date(7); return dw === dw })
+=> boolean:false
+w(function(){ dw = new Date(7); return dw == dw })
+=> boolean:false
+w(function(){ dw = new Date(7); var a = nd; dw = new Date(7); return a + ">" + nd })
+=> string:10>10
+w(function(){ dw = new Date(7); var a = nd; dw = new Date(8); return a + ">" + nd })
+=> string:10>11
+w(function(){ dw = new Date(8); var a = nd; dw.setTime(9); return a + ">" + nd + " " + dw.getTime() })
+=> string:11>12 9
+w(function(){ vd.setTime(6); return vd.getTime() })
+=> number:6
+w(function(){ dw = new Date(8.64e15); return dw.getTime() })
+=> number:8640000000000000
+w(function(){ dw = new Date(1.5); return dw.getTime() })
+=> number:1
+# B3-34 url assign
+w(function(){ u = null; return "[" + u + "]" })
+=> string:THROW Error: Cannot assign std::nullptr_t to QUrl
+w(function(){ u = undefined; return "[" + u + "]" })
+=> string:THROW Error: Cannot assign [undefined] to QUrl
+w(function(){ u = {}; return "[" + u + "]" })
+=> string:THROW Error: Cannot assign QJSValue to QUrl
+w(function(){ u = []; return "[" + u + "]" })
+=> string:THROW Error: Cannot assign QJSValue to QUrl
+w(function(){ u = ["a"]; return "[" + u + "]" })
+=> string:THROW Error: Cannot assign QJSValue to QUrl
+w(function(){ u = 5; return "[" + u + "]" })
+=> string:THROW Error: Cannot assign int to QUrl
+w(function(){ u = true; return "[" + u + "]" })
+=> string:THROW Error: Cannot assign bool to QUrl
+w(function(){ u = Qt.point(1, 2); return "[" + u + "]" })
+=> string:THROW Error: Cannot assign QPointF to QUrl
+w(function(){ u = new Date(5); return "[" + u + "]" })
+=> string:THROW Error: Cannot assign QDateTime to QUrl
+w(function(){ u = function() {}; return "[" + u + "]" })
+=> string:THROW Error: Cannot assign JavaScript function to QUrl
+w(function(){ u = root; return "[" + u + "]" })
+=> string:THROW Error: Cannot assign QObject* to QUrl
+w(function(){ u = /x/; return "[" + u + "]" })
+=> string:THROW Error: Cannot assign QRegularExpression to QUrl
+w(function(){ u = "http://a/b"; return "[" + u + "]" })
+=> string:[http://a/b]
+w(function(){ u = ""; return "[" + u + "]" })
+=> string:[]
+w(function(){ u = Qt.url("http://c/d"); return "[" + u + "]" })
+=> string:[http://c/d]
+w(function(){ u = u2; return "[" + (u == u2) + "]" })
+=> string:[true]
+w(function(){ u = Qt.resolvedUrl("x.qml"); return typeof u })
+=> string:object
+w(function(){ u = new String("http://e/"); return "[" + u + "]" })
+=> string:THROW Error: Cannot assign QJSValue to QUrl
+w(function(){ u = Symbol("s"); return "[" + String(u) + "]" })
+=> string:THROW Error: Cannot assign QJSValue to QUrl

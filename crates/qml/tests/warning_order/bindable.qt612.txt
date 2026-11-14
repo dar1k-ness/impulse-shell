@@ -1,0 +1,9 @@
+warning: bindable.qml:9:19: QML Item: Unable to assign [undefined] to "x"
+warning: bindable.qml:10:19: QML Item: Unable to assign [undefined] to "objectName"
+warning: bindable.qml:11:19: QML Item: Unable to assign [undefined] to "x"
+console: completed 0  0 0
+console: filled 3 n 0 3
+console: timer the list is emptied
+warning: bindable.qml:12:19: Unable to assign [undefined] to double
+warning: bindable.qml:9:19: QML Item: Unable to assign [undefined] to "x"
+console: timer the end 3 3

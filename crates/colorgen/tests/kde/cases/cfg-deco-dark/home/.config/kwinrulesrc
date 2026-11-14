@@ -1,0 +1,8 @@
+[1]
+Description=Firefox
+wmclass=firefox
+wmclassmatch=1
+
+[General]
+count=1
+rules=1

@@ -1,0 +1,20 @@
+.config/kdeglobals	seed-5e7a91-dark
+.config/konsolerc	seed-000000-dark
+.config/kwinrulesrc	cfg-deco-nofiles
+.local/share/color-schemes/MaterialYouDark.colors	seed-5e7a91-dark
+.local/share/color-schemes/MaterialYouDark2.colors	seed-5e7a91-dark
+.local/share/color-schemes/MaterialYouDark_darker_titlebar.colors	seed-5e7a91-dark
+.local/share/color-schemes/MaterialYouDark_darker_titlebar2.colors	seed-5e7a91-dark
+.local/share/color-schemes/MaterialYouLight.colors	seed-5e7a91-dark
+.local/share/color-schemes/MaterialYouLight2.colors	seed-5e7a91-dark
+.local/share/color-schemes/MaterialYouLight_darker_titlebar.colors	seed-5e7a91-dark
+.local/share/color-schemes/MaterialYouLight_darker_titlebar2.colors	seed-5e7a91-dark
+.local/share/konsole/MaterialYou.colorscheme	seed-5e7a91-dark
+.local/share/konsole/MaterialYouAlt.colorscheme	seed-5e7a91-dark
+.local/share/konsole/Profile 1.profile	seed-000000-dark
+.local/share/konsole/TempMyou.profile	seed-000000-dark
+.local/share/org.kde.syntax-highlighting/themes/material-you-dark.theme	seed-5e7a91-dark
+.local/share/org.kde.syntax-highlighting/themes/material-you-light.theme	seed-5e7a91-dark
+dbus.log	cfg-deco-dark
+export.json	seed-5e7a91-dark
+outcome.txt	seed-000000-dark

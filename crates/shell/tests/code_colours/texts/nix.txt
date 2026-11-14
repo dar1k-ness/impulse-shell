@@ -1,0 +1,20 @@
+{ config, pkgs, lib, ... }:
+# system config
+let
+  user = "alice";
+  ports = [ 80 443 ];
+in {
+  imports = [ ./hardware-configuration.nix ];
+  networking.hostName = "nixos";
+  networking.firewall.allowedTCPPorts = ports ++ [ 8080 ];
+  users.users.${user} = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "video" ];
+    packages = with pkgs; [ firefox git (python3.withPackages (ps: [ ps.requests ])) ];
+  };
+  environment.etc."motd".text = ''
+    Welcome, ${user}!
+  '';
+  services.openssh.enable = lib.mkDefault true;
+  system.stateVersion = if config.x or false then "24.05" else "24.11";
+}

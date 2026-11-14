@@ -1,0 +1,29 @@
+import QtQuick.tooling 1.2
+
+// Edit-distance scores of two strings, 0 to 1: `computeScore` for whole strings,
+// `computeTextMatchScore` for a query inside a longer text.
+// Implemented natively by ri (crates/qml/src/jslibs/levendist.rs).
+Module {
+    Component {
+        file: "levendist.rs"
+        name: "ImpulseLevenshtein"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/Levenshtein 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Method {
+            name: "computeScore"
+            type: "double"
+            Parameter { name: "a"; type: "QString" }
+            Parameter { name: "b"; type: "QString" }
+        }
+        Method {
+            name: "computeTextMatchScore"
+            type: "double"
+            Parameter { name: "a"; type: "QString" }
+            Parameter { name: "b"; type: "QString" }
+        }
+    }
+}

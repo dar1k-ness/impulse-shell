@@ -1,0 +1,37 @@
+-- a
+base len
+base text
+use text
+use len
+base cp
+use cp
+-- b
+base len
+base text
+use len
+use text
+conn2 text
+conn len
+conn text
+base cp
+-- r0
+r0 text
+r0 len
+r0 conn2 text
+r0 conn2 len
+r0 conn len
+r0 conn text
+-- r1
+r1 text
+r1 len
+r1 conn2 text
+r1 conn2 len
+r1 conn len
+r1 conn text
+-- r2
+r2 text
+r2 len
+r2 conn2 text
+r2 conn2 len
+r2 conn len
+r2 conn text

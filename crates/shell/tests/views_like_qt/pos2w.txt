@@ -1,0 +1,676 @@
+lv Beginning 0 0
+rest lv 0
+lv Beginning 3 90
+rest lv 90
+lv Beginning 10 300
+rest lv 300
+lv Beginning 12 360
+rest lv 360
+lv Beginning 17 510
+rest lv 510
+lv Beginning 30 900
+rest lv 900
+lv Beginning 39 1000
+rest lv 1000
+lv Center 0 0
+rest lv 0
+lv Center 3 5
+rest lv 5
+lv Center 10 215
+rest lv 215
+lv Center 12 275
+rest lv 275
+lv Center 17 425
+rest lv 425
+lv Center 30 815
+rest lv 815
+lv Center 39 1000
+rest lv 1000
+lv End 0 0
+rest lv 0
+lv End 3 0
+rest lv 0
+lv End 10 130
+rest lv 130
+lv End 12 190
+rest lv 190
+lv End 17 340
+rest lv 340
+lv End 30 730
+rest lv 730
+lv End 39 1000
+rest lv 1000
+lv Visible 0 0
+rest lv 0
+lv Visible 3 90
+rest lv 90
+lv Visible 10 315
+rest lv 315
+lv Visible 12 315
+rest lv 315
+lv Visible 17 315
+rest lv 315
+lv Visible 30 730
+rest lv 730
+lv Visible 39 1000
+rest lv 1000
+lv Contain 0 0
+rest lv 0
+lv Contain 3 90
+rest lv 90
+lv Contain 10 300
+rest lv 300
+lv Contain 12 315
+rest lv 315
+lv Contain 17 340
+rest lv 340
+lv Contain 30 730
+rest lv 730
+lv Contain 39 1000
+rest lv 1000
+lv SnapPosition 0 0
+rest lv 0
+lv SnapPosition 3 90
+rest lv 90
+lv SnapPosition 10 300
+rest lv 300
+lv SnapPosition 12 360
+rest lv 360
+lv SnapPosition 17 510
+rest lv 510
+lv SnapPosition 30 900
+rest lv 900
+lv SnapPosition 39 1000
+rest lv 1000
+lm Beginning 0 0
+rest lm 0
+lm Beginning 3 102
+rest lm 102
+lm Beginning 9 306
+rest lm 306
+lm Beginning 12 408
+rest lm 408
+lm Beginning 14 476
+rest lm 476
+lm Beginning 30 1020
+rest lm 1020
+lm Beginning 39 1188
+rest lm 1188
+lm Center 0 -26
+rest lm -26
+lm Center 3 17
+rest lm 17
+lm Center 9 221
+rest lm 221
+lm Center 12 323
+rest lm 323
+lm Center 14 391
+rest lm 391
+lm Center 30 935
+rest lm 935
+lm Center 39 1188
+rest lm 1188
+lm End 0 -26
+rest lm -26
+lm End 3 -26
+rest lm -26
+lm End 9 136
+rest lm 136
+lm End 12 238
+rest lm 238
+lm End 14 306
+rest lm 306
+lm End 30 850
+rest lm 850
+lm End 39 1156
+rest lm 1156
+lm Visible 0 0
+rest lm 0
+lm Visible 3 102
+rest lm 102
+lm Visible 9 315
+rest lm 315
+lm Visible 12 315
+rest lm 315
+lm Visible 14 315
+rest lm 315
+lm Visible 30 850
+rest lm 850
+lm Visible 39 1156
+rest lm 1156
+lm Contain 0 0
+rest lm 0
+lm Contain 3 102
+rest lm 102
+lm Contain 9 306
+rest lm 306
+lm Contain 12 315
+rest lm 315
+lm Contain 14 315
+rest lm 315
+lm Contain 30 850
+rest lm 850
+lm Contain 39 1156
+rest lm 1156
+lm SnapPosition 0 0
+rest lm 0
+lm SnapPosition 3 102
+rest lm 102
+lm SnapPosition 9 306
+rest lm 306
+lm SnapPosition 12 408
+rest lm 408
+lm SnapPosition 14 476
+rest lm 476
+lm SnapPosition 30 1020
+rest lm 1020
+lm SnapPosition 39 1188
+rest lm 1188
+lh Beginning 0 0
+rest lh 0
+lh Beginning 3 102
+rest lh 102
+lh Beginning 9 306
+rest lh 306
+lh Beginning 12 408
+rest lh 408
+lh Beginning 15 510
+rest lh 510
+lh Beginning 30 1020
+rest lh 1020
+lh Beginning 39 1161
+rest lh 1161
+lh Center 0 -5
+rest lh -5
+lh Center 3 17
+rest lh 17
+lh Center 9 221
+rest lh 221
+lh Center 12 323
+rest lh 323
+lh Center 15 425
+rest lh 425
+lh Center 30 935
+rest lh 935
+lh Center 39 1161
+rest lh 1161
+lh End 0 -5
+rest lh -5
+lh End 3 -5
+rest lh -5
+lh End 9 136
+rest lh 136
+lh End 12 238
+rest lh 238
+lh End 15 340
+rest lh 340
+lh End 30 850
+rest lh 850
+lh End 39 1156
+rest lh 1156
+lh Visible 0 0
+rest lh 0
+lh Visible 3 102
+rest lh 102
+lh Visible 9 315
+rest lh 315
+lh Visible 12 315
+rest lh 315
+lh Visible 15 315
+rest lh 315
+lh Visible 30 850
+rest lh 850
+lh Visible 39 1156
+rest lh 1156
+lh Contain 0 0
+rest lh 0
+lh Contain 3 102
+rest lh 102
+lh Contain 9 306
+rest lh 306
+lh Contain 12 315
+rest lh 315
+lh Contain 15 340
+rest lh 340
+lh Contain 30 850
+rest lh 850
+lh Contain 39 1156
+rest lh 1156
+lh SnapPosition 0 0
+rest lh 0
+lh SnapPosition 3 102
+rest lh 102
+lh SnapPosition 9 306
+rest lh 306
+lh SnapPosition 12 408
+rest lh 408
+lh SnapPosition 15 510
+rest lh 510
+lh SnapPosition 30 1020
+rest lh 1020
+lh SnapPosition 39 1161
+rest lh 1161
+ls Beginning 0 0
+rest ls 0
+ls Beginning 3 90
+rest ls 90
+ls Beginning 10 300
+rest ls 300
+ls Beginning 12 360
+rest ls 360
+ls Beginning 17 510
+rest ls 510
+ls Beginning 30 900
+rest ls 900
+ls Beginning 39 1000
+rest ls 1000
+ls Center 0 0
+rest ls 0
+ls Center 3 0
+rest ls 0
+ls Center 10 210
+rest ls 210
+ls Center 12 270
+rest ls 270
+ls Center 17 420
+rest ls 420
+ls Center 30 810
+rest ls 810
+ls Center 39 1000
+rest ls 1000
+ls End 0 0
+rest ls 0
+ls End 3 0
+rest ls 0
+ls End 10 120
+rest ls 120
+ls End 12 180
+rest ls 180
+ls End 17 330
+rest ls 330
+ls End 30 720
+rest ls 720
+ls End 39 1000
+rest ls 1000
+ls Visible 0 0
+rest ls 0
+ls Visible 3 90
+rest ls 90
+ls Visible 10 300
+rest ls 300
+ls Visible 12 300
+rest ls 300
+ls Visible 17 300
+rest ls 300
+ls Visible 30 720
+rest ls 720
+ls Visible 39 1000
+rest ls 1000
+ls Contain 0 0
+rest ls 0
+ls Contain 3 90
+rest ls 90
+ls Contain 10 300
+rest ls 300
+ls Contain 12 300
+rest ls 300
+ls Contain 17 330
+rest ls 330
+ls Contain 30 720
+rest ls 720
+ls Contain 39 1000
+rest ls 1000
+ls SnapPosition 0 0
+rest ls 0
+ls SnapPosition 3 90
+rest ls 90
+ls SnapPosition 10 300
+rest ls 300
+ls SnapPosition 12 360
+rest ls 360
+ls SnapPosition 17 510
+rest ls 510
+ls SnapPosition 30 900
+rest ls 900
+ls SnapPosition 39 1000
+rest ls 1000
+lr Beginning 0 0
+rest lr 0
+lr Beginning 3 90
+rest lr 90
+lr Beginning 10 300
+rest lr 300
+lr Beginning 12 360
+rest lr 360
+lr Beginning 17 510
+rest lr 510
+lr Beginning 30 900
+rest lr 900
+lr Beginning 39 1000
+rest lr 1000
+lr Center 0 0
+rest lr 0
+lr Center 3 5
+rest lr 5
+lr Center 10 215
+rest lr 215
+lr Center 12 275
+rest lr 275
+lr Center 17 425
+rest lr 425
+lr Center 30 815
+rest lr 815
+lr Center 39 1000
+rest lr 1000
+lr End 0 0
+rest lr 0
+lr End 3 0
+rest lr 0
+lr End 10 130
+rest lr 130
+lr End 12 190
+rest lr 190
+lr End 17 340
+rest lr 340
+lr End 30 730
+rest lr 730
+lr End 39 1000
+rest lr 1000
+lr Visible 0 0
+rest lr 0
+lr Visible 3 90
+rest lr 90
+lr Visible 10 315
+rest lr 315
+lr Visible 12 315
+rest lr 315
+lr Visible 17 315
+rest lr 315
+lr Visible 30 730
+rest lr 730
+lr Visible 39 1000
+rest lr 1000
+lr Contain 0 0
+rest lr 0
+lr Contain 3 90
+rest lr 90
+lr Contain 10 300
+rest lr 300
+lr Contain 12 315
+rest lr 315
+lr Contain 17 340
+rest lr 340
+lr Contain 30 730
+rest lr 730
+lr Contain 39 1000
+rest lr 1000
+lr SnapPosition 0 0
+rest lr 0
+lr SnapPosition 3 50
+rest lr 50
+lr SnapPosition 10 260
+rest lr 260
+lr SnapPosition 12 320
+rest lr 320
+lr SnapPosition 17 470
+rest lr 470
+lr SnapPosition 30 860
+rest lr 860
+lr SnapPosition 39 1000
+rest lr 1000
+gv Beginning 0 0
+rest gv 0
+gv Beginning 6 40
+rest gv 40
+gv Beginning 13 120
+rest gv 120
+gv Beginning 17 160
+rest gv 160
+gv Beginning 22 200
+rest gv 200
+gv Beginning 30 280
+rest gv 280
+gv Beginning 39 300
+rest gv 300
+gv Center 0 0
+rest gv 0
+gv Center 6 10
+rest gv 10
+gv Center 13 90
+rest gv 90
+gv Center 17 130
+rest gv 130
+gv Center 22 170
+rest gv 170
+gv Center 30 250
+rest gv 250
+gv Center 39 300
+rest gv 300
+gv End 0 0
+rest gv 0
+gv End 6 0
+rest gv 0
+gv End 13 60
+rest gv 60
+gv End 17 100
+rest gv 100
+gv End 22 140
+rest gv 140
+gv End 30 220
+rest gv 220
+gv End 39 300
+rest gv 300
+gv Visible 0 0
+rest gv 0
+gv Visible 6 40
+rest gv 40
+gv Visible 13 130
+rest gv 130
+gv Visible 17 130
+rest gv 130
+gv Visible 22 130
+rest gv 130
+gv Visible 30 220
+rest gv 220
+gv Visible 39 300
+rest gv 300
+gv Contain 0 0
+rest gv 0
+gv Contain 6 40
+rest gv 40
+gv Contain 13 120
+rest gv 120
+gv Contain 17 130
+rest gv 130
+gv Contain 22 140
+rest gv 140
+gv Contain 30 220
+rest gv 220
+gv Contain 39 300
+rest gv 300
+gv SnapPosition 0 0
+rest gv 0
+gv SnapPosition 6 40
+rest gv 40
+gv SnapPosition 13 120
+rest gv 120
+gv SnapPosition 17 160
+rest gv 160
+gv SnapPosition 22 200
+rest gv 200
+gv SnapPosition 30 280
+rest gv 280
+gv SnapPosition 39 300
+rest gv 300
+gm Beginning 0 0
+rest gm 0
+gm Beginning 6 40
+rest gm 40
+gm Beginning 13 120
+rest gm 120
+gm Beginning 17 160
+rest gm 160
+gm Beginning 22 200
+rest gm 200
+gm Beginning 30 280
+rest gm 280
+gm Beginning 37 330
+rest gm 330
+gm Center 0 -10
+rest gm -10
+gm Center 6 10
+rest gm 10
+gm Center 13 90
+rest gm 90
+gm Center 17 130
+rest gm 130
+gm Center 22 170
+rest gm 170
+gm Center 30 250
+rest gm 250
+gm Center 37 330
+rest gm 330
+gm End 0 -10
+rest gm -10
+gm End 6 -10
+rest gm -10
+gm End 13 60
+rest gm 60
+gm End 17 100
+rest gm 100
+gm End 22 140
+rest gm 140
+gm End 30 220
+rest gm 220
+gm End 37 300
+rest gm 300
+gm Visible 0 0
+rest gm 0
+gm Visible 6 40
+rest gm 40
+gm Visible 13 130
+rest gm 130
+gm Visible 17 130
+rest gm 130
+gm Visible 22 130
+rest gm 130
+gm Visible 30 220
+rest gm 220
+gm Visible 37 300
+rest gm 300
+gm Contain 0 0
+rest gm 0
+gm Contain 6 40
+rest gm 40
+gm Contain 13 120
+rest gm 120
+gm Contain 17 130
+rest gm 130
+gm Contain 22 140
+rest gm 140
+gm Contain 30 220
+rest gm 220
+gm Contain 37 300
+rest gm 300
+gm SnapPosition 0 0
+rest gm 0
+gm SnapPosition 6 40
+rest gm 40
+gm SnapPosition 13 120
+rest gm 120
+gm SnapPosition 17 160
+rest gm 160
+gm SnapPosition 22 200
+rest gm 200
+gm SnapPosition 30 280
+rest gm 280
+gm SnapPosition 37 330
+rest gm 330
+gs Beginning 0 0
+rest gs 0
+gs Beginning 6 40
+rest gs 40
+gs Beginning 13 120
+rest gs 120
+gs Beginning 17 160
+rest gs 160
+gs Beginning 22 200
+rest gs 200
+gs Beginning 30 280
+rest gs 280
+gs Beginning 39 300
+rest gs 300
+gs Center 0 0
+rest gs 0
+gs Center 6 0
+rest gs 0
+gs Center 13 80
+rest gs 80
+gs Center 17 120
+rest gs 120
+gs Center 22 160
+rest gs 160
+gs Center 30 240
+rest gs 240
+gs Center 39 300
+rest gs 300
+gs End 0 0
+rest gs 0
+gs End 6 0
+rest gs 0
+gs End 13 40
+rest gs 40
+gs End 17 80
+rest gs 80
+gs End 22 120
+rest gs 120
+gs End 30 200
+rest gs 200
+gs End 39 300
+rest gs 300
+gs Visible 0 0
+rest gs 0
+gs Visible 6 40
+rest gs 40
+gs Visible 13 120
+rest gs 120
+gs Visible 17 120
+rest gs 120
+gs Visible 22 120
+rest gs 120
+gs Visible 30 200
+rest gs 200
+gs Visible 39 300
+rest gs 300
+gs Contain 0 0
+rest gs 0
+gs Contain 6 40
+rest gs 40
+gs Contain 13 120
+rest gs 120
+gs Contain 17 120
+rest gs 120
+gs Contain 22 120
+rest gs 120
+gs Contain 30 200
+rest gs 200
+gs Contain 39 300
+rest gs 300
+gs SnapPosition 0 0
+rest gs 0
+gs SnapPosition 6 40
+rest gs 40
+gs SnapPosition 13 120
+rest gs 120
+gs SnapPosition 17 160
+rest gs 160
+gs SnapPosition 22 200
+rest gs 200
+gs SnapPosition 30 280
+rest gs 280
+gs SnapPosition 39 300
+rest gs 300
+gv top Contain 13 60
+gm top Contain 13 60
+lh start Contain 8 102
+done

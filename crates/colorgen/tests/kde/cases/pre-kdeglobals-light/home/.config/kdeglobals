@@ -1,0 +1,25 @@
+# user comment kept?
+[$Version]
+update_info=filepicker.upd:filepicker-remove-old-previews-entry
+
+[General]
+ColorScheme=MaterialYouDark
+XftHintStyle=hintslight
+font=Noto Sans,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
+
+; another comment
+[Icons]
+Theme=breeze-plus
+
+[KDE]
+LookAndFeelPackage=org.kde.breezedark.desktop
+SingleClick=false
+widgetStyle=Breeze
+
+[WM]
+activeBackground=39,44,49
+activeFont=Noto Sans,10,-1,5,700,0,0,0,0,0,0,0,0,0,0,1
+activeForeground=252,252,252
+
+[Colors:View]
+BackgroundNormal=1,2,3

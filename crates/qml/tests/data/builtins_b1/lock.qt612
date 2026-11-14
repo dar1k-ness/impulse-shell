@@ -1,0 +1,33 @@
+H1 => 12 w=false e=false c=false
+H2 => true w=false e=false c=false
+H3 => true w=false e=false c=false
+H4 => w=false e=false c=false | w=false e=false c=false | w=false e=false c=false | w=false e=false c=false | w=false e=false c=false | w=false e=false c=false | w=false e=false c=false | w=false e=false c=false | w=false e=false c=false | w=false e=false c=false | w=false e=false c=false | w=false e=false c=false
+H5 => w=true e=false c=true | w=true e=false c=true | w=true e=false c=true | w=true e=false c=true | w=true e=false c=true | w=true e=false c=true | w=true e=false c=true | w=true e=false c=true | w=true e=false c=true | w=true e=false c=true | w=true e=false c=true
+H6 => 1 w=true e=true c=true undefined
+H7 => 2 w=true e=true c=true true undefined
+H8 => false,false,true,false,true,true,false,true,true,false
+H9 => false function false function false 12
+H10 => TypeError
+H11 => TypeError
+H12 => TypeError
+H13 => patched w=true e=false c=true [object Object]
+H14 => ap 1
+H15 => 7 0
+H16 => true true
+H17 => 0 undefined
+H18 => 0
+H19 => function max() { [native code] } false
+H20 => 5 function hasOwnProperty() { [native code] }
+H21 => Nq N: q
+H22 => Z tm
+H23 => w=true e=true c=true | w=true e=true c=true | w=true e=true c=true | w=false e=false c=false
+H24 => THROW TypeError: Cannot assign to read-only property "rgba"
+H25 => true true symbol function
+H26 => many Object.name:wfalsectrue Object.length:wfalsectrue Function.name:wfalsectrue Function.length:wfalsectrue Function.prototype.name:wfalsectrue Function.prototype.length:wfalsectrue Array.name:wfalsectrue Array.length:wfalsectrue Array.prototype.length:wtruecfalse String.name:wfalsectrue String.length:wfalsectrue Number.name:wfalsectrue Number.length:wfalsectrue Boolean.name:wfalsectrue Boolean.length:wfalsectrue Symbol.name:wfalsectrue Symbol.length:wfalsectrue Date.name:wfalsectrue Date.length:wfalsectrue RegExp.name:wfalsectrue RegExp.length:wfalsectrue Error.name:wfalsectrue Error.length:wfalsectrue Error.prototype.message:wtruectrue Error.prototype.name:wtruectrue Map.name:wfalsectrue Map.length:wfalsectrue Set.name:wfalsectrue Set.length:wfalsectrue WeakMap.name:wfalsectrue WeakMap.length:wfalsectrue WeakSet.name:wfalsectrue WeakSet.length:wfalsectrue Promise.name:wfalsectrue Promise.length:wfalsectrue ArrayBuffer.name:wfalsectrue ArrayBuffer.length:wfalsectrue DataView.name:wfalsectrue DataView.length:wfalsectrue Uint8Array.name:wfalsectrue Uint8Array.length:wfalsectrue
+H27 => 0Symbol(Symbol.iterator)wfalsecfalse 0Symbol(Symbol.unscopables)wfalsecfalse 1Symbol(Symbol.iterator)wfalsecfalse 1Symbol(Symbol.toStringTag)wfalsectrue 2Symbol(Symbol.toPrimitive)wfalsecfalse 2Symbol(Symbol.toStringTag)wfalsectrue 3Symbol(Symbol.toStringTag)wfalsectrue 4Symbol(Symbol.iterator)wfalsecfalse
+H28 => 1 1 w=false e=false c=true w=false e=false c=true true
+H29 => functionfunctionfunction
+H30 => 5 w=true e=false c=false 0 w=false e=false c=true 0 w=false e=false c=true
+H31 => w=false e=false c=true | w=true e=false c=true | w=true e=false c=true | w=true e=false c=true | w=true e=false c=true
+H32 => THROW TypeError: Could not change prototype.
+H33 => false false false true true

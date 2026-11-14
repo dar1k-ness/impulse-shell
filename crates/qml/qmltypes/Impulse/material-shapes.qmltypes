@@ -1,0 +1,121 @@
+import QtQuick.tooling 1.2
+
+// The Material 3 shapes as rounded polygons. `getX()` returns the shape `X`, built once;
+// the function named after the shape builds a new one. `customPolygon` builds a polygon
+// from `pointNRound(offset, rounding)` points; `rotateN` are rotation matrices with
+// `map(point)`, `cornerRoundN` corner roundings.
+// Implemented natively by ri (crates/qml/src/shapes/material.rs, shapes/js.rs).
+Module {
+    Component {
+        file: "js.rs"
+        name: "ImpulseMaterialShapes"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/MaterialShapes 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Property { name: "cornerRound15"; type: "QVariant"; read: "cornerRound15"; index: 0; isReadonly: true; isPropertyConstant: true }
+        Property { name: "cornerRound20"; type: "QVariant"; read: "cornerRound20"; index: 1; isReadonly: true; isPropertyConstant: true }
+        Property { name: "cornerRound30"; type: "QVariant"; read: "cornerRound30"; index: 2; isReadonly: true; isPropertyConstant: true }
+        Property { name: "cornerRound50"; type: "QVariant"; read: "cornerRound50"; index: 3; isReadonly: true; isPropertyConstant: true }
+        Property { name: "cornerRound100"; type: "QVariant"; read: "cornerRound100"; index: 4; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotateNeg30"; type: "QVariant"; read: "rotateNeg30"; index: 5; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotateNeg45"; type: "QVariant"; read: "rotateNeg45"; index: 6; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotateNeg90"; type: "QVariant"; read: "rotateNeg90"; index: 7; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotateNeg135"; type: "QVariant"; read: "rotateNeg135"; index: 8; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotate30"; type: "QVariant"; read: "rotate30"; index: 9; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotate45"; type: "QVariant"; read: "rotate45"; index: 10; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotate60"; type: "QVariant"; read: "rotate60"; index: 11; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotate90"; type: "QVariant"; read: "rotate90"; index: 12; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotate120"; type: "QVariant"; read: "rotate120"; index: 13; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotate135"; type: "QVariant"; read: "rotate135"; index: 14; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotate180"; type: "QVariant"; read: "rotate180"; index: 15; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotate28th"; type: "QVariant"; read: "rotate28th"; index: 16; isReadonly: true; isPropertyConstant: true }
+        Property { name: "rotateNeg16th"; type: "QVariant"; read: "rotateNeg16th"; index: 17; isReadonly: true; isPropertyConstant: true }
+        Method { name: "getCircle"; type: "QVariant" }
+        Method { name: "circle"; type: "QVariant" }
+        Method { name: "getSquare"; type: "QVariant" }
+        Method { name: "square"; type: "QVariant" }
+        Method { name: "getSlanted"; type: "QVariant" }
+        Method { name: "slanted"; type: "QVariant" }
+        Method { name: "getArch"; type: "QVariant" }
+        Method { name: "arch"; type: "QVariant" }
+        Method { name: "getFan"; type: "QVariant" }
+        Method { name: "fan"; type: "QVariant" }
+        Method { name: "getArrow"; type: "QVariant" }
+        Method { name: "arrow"; type: "QVariant" }
+        Method { name: "getSemiCircle"; type: "QVariant" }
+        Method { name: "semiCircle"; type: "QVariant" }
+        Method { name: "getOval"; type: "QVariant" }
+        Method { name: "oval"; type: "QVariant" }
+        Method { name: "getPill"; type: "QVariant" }
+        Method { name: "pill"; type: "QVariant" }
+        Method { name: "getTriangle"; type: "QVariant" }
+        Method { name: "triangle"; type: "QVariant" }
+        Method { name: "getDiamond"; type: "QVariant" }
+        Method { name: "diamond"; type: "QVariant" }
+        Method { name: "getClamShell"; type: "QVariant" }
+        Method { name: "clamShell"; type: "QVariant" }
+        Method { name: "getPentagon"; type: "QVariant" }
+        Method { name: "pentagon"; type: "QVariant" }
+        Method { name: "getGem"; type: "QVariant" }
+        Method { name: "gem"; type: "QVariant" }
+        Method { name: "getSunny"; type: "QVariant" }
+        Method { name: "sunny"; type: "QVariant" }
+        Method { name: "getVerySunny"; type: "QVariant" }
+        Method { name: "verySunny"; type: "QVariant" }
+        Method { name: "getCookie4Sided"; type: "QVariant" }
+        Method { name: "cookie4"; type: "QVariant" }
+        Method { name: "getCookie6Sided"; type: "QVariant" }
+        Method { name: "cookie6"; type: "QVariant" }
+        Method { name: "getCookie7Sided"; type: "QVariant" }
+        Method { name: "cookie7"; type: "QVariant" }
+        Method { name: "getCookie9Sided"; type: "QVariant" }
+        Method { name: "cookie9"; type: "QVariant" }
+        Method { name: "getCookie12Sided"; type: "QVariant" }
+        Method { name: "cookie12"; type: "QVariant" }
+        Method { name: "getGhostish"; type: "QVariant" }
+        Method { name: "ghostish"; type: "QVariant" }
+        Method { name: "getClover4Leaf"; type: "QVariant" }
+        Method { name: "clover4"; type: "QVariant" }
+        Method { name: "getClover8Leaf"; type: "QVariant" }
+        Method { name: "clover8"; type: "QVariant" }
+        Method { name: "getBurst"; type: "QVariant" }
+        Method { name: "burst"; type: "QVariant" }
+        Method { name: "getSoftBurst"; type: "QVariant" }
+        Method { name: "softBurst"; type: "QVariant" }
+        Method { name: "getBoom"; type: "QVariant" }
+        Method { name: "boom"; type: "QVariant" }
+        Method { name: "getSoftBoom"; type: "QVariant" }
+        Method { name: "softBoom"; type: "QVariant" }
+        Method { name: "getFlower"; type: "QVariant" }
+        Method { name: "flower"; type: "QVariant" }
+        Method { name: "getPuffy"; type: "QVariant" }
+        Method { name: "puffy"; type: "QVariant" }
+        Method { name: "getPuffyDiamond"; type: "QVariant" }
+        Method { name: "puffyDiamond"; type: "QVariant" }
+        Method { name: "getPixelCircle"; type: "QVariant" }
+        Method { name: "pixelCircle"; type: "QVariant" }
+        Method { name: "getPixelTriangle"; type: "QVariant" }
+        Method { name: "pixelTriangle"; type: "QVariant" }
+        Method { name: "getBun"; type: "QVariant" }
+        Method { name: "bun"; type: "QVariant" }
+        Method { name: "getHeart"; type: "QVariant" }
+        Method { name: "heart"; type: "QVariant" }
+        Method {
+            name: "customPolygon"
+            type: "QVariant"
+            Parameter { name: "points"; type: "QVariant" }
+            Parameter { name: "repeat"; type: "double" }
+            Parameter { name: "center"; type: "QVariant" }
+            Parameter { name: "mirroring"; type: "bool" }
+        }
+        Method {
+            name: "pointNRound"
+            type: "QVariant"
+            Parameter { name: "offset"; type: "QVariant" }
+            Parameter { name: "rounding"; type: "QVariant" }
+        }
+    }
+}

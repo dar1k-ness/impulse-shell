@@ -1,0 +1,23 @@
+# a write to a method of a value type or a Locale
+(function(){ var v = Qt.vector3d(1, 2, 3); try { v.times = "x"; return "ok" } catch (e) { return String(e) } })()
+=> string:Error: Cannot assign QString to 
+(function(){ var v = Qt.vector3d(1, 2, 3); try { v.dotProduct = 5; return "ok" } catch (e) { return String(e) } })()
+=> string:ok
+(function(){ var v = Qt.vector3d(1, 2, 3); try { v.plus = 5; return "ok" } catch (e) { return String(e) } })()
+=> string:Error: Cannot assign int to 
+(function(){ var v = Qt.vector3d(1, 2, 3); try { v.normalized = 5; return "ok" } catch (e) { return String(e) } })()
+=> string:Error: Cannot assign int to 
+(function(){ var v = Qt.vector3d(1, 2, 3); try { v.fuzzyEquals = 5; return "ok" } catch (e) { return String(e) } })()
+=> string:Error: Cannot assign int to 
+(function(){ var v = Qt.vector3d(1, 2, 3); try { v.times = Qt.vector3d(1, 1, 1); return "ok" } catch (e) { return String(e) } })()
+=> string:Error: Cannot assign QVector3D to 
+(function(){ var v = Qt.vector3d(1, 2, 3); try { v.length = 5; return "ok" } catch (e) { return String(e) } })()
+=> string:Error: Cannot assign int to 
+(function(){ var v = Qt.matrix4x4(); try { v.times = 5; return "ok" } catch (e) { return String(e) } })()
+=> string:ok
+(function(){ var v = Qt.matrix4x4(); try { v.row = 5; return "ok" } catch (e) { return String(e) } })()
+=> string:ok
+(function(){ var v = Qt.rect(1, 2, 3, 4); try { v.toString = 5; return "ok" } catch (e) { return String(e) } })()
+=> string:ok
+(function(){ var l = Qt.locale("en_US"); return ["currencySymbol", "dateTimeFormat", "dateFormat", "timeFormat", "monthName", "standaloneMonthName", "dayName", "standaloneDayName", "formattedDataSize", "toString", "toLocaleString"].map(function(k){ try { l[k] = 5; return k + ":ok" } catch (e) { return k + ":" + String(e).replace("Error: Cannot assign int to", "") } }).join("|") })()
+=> string:currencySymbol: QLocale::MeasurementSystem|dateTimeFormat: QList<QQmlLocale::DayOfWeek>|dateFormat: QString|timeFormat: QString|monthName: QString|standaloneMonthName: QString|dayName: QString|standaloneDayName: QString|formattedDataSize: |toString: |toLocaleString:ok

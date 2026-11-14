@@ -1,0 +1,4 @@
+qml: quit
+qml: destroyed child
+qml: destroyed root
+status 0

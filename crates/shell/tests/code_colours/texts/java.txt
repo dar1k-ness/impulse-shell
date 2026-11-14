@@ -1,0 +1,24 @@
+package com.example.demo;
+
+import java.util.*;
+import static java.lang.Math.max;
+
+/** A greeter. @author me */
+@SuppressWarnings("unchecked")
+public final class Greeter<T extends Comparable<T>> implements Runnable {
+    private static final int LIMIT = 0x7f;
+    private final List<T> items = new ArrayList<>();
+    protected volatile double rate = 1.5e-3d;
+
+    public Greeter(T... xs) { items.addAll(Arrays.asList(xs)); }
+
+    @Override
+    public void run() {
+        for (T x : items) {
+            if (x == null || items.size() > LIMIT) continue;
+            System.out.printf("Hello, %s!%n", x); // greet
+        }
+        char c = '\n'; long big = 10_000L; String s = "a\tb" + c + big;
+        try { queue.put(max(1, 2)); } catch (InterruptedException e) { throw new RuntimeException(e); }
+    }
+}

@@ -1,0 +1,7 @@
+state A
+after a: A b false
+state B
+b on in onPChanged: B on the way
+state A
+tick 3: A b false
+end: A 100 b false

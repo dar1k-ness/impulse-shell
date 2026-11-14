@@ -1,0 +1,6 @@
+400 200 #fef7ff
+10 10 50 31 stretch 0 /tmp/st_a.png 50:0
+70 10 127 80 stretch 0 /tmp/st_a.png 127:80
+210 10 37 37 stretch 0 /usr/share/icons/hicolor/256x256/apps/kitty.png 37:0
+260 10 40 25 stretch 0 /tmp/st_rgb.png 40:0
+10 100 150 94 stretch 0 /tmp/st_rgb.png 150:0

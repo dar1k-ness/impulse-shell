@@ -1,0 +1,19 @@
+import QtQuick.tooling 1.2
+
+// The shell's own member of Rustshell's `WlrLayershell`, which Rustshell's .qmltypes does not
+// have: the edge the exclusive zone applies to (zwlr_layer_surface_v1.set_exclusive_edge,
+// crates/shell/src/layer.rs). A Component without `exports` and `prototype` adds its members
+// to the class of that name another file declares (types.rs, `Registry::load`).
+Module {
+    Component {
+        name: "qs::wayland::layershell::WlrLayershell"
+        Property {
+            name: "exclusiveEdge"
+            type: "Edges::Enum"
+            read: "exclusiveEdge"
+            write: "setExclusiveEdge"
+            notify: "exclusiveEdgeChanged"
+        }
+        Signal { name: "exclusiveEdgeChanged" }
+    }
+}

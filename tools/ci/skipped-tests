@@ -1,0 +1,76 @@
+#!/bin/sh
+# tools/ci/skipped-tests: prints every test of the workspace the gate does not run, with the
+# reason its `#[ignore = "..."]` gives, grouped by reason. Read from the sources, so it needs
+# no build; tools/testenv/ri-gate prints it at the end of a run.
+#
+# A test has no other way out of the gate: a missing tool or font fails it
+# (testenv::unavailable, RI_EQUIV_SKIP unset) and so does a missing GL context
+# (RI_REQUIRE_GL=1), and clippy's ignore_without_reason refuses a bare `#[ignore]`.
+#
+# Ignored under not(feature = "interp") is listed by count only: the `tests` step builds with
+# the interpreter and runs those; only shipped-tests (the AOT-only build) leaves them out.
+set -eu
+cd "$(dirname "$0")/../.."
+find crates -name target -prune -o -name '*.rs' -print | LC_ALL=C sort | xargs awk '
+    function fail(msg) { print FILENAME ":" FNR ": " msg > "/dev/stderr"; bad = 1 }
+    FNR == 1 { attr = ""; pending = 0 }
+    {
+        line = $0
+        sub(/^[ \t]+/, "", line)
+    }
+    attr == "" && line ~ /^#\[ignore\]/ { fail("#[ignore] without a reason") }
+    attr == "" && (line ~ /^#\[ignore = "/ || line ~ /^#\[cfg_attr\(/) { attr = line; open = 1 }
+    attr != "" && !open {
+        # A string continued over a line break: `\` and the next line'"'"'s indentation go.
+        if (attr ~ /\\$/) sub(/\\$/, "", attr); else attr = attr " "
+        attr = attr line
+    }
+    attr != "" {
+        open = 0
+        if (attr !~ /\]$/) next
+        if (attr ~ /ignore = "/) {
+            feature = ""
+            if (match(attr, /not\(feature = "[a-z_-]+"\)/)) {
+                feature = substr(attr, RSTART, RLENGTH)
+                gsub(/not\(feature = "|"\)/, "", feature)
+            }
+            reason = attr
+            sub(/.*ignore = "/, "", reason)
+            sub(/"[ ,]*\)?\]$/, "", reason)
+            pending = 1
+        }
+        attr = ""
+        next
+    }
+    pending && match(line, /^(pub )?(async )?fn [A-Za-z0-9_]+/) {
+        name = substr(line, RSTART, RLENGTH)
+        sub(/.*fn /, "", name)
+        n = split(FILENAME, p, "/")
+        file = FILENAME
+        sub(/^crates\/[^\/]+\//, "", file)
+        printf "%s\t%s\t%s\t%s\t%s\n", feature, reason, p[2], file, name
+        pending = 0
+    }
+    END { exit bad }
+' | LC_ALL=C sort -t "$(printf '\t')" -k1,2 -s | awk -F '\t' '
+    function flush() {
+        if (!n) return
+        if (feature == "interp") {
+            interp = interp sprintf("  %3d  %s\n", n, reason)
+        } else {
+            printf "%s (%d)\n%s", reason, n, names
+        }
+        n = 0
+        names = ""
+    }
+    BEGIN { print "Tests no step of the gate runs, by the reason of their #[ignore]:" }
+    $1 != feature || $2 != reason { flush(); feature = $1; reason = $2 }
+    { n++; names = names sprintf("    %-10s %-46s %s\n", $3, $4, $5) }
+    END {
+        flush()
+        if (interp != "") {
+            print "Tests only the shipped-tests step leaves out (it builds without `interp`; the tests step runs them):"
+            printf "%s", interp
+        }
+    }
+'

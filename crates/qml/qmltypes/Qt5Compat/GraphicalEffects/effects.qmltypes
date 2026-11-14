@@ -1,0 +1,258 @@
+import QtQuick.tooling 1.2
+
+// Qt5Compat.GraphicalEffects types the shell renders natively. Upstream they are QML files
+// whose root is an Item (e.g. DropShadow.qml), so they carry no qmltypes: these entries give
+// them the QQuickItem chain and the properties those files declare. Their defaults live in the
+// QML files, which the renderer applies.
+
+Module {
+    Component {
+        name: "DropShadow"
+        accessSemantics: "reference"
+        defaultProperty: "data"
+        parentProperty: "parent"
+        prototype: "QQuickItem"
+        exports: ["Qt5Compat.GraphicalEffects/DropShadow 6.0"]
+        exportMetaObjectRevisions: [1536]
+        Property {
+            name: "source"
+            type: "QVariant"
+        }
+        Property {
+            name: "radius"
+            type: "double"
+        }
+        Property {
+            name: "samples"
+            type: "int"
+        }
+        Property {
+            name: "color"
+            type: "QColor"
+        }
+        Property {
+            name: "horizontalOffset"
+            type: "double"
+        }
+        Property {
+            name: "verticalOffset"
+            type: "double"
+        }
+        Property {
+            name: "spread"
+            type: "double"
+        }
+        Property {
+            name: "cached"
+            type: "bool"
+        }
+        Property {
+            name: "transparentBorder"
+            type: "bool"
+        }
+        Signal { name: "sourceChanged" }
+        Signal { name: "radiusChanged" }
+        Signal { name: "samplesChanged" }
+        Signal { name: "colorChanged" }
+        Signal { name: "horizontalOffsetChanged" }
+        Signal { name: "verticalOffsetChanged" }
+        Signal { name: "spreadChanged" }
+        Signal { name: "cachedChanged" }
+        Signal { name: "transparentBorderChanged" }
+    }
+    Component {
+        name: "GaussianBlur"
+        accessSemantics: "reference"
+        defaultProperty: "data"
+        parentProperty: "parent"
+        prototype: "QQuickItem"
+        exports: ["Qt5Compat.GraphicalEffects/GaussianBlur 6.0"]
+        exportMetaObjectRevisions: [1536]
+        Property {
+            name: "source"
+            type: "QVariant"
+        }
+        Property {
+            name: "radius"
+            type: "double"
+        }
+        Property {
+            name: "samples"
+            type: "int"
+        }
+        Property {
+            name: "deviation"
+            type: "double"
+        }
+        Property {
+            name: "transparentBorder"
+            type: "bool"
+        }
+        Property {
+            name: "cached"
+            type: "bool"
+        }
+        Signal { name: "sourceChanged" }
+        Signal { name: "radiusChanged" }
+        Signal { name: "samplesChanged" }
+        Signal { name: "deviationChanged" }
+        Signal { name: "transparentBorderChanged" }
+        Signal { name: "cachedChanged" }
+    }
+    Component {
+        name: "FastBlur"
+        accessSemantics: "reference"
+        defaultProperty: "data"
+        parentProperty: "parent"
+        prototype: "QQuickItem"
+        exports: ["Qt5Compat.GraphicalEffects/FastBlur 6.0"]
+        exportMetaObjectRevisions: [1536]
+        Property {
+            name: "source"
+            type: "QVariant"
+        }
+        Property {
+            name: "radius"
+            type: "double"
+        }
+        Property {
+            name: "transparentBorder"
+            type: "bool"
+        }
+        Property {
+            name: "cached"
+            type: "bool"
+        }
+        Signal { name: "sourceChanged" }
+        Signal { name: "radiusChanged" }
+        Signal { name: "transparentBorderChanged" }
+        Signal { name: "cachedChanged" }
+    }
+    Component {
+        name: "OpacityMask"
+        accessSemantics: "reference"
+        defaultProperty: "data"
+        parentProperty: "parent"
+        prototype: "QQuickItem"
+        exports: ["Qt5Compat.GraphicalEffects/OpacityMask 6.0"]
+        exportMetaObjectRevisions: [1536]
+        Property {
+            name: "source"
+            type: "QVariant"
+        }
+        Property {
+            name: "maskSource"
+            type: "QVariant"
+        }
+        Property {
+            name: "cached"
+            type: "bool"
+        }
+        Property {
+            name: "invert"
+            type: "bool"
+        }
+        Signal { name: "sourceChanged" }
+        Signal { name: "maskSourceChanged" }
+        Signal { name: "cachedChanged" }
+        Signal { name: "invertChanged" }
+    }
+    Component {
+        name: "ColorOverlay"
+        accessSemantics: "reference"
+        defaultProperty: "data"
+        parentProperty: "parent"
+        prototype: "QQuickItem"
+        exports: ["Qt5Compat.GraphicalEffects/ColorOverlay 6.0"]
+        exportMetaObjectRevisions: [1536]
+        Property {
+            name: "source"
+            type: "QVariant"
+        }
+        Property {
+            name: "color"
+            type: "QColor"
+        }
+        Property {
+            name: "cached"
+            type: "bool"
+        }
+        Signal { name: "sourceChanged" }
+        Signal { name: "colorChanged" }
+        Signal { name: "cachedChanged" }
+    }
+    Component {
+        name: "Desaturate"
+        accessSemantics: "reference"
+        defaultProperty: "data"
+        parentProperty: "parent"
+        prototype: "QQuickItem"
+        exports: ["Qt5Compat.GraphicalEffects/Desaturate 6.0"]
+        exportMetaObjectRevisions: [1536]
+        Property {
+            name: "source"
+            type: "QVariant"
+        }
+        Property {
+            name: "desaturation"
+            type: "double"
+        }
+        Property {
+            name: "cached"
+            type: "bool"
+        }
+        Signal { name: "sourceChanged" }
+        Signal { name: "desaturationChanged" }
+        Signal { name: "cachedChanged" }
+    }
+    Component {
+        name: "RadialGradient"
+        accessSemantics: "reference"
+        defaultProperty: "data"
+        parentProperty: "parent"
+        prototype: "QQuickItem"
+        exports: ["Qt5Compat.GraphicalEffects/RadialGradient 6.0"]
+        exportMetaObjectRevisions: [1536]
+        Property {
+            name: "source"
+            type: "QVariant"
+        }
+        Property {
+            name: "cached"
+            type: "bool"
+        }
+        Property {
+            name: "horizontalOffset"
+            type: "double"
+        }
+        Property {
+            name: "verticalOffset"
+            type: "double"
+        }
+        Property {
+            name: "horizontalRadius"
+            type: "double"
+        }
+        Property {
+            name: "verticalRadius"
+            type: "double"
+        }
+        Property {
+            name: "angle"
+            type: "double"
+        }
+        Property {
+            name: "gradient"
+            type: "QQuickGradient"
+            isPointer: true
+        }
+        Signal { name: "sourceChanged" }
+        Signal { name: "cachedChanged" }
+        Signal { name: "horizontalOffsetChanged" }
+        Signal { name: "verticalOffsetChanged" }
+        Signal { name: "horizontalRadiusChanged" }
+        Signal { name: "verticalRadiusChanged" }
+        Signal { name: "angleChanged" }
+        Signal { name: "gradientChanged" }
+    }
+}

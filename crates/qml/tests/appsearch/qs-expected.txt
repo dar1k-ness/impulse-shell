@@ -1,0 +1,85 @@
+# query results
+warmup	-
+foo	foot=Foot
+fire fox	firefox=Firefox
+f f	foot=Foot,firefox=Firefox
+fi re	firefox=Firefox
+fire	firefox=Firefox
+ 	-
+Foot 	foot=Foot
+kit ty	kitty=kitty
+kitty	kitty=kitty
+ki	kitty=kitty
+>kit	kitty=kitty
+> fire	firefox=Firefox
+k	kitty=kitty
+fo ot	foot=Foot
+foot	foot=Foot
+FIRE	firefox=Firefox
+фаер	-
+a b c d	-
+ffffffffffffffffffffffffffffffffffffffff	-
+ire	firefox=Firefox
+toof	-
+t	kitty=kitty,foot=Foot
+  fire  	firefox=Firefox
+fire  	firefox=Firefox
+kitty kitty	kitty=kitty
+foot firefox	-
+fox	firefox=Firefox
+ff	firefox=Firefox
+fire	firefox=Firefox
+foo	foot=Foot
+kit	kitty=kitty
+warmup	-
+foo	foot=Foot
+fire fox	firefox=Firefox
+f f	foot=Foot,firefox=Firefox
+fi re	firefox=Firefox
+fire	firefox=Firefox
+ 	-
+Foot 	foot=Foot
+kit ty	kitty=kitty
+kitty	kitty=kitty
+ki	kitty=kitty
+>kit	kitty=kitty
+> fire	firefox=Firefox
+k	kitty=kitty
+fo ot	foot=Foot
+foot	foot=Foot
+FIRE	firefox=Firefox
+фаер	-
+a b c d	-
+ffffffffffffffffffffffffffffffffffffffff	-
+ire	firefox=Firefox
+toof	-
+t	kitty=kitty,foot=Foot
+  fire  	firefox=Firefox
+fire  	firefox=Firefox
+kitty kitty	kitty=kitty
+foot firefox	-
+fox	firefox=Firefox
+ff	firefox=Firefox
+fire	firefox=Firefox
+foo	foot=Foot
+kit	kitty=kitty
+# step results (foo | fire | kit)
+start foot=Foot | firefox=Firefox | kitty=kitty
+home_touch foot=Foot | firefox=Firefox | kitty=kitty
+home_touch2 foot=Foot | firefox=Firefox | kitty=kitty
+override_touch foot=Foot | firefox=Firefox | kitty=kitty
+dup_atomic foot=Foot | firefox=Firefox | kitty=kitty
+actions_two_inplace foot=Foot | firefox=Firefox | kitty=kitty
+rescan foot=Foot | firefox=Firefox/Act-new-window+Act-private | kitty=kitty
+actions_drop foot=Foot | firefox=Firefox/Act-new-window | kitty=kitty
+actions_rename foot=Foot | firefox=Firefox/Act-profile | kitty=kitty
+actions_none foot=Foot | firefox=Firefox | kitty=kitty
+install foot=Foot | firefox=Firefox | kitty=kitty,kitten=Kitten
+uninstall foot=Foot | firefox=Firefox | kitten=Kitten
+mask - | firefox=Firefox | kitten=Kitten
+unmask foot=Foot | firefox=Firefox | kitten=Kitten
+nodisplay foot=Foot | - | kitten=Kitten
+redisplay foot=Foot | firefox=Firefox | kitten=Kitten
+burst foot=Foot | firefox=Firefox | kitten=Kitten
+reinstall foot=Foot | firefox=Firefox | kitty=kitty,kitten=Kitten
+home_touch3 foot=Foot | firefox=Firefox | kitty=kitty,kitten=Kitten

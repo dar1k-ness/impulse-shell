@@ -1,0 +1,102 @@
+# The ri-testenv image (tools/testenv/Containerfile) on GHCR, tagged by the content of its
+# inputs (tools/ci/image-tag): a tag is built and pushed once, every later run that has the
+# same inputs pulls it.
+# Called by the workflows that run in it; outputs the image reference.
+#
+# The `tag` job looks the tag up and the `image` job only runs when it is not published yet,
+# so a run whose tag exists never enters the build's concurrency group. That matters because
+# a concurrency group holds one running and one pending job: a third arrival cancels the
+# pending one (GitHub docs "Control the concurrency of workflows and jobs"), which used to
+# cancel gpu-precision whenever checks and gpu-precision of two pushes met there.
+name: testenv-image
+
+on:
+  workflow_call:
+    outputs:
+      image:
+        description: ghcr.io reference of the image built from this commit's tools/testenv
+        value: ${{ jobs.tag.outputs.image }}
+
+permissions:
+  contents: read
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      packages: read
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      image: ${{ steps.tag.outputs.image }}
+      published: ${{ steps.published.outputs.published }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: tag
+        # The image lives under this repository's own name and id. A package belongs to the
+        # account, and of the account's repositories only the one whose workflow published
+        # it gets access (GitHub docs "Configuring a package's access control and
+        # visibility"): a name another repository has published is `denied` here. With the
+        # id in it, the name is one no repository before this one can have taken.
+        run: |
+          tag=$(tools/ci/image-tag)
+          echo "tag=$tag" >>"$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}/ri-testenv-$GITHUB_REPOSITORY_ID:$tag" >>"$GITHUB_OUTPUT"
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: published
+        env:
+          IMAGE: ${{ steps.tag.outputs.image }}
+        run: |
+          # Only a missing manifest means "build it"; any other error (auth, network) fails.
+          if out=$(docker manifest inspect "$IMAGE" 2>&1); then
+              echo "$IMAGE already published"
+              echo "published=true" >>"$GITHUB_OUTPUT"
+          elif printf '%s\n' "$out" | grep -qE 'manifest unknown|no such manifest'; then
+              echo "$IMAGE not published yet"
+              echo "published=false" >>"$GITHUB_OUTPUT"
+          else
+              printf '%s\n' "$out"
+              echo "::error title=ri-testenv image::Looking up $IMAGE failed. 'denied' means the package exists but this repository has no access to it: Package settings → Manage Actions access."
+              exit 1
+          fi
+
+  image:
+    needs: tag
+    if: needs.tag.outputs.published != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    # One build per tag at a time across every workflow that calls this one: a run that
+    # waits here finds the tag published by the one before it and does not build it again.
+    concurrency:
+      group: testenv-image-${{ needs.tag.outputs.tag }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push unless already published
+        env:
+          IMAGE: ${{ needs.tag.outputs.image }}
+        run: |
+          if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+              echo "$IMAGE already published"
+              exit 0
+          fi
+          docker build -t "$IMAGE" -f tools/testenv/Containerfile \
+              --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" .
+          docker push "$IMAGE"

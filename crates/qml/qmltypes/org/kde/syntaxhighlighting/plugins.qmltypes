@@ -1,0 +1,29 @@
+import QtQuick.tooling 1.2
+
+// org.kde.syntaxhighlighting as the tree uses it (KSyntaxHighlighting's QML plugin); implemented
+// natively over KDE's own syntax definition files (crates/qml/src/syntax.rs).
+Module {
+    Component {
+        name: "KSyntaxHighlighting::Repository"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["org.kde.syntaxhighlighting/Repository 1.0"]
+        isCreatable: false
+        isSingleton: true
+        Method {
+            name: "definitionForName"
+            type: "KSyntaxHighlighting::Definition"
+            Parameter { name: "defName"; type: "QString" }
+        }
+    }
+    Component {
+        name: "KSyntaxHighlightingQuick::SyntaxHighlighter"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["org.kde.syntaxhighlighting/SyntaxHighlighter 1.0"]
+        Property { name: "textEdit"; type: "QObject"; isPointer: true }
+        Property { name: "definition"; type: "QVariant" }
+        Property { name: "theme"; type: "QVariant" }
+        Property { name: "repository"; type: "KSyntaxHighlighting::Repository"; isPointer: true }
+    }
+}

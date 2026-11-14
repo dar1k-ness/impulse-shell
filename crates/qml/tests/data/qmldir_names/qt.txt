@@ -1,0 +1,19 @@
+singleton	number:7 | object | boolean:true | objectName,v,objectNameChanged,vChanged
+singleton_qualified	number:7 | undefined | boolean:true | object
+names	object | number:8 | object | number:8 | object | Other | object | Other | object | Free | undefined | object
+renamed_object	number:3
+file_name_object	number:3
+unlisted_object	number:4
+singleton_file_object	!Composite Singleton Type Renamed is not creatable.
+singleton_object	!Composite Singleton Type Renamed is not creatable.
+no_pragma	!Type Np unavailable ## qmldir defines type as singleton, but no pragma Singleton found in type Np.
+names_qualified	number:8 | object | number:8 | Other | boolean:true | Free | Hidden | Other
+internal_object	!Hidden is not a type
+internal_file_object	number:5
+no_pragma_object	!Type Np unavailable ## qmldir defines type as singleton, but no pragma Singleton found in type Np.
+objects_qualified	number:7
+two_directories	number:15
+no_pragma_unused	!Type Np unavailable ## qmldir defines type as singleton, but no pragma Singleton found in type Np.
+internal_inside	5 Hidden,object,8,object Hidden UseHid
+no_pragma_qualified_unused	!Type Np unavailable ## qmldir defines type as singleton, but no pragma Singleton found in type Np.
+singleton_is_one_object	true true 8 11 11 function

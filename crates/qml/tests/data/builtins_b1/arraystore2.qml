@@ -1,0 +1,62 @@
+import QtQuick
+Item {
+    function t(name, f) { var s; try { s = String(f()) } catch (e) { s = "THROW " + e.name + ": " + e.message } console.log(name + " => " + s.replace(/\n/g, "\\n")) }
+    function d(a) { return [a, a.length, Object.keys(a), Object.getOwnPropertyNames(a), JSON.stringify(Object.getOwnPropertyDescriptors(a))].join("|") }
+    function w(a, i, v) { "use strict"; try { a[i] = v; return "ok" } catch (e) { return e.name } }
+    function del(a, i) { "use strict"; try { return delete a[i] } catch (e) { return e.name } }
+    function ro() { var a = [1]; Object.defineProperty(a, 0, {writable: false}); a.push(2); return a }
+    function g(a, i) { Object.defineProperty(a, i, {get: function() { return 7 }, configurable: true, enumerable: true}); return a }
+    Component.onCompleted: {
+        t("q1", function() { var a = Object.seal([1]); a.push(2); Object.freeze(a); return d(a) + "|" + (1 in a) })
+        t("q2", function() { var a = ro(); Object.defineProperty(a, 1, {value: 3}); return d(a) + "|" + (1 in a) })
+        t("q3", function() { var a = ro(); Object.seal(a); return d(a) + "|" + (1 in a) + "|" + Object.isSealed(a) })
+        t("q4", function() { var a = ro(); var k = []; for (var x in a) k.push(x); return k + "|" + Object.values(a) + "|" + Object.getOwnPropertyDescriptor(a, 1) + "|" + a.indexOf(2) + "|" + a.map(function(x) { return x * 2 }) + "|" + a.concat([5]) + "|" + JSON.stringify(a) + "|" + delete a[1] + "|" + a })
+        t("q5", function() { var a = ro(); return Reflect.set(a, 1, 9) + "|" + d(a) + "|" + (1 in a) })
+        t("q6", function() { var a = Object.seal([1]); a.push(2); return Reflect.set(a, 1, 9) + "|" + d(a) })
+        t("q7", function() { "use strict"; var a = ro(); a.length = 1; return d(a) })
+        t("q8", function() { "use strict"; var a = ro(); a.pop(); return d(a) })
+        t("q9", function() { var a = ro(); a.length = 1; return d(a) })
+        t("q10", function() { var a = [1, 2, 3]; a.pop(); Object.defineProperty(a, 0, {writable: false}); a.push(9); return d(a) + "|" + (2 in a) })
+        t("q11", function() { var a = Object.freeze([1, , 3]); return Reflect.set(a, 1, 5) + "|" + d(a) })
+        t("q12", function() { var a = [1, , 3]; Object.defineProperty(a, 0, {writable: false}); return Reflect.set(a, 1, 5) + "|" + w(a, 1, 6) + "|" + d(a) })
+        t("q13", function() { var a = ro(); a.reverse(); return d(a) })
+        t("q14", function() { "use strict"; var a = Object.freeze([1, 2]); a.push(3); a.fill(0); return d(a) })
+        t("q15", function() { var a = [1]; Object.defineProperty(a, 0, {get: function() { return 7 }, configurable: true}); Object.defineProperty(a, 0, {value: 1, writable: true}); Object.freeze(a); return w(a, 0, 2) + "|" + d(a) })
+        t("q16", function() { var a = [1, 2]; Object.defineProperty(a, 5, {value: 3, writable: false, enumerable: true, configurable: true}); a.push(4); return d(a) + "|" + (6 in a) + "|" + w(a, 3, 8) + "|" + (3 in a) })
+        t("q17", function() { var a = [3, 1, 2]; Object.defineProperty(a, 0, {writable: false}); a.sort(); return d(a) })
+        t("q18", function() { var a = Object.freeze([1]); a.push(2); a.push(3); a.length = 2; return d(a) })
+        t("q19", function() { var a = [1, 2]; Object.defineProperty(a, 1, {writable: false}); a.length = 1; a[1] = 7; return d(a) + "|" + (1 in a) })
+        t("q20", function() { var a = ro(); a.unshift(0); return d(a) })
+        t("q21", function() { var a = ro(); a.shift(); return d(a) })
+        t("q22", function() { var a = ro(); a.splice(0, 1); return d(a) })
+        t("q23", function() { var a = [1, 2, 3]; Object.seal(a); a.length = 1; return d(a) })
+        t("q24", function() { var a = [1, 2, 3]; Object.defineProperty(a, 1, {configurable: false}); a.length = 0; return d(a) })
+        t("e1", function() { var a = Object.freeze([]); a.push(1, 2); return d(a) })
+        t("e2", function() { var a = Object.freeze(new Array(3)); a.push(1); return d(a) })
+        t("e3", function() { var a = [1]; a.pop(); Object.freeze(a); a.push(1); return d(a) })
+        t("e4", function() { var a = Object.seal([]); a.push(1); return d(a) })
+        t("e5", function() { var a = Object.seal(new Array()); a.push(1); return d(a) })
+        t("e6", function() { var a = [1]; a.length = 0; Object.seal(a); a.push(1); return d(a) })
+        t("e7", function() { var a = [1].slice(1); Object.seal(a); a.push(1); return d(a) })
+        t("e8", function() { var a = [1].filter(function() { return false }); Object.seal(a); a.push(1); return d(a) })
+        t("e9", function() { var a = [,]; Object.seal(a); a.push(1); return d(a) })
+        t("e10", function() { var a = []; a.length = 2; Object.seal(a); a.push(1); return d(a) })
+        t("e11", function() { var a = [1]; delete a[0]; Object.seal(a); a.push(1); return d(a) })
+        t("e12", function() { var a = Object.freeze([]); a[0] = 1; return d(a) })
+        t("e13", function() { var a = [1]; a.shift(); Object.seal(a); a.push(1); return d(a) })
+        t("e14", function() { var a = [1].map(function(x) { return x }); a.pop(); Object.seal(a); a.push(1); return d(a) })
+        t("e15", function() { var a = Array.from([]); Object.seal(a); a.push(1); return d(a) })
+        t("e16", function() { var a = JSON.parse("[]"); Object.seal(a); a.push(1); return d(a) })
+        t("e17", function() { var a = [1, 2].splice(0, 0); Object.seal(a); a.push(1); return d(a) })
+        t("e18", function() { var a = [].concat([]); Object.seal(a); a.push(1); return d(a) })
+        t("p1", function() { var a = g([1, 2, 3], 0); Object.freeze(a); return d(a) + "|" + Object.isFrozen(a) })
+        t("p2", function() { var a = g([1, 2, 3], 1); Object.freeze(a); return d(a) + "|" + Object.isFrozen(a) })
+        t("p3", function() { var a = g([1, 2, 3], 2); Object.seal(a); return d(a) + "|" + Object.isSealed(a) })
+        t("p4", function() { var a = g([1, 2, 3], 0); Object.seal(a); return d(a) + "|" + Object.isSealed(a) })
+        t("p5", function() { var a = g([1], 0); Object.freeze(a); return d(a) + "|" + Object.isFrozen(a) })
+        t("p6", function() { var a = g([1, 2], 5); Object.freeze(a); return d(a) + "|" + Object.isFrozen(a) })
+        t("p7", function() { var a = []; a[5000] = 1; a[1] = 2; Object.freeze(a); return JSON.stringify(Object.getOwnPropertyDescriptors(a)) + "|" + Object.isFrozen(a) })
+        t("p8", function() { var a = g([1, 2, 3], 1); a.push(4); a.sort(); return d(a) })
+        t("p9", function() { var a = g([1, 2, 3], 1); Object.preventExtensions(a); a.push(4); return d(a) })
+    }
+}

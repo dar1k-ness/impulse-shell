@@ -1,0 +1,104 @@
+int	p	1	QtObject { id: s; property int p: 1 }	QtObject { id: b; property var v: 1; property int p: v }
+real	p	1.5	QtObject { id: s; property real p: 1.5 }	QtObject { id: b; property var v: 1.5; property real p: v }
+double	p	1.5	QtObject { id: s; property double p: 1.5 }	QtObject { id: b; property var v: 1.5; property double p: v }
+bool	p	true	QtObject { id: s; property bool p: true }	QtObject { id: b; property var v: true; property bool p: v }
+string	p	'a'	QtObject { id: s; property string p: 'a' }	QtObject { id: b; property var v: 'a'; property string p: v }
+url	p	'u'	QtObject { id: s; property url p: 'u' }	QtObject { id: b; property var v: 'u'; property url p: v }
+color	p	'blue'	QtObject { id: s; property color p: 'blue' }	QtObject { id: b; property var v: 'blue'; property color p: v }
+var	p	1	QtObject { id: s; property var p: 1 }	QtObject { id: b; property var v: 1; property var p: v }
+QtObject	p	null	QtObject { id: s; property QtObject p: null }	QtObject { id: b; property var v: null; property QtObject p: v }
+Item	p	null	QtObject { id: s; property Item p: null }	QtObject { id: b; property var v: null; property Item p: v }
+Component	p	null	QtObject { id: s; property Component p: null }	QtObject { id: b; property var v: null; property Component p: v }
+list<int>	p	[1]	QtObject { id: s; property list<int> p: [1] }	QtObject { id: b; property var v: [1]; property list<int> p: v }
+list<string>	p	['a']	QtObject { id: s; property list<string> p: ['a'] }	QtObject { id: b; property var v: ['a']; property list<string> p: v }
+list<var>	p	[1]	QtObject { id: s; property list<var> p: [1] }	QtObject { id: b; property var v: [1]; property list<var> p: v }
+list<Item>	p	[]	QtObject { id: s; property list<Item> p }	QtObject { id: b; property var v: []; property list<Item> p: v }
+font	p	Qt.font({family: 'Arial'})	QtObject { id: s; property font p }	QtObject { id: b; property var v: Qt.font({family: 'Arial'}); property font p: v }
+rect	p	Qt.rect(1, 2, 3, 4)	QtObject { id: s; property rect p }	QtObject { id: b; property var v: Qt.rect(1, 2, 3, 4); property rect p: v }
+point	p	Qt.point(1, 2)	QtObject { id: s; property point p }	QtObject { id: b; property var v: Qt.point(1, 2); property point p: v }
+size	p	Qt.size(1, 2)	QtObject { id: s; property size p }	QtObject { id: b; property var v: Qt.size(1, 2); property size p: v }
+vector2d	p	Qt.vector2d(1, 2)	QtObject { id: s; property vector2d p }	QtObject { id: b; property var v: Qt.vector2d(1, 2); property vector2d p: v }
+vector3d	p	Qt.vector3d(1, 2, 3)	QtObject { id: s; property vector3d p }	QtObject { id: b; property var v: Qt.vector3d(1, 2, 3); property vector3d p: v }
+date	p	new Date(0)	QtObject { id: s; property date p }	QtObject { id: b; property var v: new Date(0); property date p: v }
+Item.width	width	10	Item { id: s }	Item { id: b; property var v: 10; width: v }
+Item.z	z	1	Item { id: s }	Item { id: b; property var v: 1; z: v }
+Item.opacity	opacity	1	Item { id: s }	Item { id: b; property var v: 1; opacity: v }
+Item.visible	visible	true	Item { id: s }	Item { id: b; property var v: true; visible: v }
+Item.clip	clip	false	Item { id: s }	Item { id: b; property var v: false; clip: v }
+Item.enabled	enabled	true	Item { id: s }	Item { id: b; property var v: true; enabled: v }
+Item.objectName	objectName	'n'	Item { id: s }	Item { id: b; property var v: 'n'; objectName: v }
+Item.state	state	''	Item { id: s }	Item { id: b; property var v: ''; state: v }
+Item.parent	parent	null	Item { id: s }	Item { id: b; property var v: null; parent: v }
+Item.anchors.fill	anchors.fill	undefined	Item { id: s }	Item { id: b; property var v: undefined; anchors.fill: v }
+Item.anchors.margins	anchors.margins	0	Item { id: s }	Item { id: b; property var v: 0; anchors.margins: v }
+Item.transformOrigin	transformOrigin	Item.Center	Item { id: s }	Item { id: b; property var v: Item.Center; transformOrigin: v }
+Image.sourceClipRect	sourceClipRect	Qt.rect(1, 2, 3, 4)	Image { id: s }	Image { id: b; property var v: Qt.rect(1, 2, 3, 4); sourceClipRect: v }
+Scale.origin	origin	Qt.vector3d(1, 2, 3)	Scale { id: s }	Scale { id: b; property var v: Qt.vector3d(1, 2, 3); origin: v }
+Text.text	text	't'	Text { id: s }	Text { id: b; property var v: 't'; text: v }
+Text.font	font	Qt.font({family: 'Arial'})	Text { id: s }	Text { id: b; property var v: Qt.font({family: 'Arial'}); font: v }
+Text.color	color	'blue'	Text { id: s }	Text { id: b; property var v: 'blue'; color: v }
+Text.horizontalAlignment	horizontalAlignment	Text.AlignLeft	Text { id: s }	Text { id: b; property var v: Text.AlignLeft; horizontalAlignment: v }
+Text.maximumLineCount	maximumLineCount	3	Text { id: s }	Text { id: b; property var v: 3; maximumLineCount: v }
+Text.lineHeight	lineHeight	1	Text { id: s }	Text { id: b; property var v: 1; lineHeight: v }
+Image.source	source	''	Image { id: s }	Image { id: b; property var v: ''; source: v }
+Image.sourceSize	sourceSize	Qt.size(1, 2)	Image { id: s }	Image { id: b; property var v: Qt.size(1, 2); sourceSize: v }
+Rectangle.color	color	'blue'	Rectangle { id: s }	Rectangle { id: b; property var v: 'blue'; color: v }
+Rectangle.radius	radius	1	Rectangle { id: s }	Rectangle { id: b; property var v: 1; radius: v }
+ListView.model	model	1	ListView { id: s }	ListView { id: b; property var v: 1; model: v }
+ListView.currentIndex	currentIndex	-1	ListView { id: s }	ListView { id: b; property var v: -1; currentIndex: v }
+ListView.delegate	delegate	null	ListView { id: s }	ListView { id: b; property var v: null; delegate: v }
+Loader.sourceComponent	sourceComponent	undefined	Loader { id: s }	Loader { id: b; property var v: undefined; sourceComponent: v }
+Timer.interval	interval	1000	Timer { id: s }	Timer { id: b; property var v: 1000; interval: v }
+Timer.running	running	false	Timer { id: s }	Timer { id: b; property var v: false; running: v }
+MouseArea.acceptedButtons	acceptedButtons	Qt.LeftButton	MouseArea { id: s }	MouseArea { id: b; property var v: Qt.LeftButton; acceptedButtons: v }
+Flickable.contentX	contentX	0	Flickable { id: s }	Flickable { id: b; property var v: 0; contentX: v }
+Rectangle	p	null	QtObject { id: s; property Rectangle p: null }	QtObject { id: b; property var v: null; property Rectangle p: v }
+alias int	p	1	QtObject { id: st; property int q: 1 } QtObject { id: s; property alias p: st.q }	QtObject { id: b; property var v: 1; property int q: v; property alias p: b.q }
+alias width	p	10	Item { id: st } Item { id: s; property alias p: st.width }	Item { id: b; property var v: 10; width: v; property alias p: b.width }
+list<QtObject>	p	[]	QtObject { id: s; property list<QtObject> p }	QtObject { id: b; property var v: []; property list<QtObject> p: v }
+list<real>	p	[1.5]	QtObject { id: s; property list<real> p: [1.5] }	QtObject { id: b; property var v: [1.5]; property list<real> p: v }
+list<bool>	p	[true]	QtObject { id: s; property list<bool> p: [true] }	QtObject { id: b; property var v: [true]; property list<bool> p: v }
+list<url>	p	['u']	QtObject { id: s; property list<url> p: ['u'] }	QtObject { id: b; property var v: ['u']; property list<url> p: v }
+list<color>	p	['blue']	QtObject { id: s; property list<color> p: ['blue'] }	QtObject { id: b; property var v: ['blue']; property list<color> p: v }
+variant	p	1	QtObject { id: s; property variant p: 1 }	QtObject { id: b; property var v: 1; property variant p: v }
+quaternion	p	Qt.quaternion(1, 2, 3, 4)	QtObject { id: s; property quaternion p }	QtObject { id: b; property var v: Qt.quaternion(1, 2, 3, 4); property quaternion p: v }
+vector4d	p	Qt.vector4d(1, 2, 3, 4)	QtObject { id: s; property vector4d p }	QtObject { id: b; property var v: Qt.vector4d(1, 2, 3, 4); property vector4d p: v }
+matrix4x4	p	Qt.matrix4x4()	QtObject { id: s; property matrix4x4 p }	QtObject { id: b; property var v: Qt.matrix4x4(); property matrix4x4 p: v }
+Item.x	x	1	Item { id: s }	Item { id: b; property var v: 1; x: v }
+Item.implicitWidth	implicitWidth	1	Item { id: s }	Item { id: b; property var v: 1; implicitWidth: v }
+Item.rotation	rotation	1	Item { id: s }	Item { id: b; property var v: 1; rotation: v }
+Item.focus	focus	false	Item { id: s }	Item { id: b; property var v: false; focus: v }
+Item.layer.enabled	layer.enabled	false	Item { id: s }	Item { id: b; property var v: false; layer.enabled: v }
+Item.baselineOffset	baselineOffset	1	Item { id: s }	Item { id: b; property var v: 1; baselineOffset: v }
+Text.font.pixelSize	font.pixelSize	10	Text { id: s }	Text { id: b; property var v: 10; font.pixelSize: v }
+Text.font.family	font.family	'Arial'	Text { id: s }	Text { id: b; property var v: 'Arial'; font.family: v }
+Text.font.bold	font.bold	false	Text { id: s }	Text { id: b; property var v: false; font.bold: v }
+Text.font.weight	font.weight	400	Text { id: s }	Text { id: b; property var v: 400; font.weight: v }
+Text.wrapMode	wrapMode	Text.NoWrap	Text { id: s }	Text { id: b; property var v: Text.NoWrap; wrapMode: v }
+Text.elide	elide	Text.ElideNone	Text { id: s }	Text { id: b; property var v: Text.ElideNone; elide: v }
+Text.textFormat	textFormat	Text.PlainText	Text { id: s }	Text { id: b; property var v: Text.PlainText; textFormat: v }
+Rectangle.border.width	border.width	1	Rectangle { id: s }	Rectangle { id: b; property var v: 1; border.width: v }
+Rectangle.border.color	border.color	'blue'	Rectangle { id: s }	Rectangle { id: b; property var v: 'blue'; border.color: v }
+Rectangle.gradient	gradient	undefined	Rectangle { id: s }	Rectangle { id: b; property var v: undefined; gradient: v }
+Timer.repeat	repeat	false	Timer { id: s }	Timer { id: b; property var v: false; repeat: v }
+Image.fillMode	fillMode	Image.Stretch	Image { id: s }	Image { id: b; property var v: Image.Stretch; fillMode: v }
+Image.asynchronous	asynchronous	false	Image { id: s }	Image { id: b; property var v: false; asynchronous: v }
+MouseArea.cursorShape	cursorShape	Qt.ArrowCursor	MouseArea { id: s }	MouseArea { id: b; property var v: Qt.ArrowCursor; cursorShape: v }
+MouseArea.hoverEnabled	hoverEnabled	false	MouseArea { id: s }	MouseArea { id: b; property var v: false; hoverEnabled: v }
+Flickable.flickableDirection	flickableDirection	Flickable.AutoFlickDirection	Flickable { id: s }	Flickable { id: b; property var v: Flickable.AutoFlickDirection; flickableDirection: v }
+ListView.spacing	spacing	0	ListView { id: s }	ListView { id: b; property var v: 0; spacing: v }
+ListView.orientation	orientation	ListView.Vertical	ListView { id: s }	ListView { id: b; property var v: ListView.Vertical; orientation: v }
+ListView.header	header	null	ListView { id: s }	ListView { id: b; property var v: null; header: v }
+Loader.source	source	''	Loader { id: s }	Loader { id: b; property var v: ''; source: v }
+Loader.active	active	true	Loader { id: s }	Loader { id: b; property var v: true; active: v }
+Column.spacing	spacing	0	Column { id: s }	Column { id: b; property var v: 0; spacing: v }
+Repeater.model	model	1	Repeater { id: s }	Repeater { id: b; property var v: 1; model: v }
+Binding.value	value	1	Binding { id: s }	Binding { id: b; property var v: 1; value: v }
+Connections.target	target	null	Connections { id: s }	Connections { id: b; property var v: null; target: v }
+PropertyAnimation.duration	duration	250	PropertyAnimation { id: s }	PropertyAnimation { id: b; property var v: 250; duration: v }
+PropertyAnimation.to	to	1	PropertyAnimation { id: s }	PropertyAnimation { id: b; property var v: 1; to: v }
+PropertyAnimation.property	property	'x'	PropertyAnimation { id: s }	PropertyAnimation { id: b; property var v: 'x'; property: v }
+PropertyAnimation.easing.type	easing.type	Easing.Linear	PropertyAnimation { id: s }	PropertyAnimation { id: b; property var v: Easing.Linear; easing.type: v }
+Item.anchors.left	anchors.left	other.right	Item { id: s }	Item { id: b; property var v: other.right; anchors.left: v }
+AnchorChanges.anchors.left	anchors.left	1	AnchorChanges { id: s; target: other }	AnchorChanges { id: b; target: other; property var v: 1; anchors.left: v }
+Item.transform	transform	[]	Item { id: s }	Item { id: b; property var v: []; transform: v }

@@ -1,0 +1,6 @@
+a.dragThreshold [num]: 10 | set 13 | reset 10 | bind 13 -> 10 -> 13 | reset 10
+b.dragThreshold [num]: 10 | set 13 | reset 10 | bind 13 -> 10 -> 13 | reset 10
+c.dragThreshold: 10
+a.cursorShape [enum]: 0 | set 1 | reset 0 | bind 1 -> 0 -> 1 | reset 0
+b.cursorShape [enum]: 0 | set 1 | reset 0 | bind 1 -> 0 -> 1 | reset 0
+c.cursorShape: 0

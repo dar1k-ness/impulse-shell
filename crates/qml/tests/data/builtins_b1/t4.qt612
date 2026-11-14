@@ -1,0 +1,21 @@
+T1 => 1
+T2 => J
+T3 => true
+T4 => true
+T5 => false w=true e=false c=true 0
+T6 => false w=true e=false c=true 0
+T7 => w=true e=false c=true true undefined
+T8 => w=true e=false c=true w=false e=false c=true
+T9 => 0
+T10 => w=true e=false c=true 
+T11 => true 0
+T12 => w=false e=false c=true w=true e=false c=true w=true e=false c=true none
+T13 => w=true e=false c=true w=true e=false c=true acc e=false c=true w=false e=false c=false w=false e=false c=false
+T14 => false
+T15 => undefined
+T16 => 3
+T17 => 3
+T18 => function w=false e=false c=false w=false e=false c=false
+T19 => THROW ReferenceError: globalThis is not defined
+T20 => THROW TypeError: undefined is not a function
+T21 => none false false false

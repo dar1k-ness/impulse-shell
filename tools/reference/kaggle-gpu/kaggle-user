@@ -1,0 +1,13 @@
+#!/bin/sh
+# Prints the Kaggle username for the metadata ids: `--user NAME` among the arguments, else
+# $KAGGLE_USERNAME. The ids must match the pushing token's account.
+user=${KAGGLE_USERNAME:-}
+while [ $# -gt 0 ]; do
+    case $1 in
+    --user) user=${2:?--user needs a name}; shift ;;
+    --user=*) user=${1#--user=} ;;
+    esac
+    shift
+done
+[ -n "$user" ] || { echo "kaggle-user: pass --user NAME or set KAGGLE_USERNAME" >&2; exit 2; }
+printf '%s\n' "$user"

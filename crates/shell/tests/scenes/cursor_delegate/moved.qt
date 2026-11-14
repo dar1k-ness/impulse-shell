@@ -1,0 +1,8 @@
+0: | input pos=11 cur 83.75 0.00 22.00 | edit pos=0 cur 0.00 0.00 22.00 | field pos=11 cur 97.75 10.00 22.00 | area pos=0 cur 14.00 10.00 22.00
+1: | input pos=3 cur 23.02 0.00 22.00 | edit pos=3 cur 23.02 0.00 22.00 | field pos=3 cur 37.02 10.00 22.00 | area pos=3 cur 37.02 10.00 22.00
+2: | input pos=0 cur 0.00 0.00 22.00 | edit pos=0 cur 0.00 0.00 22.00 | field pos=0 cur 14.00 10.00 22.00 | area pos=0 cur 14.00 10.00 22.00
+3: | input pos=2 cur 18.80 0.00 22.00 | edit pos=2 cur 18.80 0.00 22.00 | field pos=2 cur 32.80 10.00 22.00 | area pos=2 cur 32.80 10.00 22.00
+4: | input pos=8 cur 59.77 0.00 22.00 | edit pos=8 cur 0.00 22.00 22.00 | field pos=8 cur 73.77 10.00 22.00 | area pos=8 cur 14.00 32.00 22.00
+5: | input pos=4 cur 22.08 0.00 22.00 | edit pos=4 cur 0.00 22.00 22.00 | field pos=4 cur 36.08 10.00 22.00 | area pos=4 cur 14.00 32.00 22.00
+6: | input pos=9 cur 80.55 0.00 22.00 | edit pos=0 cur 0.00 0.00 22.00 | field pos=9 cur 94.55 10.00 22.00 | area pos=0 cur 14.00 10.00 22.00
+7: | input pos=4 cur 40.86 0.00 22.00 | edit pos=4 cur 40.86 0.00 22.00 | field pos=4 cur 54.86 10.00 22.00 | area pos=4 cur 54.86 10.00 22.00

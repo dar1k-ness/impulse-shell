@@ -1,0 +1,21 @@
+#!/bin/sh
+# Runs the bundled gpushot with the bundle's own loader and libraries. EXTRA_LIB_PATH: host
+# directories searched after the bundle (the NVIDIA driver's libEGL_nvidia and friends);
+# EGL_VENDOR_DIRS: glvnd vendor json directories (default: the bundle's Mesa only).
+b=$(dirname "$(readlink -f "$0")")
+cache=${XDG_CACHE_HOME:-/tmp}/ri-gpushot-fc
+mkdir -p "$cache"
+cat >"$cache/fonts.conf" <<CONF
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+  <dir>$b/fonts/files</dir>
+  <cachedir>$cache</cachedir>
+  <include ignore_missing="yes">$b/fonts/conf.d</include>
+</fontconfig>
+CONF
+export FONTCONFIG_FILE="$cache/fonts.conf"
+export __EGL_VENDOR_LIBRARY_DIRS="${EGL_VENDOR_DIRS:-$b/egl_vendor.d}"
+export LIBGL_DRIVERS_PATH="$b/lib/dri"
+exec "$b/lib/ld-linux-x86-64.so.2" --library-path "$b/lib${EXTRA_LIB_PATH:+:$EXTRA_LIB_PATH}" \
+    "$b/bin/gpushot" "$@"

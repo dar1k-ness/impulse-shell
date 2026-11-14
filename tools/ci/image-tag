@@ -1,0 +1,14 @@
+#!/bin/sh
+# tools/ci/image-tag: prints the tag of the ri-testenv image this checkout needs, a hash of
+# everything its build context holds (tools/testenv/Containerfile.dockerignore): the path,
+# mode and content of rust-toolchain.toml and of every file under tools/testenv, as they are
+# in the working tree (so an uncommitted change gets an image of its own). The same checkout
+# gives the same tag in CI (testenv-image.yml) and locally (tools/ci/gate).
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+git ls-files -co --exclude-standard -- rust-toolchain.toml tools/testenv | LC_ALL=C sort |
+    while IFS= read -r f; do
+        [ -e "$f" ] || continue
+        if [ -x "$f" ]; then mode=755; else mode=644; fi
+        printf '%s %s %s\n' "$mode" "$(git hash-object -- "$f")" "$f"
+    done | sha256sum | cut -c1-32

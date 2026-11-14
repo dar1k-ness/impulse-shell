@@ -1,0 +1,11 @@
+K1 => prototype,name,length;
+K2 => name,length;
+K3 => prototype,length,name,s;
+K5 => name,length;
+K15 => prototype,name,length,x;
+K16 => prototype,length;
+K17 => prototype,name,length;
+K24 => {"copyWithin":true,"entries":true,"fill":true,"find":true,"findIndex":true,"includes":true,"keys":true,"values":true}null{"value":{"copyWithin":true,"entries":true,"fill":true,"find":true,"findIndex":true,"includes":true,"keys":true,"values":true},"writable":false,"enumerable":false,"configurable":false}
+K26 => name,length;|name,length;
+K28 => constructor,add,clear,delete,entries,forEach,has,size,keys,values
+K29 => stack,fileName,lineNumber,message

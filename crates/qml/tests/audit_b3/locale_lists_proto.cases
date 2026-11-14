@@ -1,0 +1,22 @@
+(function(){ var w = Qt.locale("en_US").weekDays; var p = Object.getPrototypeOf(w); return Object.getOwnPropertyNames(p).map(function(k){ var d = Object.getOwnPropertyDescriptor(p, k); return k + ":" + typeof d.value + typeof d.get + typeof d.set + d.writable + d.enumerable + d.configurable }).join("|") })()
+=> string:valueOf:functionundefinedundefinedtruefalsetrue|length:undefinedfunctionfunctionundefinedfalsetrue|shift:functionundefinedundefinedtruefalsetrue|unshift:functionundefinedundefinedtruefalsetrue|push:functionundefinedundefinedtruefalsetrue|pop:functionundefinedundefinedtruefalsetrue
+(function(){ var w = Qt.locale("en_US").weekDays; var v = w.valueOf(); return [typeof v, Object.prototype.toString.call(v), Array.isArray(v), v.length, v === w.valueOf(), String(v), Object.getPrototypeOf(v) === Object.getPrototypeOf(w), Object.getPrototypeOf(v) === Array.prototype].join("|") })()
+=> string:string|[object String]|false|9|true|1,2,3,4,5|false|false
+(function(){ var w = Qt.locale("en_US").weekDays; var p = Object.getPrototypeOf(w); return [Object.prototype.toString.call(p), p.length, Array.isArray(p), Object.keys(p).join(","), typeof p.valueOf, p.push === Array.prototype.push, p.pop === Array.prototype.pop, p.valueOf === Object.prototype.valueOf, p.hasOwnProperty("constructor"), w.hasOwnProperty("length"), w.hasOwnProperty(0), w.hasOwnProperty("foo"), "length" in w, 0 in w, 7 in w].join("|") })()
+=> THROW TypeError: Type error
+(function(){ var w = Qt.locale("en_US").weekDays; w.foo = 1; return [w.hasOwnProperty("foo"), "foo" in w, Object.getOwnPropertyNames(w).join(","), JSON.stringify(w), JSON.stringify(Object.getOwnPropertyDescriptor(w, "foo")), w.propertyIsEnumerable(0), w.propertyIsEnumerable("foo")].join("|") })()
+=> string:true|true|0,1,2,3,4,length|[1,2,3,4,5]|{"value":1,"writable":true,"enumerable":true,"configurable":true}|false|true
+(function(){ var w = Qt.locale("en_US").uiLanguages; var r = []; for (var k in w) r.push(k); return r.join(",") + "|" + Object.entries(w).join(";") + "|" + JSON.stringify(Object.getOwnPropertyDescriptors(w)) })()
+=> string:0,1,2,3|0,en-Latn-US;1,en-US;2,en-Latn;3,en|{"0":{"value":"en-Latn-US","writable":true,"enumerable":true,"configurable":true},"1":{"value":"en-US","writable":true,"enumerable":true,"configurable":true},"2":{"value":"en-Latn","writable":true,"enumerable":true,"configurable":true},"3":{"value":"en","writable":true,"enumerable":true,"configurable":true},"length":{"value":"en","writable":true,"enumerable":true,"configurable":true}}
+[typeof Easing.toString, Easing.hasOwnProperty("toString"), Easing.toString === Object.prototype.toString, typeof Easing.valueOf, Object.getPrototypeOf(Easing) === Object.prototype, Object.isExtensible(Easing), Object.isFrozen(Easing), Object.keys(Easing).join(","), JSON.stringify(Easing), Easing instanceof Object, typeof Easing].join("|")
+=> string:function|true|false|function|false|true|false|objectName,objectNameChanged,valueForProgress|{"objectName":""}|true|object
+(function(){ "use strict"; try { delete Easing.Linear; return "ok" } catch (e) { return String(e) } })()
+=> string:ok
+(function(){ "use strict"; try { Easing.objectName = "x"; return "ok" + Easing.objectName } catch (e) { return String(e) } })()
+=> string:okx
+(function(){ try { Easing.objectName = "x"; Easing.foo = 1; Easing.Linear = 3; return "ok" + Easing.objectName + Easing.foo + Easing.Linear } catch (e) { return String(e) } })()
+=> string:okxundefined0
+(function(){ try { Object.defineProperty(Easing, "foo", {value: 1}); return "ok" + Easing.foo } catch (e) { return String(e) } })()
+=> string:okundefined
+[delete Easing.foo, delete Easing.objectName, Easing.objectName, (Easing + "").replace(/0x[0-9a-f]+/, "PTR"), Easing.toString().replace(/0x[0-9a-f]+/, "PTR"), Easing == Easing, Object.getOwnPropertyDescriptor(Easing, "Linear") === undefined, JSON.stringify(Object.getOwnPropertyDescriptor(Easing, "objectName"))].join("|")
+=> string:true|true|x|QQmlEasing(PTR, "x")|QQmlEasing(PTR, "x")|true|false|{"writable":true,"enumerable":true,"configurable":true}

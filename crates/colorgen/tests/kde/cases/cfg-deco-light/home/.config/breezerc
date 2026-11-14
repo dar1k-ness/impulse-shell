@@ -1,0 +1,6 @@
+[Windeco]
+ButtonCloseActiveColor=1,2,3
+ButtonStyle=macOS
+
+[Common]
+ShadowSize=ShadowLarge

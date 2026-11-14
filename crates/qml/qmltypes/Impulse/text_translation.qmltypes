@@ -1,0 +1,41 @@
+import QtQuick.tooling 1.2
+
+// Impulse/TextTranslation: a Process that prints `text` translated from language `source` to
+// language `target` (crates/qml/src/jobs_wall_gcloud_trans/trans.rs `translate`).
+Module {
+    Component {
+        file: "jobs_wall_gcloud_trans/trans.rs"
+        name: "ImpulseTextTranslation"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/TextTranslation 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "text"
+            type: "QString"
+            read: "text"
+            write: "setText"
+            notify: "textChanged"
+            index: 0
+        }
+        Property {
+            name: "source"
+            type: "QString"
+            read: "source"
+            write: "setSource"
+            notify: "sourceChanged"
+            index: 1
+        }
+        Property {
+            name: "target"
+            type: "QString"
+            read: "target"
+            write: "setTarget"
+            notify: "targetChanged"
+            index: 2
+        }
+        Signal { name: "textChanged" }
+        Signal { name: "sourceChanged" }
+        Signal { name: "targetChanged" }
+    }
+}

@@ -1,0 +1,63 @@
+@property color c: "red"
+@property var u
+@property var n: null
+w(function(){ var x; x.b = 1 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ var x = null; x.b = 1 })
+=> string:THROW TypeError: Value is null and could not be converted to an object
+w(function(){ var x; x["b"] = 1 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ var x = null; x[0] = 1 })
+=> string:THROW TypeError: Value is null and could not be converted to an object
+w(function(){ var x; x.r = 1 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ var x = null; x.r = 1 })
+=> string:THROW TypeError: Value is null and could not be converted to an object
+w(function(){ var x; x.b += 1 })
+=> string:THROW TypeError: Cannot read property 'b' of undefined
+w(function(){ var x; x.b++ })
+=> string:THROW TypeError: Cannot read property 'b' of undefined
+w(function(){ var x; x.r++ })
+=> string:THROW TypeError: Cannot read property 'r' of undefined
+w(function(){ var x; x.r += 1 })
+=> string:THROW TypeError: Cannot read property 'r' of undefined
+w(function(){ u.b = 1 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ n.b = 1 })
+=> string:THROW TypeError: Value is null and could not be converted to an object
+w(function(){ u.r = 1 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ n.r = 1 })
+=> string:THROW TypeError: Value is null and could not be converted to an object
+w(function(){ root.u.r = 1 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ root.n.r = 1 })
+=> string:THROW TypeError: Value is null and could not be converted to an object
+w(function(){ root.u.b = 1 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ this.c.b = 0.5 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ this.c.x = 0.5 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ var o = {}; o.k.r = 0.5 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ var o = {}; o.k.x = 0.5 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ var o = {k: null}; o.k.r = 0.5 })
+=> string:THROW TypeError: Value is null and could not be converted to an object
+w(function(){ var o = {}; o.k["r"] = 0.5 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ var o = {}; o.k[0] = 0.5 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ var x; var k = "r"; x[k] = 1 })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ var x; return x.r })
+=> string:THROW TypeError: Cannot read property 'r' of undefined
+w(function(){ var x; return x["r"] })
+=> string:THROW TypeError: Cannot read property 'r' of undefined
+w(function(){ var x = null; return x.r })
+=> string:THROW TypeError: Cannot read property 'r' of null
+w(function(){ var x = 5; x.r = 1; return x.r })
+=> undefined
+w(function(){ var x = true; x.r = 1; return x.r })
+=> undefined

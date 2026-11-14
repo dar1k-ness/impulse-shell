@@ -1,0 +1,800 @@
+@ TZ=Australia/Sydney
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|heure d’été de l’Est de l’Australie
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|Itä-Australian kesäaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|UTC+11.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|eur hañv Aostralia ar Reter
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|Ostaustralische Sommerzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+10:00|+1000|+10:00|heure normale de l’Est de l’Australie
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+10:00|UTC+10:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure d’été de l’Est de l’Australie
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Itä-Australian kesäaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|Australian Eastern Daylight Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|Australian Eastern Daylight Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:AEST|09:05:07 AEDT
+@ TZ=Australia/Sydney LANG=fr_FR.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|heure d’été de l’Est de l’Australie
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|Itä-Australian kesäaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|UTC+11.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|eur hañv Aostralia ar Reter
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|Ostaustralische Sommerzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+10:00|+1000|+10:00|heure normale de l’Est de l’Australie
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+10:00|UTC+10:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure d’été de l’Est de l’Australie
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Itä-Australian kesäaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|heure d’été de l’Est de l’Australie
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|heure d’été de l’Est de l’Australie
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:AEST|09:05:07 heure d’été de l’Est de l’Australie
+@ TZ=Australia/Sydney LANG=fi_FI.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|heure d’été de l’Est de l’Australie
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|Itä-Australian kesäaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|UTC+11.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|eur hañv Aostralia ar Reter
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|Ostaustralische Sommerzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+10:00|+1000|+10:00|heure normale de l’Est de l’Australie
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+10:00|UTC+10:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure d’été de l’Est de l’Australie
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Itä-Australian kesäaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|Itä-Australian kesäaika
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|Itä-Australian kesäaika
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:AEST|9.05.07 Itä-Australian kesäaika
+@ TZ=Australia/Sydney LANG=en_US.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|heure d’été de l’Est de l’Australie
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|Itä-Australian kesäaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|UTC+11.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|eur hañv Aostralia ar Reter
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|Ostaustralische Sommerzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+10:00|+1000|+10:00|heure normale de l’Est de l’Australie
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+10:00|UTC+10:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure d’été de l’Est de l’Australie
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Itä-Australian kesäaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|Australian Eastern Daylight Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|Australian Eastern Daylight Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:AEST|9:05:07 AM Australian Eastern Daylight Time
+@ TZ=Pacific/Honolulu
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|UTC-10.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|eur cʼhoañv Hawaii hag an Aleouted
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-10|-1000|-10:00|Hawaii-Aleuten-Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï-Aléoutiennes
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-10:00|UTC-10:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale d’Hawaï - Aléoutiennes
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Havaijin-Aleuttien normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Hawaii-Aleutian Standard Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Hawaii-Aleutian Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:HST|09:05:07 HST
+@ TZ=Pacific/Honolulu LANG=fr_FR.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|UTC-10.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|eur cʼhoañv Hawaii hag an Aleouted
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-10|-1000|-10:00|Hawaii-Aleuten-Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï-Aléoutiennes
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-10:00|UTC-10:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale d’Hawaï - Aléoutiennes
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Havaijin-Aleuttien normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:HST|09:05:07 heure normale d’Hawaï - Aléoutiennes
+@ TZ=Pacific/Honolulu LANG=fi_FI.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|UTC-10.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|eur cʼhoañv Hawaii hag an Aleouted
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-10|-1000|-10:00|Hawaii-Aleuten-Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï-Aléoutiennes
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-10:00|UTC-10:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale d’Hawaï - Aléoutiennes
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Havaijin-Aleuttien normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:HST|9.05.07 Havaijin-Aleuttien normaaliaika
+@ TZ=Pacific/Honolulu LANG=en_US.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|UTC-10.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|eur cʼhoañv Hawaii hag an Aleouted
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-10|-1000|-10:00|Hawaii-Aleuten-Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï-Aléoutiennes
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-10:00|UTC-10:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale d’Hawaï - Aléoutiennes
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Havaijin-Aleuttien normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Hawaii-Aleutian Standard Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Hawaii-Aleutian Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:HST|9:05:07 AM Hawaii-Aleutian Standard Time
+@ TZ=Pacific/Kiritimati
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|heure des îles de la Ligne
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|Linesaarten aika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|UTC+14.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|eur Line Islands
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+14|+1400|+14:00|Linieninseln-Zeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|heure des îles de la Ligne
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+14:00|UTC+14:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure des îles de la Ligne
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Linesaarten aika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+14|+1400|+14:00|Line Islands Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+14|+1400|+14:00|Line Islands Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:+14|09:05:07 +14
+@ TZ=Pacific/Kiritimati LANG=fr_FR.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|heure des îles de la Ligne
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|Linesaarten aika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|UTC+14.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|eur Line Islands
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+14|+1400|+14:00|Linieninseln-Zeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|heure des îles de la Ligne
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+14:00|UTC+14:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure des îles de la Ligne
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Linesaarten aika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+14|+1400|+14:00|heure des îles de la Ligne
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+14|+1400|+14:00|heure des îles de la Ligne
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:+14|09:05:07 heure des îles de la Ligne
+@ TZ=Pacific/Kiritimati LANG=fi_FI.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|heure des îles de la Ligne
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|Linesaarten aika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|UTC+14.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|eur Line Islands
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+14|+1400|+14:00|Linieninseln-Zeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|heure des îles de la Ligne
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+14:00|UTC+14:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure des îles de la Ligne
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Linesaarten aika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+14|+1400|+14:00|Linesaarten aika
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+14|+1400|+14:00|Linesaarten aika
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:+14|9.05.07 Linesaarten aika
+@ TZ=Pacific/Kiritimati LANG=en_US.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|heure des îles de la Ligne
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|Linesaarten aika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|UTC+14.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|eur Line Islands
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+14|+1400|+14:00|Linieninseln-Zeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+14:00|+1400|+14:00|heure des îles de la Ligne
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+14:00|UTC+14:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure des îles de la Ligne
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Linesaarten aika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+14|+1400|+14:00|Line Islands Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+14|+1400|+14:00|Line Islands Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:+14|9:05:07 AM Line Islands Time
+@ TZ=Asia/Tokyo
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|heure normale du Japon
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|Japanin normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|UTC+09.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|eur cʼhoañv Japan
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+9|+0900|+09:00|Japanische Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|heure normale du Japon
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+9|UTC+9
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale du Japon
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Japanin normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:JST|+0900|+09:00|Japan Standard Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:JST|+0900|+09:00|Japan Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:JST|09:05:07 JST
+@ TZ=Asia/Tokyo LANG=fr_FR.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|heure normale du Japon
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|Japanin normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|UTC+09.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|eur cʼhoañv Japan
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+9|+0900|+09:00|Japanische Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|heure normale du Japon
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+9|UTC+9
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale du Japon
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Japanin normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:JST|+0900|+09:00|heure normale du Japon
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:JST|+0900|+09:00|heure normale du Japon
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:JST|09:05:07 heure normale du Japon
+@ TZ=Asia/Tokyo LANG=fi_FI.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|heure normale du Japon
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|Japanin normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|UTC+09.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|eur cʼhoañv Japan
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+9|+0900|+09:00|Japanische Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|heure normale du Japon
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+9|UTC+9
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale du Japon
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Japanin normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:JST|+0900|+09:00|Japanin normaaliaika
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:JST|+0900|+09:00|Japanin normaaliaika
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:JST|9.05.07 Japanin normaaliaika
+@ TZ=Asia/Tokyo LANG=en_US.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|heure normale du Japon
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|Japanin normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|UTC+09.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|eur cʼhoañv Japan
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+9|+0900|+09:00|Japanische Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+9|+0900|+09:00|heure normale du Japon
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+9|UTC+9
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale du Japon
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Japanin normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:JST|+0900|+09:00|Japan Standard Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:JST|+0900|+09:00|Japan Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:JST|9:05:07 AM Japan Standard Time
+@ TZ=Asia/Kolkata
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|heure de l’Inde
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|Intian aika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|eur cʼhoañv India
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Indische Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|heure de l’Inde
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+5:30|UTC+5:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure de l’Inde
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Intian aika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|India Standard Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:IST|09:05:07 IST
+@ TZ=Asia/Kolkata LANG=fr_FR.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|heure de l’Inde
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|Intian aika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|eur cʼhoañv India
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Indische Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|heure de l’Inde
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+5:30|UTC+5:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure de l’Inde
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Intian aika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|heure de l’Inde
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|heure de l’Inde
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:IST|09:05:07 heure de l’Inde
+@ TZ=Asia/Kolkata LANG=fi_FI.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|heure de l’Inde
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|Intian aika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|eur cʼhoañv India
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Indische Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|heure de l’Inde
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+5:30|UTC+5:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure de l’Inde
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Intian aika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|Intian aika
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|Intian aika
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:IST|9.05.07 Intian aika
+@ TZ=Asia/Kolkata LANG=en_US.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|heure de l’Inde
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|Intian aika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|eur cʼhoañv India
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Indische Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5:30|+0530|+05:30|heure de l’Inde
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+5:30|UTC+5:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure de l’Inde
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Intian aika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|India Standard Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|India Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:IST|9:05:07 AM India Standard Time
+@ TZ=Pacific/Chatham
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13:45|+1345|+13:45|heure d’été des îles Chatham
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13.45|+1345|+13:45|Chathamin kesäaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13.45|+1345|+13:45|UTC+13.45
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13:45|+1345|+13:45|eur hañv Chatham
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+13:45|+1345|+13:45|Chatham-Sommerzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+12:45|+1245|+12:45|heure normale des îles Chatham
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+12:45|UTC+12:45
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure d’été des îles Chatham
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Chathamin kesäaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+1345|+1345|+13:45|Chatham Daylight Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+1345|+1345|+13:45|Chatham Daylight Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:+1245|09:05:07 +1345
+@ TZ=Pacific/Chatham LANG=fr_FR.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13:45|+1345|+13:45|heure d’été des îles Chatham
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13.45|+1345|+13:45|Chathamin kesäaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13.45|+1345|+13:45|UTC+13.45
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13:45|+1345|+13:45|eur hañv Chatham
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+13:45|+1345|+13:45|Chatham-Sommerzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+12:45|+1245|+12:45|heure normale des îles Chatham
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+12:45|UTC+12:45
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure d’été des îles Chatham
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Chathamin kesäaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+1345|+1345|+13:45|heure d’été des îles Chatham
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+1345|+1345|+13:45|heure d’été des îles Chatham
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:+1245|09:05:07 heure d’été des îles Chatham
+@ TZ=Pacific/Chatham LANG=fi_FI.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13:45|+1345|+13:45|heure d’été des îles Chatham
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13.45|+1345|+13:45|Chathamin kesäaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13.45|+1345|+13:45|UTC+13.45
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13:45|+1345|+13:45|eur hañv Chatham
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+13:45|+1345|+13:45|Chatham-Sommerzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+12:45|+1245|+12:45|heure normale des îles Chatham
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+12:45|UTC+12:45
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure d’été des îles Chatham
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Chathamin kesäaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+1345|+1345|+13:45|Chathamin kesäaika
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+1345|+1345|+13:45|Chathamin kesäaika
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:+1245|9.05.07 Chathamin kesäaika
+@ TZ=Pacific/Chatham LANG=en_US.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13:45|+1345|+13:45|heure d’été des îles Chatham
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13.45|+1345|+13:45|Chathamin kesäaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13.45|+1345|+13:45|UTC+13.45
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13:45|+1345|+13:45|eur hañv Chatham
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+13:45|+1345|+13:45|Chatham-Sommerzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+12:45|+1245|+12:45|heure normale des îles Chatham
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC+12:45|UTC+12:45
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure d’été des îles Chatham
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Chathamin kesäaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+1345|+1345|+13:45|Chatham Daylight Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:+1345|+1345|+13:45|Chatham Daylight Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:+1245|9:05:07 AM Chatham Daylight Time
+@ TZ=Etc/GMT+12
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−12:00|-1200|-12:00|UTC−12:00
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12.00
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12:00
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-12|-1200|-12:00|GMT-12:00
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−12:00|-1200|-12:00|UTC−12:00
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-12:00|UTC-12:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 UTC−12:00
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 UTC-12.00
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:-12|-1200|-12:00|GMT-12:00
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:-12|-1200|-12:00|GMT-12:00
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:-12|09:05:07 -12
+@ TZ=Etc/GMT+12 LANG=fr_FR.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−12:00|-1200|-12:00|UTC−12:00
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12.00
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12:00
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-12|-1200|-12:00|GMT-12:00
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−12:00|-1200|-12:00|UTC−12:00
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-12:00|UTC-12:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 UTC−12:00
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 UTC-12.00
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:-12|-1200|-12:00|UTC−12:00
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:-12|-1200|-12:00|UTC−12:00
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:-12|09:05:07 UTC−12:00
+@ TZ=Etc/GMT+12 LANG=fi_FI.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−12:00|-1200|-12:00|UTC−12:00
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12.00
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12:00
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-12|-1200|-12:00|GMT-12:00
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−12:00|-1200|-12:00|UTC−12:00
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-12:00|UTC-12:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 UTC−12:00
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 UTC-12.00
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:-12|-1200|-12:00|UTC-12.00
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:-12|-1200|-12:00|UTC-12.00
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:-12|9.05.07 UTC-12.00
+@ TZ=Etc/GMT+12 LANG=en_US.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−12:00|-1200|-12:00|UTC−12:00
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12.00
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-12:00|-1200|-12:00|UTC-12:00
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-12|-1200|-12:00|GMT-12:00
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−12:00|-1200|-12:00|UTC−12:00
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-12:00|UTC-12:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 UTC−12:00
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 UTC-12.00
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:-12|-1200|-12:00|GMT-12:00
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:-12|-1200|-12:00|GMT-12:00
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:-12|9:05:07 AM GMT-12:00
+@ TZ=America/Adak
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|UTC-10.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|eur cʼhoañv Hawaii hag an Aleouted
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-10|-1000|-10:00|Hawaii-Aleuten-Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−9|-0900|-09:00|heure avancée d’Hawaï-Aléoutiennes
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-9|UTC-9
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale d’Hawaï - Aléoutiennes
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Havaijin-Aleuttien normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Hawaii-Aleutian Standard Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Hawaii-Aleutian Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:HDT|09:05:07 HST
+@ TZ=America/Adak LANG=fr_FR.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|UTC-10.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|eur cʼhoañv Hawaii hag an Aleouted
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-10|-1000|-10:00|Hawaii-Aleuten-Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−9|-0900|-09:00|heure avancée d’Hawaï-Aléoutiennes
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-9|UTC-9
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale d’Hawaï - Aléoutiennes
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Havaijin-Aleuttien normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:HDT|09:05:07 heure normale d’Hawaï - Aléoutiennes
+@ TZ=America/Adak LANG=fi_FI.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|UTC-10.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|eur cʼhoañv Hawaii hag an Aleouted
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-10|-1000|-10:00|Hawaii-Aleuten-Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−9|-0900|-09:00|heure avancée d’Hawaï-Aléoutiennes
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-9|UTC-9
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale d’Hawaï - Aléoutiennes
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Havaijin-Aleuttien normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:HDT|9.05.07 Havaijin-Aleuttien normaaliaika
+@ TZ=America/Adak LANG=en_US.UTF-8
+Qt.locale("fr_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−10:00|-1000|-10:00|heure normale d’Hawaï - Aléoutiennes
+Qt.locale("fi_FI").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|Havaijin-Aleuttien normaaliaika
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|UTC-10.00
+Qt.locale("br_FR").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-10:00|-1000|-10:00|eur cʼhoañv Hawaii hag an Aleouted
+Qt.locale("de_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-10|-1000|-10:00|Hawaii-Aleuten-Normalzeit
+Qt.locale("fr_CA").toString(new Date(2024, 6, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC−9|-0900|-09:00|heure avancée d’Hawaï-Aléoutiennes
+Qt.locale("oc_ES").toString(new Date(2024, 6, 10, 9, 5, 7), "t") + "|" + Qt.locale("eo_001").toString(new Date(2024, 6, 10, 9, 5, 7), "t")
+=> string:UTC-9|UTC-9
+new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString(Qt.locale("fr_FR"), Locale.LongFormat)
+=> string:09:05:07 heure normale d’Hawaï - Aléoutiennes
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("fi_FI"), "t (t) ttttt")
+=> string:keskiviikkona 10. tammikuuta 2024 9.05.07 Havaijin-Aleuttien normaaliaika
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Hawaii-Aleutian Standard Time
+Qt.locale().toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HST|-1000|-10:00|Hawaii-Aleutian Standard Time
+new Date(2024, 6, 10, 9, 5, 7).toLocaleString(Qt.locale(), "t") + "|" + new Date(2024, 0, 10, 9, 5, 7).toLocaleTimeString()
+=> string:HDT|9:05:07 AM Hawaii-Aleutian Standard Time

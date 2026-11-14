@@ -1,0 +1,24 @@
+{
+ "_doc": "Rectangles [x, y, w, h, reason] left out of the pixel diff because what they show differs between any two runs, even of the same shell: live values, a random choice, the phase of an animation that never stops. Keys are fnmatch patterns on shot names, or `layer:NAME` (`layer:NAME+NAME`) for every shot taken while the shell had those layers mapped (layers.txt of the run), whatever the shot is called; every matching line applies. Each one was measured on two runs of one shell (REPORT.md).",
+ "*": [[440, 0, 230, 34, "bar Resources: live RAM/swap/CPU percentages and rings"]],
+ "bar_vertical*": [[10, 302, 28, 80, "vertical bar Resources: live rings"]],
+ "bar_bottom*": [[440, 1046, 230, 34, "bottom bar Resources: live RAM/swap/CPU percentages and rings"]],
+ "bar_float*": [[440, 5, 230, 34, "floating bar Resources: live RAM/swap/CPU percentages and rings, 5 px lower than in the bar at the edge"]],
+ "layer:sidebarRight+bar": [[1515, 60, 160, 42, "sidebar header uptime (Up Nm)"]],
+ "layer:sidebarRight+verticalBar": [[1515, 20, 160, 42, "sidebar header uptime (Up Nm), sidebar without a bar above it"]],
+ "bar_hover_clock": [[1262, 84, 92, 24, "clock popup: system uptime"]],
+ "bar_hover_resources": [[372, 44, 392, 136, "resources popup: live RAM/swap/CPU values, and the popup is as wide as they are and centred, so all of it moves with them"]],
+ "notif_popup2": [[1533, 50, 44, 46, "icon of a critical notification: the original picks one of two shapes at random (NotificationAppIcon.qml)"]],
+ "notif_sidebar": [[1493, 273, 42, 38, "icon of a critical notification: the original picks one of two shapes at random (NotificationAppIcon.qml)"]],
+ "anim_sidebarRight*": [[1493, 273, 42, 38, "icon of a critical notification: the original picks one of two shapes at random (NotificationAppIcon.qml)"]],
+ "overlay": [[1516, 870, 346, 142, "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"]],
+ "ptr_overlay*": [[1516, 870, 346, 142, "overlay Resources widget: live CPU percentage and graph; the graph starts where the label under the percentage ends, and with no cpufreq in the guest that label is `of NaN GHz` in the original and `of --` in native on purpose (crates/qml/src/ports/mod.rs)"]],
+ "ptr_overlay_btn_task[456]": [
+  [80, 82, 376, 190, "the original's own bug: after a widget is switched back on it draws the Crosshair widget inside the Recorder frame"],
+  [836, 450, 314, 246, "the original's own bug: after a widget is switched back on it draws the Resources widget inside the Crosshair frame"]
+ ],
+ "welcome": [
+  [700, 724, 182, 26, "welcome window: wavy slider, an animation that never stops"],
+  [970, 724, 182, 26, "welcome window: wavy slider, an animation that never stops"]
+ ]
+}

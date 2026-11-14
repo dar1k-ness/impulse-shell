@@ -1,0 +1,20 @@
+import QtQuick.tooling 1.2
+
+// The fuzzy search of the emoji list (crates/qml/src/emojis.rs).
+Module {
+    Component {
+        file: "emojis.rs"
+        name: "ImpulseEmojis"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/Emojis 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Method {
+            name: "fuzzyQuery"
+            type: "QVariant"
+            Parameter { name: "search"; type: "QString" }
+        }
+    }
+}

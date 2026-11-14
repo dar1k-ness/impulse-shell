@@ -1,0 +1,34 @@
+r.source	object:
+r1.border.color	object:#000000
+q.anchors.margins	number:0
+q.anchors.fill	object:null
+k.x	number:5
+k.opacity	number:0.5
+k.anchors.leftMargin	number:0
+k.Layout.preferredWidth	number:30
+k2.border.width	number:3
+k2.radius	number:2
+k2.color	object:#ffffff
+k3.font.pixelSize	number:33
+k3.text	string:t
+k4.padding	number:0
+k4.topPadding	number:0
+k4.width	number:40
+k4.hoverEnabled	boolean:false
+k4.font.pixelSize === k3.font.pixelSize	boolean:false
+k5.anchors.fill	object:null
+k5.anchors.left === undefined	boolean:false
+k5.width	number:0
+k6.anchors.fill	object:null
+k6.anchors.margins	number:2
+k7.li	object:
+k7.jv	undefined:undefined
+k7.it2 === k5	boolean:true
+k7.objectName	string:Error: Cannot assign [undefined] to QQuickItem*
+k7.al	number:0
+k8.opacity	number:0.25
+k9.padding	number:0
+k9.topPadding	number:0
+k9.objectName	string:
+k10.anchors.fill	object:null
+k10.objectName	string:Error: Cannot assign [undefined] to QString

@@ -1,0 +1,50 @@
+# cargo-deny configuration (https://embarkstudios.github.io/cargo-deny/): tools/testenv/ri-gate
+# runs `cargo deny --frozen check advisories bans licenses sources` against Cargo.lock.
+
+[graph]
+# The shell only runs on Linux; Windows/macOS-only crates in the lock are never built.
+targets = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"]
+all-features = true
+
+[advisories]
+# RustSec advisory database (https://rustsec.org); vulnerabilities, unsound, unmaintained and
+# yanked crates are all errors. Every ignore names the reason and the audit finding tracking it.
+yanked = "deny"
+ignore = [
+    { id = "RUSTSEC-2026-0370", reason = "zvariant 5 unmaintained: zbus 6 blocked upstream (gvdb 0.10.1 needs zvariant ^5, secret-service 5.2.0 needs zbus ^5); finding #108" },
+    { id = "RUSTSEC-2026-0371", reason = "zbus_names 4 unmaintained: zbus 6 blocked upstream (gvdb 0.10.1 needs zvariant ^5, secret-service 5.2.0 needs zbus ^5); finding #108" },
+    { id = "RUSTSEC-2026-0372", reason = "zvariant_derive 5 unmaintained: zbus 6 blocked upstream (gvdb 0.10.1 needs zvariant ^5, secret-service 5.2.0 needs zbus ^5); finding #108" },
+    { id = "RUSTSEC-2024-0436", reason = "paste unmaintained (compile-time proc-macro): image 0.25 (latest) -> exr -> pulp; finding #99" },
+]
+
+[licenses]
+# Every license is compatible with the workspace's GPL-3.0-only.
+allow = [
+    "0BSD",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "CC0-1.0",
+    "CDLA-Permissive-2.0",
+    "GPL-3.0-only",
+    "ISC",
+    "LGPL-3.0-only",
+    "MIT",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Unlicense",
+    "Zlib",
+]
+confidence-threshold = 0.9
+
+[bans]
+# `cargo tree -d`: crates locked in more than one version are reported, not failed (most come
+# from upstream crates pinning older majors).
+multiple-versions = "warn"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

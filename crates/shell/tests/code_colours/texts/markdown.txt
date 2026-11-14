@@ -1,0 +1,25 @@
+# Title
+
+Some *emphasis*, **strong**, `inline code` and a [link](https://example.com "t").
+
+## List
+
+- item one
+- [ ] task with ~~strike~~
+  1. nested <b>html</b>
+
+> quote line
+> second
+
+| a | b |
+|---|---|
+| 1 | 2 |
+
+```python
+def f(x): return x + 1
+```
+
+![img](a.png)
+Setext
+------
+***

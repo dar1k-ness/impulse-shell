@@ -1,0 +1,76 @@
+# M14: the with statement.
+with ({wq: 5}) { return wq }
+var o = {a: 1}; with (o) { a = 7 } return o.a
+var o = {a: 1}; var b = 2; with (o) { return a + b }
+var o = {a: 1}; with (o) { var a = 9 } return o.a + ":" + a
+var o = {f: function () { return this === o }}; with (o) { return f() }
+with (null) { return 1 }
+with (undefined) { return 1 }
+with (5) { return toFixed(1) }
+with ("abc") { return length }
+var o = {a: 1}; with (o) { return typeof a + typeof zzz }
+var o = {a: 1}; with (o) { return delete a } 
+var o = {a: 1}; with (o) { delete a } return "a" in o
+var o = {a: 1}; with (o) { with ({b: 2}) { return a + b } }
+var o = {a: 1}; with (o) { return (function () { return a })() }
+var o = {a: 1}; var g; with (o) { g = function () { return a } } o.a = 5; return g()
+var o = {a: 1}; with (o) { a++; a += 2 } return o.a
+var o = {}; var a = 1; with (o) { a = 2 } return a + ":" + ("a" in o)
+var o = {}; var a = 1; with (o) { o.a = 5; a = 2 } return a + ":" + o.a
+var o = {a: [1, 2]}; with (o) { return a.length }
+var o = {a: 1}; with (o) { for (var i = 0; i < 3; i++) a += i } return o.a
+var o = {out: "zz"}; with (o) { return out }
+with ({}) { return out.length >= 0 }
+with (root) { return typeof show }
+with (Math) { return max(1, 2) + floor(2.5) }
+var o = {x: 1}; with (o) { var [x] = [5] } return o.x
+var o = {x: 1}; with (o) { for (x in {k: 1}) {} } return o.x
+var o = {x: 1}; with (o) { return eval("x + 1") }
+var o = {a: 1}; o[Symbol.unscopables] = {a: true}; var a = 2; with (o) { return a }
+var o = Object.create({inh: 3}); with (o) { return inh }
+var r = 0; with ({a: 1}) { try { throw 5 } catch (a) { r = a } } return r
+return (function () { "use strict"; return 1 })()
+var o = {a: 1}; with (o) { function g() { return a } } return g()
+var o = {v: 1}; with (o) { return (() => v + 1)() }
+var o = {get a() { return 4 }}; with (o) { return a }
+var o = {a: 1}; with (o) { let a = 2; return a }
+lbl: with ({a: 1}) { break lbl } return "after"
+for (var i = 0; i < 2; i++) with ({a: i}) { if (a) continue } return i
+var o = {a: 1}; with (o) return a
+var o = {undefined: 5}; with (o) { return undefined }
+var o = {a: 1}; with (o) { return this === root }
+# Assignment forms, declarations and calls.
+var o = {a: 1}; with (o) { var {a} = {a: 3} } return o.a
+var o = {a: 1, b: 2}; with (o) { [a, b] = [b, a] } return o.a + ":" + o.b
+var o = {x: 1}; with (o) { var x; } return o.x + ":" + typeof x
+var o = {x: 1}; with (o) { return x++ + ":" + x }
+var o = {a: 1}; with (o) { const a = 3; return a }
+var o = {c: 1}; with (o) { class c { } return typeof c }
+var o = {a: 1}; with (o) { return ((a) => a)(5) }
+var o = {a: 1}; with (o) { return `${a}` }
+var o = {a: 1}; with (o) { switch (a) { case 1: return "one" } }
+var o = {a: 1}; with (o) { do { a++ } while (a < 3) } return o.a
+var o = {a: {b: 1}}; with (o) with (a) { return b }
+var a = [1, 2, 3]; with (a) { return length + join("") }
+with (true) { return valueOf() }
+var f = function () { return this === root }; with ({}) { return f() }
+var o = {f: function () { return this }}; with (o) { return (function () { return f() === o })() }
+with ({a: 1}) { return typeof a + (function () { return typeof a })() }
+var o = {callee: 1}; return (function (o) { with (o) { return arguments.length } })(o)
+var o = {}; o[Symbol.unscopables] = {x: true}; o.x = 1; var x = 2; with (o) { x = 3 } return o.x + ":" + x
+var p = new Proxy({a: 1}, {has: function (t, k) { return k === "a" }}); with (p) { return a }
+# With a direct eval.
+var o = {a: 1}; with (o) { return (function () { return eval("a") })() }
+var o = {a: 1}; with (o) { eval("var a = 2") } return o.a
+# In a generator, across a yield.
+with ({a: 1}) { return (function* () { yield a })().next().value }
+var g = function* () { with ({a: 1}) { yield a; yield a + 1 } }; var it = g(); return it.next().value + ":" + it.next().value
+var g = function* () { var a = 5; with ({a: 1}) { yield a } yield a }; var it = g(); return it.next().value + ":" + it.next().value
+var g = function* () { var o = {a: 1}; with (o) { a = yield 1; } yield o.a }; var it = g(); it.next(); return it.next(7).value
+var g = function* () { { let a = 5; yield 0; with ({a: 1}) { yield a } yield a } }; var it = g(); it.next(); return it.next().value + ":" + it.next().value
+var g = function* () { { let a = 5; var f = function () { return a }; yield 0; with ({b: 1}) { yield a + b } } }; var it = g(); it.next(); return it.next().value
+var g = function* () { with (null) { yield 1 } }; try { g().next() } catch (e) { return e.name } return "no"
+var g = function* () { with ({a: 1}) { with ({b: 2}) { yield a + b } yield typeof b } }; var it = g(); return it.next().value + ":" + it.next().value
+var g = function* () { with ({a: 1}) { for (var i = 0; i < 2; i++) yield a + i } }; return Array.from(g()).join()
+var g = function* () { l: with ({a: 1}) { yield a; break l } yield 9 }; return Array.from(g()).join()
+var g = function* () { with ({a: 1}) { try { yield a } finally { yield a + 1 } } }; return Array.from(g()).join()

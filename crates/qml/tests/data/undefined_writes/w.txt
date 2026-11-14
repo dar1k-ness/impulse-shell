@@ -1,0 +1,71 @@
+a.width	number:0
+b.width	number:0
+c.width	number:7
+d.height	number:0
+d.x	number:0
+d.y	number:0
+d.z	number:0
+e.opacity	number:1
+e.visible	boolean:true
+e.scale	number:1
+e.rotation	number:0
+e.clip	boolean:false
+e.enabled	boolean:true
+r1.color	object:#ffffff
+r1.radius	number:0
+r1.border.color	object:#000000
+g.text	string:
+g.color	object:#000000
+g.width	number:0
+h.r	number:0
+h.i	number:0
+h.s	string:
+h.bo	boolean:false
+h.v	undefined:undefined
+h.col	object:#000000
+h.u	object:
+h.it	object:null
+h.pt	object:QPointF(0, 0)
+i.anchors.margins	number:0
+i.anchors.leftMargin	number:0
+i.anchors.fill	object:null
+i.anchors.centerIn	object:null
+j.width	number:0
+k.width	number:9
+l.width	number:3
+m.height	number:4
+n.Layout.preferredWidth	number:-1
+n.Layout.fillWidth	boolean:false
+n.Layout.margins	number:0
+o.width === o.implicitWidth	boolean:true
+o.height === o.implicitHeight	boolean:true
+p.objectName	string:
+p.state	string:
+q.implicitWidth	number:0
+q.implicitHeight	number:0
+q.baselineOffset	number:0
+q.activeFocusOnTab	boolean:false
+q.focus	boolean:false
+q.antialiasing	boolean:false
+r.fillMode	number:0
+r.asynchronous	boolean:false
+s.interval	number:1000
+s.running	boolean:false
+s.repeat	boolean:false
+t.model	undefined:undefined
+t.delegate	object:null
+t.spacing	number:0
+u.hoverEnabled	boolean:false
+u.cursorShape	number:0
+w2.pi	number:5
+w2.lg	string:Error: Cannot assign [undefined] to int
+x2.pr	number:5
+x2.lg	string:Error: Cannot assign [undefined] to double
+y2.width	number:6
+y2.height	number:0
+y2.x	number:4
+y2.objectName	string:Error: Cannot assign [undefined] to double
+z2.width	number:20
+a3.width	number:2
+d3.width	number:0
+d3.height	number:Infinity

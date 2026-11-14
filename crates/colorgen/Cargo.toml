@@ -1,0 +1,46 @@
+[package]
+name = "colorgen"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+elog = { path = "../elog" }
+heif = { path = "../heif" }
+# The decode size limit every in-process image decoder goes through (imgtools::limit).
+imgtools = { path = "../imgtools" }
+# Exactly the material-colors matugen 4.2.0 is built with (its Cargo.lock): mg.rs is matugen's
+# scheme computation, and tests/palette.rs::colors_json_matches_matugen compares it with the real
+# matugen 4.2.0 (tools/testenv installs it with --locked). Move both together.
+material-colors = "=0.4.2"
+# Every decoder of image's default formats (wallpapers of any of them keep working), without
+# the AVIF encoder (rav1e): nothing here encodes AVIF, libheif decodes it.
+image = { workspace = true, features = ["png", "jpeg", "gif", "webp", "bmp", "tiff", "dds", "exr", "ff", "hdr", "ico", "pnm", "qoi", "tga", "rayon"] }
+turbojpeg = { workspace = true, features = ["cmake"] }
+serde_json = { workspace = true, features = ["preserve_order"] }
+indexmap = { version = "2.3", default-features = false }
+ahash = { version = "0.8", default-features = false }
+toml.workspace = true
+dirs = "6"
+libc.workspace = true
+workpool = { path = "../workpool" }
+bus = { path = "../bus" }
+hypripc = { path = "../hypripc" }
+zbus.workspace = true
+futures-lite.workspace = true
+zvariant = { version = "5", features = ["gvariant"] }
+gvdb = "0.10"
+sha1_smol = "1"
+half = "2"
+serde.workspace = true
+
+[build-dependencies]
+cc = "1"
+
+[dev-dependencies]
+testenv = { path = "../testenv" }
+tempfile.workspace = true
+
+[lints]
+workspace = true

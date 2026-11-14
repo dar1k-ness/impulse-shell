@@ -1,0 +1,89 @@
+pragma ComponentBehavior: Bound
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Rustshell
+import Qt.labs.synchronizer
+import ri
+import ri.services
+import ri.modules.common
+import ri.modules.common.functions
+import ri.modules.waffle.looks
+
+WBarAttachedPanelContent {
+    id: root
+
+    readonly property bool barAtBottom: Config.options.waffles.bar.bottom
+    revealFromSides: true
+    revealFromLeft: false
+
+    property bool collapsed: false
+
+    contentItem: ColumnLayout {
+        id: contentLayout
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            top: parent.top
+            bottom: parent.bottom
+        }
+        spacing: 12
+
+        Item {
+            id: notificationArea
+            Layout.fillHeight: true
+            implicitWidth: notificationPane.implicitWidth
+
+            WPane {
+                id: notificationPane
+                anchors {
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: parent.right
+                }
+                contentItem: NotificationPaneContent {
+                    implicitWidth: calendarColumnLayout.implicitWidth
+                    implicitHeight: {
+                        if (Notifications.list.length > 0) {
+                            return ((contentLayout.height - calendarPane.height - contentLayout.spacing) - notificationPane.borderWidth * 2)
+                        }
+                        return 230;
+                    }
+                    
+                    Behavior on implicitHeight {
+                        animation: Looks.transition.enter.createObject(this)
+                    }
+                }
+            }
+        }
+
+        WPane {
+            id: calendarPane
+            contentItem: WPanelPageColumn {
+                id: calendarColumnLayout
+                DateHeader {
+                    Layout.fillWidth: true
+                    Synchronizer on collapsed {
+                        property alias source: root.collapsed
+                    }
+                }
+
+                WPanelSeparator {
+                    visible: !root.collapsed
+                }
+
+                CalendarWidget {
+                    Layout.fillWidth: true
+                    Synchronizer on collapsed {
+                        property alias source: root.collapsed
+                    }
+                }
+
+                WPanelSeparator {}
+
+                FocusFooter {
+                    Layout.fillWidth: true
+                }
+            }
+        }
+    }
+}

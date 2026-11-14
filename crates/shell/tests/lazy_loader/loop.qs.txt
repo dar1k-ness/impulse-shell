@@ -1,0 +1,21 @@
+qml: b 1
+qml: a 2
+qml: b 3
+WARN scene: QML Item at @loop.qml[2:1]: Binding loop detected for property "a":
+qs:@/qs/loop.qml:7:5
+qml: c 4
+qml: init 2 3 4 a 1 b 2 c 1
+qml: a 5
+qml: b 6
+WARN scene: QML Item at @loop.qml[2:1]: Binding loop detected for property "a":
+qs:@/qs/loop.qml:7:5
+qml: c 10
+qml: k 1 5 6 10 a 2 b 3 c 2
+qml: a 12
+qml: b 13
+WARN scene: QML Item at @loop.qml[2:1]: Binding loop detected for property "a":
+qs:@/qs/loop.qml:7:5
+qml: c 24
+qml: k 5 12 13 24 a 3 b 4 c 3
+qml: k 5 12 13 24 a 3 b 4 c 3
+qml: done

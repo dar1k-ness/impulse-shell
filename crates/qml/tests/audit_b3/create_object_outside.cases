@@ -1,0 +1,57 @@
+# Initial properties whose type comes from outside data, as two call sites of qml/ give them.
+# qml/services/Notifications.qml:322 (a notification read back from its file) and
+# qml/services/assistant/AcpSession.qml:77 (a message of the assistant program).
+@property Component notif: Component { QtObject { required property int notificationId; property list<var> actions; property string appIcon: ""; property string appName: ""; property string body: ""; property string image: ""; property string summary: ""; property double time; property string urgency: "normal" } }
+@property Component msg: Component { QtObject { property string role; property string content; property bool done: false; property bool thinking: false; property string model; property string toolCallId; property string title; property string kind; property string status; property string detail; property var requestId: null; property var options: [] } }
+@function nt(n) { var o = root.notif.createObject(root, {"notificationId": n.notificationId, "actions": [], "appIcon": n.appIcon, "appName": n.appName, "body": n.body, "image": n.image, "summary": n.summary, "time": n.time, "urgency": n.urgency}); return o ? [o.notificationId, o.actions.length, typeof o.appIcon + ":" + o.appIcon, o.appName, o.body, typeof o.image + ":" + o.image, o.summary, typeof o.time + ":" + o.time, typeof o.urgency + ":" + o.urgency].join("|") : "null" }
+@function ms(role, content, props) { var o = root.msg.createObject(root, Object.assign({ role: role, content: content ?? "", model: "m" }, props ?? {})); return o ? [o.role, typeof o.content + ":" + o.content, o.done, o.model, typeof o.toolCallId + ":" + o.toolCallId, typeof o.title + ":" + o.title, o.kind, o.status, typeof o.detail + ":" + o.detail, typeof o.requestId + ":" + o.requestId, o.options === null ? "null" : o.options.length].join("|") : "null" }
+nt(JSON.parse('{"notificationId":3,"appIcon":"i","appName":"a","body":"b","image":"p","summary":"s","time":1700000000000,"urgency":"normal"}'))
+=> string:3|0|string:i|a|b|string:p|s|number:1700000000000|string:normal
+nt(JSON.parse('{"notificationId":3,"appIcon":"i","appName":"a","body":"b","summary":"s","time":1700000000000,"urgency":"normal"}'))
+=> string:null
+nt(JSON.parse('{"notificationId":3,"appIcon":"i","appName":"a","body":"b","image":null,"summary":"s","time":1700000000000,"urgency":"normal"}'))
+=> string:3|0|string:i|a|b|string:|s|number:1700000000000|string:normal
+nt(JSON.parse('{"notificationId":3,"appIcon":"i","appName":"a","body":"b","image":"p","summary":"s","time":"1700000000000","urgency":"normal"}'))
+=> string:3|0|string:i|a|b|string:p|s|number:1700000000000|string:normal
+nt(JSON.parse('{"notificationId":"3","appIcon":"i","appName":"a","body":"b","image":"p","summary":"s","time":1700000000000,"urgency":"normal"}'))
+=> string:3|0|string:i|a|b|string:p|s|number:1700000000000|string:normal
+nt(JSON.parse('{"notificationId":3,"appIcon":"i","appName":"a","body":"b","image":"p","summary":"s","time":1700000000000,"urgency":1}'))
+=> string:3|0|string:i|a|b|string:p|s|number:1700000000000|string:1
+nt(JSON.parse('{"notificationId":3,"appIcon":"i","appName":"a","body":"b","image":"p","summary":"s","time":null,"urgency":"normal"}'))
+=> string:null
+nt(JSON.parse('{"notificationId":3,"appIcon":"i","appName":"a","body":"b","image":"p","summary":"s","urgency":"normal"}'))
+=> string:null
+nt(JSON.parse('{"notificationId":3.7,"appIcon":"i","appName":"a","body":5,"image":"p","summary":true,"time":1700000000000.5,"urgency":"normal"}'))
+=> string:4|0|string:i|a|5|string:p|true|number:1700000000000.5|string:normal
+nt(JSON.parse('{"appIcon":"i","appName":"a","body":"b","image":"p","summary":"s","time":1700000000000,"urgency":"normal"}'))
+=> string:null
+ms("user", "hi", { done: true })
+=> string:user|string:hi|true|m|string:|string:|||string:|object:null|0
+ms("assistant", "")
+=> string:assistant|string:|false|m|string:|string:|||string:|object:null|0
+ms("tool", "", { toolCallId: "t1", title: "T", kind: "other", status: "pending", detail: "ls", content: "c" })
+=> string:tool|string:c|false|m|string:t1|string:T|other|pending|string:ls|object:null|0
+ms("tool", "", { toolCallId: 7, title: "T", kind: "other", status: "pending", detail: "ls", content: "c" })
+=> string:tool|string:c|false|m|string:7|string:T|other|pending|string:ls|object:null|0
+ms("tool", "", { toolCallId: undefined, title: "T", kind: "other", status: "pending", detail: "ls", content: "c" })
+=> string:null
+ms("tool", "", { toolCallId: null, title: "T", kind: "other", status: "pending", detail: "ls", content: "c" })
+=> string:tool|string:c|false|m|string:|string:T|other|pending|string:ls|object:null|0
+ms("tool", "", { toolCallId: "t1", title: "T", kind: "other", status: "pending", detail: {argv: ["ls"]}, content: "c" })
+=> string:null
+ms("tool", "", { toolCallId: "t1", title: "T", kind: "other", status: "pending", detail: 5, content: "c" })
+=> string:tool|string:c|false|m|string:t1|string:T|other|pending|string:5|object:null|0
+ms("tool", "", { toolCallId: "t1", title: "T", kind: "other", status: "pending", detail: "ls", content: undefined })
+=> string:null
+ms("tool", "", { toolCallId: "t1", title: 5, kind: true, status: 2, detail: "ls", content: "c" })
+=> string:tool|string:c|false|m|string:t1|string:5|true|2|string:ls|object:null|0
+ms("permission", "c", { requestId: 4, title: "P", kind: "other", detail: "", options: [{optionId: "a"}] })
+=> string:permission|string:c|false|m|string:|string:P|other||string:|number:4|1
+ms("permission", "c", { requestId: "r", title: "P", kind: "other", detail: "", options: null })
+=> string:permission|string:c|false|m|string:|string:P|other||string:|string:r|null
+ms("interface", undefined, { done: 1 })
+=> string:interface|string:|true|m|string:|string:|||string:|object:null|0
+ms("interface", "x", { done: "yes" })
+=> string:interface|string:x|true|m|string:|string:|||string:|object:null|0
+ms("interface", "x", { done: null })
+=> string:null

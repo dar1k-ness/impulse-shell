@@ -1,0 +1,95 @@
+# Code points the tests of crates/qml/src/qurlhost.rs ask Qt about (dump.sh writes qt.tsv).
+# added: assigned in Unicode 18 and not in Unicode 17, the first, the middle and the last one of
+#   each block that has any (13 007 code points in 33 blocks).
+# bidi: assigned in both, Bidi_Class is NSM in Unicode 17 and L in Unicode 18.
+# nfc: QString::normalized of Qt 6.12 does not compose these (docs/qt-differences.md).
+added	558	Armenian
+added	58B	Armenian
+added	58C	Armenian
+added	5C8	Hebrew
+added	5C9	Hebrew
+added	B53	Oriya
+added	B54	Oriya
+added	1ADE	Combining Diacritical Marks Extended
+added	1AED	Combining Diacritical Marks Extended
+added	1AF0	Combining Diacritical Marks Extended
+added	208F	Superscripts and Subscripts
+added	209E	Superscripts and Subscripts
+added	209F	Superscripts and Subscripts
+added	20C2	Currency Symbols
+added	20C3	Currency Symbols
+added	20C4	Currency Symbols
+added	2E60	Supplemental Punctuation
+added	2E62	Supplemental Punctuation
+added	2E63	Supplemental Punctuation
+added	A7DD	Latin Extended-D
+added	A7E2	Latin Extended-D
+added	AB6C	Latin Extended-E
+added	AB6D	Latin Extended-E
+added	107BB	Latin Extended-F
+added	107BD	Latin Extended-F
+added	107BF	Latin Extended-F
+added	10EC9	Arabic Extended-C
+added	10EE5	Arabic Extended-C
+added	10EF9	Arabic Extended-C
+added	11B0A	Devanagari Extended-A
+added	11DF0	Bengali Supplement
+added	11DF1	Bengali Supplement
+added	1246F	Cuneiform Numbers and Punctuation
+added	1247A	Cuneiform Numbers and Punctuation
+added	1247F	Cuneiform Numbers and Punctuation
+added	12550	Archaic Cuneiform Numerals
+added	125EB	Archaic Cuneiform Numerals
+added	12686	Archaic Cuneiform Numerals
+added	18CD6	Khitan Small Script
+added	18CD8	Khitan Small Script
+added	18CDA	Khitan Small Script
+added	18D1F	Tangut Supplement
+added	18D20	Tangut Supplement
+added	18E00	Jurchen
+added	18FC9	Jurchen
+added	19191	Jurchen
+added	191A0	Jurchen Radicals
+added	191B9	Jurchen Radicals
+added	191D2	Jurchen Radicals
+added	1B123	Kana Extended-A
+added	1B126	Kana Extended-A
+added	1B128	Kana Extended-A
+added	1B168	Small Kana Extension
+added	1CED2	Miscellaneous Symbols Supplement
+added	1CEF4	Miscellaneous Symbols Supplement
+added	1CEFD	Miscellaneous Symbols Supplement
+added	1D127	Musical Symbols
+added	1D1F4	Musical Symbols
+added	1D1FF	Musical Symbols
+added	1D250	Musical Symbols Supplement
+added	1D269	Musical Symbols Supplement
+added	1D281	Musical Symbols Supplement
+added	1D6A6	Mathematical Alphanumeric Symbols
+added	1DB00	Miscellaneous Symbols and Arrows Extended
+added	1DB0E	Miscellaneous Symbols and Arrows Extended
+added	1DB1C	Miscellaneous Symbols and Arrows Extended
+added	1DF1F	Latin Extended-G
+added	1DF70	Latin Extended-G
+added	1DFFF	Latin Extended-G
+added	1F1AE	Enclosed Alphanumeric Supplement
+added	1F6D9	Transport and Map Symbols
+added	1F7DA	Geometric Shapes Extended
+added	1F7F7	Geometric Shapes Extended
+added	1F7FF	Geometric Shapes Extended
+added	1FA8B	Symbols and Pictographs Extended-A
+added	1FADD	Symbols and Pictographs Extended-A
+added	1FAFA	Symbols and Pictographs Extended-A
+added	2B81E	CJK Unified Ideographs Extension D
+added	3D000	Seal
+added	3E620	Seal
+added	3FC3F	Seal
+bidi	1B3A	Balinese
+bidi	1B3C	Balinese
+bidi	1B42	Balinese
+nfc	105C9	Todhri
+nfc	105E4	Todhri
+nfc	16126	Gurung Khema
+nfc	16127	Gurung Khema
+nfc	16128	Gurung Khema
+nfc	16D6A	Kirat Rai

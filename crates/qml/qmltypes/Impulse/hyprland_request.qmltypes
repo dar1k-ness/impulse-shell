@@ -1,0 +1,51 @@
+import QtQuick.tooling 1.2
+
+// One request to Hyprland's request socket, implemented natively (crates/qml/src/hyprctl.rs).
+// `command` is the request as `hyprctl` takes it ("clients", "getoption general:gaps_in",
+// "reload", "eval hl.config({...})"); `json` asks for a JSON reply (hyprctl's `-j`).
+// `send()` sends it off the main thread; `replied(text)` ends the request: `text` is
+// Hyprland's reply and `error` is empty, or `text` is empty and `error` says why there is no
+// reply (no Hyprland instance, no connection, no answer in time). While a reply is out, one
+// more `send()` is kept and goes out after it (the latest `command` wins).
+Module {
+    Component {
+        file: "hyprctl.rs"
+        name: "ImpulseHyprlandRequest"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/HyprlandRequest 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "command"
+            type: "QString"
+            read: "command"
+            write: "setCommand"
+            notify: "commandChanged"
+            index: 0
+        }
+        Property {
+            name: "json"
+            type: "bool"
+            read: "json"
+            write: "setJson"
+            notify: "jsonChanged"
+            index: 1
+        }
+        Property {
+            name: "error"
+            type: "QString"
+            read: "error"
+            notify: "errorChanged"
+            index: 2
+            isReadonly: true
+        }
+        Signal { name: "commandChanged" }
+        Signal { name: "jsonChanged" }
+        Signal { name: "errorChanged" }
+        Signal {
+            name: "replied"
+            Parameter { name: "text"; type: "QString" }
+        }
+        Method { name: "send" }
+    }
+}

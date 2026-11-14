@@ -1,0 +1,12 @@
+running true
+--restart
+running false
+running true
+--end
+--idle
+idle running true
+--end
+handler saw false true true
+--binding 1 1
+binding 6 2
+stopped 6 2

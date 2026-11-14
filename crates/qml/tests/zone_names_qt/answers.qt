@@ -1,0 +1,58 @@
+absolute link		15:00 MSK|+0300|+03:00|Moscow Standard Time|GMT+3|+0300|+03:00|Moskauer Normalzeit|MSK|3:00:30 PM Moscow Standard Time|MSK|+0300|+03:00|Moscow Standard Time|15:00:30 MSK
+relative link		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+dot-dot after zoneinfo		13:00 CET|+0100|+01:00|Central European Standard Time|MEZ|+0100|+01:00|Mitteleuropäische Normalzeit|CET|1:00:30 PM Central European Standard Time|CET|+0100|+01:00|Central European Standard Time|13:00:30 CET
+dot-dot before zoneinfo		13:00 CET|+0100|+01:00|Central European Standard Time|MEZ|+0100|+01:00|Mitteleuropäische Normalzeit|CET|1:00:30 PM Central European Standard Time|CET|+0100|+01:00|Central European Standard Time|13:00:30 CET
+dot		17:30 IST|+0530|+05:30|India Standard Time|GMT+5:30|+0530|+05:30|Indische Normalzeit|IST|5:30:30 PM India Standard Time|IST|+0530|+05:30|India Standard Time|17:30:30 IST
+double slashes		7:00 EST|-0500|-05:00|Eastern Standard Time|GMT-5|-0500|-05:00|Nordamerikanische Ostküsten-Normalzeit|EST|7:00:30 AM Eastern Standard Time|EST|-0500|-05:00|Eastern Standard Time|07:00:30 EST
+slash at the end		12:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|12:00:30 PM Japan Standard Time|UTC|+0000|+00:00|Japan Standard Time|12:00:30 JST
+chain of two links		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+chain through a relative link		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+names of one file	Oslo	13:00 CET|+0100|+01:00|Central European Standard Time|MEZ|+0100|+01:00|Mitteleuropäische Normalzeit|CET|1:00:30 PM Central European Standard Time|CET|+0100|+01:00|Central European Standard Time|13:00:30 CET
+names of one file	Berlin	13:00 CET|+0100|+01:00|Central European Standard Time|MEZ|+0100|+01:00|Mitteleuropäische Normalzeit|CET|1:00:30 PM Central European Standard Time|CET|+0100|+01:00|Central European Standard Time|13:00:30 CET
+names of one file	Longyearbyen	13:00 CET|+0100|+01:00|Central European Standard Time|MEZ|+0100|+01:00|Mitteleuropäische Normalzeit|CET|1:00:30 PM Central European Standard Time|CET|+0100|+01:00|Central European Standard Time|13:00:30 CET
+names of one file	Moscow	15:00 MSK|+0300|+03:00|Moscow Standard Time|GMT+3|+0300|+03:00|Moskauer Normalzeit|MSK|3:00:30 PM Moscow Standard Time|MSK|+0300|+03:00|Moscow Standard Time|15:00:30 MSK
+names of one file	Berlin again	13:00 CET|+0100|+01:00|Central European Standard Time|MEZ|+0100|+01:00|Mitteleuropäische Normalzeit|CET|1:00:30 PM Central European Standard Time|CET|+0100|+01:00|Central European Standard Time|13:00:30 CET
+alias with another long name	Calcutta	17:30 IST|+0530|+05:30|India Standard Time|GMT+5:30|+0530|+05:30|Indische Normalzeit|IST|5:30:30 PM India Standard Time|IST|+0530|+05:30|India Standard Time|17:30:30 IST
+alias with another long name	Kolkata	17:30 IST|+0530|+05:30|India Standard Time|GMT+5:30|+0530|+05:30|Indische Normalzeit|IST|5:30:30 PM India Standard Time|IST|+0530|+05:30|India Standard Time|17:30:30 IST
+TZ values	:Asia/Tokyo	21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+TZ values	:/etc/localtime	15:00 MSK|+0300|+03:00|Moscow Standard Time|GMT+3|+0300|+03:00|Moskauer Normalzeit|MSK|3:00:30 PM Moscow Standard Time|MSK|+0300|+03:00|Moscow Standard Time|15:00:30 MSK
+TZ values	Europe/Paris	13:00 CET|+0100|+01:00|Central European Standard Time|MEZ|+0100|+01:00|Mitteleuropäische Normalzeit|CET|1:00:30 PM Central European Standard Time|CET|+0100|+01:00|Central European Standard Time|13:00:30 CET
+TZ values	No/Such	12:00 |+0000|+00:00|||+0000|+00:00|||12:00:30 PM ||+0000|+00:00||12:00:30 
+TZ values	EST5EDT	7:00 EST|-0500|-05:00|Eastern Standard Time|GMT-5|-0500|-05:00|Nordamerikanische Ostküsten-Normalzeit|EST|7:00:30 AM Eastern Standard Time|EST|-0500|-05:00|Eastern Standard Time|07:00:30 EST
+TZ values	unset	15:00 MSK|+0300|+03:00|Moscow Standard Time|GMT+3|+0300|+03:00|Moskauer Normalzeit|MSK|3:00:30 PM Moscow Standard Time|MSK|+0300|+03:00|Moscow Standard Time|15:00:30 MSK
+TZ offsets from UTC	UTC	12:00 UTC|+0000|+00:00|Coordinated Universal Time|UTC|+0000|+00:00|Koordinierte Weltzeit|UTC|12:00:30 PM Coordinated Universal Time|UTC|+0000|+00:00|Coordinated Universal Time|12:00:30 UTC
+TZ offsets from UTC	UTC+3	9:00 UTC+03:00|+0300|+03:00|UTC+03:00|UTC+03:00|+0300|+03:00|UTC+03:00|UTC+03:00|9:00:30 AM UTC+03:00|UTC|-0300|-03:00|UTC+03:00|09:00:30 UTC+03:00
+TZ offsets from UTC	UTC+03:00	9:00 UTC+03:00|+0300|+03:00|UTC+03:00|UTC+03:00|+0300|+03:00|UTC+03:00|UTC+03:00|9:00:30 AM UTC+03:00|UTC|-0300|-03:00|UTC+03:00|09:00:30 UTC+03:00
+TZ offsets from UTC	UTC-05:00	17:00 UTC-05:00|-0500|-05:00|UTC-05:00|UTC-05:00|-0500|-05:00|UTC-05:00|UTC-05:00|5:00:30 PM UTC-05:00|UTC|+0500|+05:00|UTC-05:00|17:00:30 UTC-05:00
+TZ offsets from UTC	UTC+03:00:30	9:00 UTC+03:00:30|+030030|+03:00:30|UTC+03:00:30|UTC+03:00:30|+030030|+03:00:30|UTC+03:00:30|UTC+03:00:30|9:00:00 AM UTC+03:00:30|UTC|-0300|-03:00|UTC+03:00:30|09:00:00 UTC+03:00:30
+TZ offsets from UTC	Etc/GMT+5	7:00 -05|-0500|-05:00|GMT-05:00|GMT-5|-0500|-05:00|GMT-05:00|-05|7:00:30 AM GMT-05:00|-05|-0500|-05:00|GMT-05:00|07:00:30 -05
+TZ empty		12:00 MSK|+0300|+03:00|Moscow Standard Time|GMT+3|+0300|+03:00|Moskauer Normalzeit|MSK|12:00:30 PM Moscow Standard Time|UTC|+0000|+00:00|Moscow Standard Time|12:00:30 MSK
+link into a copy, no TZDIR		21:00 UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|9:00:30 PM UTC+00:00:01|JST|+0900|+09:00|UTC+00:00:01|21:00:30 UTC+00:00:01
+link into TZDIR		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+TZDIR with a slash at the end		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+TZDIR set, link under /usr/share/zoneinfo		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+regular file		21:00 UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|9:00:30 PM UTC+00:00:01|JST|+0900|+09:00|UTC+00:00:01|21:00:30 UTC+00:00:01
+regular file and /etc/timezone of the same zone		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+regular file and /etc/TZ of the same zone		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+regular file and /etc/timezone of another zone		21:00 IST|+0530|+05:30|India Standard Time|GMT+5:30|+0530|+05:30|Indische Normalzeit|IST|9:00:30 PM India Standard Time|JST|+0900|+09:00|India Standard Time|21:00:30 IST
+only /etc/timezone		12:00 IST|+0530|+05:30|India Standard Time|GMT+5:30|+0530|+05:30|Indische Normalzeit|IST|12:00:30 PM India Standard Time|UTC|+0000|+00:00|India Standard Time|12:00:30 IST
+/etc/TZ before /etc/timezone		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+/etc/timezone rewritten in place, then replaced	Tokyo	21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+/etc/timezone rewritten in place, then replaced	Kolkata, written in place	21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+/etc/timezone rewritten in place, then replaced	Paris, a new file	21:00 CET|+0100|+01:00|Central European Standard Time|MEZ|+0100|+01:00|Mitteleuropäische Normalzeit|CET|9:00:30 PM Central European Standard Time|JST|+0900|+09:00|Central European Standard Time|21:00:30 CET
+/etc/timezone, then a link	file	21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+/etc/timezone, then a link	link to Paris	13:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|1:00:30 PM Japan Standard Time|CET|+0100|+01:00|Japan Standard Time|13:00:30 JST
+link, then a regular file	link	13:00 CET|+0100|+01:00|Central European Standard Time|MEZ|+0100|+01:00|Mitteleuropäische Normalzeit|CET|1:00:30 PM Central European Standard Time|CET|+0100|+01:00|Central European Standard Time|13:00:30 CET
+link, then a regular file	file	21:00 UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|9:00:30 PM UTC+00:00:01|JST|+0900|+09:00|UTC+00:00:01|21:00:30 UTC+00:00:01
+nothing		12:00 UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|12:00:30 PM UTC+00:00:01|UTC|+0000|+00:00|UTC+00:00:01|12:00:30 UTC+00:00:01
+chain of 8 links		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+chain of 9 links		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+chain of 20 links		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST
+chain of 21 links		21:00 UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|9:00:30 PM UTC+00:00:01|JST|+0900|+09:00|UTC+00:00:01|21:00:30 UTC+00:00:01
+chain of 40 links		21:00 UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|9:00:30 PM UTC+00:00:01|JST|+0900|+09:00|UTC+00:00:01|21:00:30 UTC+00:00:01
+chain of 41 links		12:00 UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|+000001|+00:00:01|UTC+00:00:01|UTC+00:00:01|12:00:30 PM UTC+00:00:01|UTC|+0000|+00:00|UTC+00:00:01|12:00:30 UTC+00:00:01
+regular file and /etc/timezone naming no zone		21:00 JST|+0900|+09:00|JST|JST|+0900|+09:00|JST|JST|9:00:30 PM JST|JST|+0900|+09:00|JST|21:00:30 JST
+link to a zone of TZDIR that CLDR does not know		21:00 JST|+0900|+09:00|Test/Zone|JST|+0900|+09:00|Test/Zone|JST|9:00:30 PM Test/Zone|JST|+0900|+09:00|Test/Zone|21:00:30 JST
+link to posix/ under zoneinfo		21:00 JST|+0900|+09:00|JST|JST|+0900|+09:00|JST|JST|9:00:30 PM JST|JST|+0900|+09:00|JST|21:00:30 JST
+link under two zoneinfo directories		21:00 JST|+0900|+09:00|JST|JST|+0900|+09:00|JST|JST|9:00:30 PM JST|JST|+0900|+09:00|JST|21:00:30 JST
+empty /etc/TZ before /etc/timezone		21:00 JST|+0900|+09:00|Japan Standard Time|GMT+9|+0900|+09:00|Japanische Normalzeit|JST|9:00:30 PM Japan Standard Time|JST|+0900|+09:00|Japan Standard Time|21:00:30 JST

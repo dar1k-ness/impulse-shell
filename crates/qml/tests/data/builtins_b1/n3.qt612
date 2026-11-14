@@ -1,0 +1,8 @@
+N3a => acc|function acc() { [native code] }|function acc() { [native code] }|function acc() { [native code] }
+N3b => acc|function acc() { [native code] }
+N3c => v|function v() { [native code] }
+N3d => 5|function() { [native code] }
+N3e => |function() { [native code] }
+N3f => cls|cls|cls
+N3g => function a() { [native code] }|8|14
+N3h => string|default|default

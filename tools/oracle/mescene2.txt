@@ -1,0 +1,7 @@
+800 640 #fef7ff
+60 60 128 128 32 0.6 0 /usr/share/icons/hicolor/256x256/apps/kitty.png pad=1 bright=-0.06
+330 130 128 128 100 1 0.2 /usr/share/icons/hicolor/256x256/apps/kitty.png pad=1
+640 20 128 128 0 0 0 /usr/share/icons/hicolor/256x256/apps/kitty.png colz=1:#6750a4 bright=0.5
+640 200 128 128 0 0 0 /usr/share/icons/hicolor/256x256/apps/kitty.png contrast=0.3 bright=0.1
+60 400 128 128 0 0 0 /usr/share/icons/hicolor/256x256/apps/kitty.png mask=/usr/share/icons/hicolor/256x256/apps/kitty.png mmin=0.5 mspread=1
+300 450 128 128 7 1 0.2 /usr/share/icons/hicolor/256x256/apps/kitty.png pad=1

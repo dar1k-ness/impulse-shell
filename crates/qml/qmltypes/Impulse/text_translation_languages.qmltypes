@@ -1,0 +1,14 @@
+import QtQuick.tooling 1.2
+
+// Impulse/TextTranslationLanguages: a Process that prints the languages Impulse/TextTranslation knows,
+// one name per line (crates/qml/src/jobs_wall_gcloud_trans/trans.rs `list_languages`).
+Module {
+    Component {
+        file: "jobs_wall_gcloud_trans/trans.rs"
+        name: "ImpulseTextTranslationLanguages"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/TextTranslationLanguages 1.0"]
+        exportMetaObjectRevisions: [256]
+    }
+}

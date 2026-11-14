@@ -1,0 +1,68 @@
+@property color c: "red"
+@property point p: Qt.point(1, 2)
+(function(){ var x = Qt.point(1, 2); Object.freeze(x); x.x = 5; return [Object.isFrozen(x), Object.isSealed(x), Object.isExtensible(x), x.x].join("|") })()
+=> string:true|true|false|5
+(function(){ var x = Qt.point(1, 2); Object.seal(x); x.x = 5; return [Object.isFrozen(x), Object.isSealed(x), Object.isExtensible(x), x.x].join("|") })()
+=> string:true|true|false|5
+(function(){ var x = Qt.point(1, 2); Object.preventExtensions(x); x.x = 5; return [Object.isFrozen(x), Object.isSealed(x), Object.isExtensible(x), x.x].join("|") })()
+=> string:true|false|false|5
+(function(){ var x = Qt.point(1, 2); try { Object.defineProperty(x, "x", {value: 5}); return "ok " + x.x } catch (e) { return String(e) } })()
+=> string:ok 1
+(function(){ var x = Qt.point(1, 2); try { Object.defineProperty(x, "x", {get: function() { return 7 }}); return "ok " + x.x } catch (e) { return String(e) } })()
+=> string:ok 1
+(function(){ var x = Qt.point(1, 2); try { Object.defineProperty(x, "foo", {value: 5}); return "ok " + x.foo + ("foo" in x) + Object.keys(x) } catch (e) { return String(e) } })()
+=> string:ok 5falsex,y
+(function(){ var x = Qt.rgba(1, 0, 0, 1); try { Object.defineProperty(x, "r", {value: 0.5}); return "ok " + x } catch (e) { return String(e) } })()
+=> string:ok #ff0000
+(function(){ var x = Qt.point(1, 2); try { Object.setPrototypeOf(x, null); return "ok " + (Object.getPrototypeOf(x) === null) + typeof x.toString + (Object.getPrototypeOf(Qt.point(3, 4)) === null) } catch (e) { return String(e) } })()
+=> string:ok truefunctionfalse
+(function(){ var x = Qt.point(1, 2); try { Object.setPrototypeOf(x, {foo: 1}); return "ok " + x.foo } catch (e) { return String(e) } })()
+=> string:ok 1
+(function(){ var x = Qt.point(1, 2); try { x.__proto__ = {foo: 1}; return "ok " + x.foo } catch (e) { return String(e) } })()
+=> string:ok undefined
+(function(){ var x = Qt.point(1, 2); x.foo = 1; return x.foo + "|" + ("foo" in x) })()
+=> string:undefined|false
+(function(){ "use strict"; var x = Qt.point(1, 2); try { x.foo = 1; return "ok " + x.foo } catch (e) { return String(e) } })()
+=> string:TypeError: Type error
+(function(){ "use strict"; var x = Qt.point(1, 2); try { x["foo"] = 1; return "ok " + x.foo } catch (e) { return String(e) } })()
+=> string:TypeError: Type error
+(function(){ "use strict"; var x = Qt.point(1, 2); try { x[0] = 1; return "ok " + x[0] } catch (e) { return String(e) } })()
+=> string:ok 1
+(function(){ "use strict"; var x = Qt.rgba(1, 0, 0, 1); try { x.foo = 1; return "ok " + x.foo } catch (e) { return String(e) } })()
+=> string:TypeError: Type error
+(function(){ "use strict"; var x = Qt.rgba(1, 0, 0, 1); try { x["foo"] = 1; return "ok " + x.foo } catch (e) { return String(e) } })()
+=> string:TypeError: Type error
+(function(){ "use strict"; var x = Qt.rgba(1, 0, 0, 1); try { x.rgba = 1; return "ok " + x.rgba } catch (e) { return String(e) } })()
+=> string:Error: Cannot assign int to int
+(function(){ var x = Qt.rgba(1, 0, 0, 1); try { x.rgba = 1; x.foo = 2; x.lighter = 3; return "ok " + x.rgba + x.foo + typeof x.lighter } catch (e) { return String(e) } })()
+=> string:Error: Cannot assign int to int
+(function(){ "use strict"; var x = Qt.rgba(1, 0, 0, 1); try { x.lighter = 1; return "ok " + typeof x.lighter } catch (e) { return String(e) } })()
+=> string:ok function
+(function(){ "use strict"; try { c.foo = 1; return "ok " + c.foo } catch (e) { return String(e) } })()
+=> string:TypeError: Type error
+(function(){ "use strict"; try { p.foo = 1; return "ok " + p.foo } catch (e) { return String(e) } })()
+=> string:TypeError: Type error
+(function(){ "use strict"; var x = Qt.point(1, 2); try { delete x.x; return "ok " + x.x } catch (e) { return String(e) } })()
+=> string:ok 1
+(function(){ "use strict"; var x = Qt.rgba(1, 0, 0, 1); try { delete x.r; return "ok " + x.r } catch (e) { return String(e) } })()
+=> string:ok 1
+(function(){ var x = Qt.point(1, 2); return (delete x.x) + "|" + (delete x.foo) + "|" + x.x })()
+=> string:true|true|1
+(function(){ var x = Qt.rgba(1, 0, 0, 1); return (delete x.r) + "|" + (delete x.foo) + "|" + x.r })()
+=> string:true|true|1
+(function(){ var m = new Map(); m.set(Qt.point(1, 2), 1); m.set(Qt.point(1, 2), 2); m.set(Qt.size(1, 2), 3); m.set(Qt.vector2d(1, 2), 4); return m.size + "|" + m.get(Qt.point(1, 2)) + "|" + m.has(Qt.point(1, 3)) + "|" + m.get(Qt.vector2d(1, 2)) })()
+=> string:3|2|false|4
+(function(){ var s = new Set([Qt.point(1, 2), Qt.point(1, 2), Qt.rect(1, 2, 3, 4), Qt.rect(1, 2, 3, 4), Qt.font({family: "A"}), Qt.font({family: "A"}), Qt.rgba(1, 0, 0, 1), Qt.rgba(1, 0, 0, 1), Qt.hsva(0, 1, 1, 1)]); return s.size + "|" + s.has(Qt.point(1, 2)) + "|" + s.has(Qt.rgba(1, 0, 0, 1)) + "|" + s.has("#ff0000") })()
+=> string:5|true|true|false
+(function(){ var a = [Qt.point(1, 2), Qt.rgba(1, 0, 0, 1)]; return [a.indexOf(Qt.point(1, 2)), a.includes(Qt.point(1, 2)), a.lastIndexOf(Qt.rgba(1, 0, 0, 1)), a.includes(Qt.rgba(1, 0, 0, 1)), a.includes("#ff0000"), a.indexOf("#ff0000"), Object.is(Qt.point(1, 2), Qt.point(1, 2)), Object.is(c, c), Object.is(p, p), Object.is(Qt.rgba(1, 0, 0, 1), Qt.rgba(1, 0, 0, 1))].join("|") })()
+=> string:0|true|1|true|false|-1|true|true|true|true
+(function(){ var w = new WeakMap(); try { w.set(Qt.point(1, 2), 1); return "ok " + w.has(Qt.point(1, 2)) } catch (e) { return String(e) } })()
+=> string:ok true
+(function(){ var w = new WeakSet(); try { w.add(c); return "ok " + w.has(c) } catch (e) { return String(e) } })()
+=> string:ok true
+[c instanceof Object, p instanceof Object, Qt.rgba(1, 0, 0, 1) instanceof Object, Object(c) === c, Object(c) == c, typeof Object(c), Object(p) === p].join("|")
+=> string:true|true|true|true|true|object|true
+[Reflect.ownKeys(c).join(","), Reflect.has(c, "r"), Reflect.has(c, "lighter"), Reflect.get(c, "r"), Reflect.getPrototypeOf(c) === Reflect.getPrototypeOf(p), Reflect.isExtensible(c)].join("|")
+=> string:r,g,b,a,hsvHue,hsvSaturation,hsvValue,hslHue,hslSaturation,hslLightness,valid,rgba|true|false|1|true|true
+(function(){ var r = []; for (var k in Qt.rgba(1, 0, 0, 1)) r.push(k); for (var k in Qt.point(1, 2)) r.push(k); return r.join(",") })()
+=> string:r,g,b,a,hsvHue,hsvSaturation,hsvValue,hslHue,hslSaturation,hslLightness,valid,rgba,x,y

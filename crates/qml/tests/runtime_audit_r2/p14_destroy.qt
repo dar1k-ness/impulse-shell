@@ -1,0 +1,16 @@
+root threw: Invalid attempt to destroy() an indestructible object
+static child no throw
+static object no throw
+loader item threw: Invalid attempt to destroy() an indestructible object
+delegate threw: Invalid attempt to destroy() an indestructible object
+createObject no throw
+createObject twice no throw
+createObject null parent no throw
+createQmlObject child no throw
+createQmlObject no throw
+delay ok
+component no throw
+dyn destroyed
+dyn destroyed
+dyn destroyed
+dyn destroyed

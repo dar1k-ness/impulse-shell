@@ -1,0 +1,26 @@
+in data 0  0 object
+in nm 0 p 0 object
+in k 0 p 5 object
+in + 0 p 5 true
+in data 0  0 object
+in idx 1  0 object
+in nm 1 q 0 object
+in k 1 q 6 object
+in + 1 q 6 true
+rp data 0  0 object undefined
+rp model 0  0 object object
+rp nm 0 x 0 object object
+rp k 0 x 1 object object
+rp + 0 x 1 true
+rp data 0  0 object undefined
+rp idx 1  0 object undefined
+rp model 1  0 object object
+rp nm 1 y 0 object object
+rp k 1 y 2 object object
+rp + 1 y 2 true
+-- write
+rp nm 1 z 2 object object
+in k 0 p 7 object
+rp k 0 x 8 object object
+in nm 1 r 6 object
+end

@@ -1,0 +1,1 @@
+warning: Paused.qml:2:1: QML Paused: setPaused() cannot be used when animation isn't running.

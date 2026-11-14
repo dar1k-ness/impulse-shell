@@ -1,0 +1,56 @@
+count 3 2 0 0
+sv.ci 5
+set5 5 true
+inc@5 5
+sv.ci 4
+dec@5 4
+sv.ci -1
+set-1 -1
+dec@-1 -1
+sv.ci 0
+inc@-1 0
+sv.ci 2
+inc@last 2
+sv.ci 0
+dec@0 0
+tb.set7 7
+sv.ci 1
+set-str 1
+itemAt a c   y
+itemAt-eq true
+add abcd 4 1 true 4
+insert0 eabcd 1
+insert99 eabcdf 1
+insert-1 eabcdfg 1
+sv.ci 2
+insert-existing edabcfg 2
+insert-null edabcfg
+sv.ci 0
+sv.ci 3
+move-cur dabecfg 3
+sv.ci 2
+move-over abecfdg 2
+sv.ci 3
+move-back agbecfd 3
+move-bad agbecfd 3
+sv.ci 2
+move-to99 gbecfda 2
+sv.ci 1
+take1 b gecfda 1 6 null
+take-bad  
+sv.ci 2
+sv.ci 1
+take-cur c gefda 1
+sv.ci 3
+sv.ci 2
+take-before g efda 2
+sv.ci 3
+sv.ci 2
+take-last-cur a efd 2
+sv.ci 1
+remove fd 1 2
+remove-null fd
+remove-foreign fd
+empty-add z 0
+empty-take  -1 0
+tb.add xyw 3 7

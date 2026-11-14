@@ -1,0 +1,70 @@
+[package]
+name = "ricompiled"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+elog = { path = "../elog" }
+tracing.workspace = true
+libc.workspace = true
+qml = { path = "../qml", default-features = false }
+aotcheck = { path = "../aotcheck", optional = true }
+ricompiled-gen = { path = "../ricompiled-gen" }
+ricompiled-p00 = { path = "parts/p00" }
+ricompiled-p01 = { path = "parts/p01" }
+ricompiled-p02 = { path = "parts/p02" }
+ricompiled-p03 = { path = "parts/p03" }
+ricompiled-p04 = { path = "parts/p04" }
+ricompiled-p05 = { path = "parts/p05" }
+ricompiled-p06 = { path = "parts/p06" }
+ricompiled-p07 = { path = "parts/p07" }
+ricompiled-p08 = { path = "parts/p08" }
+ricompiled-p09 = { path = "parts/p09" }
+ricompiled-p10 = { path = "parts/p10" }
+ricompiled-p11 = { path = "parts/p11" }
+ricompiled-p12 = { path = "parts/p12" }
+ricompiled-p13 = { path = "parts/p13" }
+ricompiled-p14 = { path = "parts/p14" }
+ricompiled-p15 = { path = "parts/p15" }
+ricompiled-p16 = { path = "parts/p16" }
+ricompiled-p17 = { path = "parts/p17" }
+ricompiled-p18 = { path = "parts/p18" }
+ricompiled-p19 = { path = "parts/p19" }
+ricompiled-p20 = { path = "parts/p20" }
+ricompiled-p21 = { path = "parts/p21" }
+ricompiled-p22 = { path = "parts/p22" }
+ricompiled-p23 = { path = "parts/p23" }
+ricompiled-p24 = { path = "parts/p24" }
+ricompiled-p25 = { path = "parts/p25" }
+ricompiled-p26 = { path = "parts/p26" }
+ricompiled-p27 = { path = "parts/p27" }
+ricompiled-p28 = { path = "parts/p28" }
+ricompiled-p29 = { path = "parts/p29" }
+ricompiled-p30 = { path = "parts/p30" }
+ricompiled-p31 = { path = "parts/p31" }
+
+[[bin]]
+# Not `aotcheck`: that name is the qml bin (interpreter only).
+name = "riaotcheck"
+path = "src/bin/aotcheck.rs"
+required-features = ["interp"]
+
+[[bin]]
+name = "riflood"
+path = "src/bin/riflood.rs"
+
+[[bin]]
+name = "riscen"
+path = "src/bin/riscen.rs"
+
+[features]
+default = ["interp"]
+interp = ["qml/interp", "dep:aotcheck"]
+
+[dev-dependencies]
+rigen = { path = "../rigen" }
+
+[lints]
+workspace = true

@@ -1,0 +1,4 @@
+module Rustshell
+QsMenuAnchor 0.0 QsMenuAnchor.qml
+QsMenuAnchorLevel 0.0 QsMenuAnchorLevel.qml
+depends QtQuick

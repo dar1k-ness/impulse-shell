@@ -1,0 +1,1 @@
+jq ".background.wallpaperPath = \"$W/syn_grad.jpg\"" $CFG > c && mv c $CFG

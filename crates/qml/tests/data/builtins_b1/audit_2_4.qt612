@@ -1,0 +1,32 @@
+A1 => Map,Set,ArrayBuffer,DataView
+A2 => [object Map][object Set]
+A4 => [object String][object Number][object Boolean]
+A5 => object
+B1 => Symbol:false Date:false RegExp:false Map:false Set:false WeakMap:false Promise:false ArrayBuffer:false DataView:false Uint8Array:false
+B2 => true
+B3 => w=false e=false c=true
+B4 => 2
+B5 => w=true e=false c=false
+B6 => false
+C1 => true,false
+C2 => true
+C3 => true
+C4 => r,g,b,a,hsvHue,hsvSaturation,hsvValue,hslHue,hslSaturation,hslLightness,valid,rgba
+C5 => #4c99e5 #19334c
+C6 => #80336699
+C7 => #99334c
+C8 => -13408615
+C9 => function
+C10 => true
+D1 => #add8e6 true
+D2 => #000000 false
+E1 => false,false,false
+E2 => true
+E3 => true
+F1 => function named() { [native code] }
+F2 => THROW Error: Function.prototype.connect: target this is not an object
+G1 => 1.23457e+06 1.23457e+06 4.29497e+09
+G2 => 5e-05 100001
+G3 => 0 x x x1
+G4 => THROW TypeError: Type error
+H1 => 12

@@ -1,0 +1,1 @@
+@HOME@/.config/hypr/custom/scripts/mpvpaper_thumbnails/clip.mp4.jpg

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Runs the command as the unprivileged `tester`, keeping the environment.
+exec setpriv --reuid=tester --regid=tester --init-groups "$@"

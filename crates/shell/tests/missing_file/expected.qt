@@ -1,0 +1,9 @@
+no file: same call | 2 0x0
+no file: later | 3 0x0
+file there, source untouched: same call | 3 0x0
+file there, source untouched: later | 3 0x0
+the same source written again: same call | 3 0x0
+the same source written again: later | 3 0x0
+a new Image: same call | 2 0x0
+a new Image: later | 1 4x3
+the first Image at the end | 3 0x0

@@ -1,0 +1,153 @@
+tag Object => [object Object] undefined none | [object Function]
+proto Object => w=false e=false c=false kept=true ok
+len Object => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true Object
+tag Function => [object Function] undefined none | [object Function]
+proto Function => w=false e=false c=false kept=true ok
+len Function => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true Function
+tag Array => [object Array] undefined none | [object Function]
+proto Array => w=false e=false c=false kept=true ok
+len Array => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true Array
+tag String => [object String] undefined none | [object Function]
+proto String => w=false e=false c=false kept=true ok
+len String => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true String
+tag Number => [object Number] undefined none | [object Function]
+proto Number => w=false e=false c=false kept=true ok
+len Number => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true Number
+tag Boolean => [object Boolean] undefined none | [object Function]
+proto Boolean => w=false e=false c=false kept=true ok
+len Boolean => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true Boolean
+tag Symbol => [object Symbol] Symbol w=false e=false c=true | [object Function]
+proto Symbol => w=false e=false c=false kept=true ok
+len Symbol => w=false e=false c=true 0->0 del=true now=0 name w=false e=false c=true Symbol
+tag Date => [object Object] undefined none | [object Function]
+proto Date => w=false e=false c=false kept=true ok
+len Date => w=false e=false c=true 7->7 del=true now=0 name w=false e=false c=true Date
+tag RegExp => [object Object] undefined none | [object Function]
+proto RegExp => w=false e=false c=false kept=true ok
+len RegExp => w=false e=false c=true 2->2 del=true now=0 name w=false e=false c=true RegExp
+tag Error => [object Object] undefined none | [object Function]
+proto Error => w=false e=false c=false kept=true ok
+len Error => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true Error
+tag EvalError => [object Object] undefined none | [object Function]
+proto EvalError => w=false e=false c=false kept=true ok
+len EvalError => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true EvalError
+tag RangeError => [object Object] undefined none | [object Function]
+proto RangeError => w=false e=false c=false kept=true ok
+len RangeError => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true RangeError
+tag ReferenceError => [object Object] undefined none | [object Function]
+proto ReferenceError => w=false e=false c=false kept=true ok
+len ReferenceError => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true ReferenceError
+tag SyntaxError => [object Object] undefined none | [object Function]
+proto SyntaxError => w=false e=false c=false kept=true ok
+len SyntaxError => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true SyntaxError
+tag TypeError => [object Object] undefined none | [object Function]
+proto TypeError => w=false e=false c=false kept=true ok
+len TypeError => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true TypeError
+tag URIError => [object Object] undefined none | [object Function]
+proto URIError => w=false e=false c=false kept=true ok
+len URIError => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true URIError
+tag Map => [object Map] Map w=false e=false c=true | [object Function]
+proto Map => w=false e=false c=false kept=true ok
+len Map => w=false e=false c=true 0->0 del=true now=0 name w=false e=false c=true Map
+tag Set => [object Set] Set w=false e=false c=true | [object Function]
+proto Set => w=false e=false c=false kept=true ok
+len Set => w=false e=false c=true 0->0 del=true now=0 name w=false e=false c=true Set
+tag WeakMap => [object WeakMap] WeakMap w=false e=false c=true | [object Function]
+proto WeakMap => w=false e=false c=false kept=true ok
+len WeakMap => w=false e=false c=true 0->0 del=true now=0 name w=false e=false c=true WeakMap
+tag WeakSet => [object WeakSet] WeakSet w=false e=false c=true | [object Function]
+proto WeakSet => w=false e=false c=false kept=true ok
+len WeakSet => w=false e=false c=true 0->0 del=true now=0 name w=false e=false c=true WeakSet
+tag Promise => [object Promise] Promise w=false e=false c=true | [object Function]
+proto Promise => w=false e=false c=false kept=true ok
+len Promise => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true Promise
+tag ArrayBuffer => [object ArrayBuffer] ArrayBuffer w=false e=false c=true | [object Function]
+proto ArrayBuffer => w=false e=false c=false kept=true ok
+len ArrayBuffer => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true ArrayBuffer
+tag SharedArrayBuffer => [object SharedArrayBuffer] SharedArrayBuffer w=false e=false c=true | [object Function]
+proto SharedArrayBuffer => w=false e=false c=false kept=true ok
+len SharedArrayBuffer => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true SharedArrayBuffer
+tag DataView => [object DataView] DataView w=false e=false c=true | [object Function]
+proto DataView => w=false e=false c=false kept=true ok
+len DataView => w=false e=false c=true 1->1 del=true now=0 name w=false e=false c=true DataView
+tag Int8Array => [object Object] undefined none | [object Function]
+proto Int8Array => w=false e=false c=false kept=true ok
+len Int8Array => w=false e=false c=true 3->3 del=true now=0 name w=false e=false c=true Int8Array
+tag Uint8Array => [object Object] undefined none | [object Function]
+proto Uint8Array => w=false e=false c=false kept=true ok
+len Uint8Array => w=false e=false c=true 3->3 del=true now=0 name w=false e=false c=true Uint8Array
+tag Uint8ClampedArray => [object Object] undefined none | [object Function]
+proto Uint8ClampedArray => w=false e=false c=false kept=true ok
+len Uint8ClampedArray => w=false e=false c=true 3->3 del=true now=0 name w=false e=false c=true Uint8ClampedArray
+tag Int16Array => [object Object] undefined none | [object Function]
+proto Int16Array => w=false e=false c=false kept=true ok
+len Int16Array => w=false e=false c=true 3->3 del=true now=0 name w=false e=false c=true Int16Array
+tag Uint16Array => [object Object] undefined none | [object Function]
+proto Uint16Array => w=false e=false c=false kept=true ok
+len Uint16Array => w=false e=false c=true 3->3 del=true now=0 name w=false e=false c=true Uint16Array
+tag Int32Array => [object Object] undefined none | [object Function]
+proto Int32Array => w=false e=false c=false kept=true ok
+len Int32Array => w=false e=false c=true 3->3 del=true now=0 name w=false e=false c=true Int32Array
+tag Uint32Array => [object Object] undefined none | [object Function]
+proto Uint32Array => w=false e=false c=false kept=true ok
+len Uint32Array => w=false e=false c=true 3->3 del=true now=0 name w=false e=false c=true Uint32Array
+tag Float32Array => [object Object] undefined none | [object Function]
+proto Float32Array => w=false e=false c=false kept=true ok
+len Float32Array => w=false e=false c=true 3->3 del=true now=0 name w=false e=false c=true Float32Array
+tag Float64Array => [object Object] undefined none | [object Function]
+proto Float64Array => w=false e=false c=false kept=true ok
+len Float64Array => w=false e=false c=true 3->3 del=true now=0 name w=false e=false c=true Float64Array
+tag Proxy => [object Undefined] - | [object Function]
+proto Proxy => none kept=false ok
+len Proxy => w=false e=false c=true 2->2 del=true now=0 name w=false e=false c=true Proxy
+tag URL => [object Object] undefined none | [object Function]
+proto URL => w=false e=false c=false kept=true ok
+len URL => none 0->0 del=true now=0 name w=false e=false c=true URL
+tag URLSearchParams => [object Object] undefined none | [object Function]
+proto URLSearchParams => w=false e=false c=false kept=true ok
+len URLSearchParams => none 0->0 del=true now=0 name w=false e=false c=true URLSearchParams
+tag XMLHttpRequest => [object Object] undefined none | [object Function]
+proto XMLHttpRequest => w=false e=false c=false kept=true ok
+len XMLHttpRequest => none 0->0 del=true now=0 name w=false e=false c=true XMLHttpRequest
+ns Math => [object Math] ext=true frozen=false sealed=false
+ns JSON => [object JSON] ext=true frozen=false sealed=false
+ns Reflect => [object Object] ext=true frozen=false sealed=false
+ns Atomics => [object Atomics] ext=true frozen=false sealed=false
+ns Qt => [object QMLTypeWrapper] ext=true frozen=false sealed=false
+ns console => [object Object] ext=true frozen=false sealed=false
+ns DOMException => [object Object] ext=true frozen=false sealed=false
+ns SQLException => [object Object] ext=true frozen=false sealed=false
+ns Easing => [object QMLTypeWrapper] ext=true frozen=false sealed=false
+ns Locale => [object QMLTypeWrapper] ext=true frozen=false sealed=false
+fn parseInt => w=false e=false c=true 2->2 name w=false e=false c=true parseInt proto=none
+fn parseFloat => w=false e=false c=true 1->1 name w=false e=false c=true parseFloat proto=none
+fn isNaN => w=false e=false c=true 1->1 name w=false e=false c=true isNaN proto=none
+fn isFinite => w=false e=false c=true 1->1 name w=false e=false c=true isFinite proto=none
+fn escape => w=false e=false c=true 1->1 name w=false e=false c=true escape proto=none
+fn unescape => w=false e=false c=true 1->1 name w=false e=false c=true unescape proto=none
+fn eval => w=false e=false c=true 1->1 name w=false e=false c=true eval proto=none
+fn encodeURI => w=false e=false c=true 1->1 name w=false e=false c=true encodeURI proto=none
+fn decodeURI => w=false e=false c=true 1->1 name w=false e=false c=true decodeURI proto=none
+fn encodeURIComponent => w=false e=false c=true 1->1 name w=false e=false c=true encodeURIComponent proto=none
+fn decodeURIComponent => w=false e=false c=true 1->1 name w=false e=false c=true decodeURIComponent proto=none
+fn qsTr => w=false e=false c=true 0->0 name w=false e=false c=true qsTr proto=none
+fn qsTrId => w=false e=false c=true 0->0 name w=false e=false c=true qsTrId proto=none
+fn print => w=false e=false c=true 0->0 name w=false e=false c=true print proto=none
+fn gc => w=false e=false c=true 0->0 name w=false e=false c=true gc proto=none
+fn setTimeout => THROW ReferenceError: setTimeout is not defined
+TA1 => function undefined e=false c=true Uint8Array undefined get [Symbol.toStringTag] [object Object] TypedArray w=false e=false c=false
+TA2 => [object Int8Array][object Object]undefinedfalse [object Uint8Array][object Object]undefinedfalse [object Uint8ClampedArray][object Object]undefinedfalse [object Int16Array][object Object]undefinedfalse [object Uint16Array][object Object]undefinedfalse [object Int32Array][object Object]undefinedfalse [object Uint32Array][object Object]undefinedfalse [object Float32Array][object Object]undefinedfalse [object Float64Array][object Object]undefinedfalse
+TG1 => [object Map][object Set][object WeakMap][object WeakSet][object ArrayBuffer][object DataView][object Promise][object Symbol][object String][object Number][object Boolean][object Date][object RegExp][object Array][object Function][object Error][object Math][object JSON][object Object][object Null][object Undefined][object Number][object String][object Boolean][object Arguments]
+TG2 => w=false e=false c=true:Map | w=false e=false c=true:Set | w=false e=false c=true:WeakMap | w=false e=false c=true:WeakSet | w=false e=false c=true:ArrayBuffer | w=false e=false c=true:DataView | w=false e=false c=true:Promise | w=false e=false c=true:Symbol
+TG3 => none:undefined | none:undefined | none:undefined | none:undefined | none:undefined | none:undefined | none:undefined | none:undefined | none:undefined
+TG4 => [object Map][object Y][object Map][object Set]
+TG5 => |0|false|0|objectobject|x1false
+TG6 => [object Array] true 0 [object Function] function [object Object] [object Object] [object Object] [object Symbol] [object Promise]
+TG7 => [object Array Iterator] [object Map Iterator] [object Set Iterator] [object String Iterator] [object Generator] [object GeneratorFunction]
+RX1 => w=true e=false c=false false 3 lastIndex
+RX2 => w=true e=false c=false TypeError
+RX3 => TypeError: Type error
+RX4 => w=false e=false c=false true
+PX1 => none 0 w=false e=false c=true Proxy w=false e=false c=false 2 w=false e=false c=true prototype,name,revocable
+PX2 => TypeError: Type error
+PX3 => w=false e=false c=true 0 true 0

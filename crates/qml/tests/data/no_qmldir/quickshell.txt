@@ -1,0 +1,2 @@
+names	number:7 | string:object | number:9 | string:object | number:4 | boolean:true	undefined:undefined | string:object | undefined:undefined | string:object | number:4 | boolean:true
+object	!Composite Singleton Type Solo is not creatable.	!Type Solo unavailable ## pragma Singleton used with a non composite singleton type Solo

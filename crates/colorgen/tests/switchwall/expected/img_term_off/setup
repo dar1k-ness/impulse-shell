@@ -1,0 +1,1 @@
+jq ".appearance.wallpaperTheming.enableTerminal = false | .appearance.wallpaperTheming.enableQtApps = false" $CFG > c && mv c $CFG

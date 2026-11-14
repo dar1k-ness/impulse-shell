@@ -1,0 +1,48 @@
+# GPU precision tests on Mesa llvmpipe (no GPU): the shell's shaders run with fp16 mediump
+# inputs emulated (crates/shell/src/gpu_precision_tests.rs), so bugs that only show on GPUs
+# with half-precision mediump (the RX 580 theme-fade clock) fail here. They run in the pinned
+# ri-testenv image (its Mesa and the toolchain rust-toolchain.toml pins) as the gate's
+# gpu-precision step (tools/testenv/ri-gate).
+name: gpu-precision
+
+on:
+  push:
+    branches: [main, impulse-next]
+    paths:
+      - crates/shell/src/gpu.rs
+      - crates/shell/src/gpu_precision_tests.rs
+      - crates/qsg/**
+      - Cargo.lock
+      - rust-toolchain.toml
+      - tools/testenv/**
+      - .github/workflows/gpu-precision.yml
+      - .github/workflows/gate-jobs.yml
+      - .github/workflows/testenv-image.yml
+  pull_request:
+    paths:
+      - crates/shell/src/gpu.rs
+      - crates/shell/src/gpu_precision_tests.rs
+      - crates/qsg/**
+      - Cargo.lock
+      - rust-toolchain.toml
+      - tools/testenv/**
+      - .github/workflows/gpu-precision.yml
+      - .github/workflows/gate-jobs.yml
+      - .github/workflows/testenv-image.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  llvmpipe:
+    uses: ./.github/workflows/gate-jobs.yml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      jobs: '[{"name": "precision_tests", "args": "--only gpu-precision"}]'

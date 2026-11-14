@@ -1,0 +1,3 @@
+a.locale	text: locale
+b.locale	text: locale
+c.locale	text: locale

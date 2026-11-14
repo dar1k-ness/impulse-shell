@@ -1,0 +1,27 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Demo
+{
+    /// <summary>A user.</summary>
+    [Serializable]
+    public sealed class User<T> : IEquatable<User<T>> where T : struct
+    {
+        private readonly List<T> _items = new();
+        public string Name { get; init; } = "anon";
+        public const int Limit = 0x1F;
+
+        public async Task<int?> CountAsync(params T[] xs)
+        {
+            if (xs is null || xs.Length == 0) return null;
+            var q = from x in xs where !x.Equals(default(T)) select x;
+            await Task.Delay(1_000);
+            Console.WriteLine($"Hello, {Name}: {q.Count():D2} {@"c:\dir"} {'c'}\n");
+            return q.Count() + (int)1.5f;
+        }
+#if DEBUG
+        public bool Equals(User<T> other) => other?.Name == Name; // compare
+#endif
+    }
+}

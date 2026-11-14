@@ -1,0 +1,23 @@
+import QtQuick.tooling 1.2
+
+// Impulse/AiTranslation: a Process that has Gemini translate the shell's texts to `locale`
+// and saves the result in the user's translations folder (crates/qml/src/jobs_ai/translate.rs).
+Module {
+    Component {
+        file: "jobs_ai/translate.rs"
+        name: "ImpulseAiTranslation"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/AiTranslation 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "locale"
+            type: "QString"
+            read: "locale"
+            write: "setLocale"
+            notify: "localeChanged"
+            index: 0
+        }
+        Signal { name: "localeChanged" }
+    }
+}

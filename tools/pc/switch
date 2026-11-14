@@ -1,0 +1,195 @@
+#!/bin/bash
+# Switch this PC from the old build (ii-rs, ~/.config/quickshell/ii, illogical-impulse) to
+# rusty-impulse, with everything of the old build left in place so that going back loses
+# nothing. Run from the build directory ~/pcbuild/stable-<sha>/ that holds, beside this script:
+#   rusty-impulse (the binary), tree/ (the QML tree it was compiled from), install.sh,
+#   carry-over.sh, rollback-watch, rollback-now, rusty-impulse-shell, rusty-impulse-default
+#   ./switch            do it (again after a rollback: brings rusty-impulse back)
+#   ./switch --check    say what it would do and what it found, change nothing
+# What it does, in this order, and stops at the first step that fails:
+#   1. copies the old build aside for the rollback: ~/.local/bin/ii-rs.bak-pre-rusty-impulse-*
+#      and ~/.config/quickshell/ii.bak-ii-rs-pre-rusty-impulse-* (kept if they are there already)
+#   2. installs rusty-impulse with install.sh (PREFIX=~/.local): ~/.local/lib/rusty-impulse,
+#      ~/.local/bin/rusty-impulse, ~/.config/rustshell/rusty-impulse. Checks afterwards that
+#      nothing under ~/.local/lib/ii-rs, ~/.local/bin/ii-rs* and ~/.config/quickshell changed
+#   3. puts rusty-impulse-shell and rusty-impulse-default into ~/.local/bin (ii-shell and
+#      ii-default stay), and the rollback copies' names into rollback-watch and rollback-now
+#   4. stops the old rollback watch (its unit is removed: it would roll back at the next login)
+#   5. stops the old shell, copies the data to the new names (carry-over.sh), makes the owner's
+#      own files name the new build (carry-over.sh --dots new), reloads Hyprland, starts hypridle
+#      again (rollback-watch idle: a screen hypridle had turned off still comes on at a key or
+#      the mouse) and starts rusty-impulse-shell
+#      When the screen is locked at that moment, the old shell's lock screen goes with it and
+#      Hyprland shows "lockscreen app died": the shell started next is asked to lock the session
+#      again (rollback-watch relock), the owner types the password on its lock screen as usual.
+#      The session is not unlocked at any point. A new shell that does not take the lock is
+#      treated as one that did not come up: rollback-now, and the old shell takes the lock
+#   6. if the new shell does not come up with its layers in START_WAIT seconds: rollback-now
+#   7. turns the new rollback watch on (now and at each login)
+# No sudo. A log of each run is written beside the script: switch-<time>.log
+set -u
+export LC_ALL=C
+export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+[ -n "${HYPRLAND_INSTANCE_SIGNATURE-}" ] || export HYPRLAND_INSTANCE_SIGNATURE=$(ls -t "$XDG_RUNTIME_DIR/hypr" 2>/dev/null | head -1)
+export WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-1}
+here=$(dirname "$(readlink -f "$0")")
+WORD=${RI_WORD:-rustshell}
+START_WAIT=${START_WAIT:-30}
+check=; [ "${1-}" = --check ] && check=1
+config=${XDG_CONFIG_HOME:-$HOME/.config}
+OLD_LINK=$HOME/.local/bin/ii-rs OLD_CFG=$config/quickshell/ii OLD_LIB=$HOME/.local/lib/ii-rs
+NEW_LINK=$HOME/.local/bin/rusty-impulse NEW_CFG=$config/$WORD/rusty-impulse
+EXECS=$config/hypr/hyprland/execs.lua
+LOGF=$here/switch-$(date +%Y%m%d-%H%M%S).log
+[ -n "$check" ] && LOGF=/dev/null
+say() { printf '%s %s\n' "$(date +%T)" "$*" | tee -a "$LOGF"; }
+die() { say "STOPPED: $*"; exit 1; }
+sha() { sha256sum <"$1" 2>/dev/null | cut -d' ' -f1; }
+pids() { pgrep -u "$(id -u)" -x "$1"; }
+hc() { timeout 5 hyprctl "$@" 2>/dev/null; }
+nlayers() { hc layers -j | jq '[.[].levels[][] | select(.namespace | startswith($ns))] | length' --arg ns "$1:" 2>/dev/null; }
+treesum() { (cd "$1" && { find . -type f -print0 | sort -z | xargs -0 -r sha256sum; find . -type l -printf '%p -> %l\n' | sort; } | sha256sum | cut -d' ' -f1); }
+# What must not change while rusty-impulse is installed: the old build and all its rollback copies.
+old_state() {
+    { ls -la "$HOME/.local/bin" 2>/dev/null | grep -E ' ii-(rs|shell|default)' ; readlink "$OLD_LINK"
+      [ ! -d "$OLD_LIB" ] || { ls -lA "$OLD_LIB" "$OLD_LIB/releases"; find "$OLD_LIB" -type f -print0 | sort -z | xargs -0 -r sha256sum; }
+      for d in "$config"/quickshell/*/; do echo "$d $(treesum "$d")"; done
+      [ ! -d "$HOME/.local/state/ii-rs" ] || ls -lA "$HOME/.local/state/ii-rs"
+    } 2>&1 | sha256sum | cut -d' ' -f1
+}
+stop() {
+    local p; p=$(pids "$1" | tr '\n' ' ')
+    [ -n "$p" ] || return 0
+    kill $p; for _ in $(seq 80); do [ -z "$(pids "$1")" ] && break; sleep 0.1; done
+    [ -z "$(pids "$1")" ] || { kill -9 $(pids "$1"); sleep 1; }
+}
+
+# The session is locked and the shell that drew the lock screen was stopped: the shell that
+# runs now ($1: new or prev) takes the lock.
+relock() { "$here/rollback-watch" relock "$1" 2>&1 | sed 's/^/   /' | tee -a "$LOGF"; return "${PIPESTATUS[0]}"; }
+old_shell_again() { hc dispatch 'hl.dsp.exec_cmd("$HOME/.local/bin/ii-shell")' >/dev/null; sleep 3; relock prev; }
+
+[ "$(id -u)" != 0 ] || die "run it as the user whose shell it is, not as root"
+for f in rusty-impulse install.sh carry-over.sh rollback-watch rollback-now rusty-impulse-shell rusty-impulse-default; do
+    [ -f "$here/$f" ] || die "no $here/$f"
+done
+[ -d "$here/tree" ] || die "no $here/tree (the QML tree the binary was compiled from)"
+for c in jq rsync pgrep hyprctl flock sha256sum; do command -v "$c" >/dev/null || die "$c is not installed"; done
+[ -n "$(hc monitors -j | jq length 2>/dev/null)" ] || die "Hyprland does not answer (hyprctl monitors)"
+NEW_SHA=$(sha "$here/rusty-impulse"); new8=${NEW_SHA:0:8}
+say "rusty-impulse to install: sha256 $NEW_SHA ($here)"
+
+# 1. the rollback copies of the old build
+have_old=; [ -e "$OLD_LINK" ] && [ -d "$OLD_CFG" ] && have_old=1
+if [ -n "$have_old" ]; then
+    OLD_SHA=$(sha "$OLD_LINK")
+    OLD_BIN=$(ls -d "$OLD_LINK".bak-pre-rusty-impulse-"$new8"-* 2>/dev/null | tail -1)
+    OLD_TREE=$(ls -d "$OLD_CFG".bak-ii-rs-pre-rusty-impulse-"$new8"-* 2>/dev/null | tail -1)
+    if [ -n "$OLD_BIN" ] && [ -n "$OLD_TREE" ] && [ "$(sha "$OLD_BIN")" = "$OLD_SHA" ] && [ "$(treesum "$OLD_TREE")" = "$(treesum "$OLD_CFG")" ]; then
+        say "rollback copies are there and equal the installed old build (sha256 $OLD_SHA): $OLD_BIN, $OLD_TREE"
+    else
+        stamp=$(date +%Y%m%d-%H%M%S)
+        OLD_BIN=$OLD_LINK.bak-pre-rusty-impulse-$new8-$stamp OLD_TREE=$OLD_CFG.bak-ii-rs-pre-rusty-impulse-$new8-$stamp
+        if [ -n "$check" ]; then say "would copy the old build (sha256 $OLD_SHA) to $OLD_BIN and $OLD_TREE"
+        else
+            cp -pL "$OLD_LINK" "$OLD_BIN" && cp -a "$OLD_CFG" "$OLD_TREE" || die "cannot copy the old build aside"
+            [ "$(sha "$OLD_BIN")" = "$OLD_SHA" ] && [ "$(treesum "$OLD_TREE")" = "$(treesum "$OLD_CFG")" ] || die "the copies of the old build differ from it"
+            say "old build (sha256 $OLD_SHA) copied to $OLD_BIN and $OLD_TREE"
+        fi
+    fi
+    [ -x "$HOME/.local/bin/ii-shell" ] || die "no ~/.local/bin/ii-shell: the old build could not be started again after a rollback"
+else
+    say "no old build here ($OLD_LINK, $OLD_CFG): nothing to roll back to, no rollback watch will be turned on"
+fi
+if [ -n "$check" ]; then
+    say "old shell: $(pids ii-rs | tr '\n' ' ') new shell: $(pids rusty-impulse | tr '\n' ' ') layers quickshell:=$(nlayers quickshell) $WORD:=$(nlayers "$WORD")"
+    say "old watch unit: $(systemctl --user is-enabled ii-rollback-watch.service 2>&1)"
+    PREFIX=$HOME/.local bash "$here/install.sh" --status 2>&1 | sed 's/^/   install.sh --status: /'
+    "$here/carry-over.sh" --status 2>&1 | sed 's/^/   carry-over.sh --status: /'
+    "$here/carry-over.sh" --dry-run --dots new 2>&1 | sed 's/^/   carry-over.sh -n --dots new: /'
+    exit 0
+fi
+
+# 2. install, the old build untouched
+before=$(old_state)
+if [ -x "$NEW_LINK" ] && [ "$(sha "$NEW_LINK")" = "$NEW_SHA" ] && [ -d "$NEW_CFG" ] && "$NEW_LINK" -c rusty-impulse --check-tree >/dev/null 2>&1; then
+    say "rusty-impulse $new8 is installed already and runs its tree: not installed again"
+else
+    say "installing: PREFIX=$HOME/.local BIN=$here/rusty-impulse RI_ROOT=$here/tree install.sh"
+    PREFIX=$HOME/.local BIN=$here/rusty-impulse RI_ROOT=$here/tree bash "$here/install.sh" >>"$LOGF" 2>&1 || die "install.sh failed, see $LOGF; the old build was not touched"
+    [ "$(sha "$NEW_LINK")" = "$NEW_SHA" ] || die "after install.sh $NEW_LINK is not the new binary"
+fi
+[ "$(old_state)" = "$before" ] || die "install.sh changed something of the old build (~/.local/lib/ii-rs, ~/.local/bin/ii-*, ~/.config/quickshell): look before going on"
+say "installed; the old build and its copies are as they were"
+
+# 3. start scripts, and the copies' names in the rollback scripts
+for f in rusty-impulse-shell rusty-impulse-default; do
+    install -m755 "$here/$f" "$HOME/.local/bin/.$f.new" && mv -f "$HOME/.local/bin/.$f.new" "$HOME/.local/bin/$f" || die "cannot write ~/.local/bin/$f"
+done
+if [ -n "$have_old" ]; then
+    for f in rollback-watch rollback-now; do
+        sed -e "s|^OLD_BIN=.*|OLD_BIN=\${OLD_BIN:-$OLD_BIN}|" -e "s|^OLD_TREE=.*|OLD_TREE=\${OLD_TREE:-$OLD_TREE}|" -e "s|^OLD_SHA=.*|OLD_SHA=\${OLD_SHA:-$OLD_SHA}|" "$here/$f" >"$here/.$f.new" &&
+            chmod 755 "$here/.$f.new" && bash -n "$here/.$f.new" && mv -f "$here/.$f.new" "$here/$f" || die "cannot write the copies' names into $here/$f"
+    done
+fi
+
+# 4. the old watch off
+old_unit=$config/systemd/user/ii-rollback-watch.service
+if [ -e "$old_unit" ]; then
+    old_watch=$(sed -n 's/^ExecStart=\(.*\) run$/\1/p' "$old_unit")
+    say "stopping the old rollback watch: $old_watch stop"
+    [ -x "$old_watch" ] && "$old_watch" stop 2>&1 | sed 's/^/   /' | tee -a "$LOGF"
+    [ ! -e "$old_unit" ] || { systemctl --user disable --now ii-rollback-watch.service >/dev/null 2>&1; rm -f "$old_unit"; systemctl --user daemon-reload; }
+fi
+p=$(cat "$XDG_RUNTIME_DIR/ii-rollback-watch.pid" 2>/dev/null)
+[ -z "$p" ] || ! kill -0 "$p" 2>/dev/null || ! grep -qa rollback-watch "/proc/$p/cmdline" || { kill "$p"; say "old rollback watch pid $p stopped"; }
+"$here/rollback-watch" stop >/dev/null 2>&1
+
+# 5. the swap
+say "stopping the old shell, copying the data, rewriting the owner's files"
+stop ii-rs; stop rusty-impulse
+CARRY_LOG=$LOGF "$here/carry-over.sh" --quiet 2>&1 | sed 's/^/   /' | tee -a "$LOGF"; rc=${PIPESTATUS[0]}
+[ "$rc" = 0 ] || [ "$rc" = 3 ] || { old_shell_again; die "carry-over.sh failed ($rc); the old shell was started again"; }
+"$here/carry-over.sh" --dots new 2>&1 | sed 's/^/   /' | tee -a "$LOGF"; rc=${PIPESTATUS[0]}
+if [ "$rc" != 0 ]; then
+    "$here/carry-over.sh" --dots old >>"$LOGF" 2>&1; hc reload >/dev/null; old_shell_again
+    die "carry-over.sh --dots new failed ($rc); the files were put back and the old shell was started again"
+fi
+hc reload >/dev/null || say "ERROR: hyprctl reload failed"
+"$here/rollback-watch" idle 2>&1 | sed 's/^/   /' | tee -a "$LOGF"
+hc dispatch 'hl.dsp.exec_cmd("$HOME/.local/bin/rusty-impulse-shell")' >/dev/null
+ok=
+for _ in $(seq $((START_WAIT * 2))); do
+    n=$(nlayers "$WORD")
+    [ -n "$(pids rusty-impulse)" ] && [ -n "$n" ] && [ "$n" -gt 0 ] && { ok=1; break; }
+    sleep 0.5
+done
+
+# 6. it did not come up
+if [ -z "$ok" ]; then
+    say "rusty-impulse did not come up in ${START_WAIT}s (pid=$(pids rusty-impulse | tr '\n' ' ') layers=$(nlayers "$WORD")); its log: $XDG_RUNTIME_DIR/rusty-impulse.log"
+    cp -p "$XDG_RUNTIME_DIR/rusty-impulse.log" "$here/rusty-impulse-failed-start-$(date +%H%M%S).log" 2>/dev/null
+    if [ -n "$have_old" ]; then say "going back: rollback-now"; "$here/rollback-now" 2>&1 | sed 's/^/   /' | tee -a "$LOGF"; fi
+    die "the new build did not start"
+fi
+p=$(pids rusty-impulse | head -1)
+say "rusty-impulse runs: pid $p sha256 $(sha "/proc/$p/exe") layers $WORD:=$n"
+if ! relock new; then
+    say "ERROR: the screen is locked and the new shell did not take the lock: the owner could not type his password"
+    [ -n "$have_old" ] || die "the new build did not take the session lock. Again: $here/rollback-watch relock new"
+    say "going back: rollback-now"; "$here/rollback-now" 2>&1 | sed 's/^/   /' | tee -a "$LOGF"
+    die "the new build did not take the session lock; the old build was started again"
+fi
+
+# 7. the new watch
+if [ -n "$have_old" ]; then
+    "$here/rollback-watch" enable 2>&1 | sed 's/^/   rollback-watch enable: /' | tee -a "$LOGF"
+    "$here/rollback-watch" status 2>/dev/null | head -3 | sed 's/^/   /' | tee -a "$LOGF"
+fi
+kp=${XDG_STATE_HOME:-$HOME/.local/state}/rusty-impulse/carry-over/keyring-pending
+if [ -e "$kp" ]; then
+    say "KEYRING: the API keys are NOT in the new build yet, the keyring was locked. $([ -n "$have_old" ] && echo "The rollback watch copies them once the keyring is open (nobody has to run anything) and adds a line to this log: $LOGF" || echo "No rollback watch is on here, so nothing copies them later: $here/carry-over.sh --keyring")"
+else
+    say "keyring: nothing is left to copy"
+fi
+say "done. Back to the old build: $here/rollback-now"

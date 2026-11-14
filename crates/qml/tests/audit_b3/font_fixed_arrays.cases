@@ -1,0 +1,111 @@
+# letterSpacing and wordSpacing are QFixed (1/64); arrays to value types; capitalization of Qt.font
+@property font f
+@property point pt: Qt.point(1, 2)
+@property vector3d v3
+@property rect rc: Qt.rect(1, 2, 3, 4)
+@property size sz
+@property vector2d v2
+@property vector4d v4
+@property quaternion qn
+@property matrix4x4 mx
+@property int npt: 0
+@property int nv3: 0
+@onPtChanged: npt += 1
+@onV3Changed: nv3 += 1
+w(function(){ f.letterSpacing = 28.2481231689453125; return f.letterSpacing + "|" + String(f) })
+=> string:28.234375|QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,1,28.2344,0,0,1,,0,0)
+w(function(){ f.letterSpacing = -1.01; return f.letterSpacing })
+=> number:-1
+w(function(){ f.letterSpacing = 0.01; return f.letterSpacing })
+=> number:0
+w(function(){ f.letterSpacing = 1e12; return f.letterSpacing })
+=> number:-33554432
+w(function(){ f.letterSpacing = -1e12; return f.letterSpacing })
+=> number:-33554432
+w(function(){ f.letterSpacing = Infinity; return f.letterSpacing })
+=> number:-33554432
+w(function(){ f.wordSpacing = 28.2481231689453125; return f.wordSpacing + "|" + String(f) })
+=> string:28.234375|QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,1,-3.35544e+07,28.2344,0,1,,0,0)
+w(function(){ f.wordSpacing = -1.01; return f.wordSpacing })
+=> number:-1
+w(function(){ f.wordSpacing = NaN; return f.wordSpacing })
+=> number:-33554432
+w(function(){ f.wordSpacing = undefined; return f.wordSpacing })
+=> number:-33554432
+w(function(){ f.wordSpacing = 1e12; return f.wordSpacing })
+=> number:-33554432
+String(Qt.font({family: "A", letterSpacing: 1.3, wordSpacing: 2.7}))
+=> string:QFont(A,9,-1,5,400,0,0,0,0,0,0,1,1.29688,2.6875,0,1,,0,0)
+(function(){ var g = Qt.font({family: "A", letterSpacing: 1.3, wordSpacing: 2.7}); return g.letterSpacing + "|" + g.wordSpacing })()
+=> string:1.296875|2.6875
+String(Qt.font({family: "A", capitalization: 9, hintingPreference: 5}))
+=> string:QFont(A,9,-1,5,400,0,0,0,0,0,1,0,0,0,0,1,,0,0)
+(function(){ var g = Qt.font({family: "A", capitalization: 9, hintingPreference: 5}); return g.capitalization + "|" + g.hintingPreference })()
+=> string:1|1
+String(Qt.font({family: "A", capitalization: 12}))
+=> string:QFont(A,9,-1,5,400,0,0,0,0,0,4,0,0,0,0,1,,0,0)
+String(Qt.font({family: "A", capitalization: -1, hintingPreference: -1}))
+=> string:QFont(A,9,-1,5,400,0,0,0,0,0,7,0,0,0,0,1,,0,0)
+w(function(){ pt = [1, 2]; return String(pt) })
+=> string:QPointF(0, 0)
+w(function(){ pt = Qt.point(5, 6); pt = [1, 2]; return String(pt) })
+=> string:QPointF(0, 0)
+w(function(){ pt = Qt.point(5, 6); pt = []; return String(pt) })
+=> string:QPointF(0, 0)
+w(function(){ pt = Qt.point(5, 6); pt = [1, 2, 3]; return String(pt) })
+=> string:QPointF(0, 0)
+w(function(){ v3 = Qt.vector3d(5, 6, 7); v3 = [1, 2, 3]; return String(v3) })
+=> string:QVector3D(0, 0, 0)
+w(function(){ rc = [1, 2, 3, 4]; return String(rc) })
+=> string:QRectF(0, 0, 0, 0)
+w(function(){ sz = Qt.size(5, 6); sz = [1, 2]; return String(sz) })
+=> string:QSizeF(-1, -1)
+w(function(){ v2 = Qt.vector2d(5, 6); v2 = [1, 2]; return String(v2) })
+=> string:QVector2D(0, 0)
+w(function(){ v4 = Qt.vector4d(5, 6, 7, 8); v4 = [1, 2, 3, 4]; return String(v4) })
+=> string:QVector4D(0, 0, 0, 0)
+w(function(){ qn = Qt.quaternion(5, 6, 7, 8); qn = [1, 2, 3, 4]; return String(qn) })
+=> string:QQuaternion(1, 0, 0, 0)
+w(function(){ mx = Qt.matrix4x4(2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2); mx = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]; return String(mx) })
+=> string:QMatrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+w(function(){ f = Qt.font({family: "Q"}); f = ["Arial"]; return f.family })
+=> string:Sans Serif
+(function(){ var q = Qt.quaternion(1, 2, 3, 4); return String(q.times([1, 2, 3])) })()
+=> string:QVector3D(0, 0, 0)
+(function(){ var q = Qt.quaternion(1, 2, 3, 4); return String(q.times([1, 2, 3, 4])) })()
+=> string:QVector3D(0, 0, 0)
+(function(){ var m = Qt.matrix4x4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16); return String(m.times([1, 2, 3, 4])) })()
+=> string:QVector4D(0, 0, 0, 0)
+(function(){ var m = Qt.matrix4x4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16); return String(m.times([1, 2, 3])) })()
+=> string:QVector4D(0, 0, 0, 0)
+String(Qt.vector3d(1, 2, 3).plus([1, 2, 3]))
+=> string:QVector3D(1, 2, 3)
+String(Qt.vector3d(1, 2, 3).plus([]))
+=> string:QVector3D(1, 2, 3)
+String(Qt.vector3d(1, 2, 3).dotProduct([1, 2, 3]))
+=> string:0
+String(Qt.vector2d(1, 2).plus([1, 2]))
+=> string:QVector2D(1, 2)
+String(Qt.vector4d(1, 2, 3, 4).plus([1, 2, 3, 4]))
+=> string:QVector4D(1, 2, 3, 4)
+String(Qt.vector3d(1, 2, 3).fuzzyEquals([1, 2, 3]))
+=> string:false
+String(Qt.vector3d(0, 0, 0).fuzzyEquals([1, 2, 3]))
+=> string:true
+String(Qt.matrix4x4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16).times([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]))
+=> string:QVector4D(0, 0, 0, 0)
+String(Qt.matrix4x4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16).map([1, 2]))
+=> string:QPointF(0.25, 0.5)
+String(Qt.matrix4x4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16).mapRect([1, 2, 3, 4]))
+=> string:QRectF(0.25, 0.5, 0, 0)
+w(function(){ pt = Qt.point(5, 6); try { pt = [1, 2] } catch (e) { return "T " + e }; return npt })
+=> number:10
+w(function(){ v3 = Qt.vector3d(5, 6, 7); var a = nv3; v3 = [1, 2, 3]; return nv3 - a })
+=> number:1
+w(function(){ v3 = Qt.vector3d(0, 0, 0); var a = nv3; v3 = [1, 2, 3]; return nv3 - a })
+=> number:0
+@property point bpt: [1, 2]
+@property vector3d bv3: [1, 2, 3]
+@property size bsz: [1, 2]
+String(bpt) + "|" + String(bv3) + "|" + String(bsz)
+=> string:QPointF(0, 0)|QVector3D(0, 0, 0)|QSizeF(-1, -1)

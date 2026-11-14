@@ -1,0 +1,40 @@
+# The whole gate, tools/testenv/ri-gate --workspace, on GitHub-hosted runners: every step of
+# it, spread over jobs that fit a standard runner (gate-jobs.yml). The tests, with every
+# reference comparison, run as four hash partitions (cargo-nextest "Partitioning test runs":
+# each test is in exactly one); the last job takes every step no other job names, so a step
+# added to ri-gate runs here without an edit.
+#
+# On one 8-core machine the gate takes about half an hour from a cold cache, which takes
+# 24 GB (docs/ci.md); here every job builds its own part on 2 vCPU, several hundred billed
+# minutes a run out of the 2,000 a
+# month a private repository has. So it runs by hand only (Actions → ri-gate → Run workflow,
+# any branch); what runs on every push is checks.yml, and a pull request is checked before
+# its merge with tools/ci/gate --workspace (docs/ci.md).
+name: ri-gate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ri-gate:
+    uses: ./.github/workflows/gate-jobs.yml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      jobs: >-
+        [{"name": "tests-1", "args": "--only tests --partition hash:1/4"},
+         {"name": "tests-2", "args": "--only tests --partition hash:2/4"},
+         {"name": "tests-3", "args": "--only tests --partition hash:3/4"},
+         {"name": "tests-4", "args": "--only tests --partition hash:4/4"},
+         {"name": "aot", "args": "--only aot"},
+         {"name": "clippy", "args": "--only clippy,shipped-clippy"},
+         {"name": "shipped", "args": "--only shipped-build,shipped-tests"},
+         {"name": "rest", "args": "--skip tests,aot,clippy,shipped-clippy,shipped-build,shipped-tests"}]

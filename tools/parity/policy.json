@@ -1,0 +1,31 @@
+{
+ "_doc": "compare.py's verdict. limits: [most `coarse` pixels a shot may have and still pass, reason]; areas: rectangles of the shots matching a pattern with limits of their own, [x, y, w, h, largest mean colour difference, largest difference after the 5x5 average, reason]; idle_of: the shot of the same run that shows a family's idle screen (default idle.png, taken after the first start); logs: text files the scenes write about what an action did where no shot can show it, which must be equal line by line on both sides; idle_shots: shots that show the idle screen by design, so being equal to it is not an empty shot. Keys are fnmatch patterns on shot names; of several matching lines the last one wins.",
+ "limits": {
+  "*": [0, "a still screen: two runs of the original measure 0 on every shot, and so does native on every shot without a defect"],
+  "*.f[0-9]*": [12000, "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more"]
+ },
+ "areas": {
+  "ptr_hold_*": [[1854, 724, 30, 30, 1, 2, "the calendar's next-month button, which the scene holds down: the original fills it with the ripple (79,68,66 against 59,48,47 hovered), a step of 20 that the whole-shot number does not see. 20 captures of the original differ from each other by 0 here in all four shots (mean and largest); native measures mean 0.01 and largest 0.08 where it draws the same, and mean 12.47, largest 20.04 held down without the ripple"]]
+ },
+ "logs": ["overlay-actions.log", "state.log"],
+ "times": {
+  "osd-life.log": [100, "ms from the last event to the OSD layer being gone, the middle of 5, read in 10 ms ticks by polling hyprctl: two runs of one shell were 20 to 40 ms apart"]
+ },
+ "idle_of": {
+  "bar_vertical*": "bar_vertical",
+  "waffle*": "waffle"
+ },
+ "idle_shots": {
+  "base": "the idle screen itself",
+  "ptr_overlay_btn_screenshot": "the button closes the overlay and copies the screen; overlay-actions.log has what the clipboard got",
+  "ptr_overlay_btn_folder": "the button closes the overlay and opens the folder; overlay-actions.log has what was opened",
+  "ptr_overview_ws1": "the click goes back to workspace 1 and closes the overview",
+  "lock_after_unlock": "the password unlocked the session",
+  "firstStart": "the idle screen after the first start of a login",
+  "bar_vertical": "the idle screen of the vertical bar",
+  "bar_vertical_live": "the vertical bar after a live config edit, which is its idle screen",
+  "bar_top_live": "the bar put back on top by a live config edit, which is the idle screen",
+  "waffle_live": "the waffle family after a live config edit, which is its idle screen",
+  "waffle": "the idle screen of the waffle family"
+ }
+}

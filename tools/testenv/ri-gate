@@ -1,0 +1,289 @@
+#!/bin/sh
+# The qml/shell gate (`--workspace`: the whole workspace) with every comparison running:
+# gnome-keyring needs a normal user, so every test runs as tester (network_equiv's mock
+# NetworkManager is root of a user namespace of its own). Run the container with the
+# Containerfile header's flags (seccomp, systempaths and apparmor unconfined): without them
+# the namespace-based comparisons (brightnessctl's fake /sys/class, the private PID space,
+# network_equiv's root-owned mock NetworkManager) fail. tools/ci/gate does that from a checkout.
+#
+#   ri-gate [--workspace] [--only STEP[,STEP...]] [--skip STEP[,STEP...]] [NEXTEST ARGS...]
+#
+# Every step runs, in the order of `steps` below (--only: just those; --skip: all but those).
+# A failed step does not stop the ones after it; the summary at the end lists each step's
+# result and time. The CI workflows run the same steps, a few per job (ri-gate.yml,
+# checks.yml). NEXTEST ARGS go to the `tests` step (`--lib`, `--partition hash:1/4`, ...).
+#
+# Dependencies come only from the committed lock files: they are fetched once (`--locked`, the
+# only step that needs the network; a volume on $CARGO_HOME keeps them between runs), every
+# build after that is `--frozen`. Builds use the `gate` profile, release without LTO and with
+# debug assertions on (`debug_assert!` runs in the tests); the shipped-* steps use the
+# `shipped` profile, the same without debug assertions, as the installed shell is built.
+#
+# `-h` / `--help` prints the usage and runs nothing. So does an argument that is no option of
+# the gate (exit 2) unless `--only` names `tests`: only a run narrowed to chosen steps hands
+# what follows its options to nextest, so a mistyped option never starts the whole gate. The
+# order counts: the first argument that is no option of the gate and all after it are for
+# nextest, so `-p shell --only tests` is refused.
+# `ri-gate --check-args ARGS...` only reads ARGS that way: exit 0 for a run, 100 after printing
+# the usage for help, 2 for a refused argument (tools/ci/gate asks before it starts anything).
+set -u
+steps="tests no-interp rigen aot fmt clippy shipped-build shipped-tests shipped-clippy deny gpu-precision"
+usage() {
+    cat <<USAGE
+usage: ri-gate [--workspace] [--only STEP[,STEP...]] [--skip STEP[,STEP...]] [NEXTEST ARGS...]
+       tools/ci/gate takes the same arguments, and: tools/ci/gate --run CMD...
+
+  --workspace   the whole workspace (the full gate); without it: qml and shell
+  --only STEPS  run just these steps
+  --skip STEPS  run all steps but these
+  -h, --help    print this and run nothing
+  NEXTEST ARGS  go to the tests step; taken only when --only names tests
+                (--only tests --test keyboard_focus, --only tests --partition hash:1/4)
+
+The order counts: the options above come first; the first argument that is none of them
+and everything after it are NEXTEST ARGS (-p shell --only tests is refused).
+
+steps: $steps
+       (aot only with --workspace)
+USAGE
+}
+check=
+if [ "${1-}" = --check-args ]; then
+    check=1
+    shift
+fi
+for a in "$@"; do
+    case $a in
+        -h | --help)
+            usage
+            exit ${check:+100}
+            ;;
+    esac
+done
+ws=
+only=
+skip=
+while [ $# -gt 0 ]; do
+    case $1 in
+        --workspace) ws=1 ;;
+        --only | --skip)
+            if [ $# -lt 2 ]; then
+                echo "ri-gate: $1 needs a list of steps" >&2
+                usage >&2
+                exit 2
+            fi
+            if [ "$1" = --only ]; then only=$2; else skip=$2; fi
+            shift
+            ;;
+        --only=*) only=${1#--only=} ;;
+        --skip=*) skip=${1#--skip=} ;;
+        *) break ;;
+    esac
+    shift
+done
+if [ $# -gt 0 ]; then
+    case ",$only," in
+        *,tests,*) ;;
+        *)
+            echo "ri-gate: unknown argument '$1': the gate's options come first, and arguments for nextest need --only with tests before them" >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+fi
+if [ -n "$ws" ]; then
+    pkgs=--workspace
+else
+    pkgs="-p qml -p shell"
+    # riaotcheck is the whole tree's check: it is a step of the --workspace gate only.
+    steps=$(echo "$steps" | sed 's/ aot / /')
+fi
+only=$(echo "$only" | tr ',' ' ')
+skip=$(echo "$skip" | tr ',' ' ')
+for s in $only $skip; do
+    case " $steps " in
+        *" $s "*) ;;
+        *) echo "ri-gate: unknown step '$s'; steps: $steps" >&2; exit 2 ;;
+    esac
+done
+# The gate's order, whatever order --only names them in.
+sel=
+for s in $steps; do
+    case " $skip " in *" $s "*) continue ;; esac
+    if [ -z "$only" ]; then
+        sel="$sel $s"
+    else
+        case " $only " in *" $s "*) sel="$sel $s" ;; esac
+    fi
+done
+steps=$sel
+if [ -z "$steps" ]; then
+    echo "ri-gate: no step is left to run" >&2
+    usage >&2
+    exit 2
+fi
+if [ -n "$check" ]; then
+    exit 0
+fi
+selected() {
+    case " $steps " in *" $1 "*) return 0 ;; esac
+    return 1
+}
+
+as-tester cargo fetch --locked || exit 1
+(cd crates/rigen/check && as-tester cargo fetch --locked) || exit 1
+if selected deny; then
+    as-tester cargo deny fetch db || exit 1
+fi
+
+# cargo-nextest runs each test in a process of its own and kills one that hangs
+# (.config/nextest.toml); it does not run doctests.
+nextest="cargo nextest run --frozen --cargo-profile gate --profile gate"
+# The shipped shell's features: without `interp`, which the steps before it enable (feature
+# unification keeps it on in the whole build), so code and imports that only that build
+# compiles are checked nowhere else. The shipped profile compiles them with release cfgs
+# (no debug assertions: main.rs refuses an interpreter linked in by feature unification only
+# then) and keeps the symbol names shipped_binary reads; shipped-build also runs
+# tools/install.sh itself (the release profile, cargo's output read by jq) into $installed.
+shipped="--frozen --profile shipped -p shell"
+nextest_shipped="cargo nextest run --frozen --cargo-profile shipped --profile gate"
+# A release build of the shell without the interpreter does not compile without a commit to
+# name (crates/shell/src/main.rs; tools/build.sh names the checkout's). The shipped profile's
+# builds are the tests' own and are installed nowhere: they name this word, the same for
+# every commit, so that a new commit alone compiles nothing again.
+shipped_commit="RI_COMMIT=gate"
+installed=/target/shipped-install
+
+# RI_REQUIRE_GL (here and in shipped-tests): a test that needs a GL context fails without one
+# instead of passing unrun.
+step_tests() {
+    as-tester env RI_REQUIRE_GL=1 $nextest $pkgs --features shell/interp "$@"
+}
+# The release shell's qml has no interpreter; the `tests` step always builds it with one.
+step_no_interp() {
+    as-tester $nextest -p qml --no-default-features --test no_interp
+}
+# rigen's interpreter-vs-compiled JS cases live in their own workspace; with --workspace it
+# also compiles every script of the tree through rigen.
+step_rigen() {
+    if [ -n "$ws" ]; then
+        (cd crates/rigen/check &&
+            as-tester env RI_DIR="$PWD/../../../qml" $nextest)
+    else
+        (cd crates/rigen/check && as-tester $nextest)
+    fi
+}
+# Compiled vs interpreted on the whole QML tree; it fails on any divergence, on any script
+# that falls back to the interpreter, on any unsupported QML type (TYPE lines) and on any
+# error a script raises while a scene loads or its panels open and close (ERROR lines). --v4 also
+# replays sampled bindings in Qt 6.12's QV4 against the interpreter.
+step_aot() {
+    out=$(mktemp -d)
+    chown tester "$out" 2>/dev/null
+    rc=0
+    if ! as-tester cargo run --frozen --profile gate -p ricompiled --bin riaotcheck -- qml \
+        --backend compiled --out "$out" --strict --v4 /opt/qv4-venv/bin/python >"$out/log" 2>&1; then
+        rc=1
+        echo "riaotcheck failed; last lines of its log:"
+        tail -n 40 "$out/log"
+    fi
+    grep -E '^(keys |v4 |V4 ERROR|ERROR |DIVERGE|MISSING|DYNAMIC|INTERPRETED|TYPE |UNWRITTEN )|^aot: ' "$out/log"
+    rm -rf "$out"
+    return $rc
+}
+# rustfmt's default style on the workspace and on rigen's check workspace.
+step_fmt() {
+    rc=0
+    as-tester cargo fmt --all --check || rc=1
+    (cd crates/rigen/check && as-tester cargo fmt --check) || rc=1
+    return $rc
+}
+# Lint every target the tests build, including those that need the interpreter.
+step_clippy() {
+    as-tester cargo clippy --frozen $pkgs --all-targets --features shell/interp,shell/tools \
+        -- -D warnings &&
+        (cd crates/rigen/check && as-tester cargo clippy --frozen --all-targets -- -D warnings)
+}
+step_shipped_build() {
+    as-tester env $shipped_commit cargo build $shipped || return 1
+    rm -rf "$installed"
+    mkdir -p "$installed"
+    chown -R tester "$installed" 2>/dev/null
+    as-tester env PREFIX="$installed/prefix" XDG_CONFIG_HOME="$installed/config" \
+        XDG_STATE_HOME="$installed/state" tools/install.sh
+}
+# The AOT-only shell's tests, its refusals (startup_errors' tests gated on not(interp)), its
+# binary, which holds no JavaScript parser or evaluator (shipped_binary), and tools/install.sh
+# with it (install_rollback); then the binary shipped-build installed (release, thin LTO): it
+# says it has no interpreter, runs the tree it was installed with, finds it started as Hyprland
+# starts it (`rusty-impulse -c rusty-impulse`), holds no interpreter source paths, draws its bar from that tree
+# (shipped_first_frame) and opens its panels there, each with a picture, a click and a key that
+# it reacts to, and no script error (shipped_panels).
+step_shipped_tests() {
+    rc=0
+    as-tester env RI_REQUIRE_GL=1 $shipped_commit $nextest_shipped -p shell || rc=1
+    bin=$installed/prefix/bin/rusty-impulse
+    [ -x "$bin" ] || {
+        echo "no $bin: run shipped-build first"
+        return 1
+    }
+    "$bin" --version || return 1
+    "$bin" --version | grep -qx 'JavaScript interpreter: none' || return 1
+    env -i "$bin" --check-tree -p "$installed/config/rustshell/rusty-impulse" || return 1
+    env -i HOME="$installed" XDG_CONFIG_HOME="$installed/config" "$bin" -c rusty-impulse --check-tree || return 1
+    if grep -aqE 'oxc_parser|oxc_ast|qml/src/ir\.rs' "$bin"; then
+        echo "$bin holds interpreter code"
+        return 1
+    fi
+    as-tester env RI_SHIPPED_BIN="$bin" RI_SHIPPED_TREE="$installed/config/rustshell/rusty-impulse" \
+        $shipped_commit $nextest_shipped -p shell --test shipped_first_frame --test shipped_panels || rc=1
+    return $rc
+}
+step_shipped_clippy() {
+    as-tester env $shipped_commit cargo clippy $shipped --all-targets -- -D warnings
+}
+# RustSec advisories, licenses, duplicate versions and sources of Cargo.lock (deny.toml);
+# rigen's check workspace has a lock file of its own, held to the same policy.
+step_deny() {
+    rc=0
+    as-tester cargo deny --frozen check advisories bans licenses sources || rc=1
+    as-tester cargo deny --frozen --manifest-path crates/rigen/check/Cargo.toml \
+        check advisories bans licenses sources || rc=1
+    return $rc
+}
+# The shell's shaders on Mesa llvmpipe with fp16 mediump inputs emulated
+# (crates/shell/src/gpu_precision_tests.rs): bugs that only show on GPUs with half-precision
+# mediump. The `tests` step runs them too, under the same RI_REQUIRE_GL; this step is them
+# alone, one at a time and always on llvmpipe (LIBGL_ALWAYS_SOFTWARE), for gpu-precision.yml.
+step_gpu_precision() {
+    as-tester env RI_REQUIRE_GL=1 LIBGL_ALWAYS_SOFTWARE=1 $nextest $pkgs --features shell/interp \
+        --lib -E 'package(shell) & test(/precision_tests/)' --test-threads 1
+}
+
+st=0
+summary=
+for s in $steps; do
+    echo "==> ri-gate: $s"
+    t0=$(date +%s)
+    if [ "$s" = tests ]; then
+        step_tests "$@"
+    else
+        "step_$(echo "$s" | tr - _)"
+    fi
+    rc=$?
+    t=$(($(date +%s) - t0))
+    if [ $rc -eq 0 ]; then
+        res=ok
+    else
+        res=FAILED
+        st=1
+    fi
+    summary="$summary$(printf '%-16s %-7s %4d min %02d s' "$s" "$res" $((t / 60)) $((t % 60)))
+"
+done
+# What the steps above left out, in one place: every ignored test and its reason.
+echo "==> ri-gate: skipped tests"
+tools/ci/skipped-tests || st=1
+echo "==> ri-gate: summary"
+printf '%s' "$summary"
+exit $st

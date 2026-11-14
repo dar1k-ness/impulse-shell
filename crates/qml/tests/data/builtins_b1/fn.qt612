@@ -1,0 +1,9 @@
+N1 => __bound function__|function __bound function__() { [native code] }||||function
+N2 => function() { [native code] }|
+N3 => function acc() { [native code] }
+N4 => function() { [native code] }|function x y() { [native code] }
+N5 => own|own|function a() { [native code] }
+N6 => get x|set x|function set x() { [native code] }
+N7 => [d]|function [d]() { [native code] }
+N8 => function trap() { [native code] }|function trap() { [native code] }
+N9 => THROW TypeError: Type error

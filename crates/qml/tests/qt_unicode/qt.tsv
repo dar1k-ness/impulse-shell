@@ -1,0 +1,163 @@
+unicode	17.0	297334	17.0
+added	558	Armenian	0	L			
+added	58B	Armenian	0	L			
+added	58C	Armenian	0	L			
+added	5C8	Hebrew	0	R			
+added	5C9	Hebrew	0	R			
+added	B53	Oriya	0	L			
+added	B54	Oriya	0	L			
+added	1ADE	Combining Diacritical Marks Extended	0	L			
+added	1AED	Combining Diacritical Marks Extended	0	L			
+added	1AF0	Combining Diacritical Marks Extended	0	L			
+added	208F	Superscripts and Subscripts	0	L			
+added	209E	Superscripts and Subscripts	0	L			
+added	209F	Superscripts and Subscripts	0	L			
+added	20C2	Currency Symbols	0	ET			
+added	20C3	Currency Symbols	0	ET			
+added	20C4	Currency Symbols	0	ET			
+added	2E60	Supplemental Punctuation	0	L			
+added	2E62	Supplemental Punctuation	0	L			
+added	2E63	Supplemental Punctuation	0	L			
+added	A7DD	Latin Extended-D	0	L			
+added	A7E2	Latin Extended-D	0	L			
+added	AB6C	Latin Extended-E	0	L			
+added	AB6D	Latin Extended-E	0	L			
+added	107BB	Latin Extended-F	0	L			
+added	107BD	Latin Extended-F	0	L			
+added	107BF	Latin Extended-F	0	L			
+added	10EC9	Arabic Extended-C	0	R			
+added	10EE5	Arabic Extended-C	0	R			
+added	10EF9	Arabic Extended-C	0	R			
+added	11B0A	Devanagari Extended-A	0	L			
+added	11DF0	Bengali Supplement	0	L			
+added	11DF1	Bengali Supplement	0	L			
+added	1246F	Cuneiform Numbers and Punctuation	0	L			
+added	1247A	Cuneiform Numbers and Punctuation	0	L			
+added	1247F	Cuneiform Numbers and Punctuation	0	L			
+added	12550	Archaic Cuneiform Numerals	0	L			
+added	125EB	Archaic Cuneiform Numerals	0	L			
+added	12686	Archaic Cuneiform Numerals	0	L			
+added	18CD6	Khitan Small Script	0	L			
+added	18CD8	Khitan Small Script	0	L			
+added	18CDA	Khitan Small Script	0	L			
+added	18D1F	Tangut Supplement	0	L			
+added	18D20	Tangut Supplement	0	L			
+added	18E00	Jurchen	0	L			
+added	18FC9	Jurchen	0	L			
+added	19191	Jurchen	0	L			
+added	191A0	Jurchen Radicals	0	L			
+added	191B9	Jurchen Radicals	0	L			
+added	191D2	Jurchen Radicals	0	L			
+added	1B123	Kana Extended-A	0	L			
+added	1B126	Kana Extended-A	0	L			
+added	1B128	Kana Extended-A	0	L			
+added	1B168	Small Kana Extension	0	L			
+added	1CED2	Miscellaneous Symbols Supplement	0	L			
+added	1CEF4	Miscellaneous Symbols Supplement	0	L			
+added	1CEFD	Miscellaneous Symbols Supplement	0	L			
+added	1D127	Musical Symbols	0	L			
+added	1D1F4	Musical Symbols	0	L			
+added	1D1FF	Musical Symbols	0	L			
+added	1D250	Musical Symbols Supplement	0	L			
+added	1D269	Musical Symbols Supplement	0	L			
+added	1D281	Musical Symbols Supplement	0	L			
+added	1D6A6	Mathematical Alphanumeric Symbols	0	L			
+added	1DB00	Miscellaneous Symbols and Arrows Extended	0	L			
+added	1DB0E	Miscellaneous Symbols and Arrows Extended	0	L			
+added	1DB1C	Miscellaneous Symbols and Arrows Extended	0	L			
+added	1DF1F	Latin Extended-G	0	L			
+added	1DF70	Latin Extended-G	0	L			
+added	1DFFF	Latin Extended-G	0	L			
+added	1F1AE	Enclosed Alphanumeric Supplement	0	L			
+added	1F6D9	Transport and Map Symbols	0	L			
+added	1F7DA	Geometric Shapes Extended	0	L			
+added	1F7F7	Geometric Shapes Extended	0	L			
+added	1F7FF	Geometric Shapes Extended	0	L			
+added	1FA8B	Symbols and Pictographs Extended-A	0	L			
+added	1FADD	Symbols and Pictographs Extended-A	0	L			
+added	1FAFA	Symbols and Pictographs Extended-A	0	L			
+added	2B81E	CJK Unified Ideographs Extension D	0	L			
+added	3D000	Seal	0	L			
+added	3E620	Seal	0	L			
+added	3FC3F	Seal	0	L			
+bidi	1B3A	Balinese	1	NSM		http://aᬺb.com/	http://אᬺא.com/
+bidi	1B3C	Balinese	1	NSM		http://aᬼb.com/	http://אᬼא.com/
+bidi	1B42	Balinese	1	NSM		http://aᭂb.com/	http://אᭂא.com/
+nfc	105C9	Todhri	1	L	http://𐗉.com/	http://a𐗉b.com/	http://xn--4dba0077q.com/
+normalized	105C9	105C9	NFC	105C9	105C9
+normalized	105C9	105C9	NFD	105D2 307	105D2 307
+normalized	105C9	105C9	NFKC	105C9	105C9
+normalized	105C9	105C9	NFKD	105D2 307	105D2 307
+normalized	105C9	105D2 307	NFC	105D2 307	105C9
+normalized	105C9	105D2 307	NFD	105D2 307	105D2 307
+normalized	105C9	105D2 307	NFKC	105D2 307	105C9
+normalized	105C9	105D2 307	NFKD	105D2 307	105D2 307
+normalized	105C9	61 323 105C9 301	NFC	1EA1 105D2 307 301	1EA1 105C9 301
+normalized	105C9	61 323 105C9 301	NFD	61 323 105D2 307 301	61 323 105D2 307 301
+normalized	105C9	61 323 105C9 301	NFKC	1EA1 105D2 307 301	1EA1 105C9 301
+normalized	105C9	61 323 105C9 301	NFKD	61 323 105D2 307 301	61 323 105D2 307 301
+nfc	105E4	Todhri	1	L	http://𐗤.com/	http://a𐗤b.com/	http://xn--4dba1877q.com/
+normalized	105E4	105E4	NFC	105E4	105E4
+normalized	105E4	105E4	NFD	105DA 307	105DA 307
+normalized	105E4	105E4	NFKC	105E4	105E4
+normalized	105E4	105E4	NFKD	105DA 307	105DA 307
+normalized	105E4	105DA 307	NFC	105DA 307	105E4
+normalized	105E4	105DA 307	NFD	105DA 307	105DA 307
+normalized	105E4	105DA 307	NFKC	105DA 307	105E4
+normalized	105E4	105DA 307	NFKD	105DA 307	105DA 307
+normalized	105E4	61 323 105E4 301	NFC	1EA1 105DA 307 301	1EA1 105E4 301
+normalized	105E4	61 323 105E4 301	NFD	61 323 105DA 307 301	61 323 105DA 307 301
+normalized	105E4	61 323 105E4 301	NFKC	1EA1 105DA 307 301	1EA1 105E4 301
+normalized	105E4	61 323 105E4 301	NFKD	61 323 105DA 307 301	61 323 105DA 307 301
+nfc	16126	Gurung Khema	1	NSM		http://a𖄦b.com/	http://א𖄦א.com/
+normalized	16126	16126	NFC	16121 1611F	16126
+normalized	16126	16126	NFD	1611E 1611E 1611F	1611E 1611E 1611F
+normalized	16126	16126	NFKC	16121 1611F	16126
+normalized	16126	16126	NFKD	1611E 1611E 1611F	1611E 1611E 1611F
+normalized	16126	1611E 1611E 1611F	NFC	16121 1611F	16126
+normalized	16126	1611E 1611E 1611F	NFD	1611E 1611E 1611F	1611E 1611E 1611F
+normalized	16126	1611E 1611E 1611F	NFKC	16121 1611F	16126
+normalized	16126	1611E 1611E 1611F	NFKD	1611E 1611E 1611F	1611E 1611E 1611F
+normalized	16126	61 323 16126 301	NFC	1EA1 16121 1611F 301	1EA1 16126 301
+normalized	16126	61 323 16126 301	NFD	61 323 1611E 1611E 1611F 301	61 323 1611E 1611E 1611F 301
+normalized	16126	61 323 16126 301	NFKC	1EA1 16121 1611F 301	1EA1 16126 301
+normalized	16126	61 323 16126 301	NFKD	61 323 1611E 1611E 1611F 301	61 323 1611E 1611E 1611F 301
+nfc	16127	Gurung Khema	1	NSM		http://a𖄧b.com/	http://א𖄧א.com/
+normalized	16127	16127	NFC	16122 1611F	16127
+normalized	16127	16127	NFD	1611E 16129 1611F	1611E 16129 1611F
+normalized	16127	16127	NFKC	16122 1611F	16127
+normalized	16127	16127	NFKD	1611E 16129 1611F	1611E 16129 1611F
+normalized	16127	1611E 16129 1611F	NFC	16122 1611F	16127
+normalized	16127	1611E 16129 1611F	NFD	1611E 16129 1611F	1611E 16129 1611F
+normalized	16127	1611E 16129 1611F	NFKC	16122 1611F	16127
+normalized	16127	1611E 16129 1611F	NFKD	1611E 16129 1611F	1611E 16129 1611F
+normalized	16127	61 323 16127 301	NFC	1EA1 16122 1611F 301	1EA1 16127 301
+normalized	16127	61 323 16127 301	NFD	61 323 1611E 16129 1611F 301	61 323 1611E 16129 1611F 301
+normalized	16127	61 323 16127 301	NFKC	1EA1 16122 1611F 301	1EA1 16127 301
+normalized	16127	61 323 16127 301	NFKD	61 323 1611E 16129 1611F 301	61 323 1611E 16129 1611F 301
+nfc	16128	Gurung Khema	1	NSM		http://a𖄨b.com/	http://א𖄨א.com/
+normalized	16128	16128	NFC	16121 16120	16128
+normalized	16128	16128	NFD	1611E 1611E 16120	1611E 1611E 16120
+normalized	16128	16128	NFKC	16121 16120	16128
+normalized	16128	16128	NFKD	1611E 1611E 16120	1611E 1611E 16120
+normalized	16128	1611E 1611E 16120	NFC	16121 16120	16128
+normalized	16128	1611E 1611E 16120	NFD	1611E 1611E 16120	1611E 1611E 16120
+normalized	16128	1611E 1611E 16120	NFKC	16121 16120	16128
+normalized	16128	1611E 1611E 16120	NFKD	1611E 1611E 16120	1611E 1611E 16120
+normalized	16128	61 323 16128 301	NFC	1EA1 16121 16120 301	1EA1 16128 301
+normalized	16128	61 323 16128 301	NFD	61 323 1611E 1611E 16120 301	61 323 1611E 1611E 16120 301
+normalized	16128	61 323 16128 301	NFKC	1EA1 16121 16120 301	1EA1 16128 301
+normalized	16128	61 323 16128 301	NFKD	61 323 1611E 1611E 16120 301	61 323 1611E 1611E 16120 301
+nfc	16D6A	Kirat Rai	1	L	http://𖵪.com/	http://a𖵪b.com/	http://xn--4dba7827y.com/
+normalized	16D6A	16D6A	NFC	16D6A	16D6A
+normalized	16D6A	16D6A	NFD	16D63 16D67 16D67	16D63 16D67 16D67
+normalized	16D6A	16D6A	NFKC	16D6A	16D6A
+normalized	16D6A	16D6A	NFKD	16D63 16D67 16D67	16D63 16D67 16D67
+normalized	16D6A	16D63 16D67 16D67	NFC	16D69 16D67	16D6A
+normalized	16D6A	16D63 16D67 16D67	NFD	16D63 16D67 16D67	16D63 16D67 16D67
+normalized	16D6A	16D63 16D67 16D67	NFKC	16D69 16D67	16D6A
+normalized	16D6A	16D63 16D67 16D67	NFKD	16D63 16D67 16D67	16D63 16D67 16D67
+normalized	16D6A	61 323 16D6A 301	NFC	1EA1 16D69 16D67 301	1EA1 16D6A 301
+normalized	16D6A	61 323 16D6A 301	NFD	61 323 16D63 16D67 16D67 301	61 323 16D63 16D67 16D67 301
+normalized	16D6A	61 323 16D6A 301	NFKC	1EA1 16D69 16D67 301	1EA1 16D6A 301
+normalized	16D6A	61 323 16D6A 301	NFKD	61 323 16D63 16D67 16D67 301	61 323 16D63 16D67 16D67 301

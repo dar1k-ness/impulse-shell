@@ -1,0 +1,10 @@
+binding e true
+b.enabledChanged false
+binding e false
+b false c false
+b after own true false
+b.enabledChanged true
+binding e true
+b true c false
+c.enabledChanged true
+c true

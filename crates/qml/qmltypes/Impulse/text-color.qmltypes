@@ -1,0 +1,75 @@
+import QtQuick.tooling 1.2
+
+// The background and text colors of the `cropWidth` x `cropHeight` part at (`cropX`, `cropY`)
+// of the image at `imagePath`. Setting `running` starts the work off the main thread; `found`
+// carries `{ background, text }` as color strings.
+// Implemented natively by ri (crates/qml/src/imgjobs.rs, crates/imgtools/src/textcolor.rs).
+Module {
+    Component {
+        file: "imgjobs.rs"
+        name: "ImpulseTextColor"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/TextColor 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "imagePath"
+            type: "QString"
+            read: "imagePath"
+            write: "setImagePath"
+            notify: "imagePathChanged"
+            index: 0
+        }
+        Property {
+            name: "cropX"
+            type: "double"
+            read: "cropX"
+            write: "setCropX"
+            notify: "cropXChanged"
+            index: 1
+        }
+        Property {
+            name: "cropY"
+            type: "double"
+            read: "cropY"
+            write: "setCropY"
+            notify: "cropYChanged"
+            index: 2
+        }
+        Property {
+            name: "cropWidth"
+            type: "double"
+            read: "cropWidth"
+            write: "setCropWidth"
+            notify: "cropWidthChanged"
+            index: 3
+        }
+        Property {
+            name: "cropHeight"
+            type: "double"
+            read: "cropHeight"
+            write: "setCropHeight"
+            notify: "cropHeightChanged"
+            index: 4
+        }
+        Property {
+            name: "running"
+            type: "bool"
+            read: "running"
+            write: "setRunning"
+            notify: "runningChanged"
+            index: 5
+        }
+        Signal { name: "imagePathChanged" }
+        Signal { name: "cropXChanged" }
+        Signal { name: "cropYChanged" }
+        Signal { name: "cropWidthChanged" }
+        Signal { name: "cropHeightChanged" }
+        Signal { name: "runningChanged" }
+        Signal {
+            name: "found"
+            Parameter { name: "colors"; type: "QVariant" }
+        }
+        Signal { name: "finished" }
+    }
+}

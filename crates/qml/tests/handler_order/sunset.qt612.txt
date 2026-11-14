@@ -1,0 +1,16 @@
+night, ready
+temperature 6000
+temperature 5000
+active true
+unready
+active true
+day, ready
+temperature 6000
+temperature 6000
+temperature 6000
+active false
+unready
+active false
+not automatic, ready
+temperature 6000
+active false

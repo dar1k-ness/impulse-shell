@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+"""Module docstring."""
+import os, sys
+from dataclasses import dataclass
+
+# TODO: привет, мир
+@dataclass
+class Point(object):
+    x: float = 0.5
+    y: int = 0x1F
+
+    def norm(self, *args, **kwargs) -> float:
+        return (self.x ** 2 + self.y ** 2) ** 0.5
+
+async def main(argv=None):
+    name = argv[1] if len(argv) > 1 else "world"
+    print(f"Hello, {name!r}: {1 + 2:>4}\n", end='')
+    data = {"a": [1, 2.5e3, 3j], 'b': None, "c": True}
+    for k, v in data.items():
+        if v is not None and k != 'b':
+            raise ValueError(r"bad \d+ value" % v)
+    with open(os.path.join("/tmp", "f.txt"), "rb") as f:
+        return lambda q: q in f.read()
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

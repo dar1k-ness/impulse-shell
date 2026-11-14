@@ -1,0 +1,107 @@
+s root => QQuickItem_QML_0(0x596183684f10)
+s plain => QQuickRectangle(0x5961836cc110)
+s withProp => QQuickRectangle_QML_1(0x5961836cc200)
+s withSig => QQuickRectangle_QML_2(0x5961835b3960)
+s withFn => QQuickRectangle_QML_3(0x5961835b3cb0)
+s named => QQuickRectangle_QML_4(0x59618367c9b0, "nm")
+s namedPlain => QQuickRectangle(0x59618367cca0, "a "b" \ c")
+s handlerOnly => QQuickRectangle(0x596183678e60)
+s withOn => QQuickRectangle_QML_5(0x5961836cc2f0)
+s withAlias => QQuickRectangle_QML_6(0x596183673990)
+s withEnum => QQuickRectangle_QML_7(0x59618368aa60)
+s withGroup => QQuickRectangle(0x59618368ad30)
+s withBehavior => QQuickRectangle_QML_8(0x59618368ae20)
+s comp => QQmlComponent(0x5961835eb8c0)
+s comp2 => QQmlComponent(0x5961835ebab0)
+s qo => QObject_QML_10(0x5961836cb770)
+s qoPlain => QObject(0x596183614b20)
+s tm => QQmlTimer(0x59618367ce50)
+s txt => QQuickText(0x59618367d1a0)
+s ld => QQuickLoader(0x59618367d620)
+s rp => QQuickRepeater(0x59618368b7c0)
+s loaded => QQuickRectangle_QML_9(0x596183681460)
+s rep0 => QQuickItem_QML_11(0x5961836192f0)
+s rep1 => QQuickItem_QML_11(0x596183679e90)
+s created => QQuickItem_QML_14(0x59618367c0c0)
+s created2 => QQuickItem(0x596183851b10)
+s createObject => QQuickRectangle_QML_9(0x5961837b5f30)
+s createObject2 => QQuickRectangle(0x5961837c66b0)
+s list 1 => QQuickItem_QML_0(0x596183684f10)
+s list 2 => QQuickItem_QML_0(0x596183684f10)
+s list 3 => QQuickItem_QML_0(0x596183684f10)
+s parent => QQuickItem_QML_0(0x596183684f10)
+s toString => QQuickItem_QML_0(0x596183684f10)
+s String => QQuickRectangle(0x5961836cc110)
+s template => QQuickRectangle_QML_1(0x5961836cc200)
+s concat => xQObject_QML_10(0x5961836cb770)
+s join => QQuickRectangle(0x5961836cc110)|QObject_QML_10(0x5961836cb770)
+s json => {"o":{"objectName":""}}
+s tostr call => [object V4QObjectWrapper]
+s renamed => QQuickRectangle(0x5961836cc110, "later")
+s unnamed => QQuickRectangle(0x5961836cc110)
+s anchors => QQuickAnchors(0x5961837db510)
+s border => QQuickPen(0x5961837a1150)
+s null => null
+c1 QQuickItem_QML_0(0x596183684f10) QQuickRectangle(0x5961836cc110) QQuickRectangle_QML_4(0x59618367c9b0, "nm")
+c2 [QQuickRectangle(0x5961836cc110),QQuickRectangle_QML_4(0x59618367c9b0, "nm")]
+c3 [object Object]
+QQuickItem_QML_0(0x596183684f10)
+c4 QQuickRectangle_QML_9(0x596183681460) QQmlTimer(0x59618367ce50)
+e1 => THROW TypeError: Property 'nope' of object QQuickRectangle(0x5961836cc110) is not a function
+e2 => THROW TypeError: Property 'nope' of object QQuickRectangle_QML_4(0x59618367c9b0, "nm") is not a function
+e3 => THROW TypeError: Property 'v' of object QObject_QML_10(0x5961836cb770) is not a function
+e4 => THROW TypeError: Property 'interval' of object QQmlTimer(0x59618367ce50) is not a function
+e5 => THROW TypeError: Property 'nope' of object QQuickPen(0x5961837a1150) is not a function
+e6 => THROW TypeError: Type error
+e7 => THROW TypeError: Property 'plain' of object [null] is not a function
+e8 => false
+e9 => THROW TypeError: Cannot read property 'x' of undefined
+e10 => THROW TypeError: Property 'k' of object QQuickRectangle_QML_9(0x596183681460) is not a function
+e13 => THROW TypeError: Type error
+e14 => 1
+p1 => true 1 w=true e=true c=true v=number
+p2 => true 0 w=true e=true c=true v=number
+p3 => true 3 w=false e=false c=false v=number true
+p4 => true 7 w=undefined e=false c=false v=undefined
+p5 => THROW TypeError: Type error
+p6 => true 1
+p7 => true 3
+p8 => object 1
+p9 => object true object 5
+p10 => object true object undefined
+p11 => object number
+p12 => object 5
+p13 => object
+p14 => object function
+p15 => THROW TypeError: Type error
+p16 => THROW TypeError: Type error
+p17 => THROW TypeError: Type error
+p18 => THROW TypeError: Type error
+p19 => true
+p20 => w=true e=true c=true v=number | w=true e=true c=true v=number | w=true e=true c=true v=function | none | w=true e=true c=true v=function
+p21 => false
+p22 => THROW TypeError: Type error
+p23 => true false false
+w Locale => object [object QMLTypeWrapper] QtQml/Locale ext=true frozen=false keys=0
+w Item => object [object QMLTypeWrapper] QtQuick/Item ext=true frozen=false keys=0
+w Text => object [object QMLTypeWrapper] QtQuick/Text ext=true frozen=false keys=0
+w Font => object [object QMLTypeWrapper] QtQuick/Font ext=true frozen=false keys=0
+l1 => number 0 1 2
+l2 => w=true e=true c=true | none | true
+l3 => 
+l4 => 0
+l5 => THROW TypeError: Type error
+l6 => undefined
+l7 => THROW TypeError: Property 'Locale' of object [null] is not a function
+l8 => THROW TypeError: Type error
+l9 => THROW TypeError: Property 'nope' of object QtQml/Locale is not a function
+l10 => number 1 0 1
+l11 => false
+l12 => undefined false
+l13 => QtQml/Locale {}
+q1 => LeftButton:w=true e=true c=true | AlignLeft:w=true e=true c=true | Key_A:w=true e=true c=true | Horizontal:w=true e=true c=true | rgba:w=true e=true c=true | platform:w=true e=true c=true | application:w=true e=true c=true | inputMethod:w=true e=true c=true | styleHints:w=true e=true c=true | ElideRight:w=true e=true c=true | nope:none
+q2 => true true true true
+q3 => 49
+q4 => false
+q8 => w=true e=true c=true | w=true e=true c=true | w=true e=true c=true | w=true e=true c=true
+q9 => false

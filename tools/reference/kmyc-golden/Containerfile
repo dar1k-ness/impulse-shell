@@ -1,0 +1,15 @@
+# Reference environment for the kde-material-you-colors golden fixtures (see README.md).
+FROM archlinux:latest
+RUN echo 'Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch' > /etc/pacman.d/mirrorlist \
+ && pacman -Syu --noconfirm --needed python python-pip python-dbus gcc plasma-workspace dbus breeze-icons kconfig \
+ && pacman -Scc --noconfirm
+# pywal 3.3.0 (last release) for the `pywal = True` cases; nothing it reloads is installed.
+# materialyoucolor 2.0.10 has no cp314 wheel: pip builds it from source with gcc, as on a desktop running Python 3.14.
+RUN python -m venv --system-site-packages /opt/kmyc \
+ && /opt/kmyc/bin/pip install --no-cache-dir kde-material-you-colors==1.10.1 materialyoucolor==2.0.10 numpy pillow pywal==3.3.0
+# breeze-plus is AUR-only; plasma-changeicons only needs a theme dir with an index.theme.
+RUN for t in breeze-plus breeze-plus-dark; do \
+      mkdir -p /usr/share/icons/$t \
+      && printf '[Icon Theme]\nName=%s\nInherits=breeze\nDirectories=\n' "$t" > /usr/share/icons/$t/index.theme; \
+    done
+ENV PATH=/opt/kmyc/bin:$PATH

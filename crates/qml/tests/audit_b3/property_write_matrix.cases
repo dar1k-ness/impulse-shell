@@ -1,0 +1,806 @@
+@property Component comp: Component { QtObject { property url u; property string s; property var v; property int i; property color c; property point p; property date d; property real r; property bool b; property font f; property list<int> li; property QtObject o } }
+@property Component ic: Component { Item { } }
+@property Component tc: Component { Text { } }
+@property Component rec: Component { Rectangle { } }
+@property Component tmc: Component { Timer { } }
+@function rd(o, k) { if (!o) return "refused"; var x = o[k]; return x === root ? "root" : (x === null ? "null" : typeof x) + ":" + (k === "d" && x ? x.getTime() : k === "f" ? x.family : x) }
+w(function() { var o = root.comp.createObject(root); try { o.u = 1 } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = 1.7 } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = "5" } catch (e) { return "refused" } return rd(o, "u") })
+=> string:object:5
+w(function() { var o = root.comp.createObject(root); try { o.u = "x" } catch (e) { return "refused" } return rd(o, "u") })
+=> string:object:x
+w(function() { var o = root.comp.createObject(root); try { o.u = "" } catch (e) { return "refused" } return rd(o, "u") })
+=> string:object:
+w(function() { var o = root.comp.createObject(root); try { o.u = true } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = null } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = undefined } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = {} } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = [1, 2] } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = new Date(0) } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = function() {} } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = root } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = /a/ } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.u = "red" } catch (e) { return "refused" } return rd(o, "u") })
+=> string:object:red
+w(function() { var o = root.comp.createObject(root); try { o.u = "1,2" } catch (e) { return "refused" } return rd(o, "u") })
+=> string:object:1,2
+w(function() { var o = root.comp.createObject(root); try { o.u = "2020-01-02" } catch (e) { return "refused" } return rd(o, "u") })
+=> string:object:2020-01-02
+w(function() { var o = root.comp.createObject(root); try { o.u = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "u") })
+=> string:object:a.png
+w(function() { var o = root.comp.createObject(root); try { o.u = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "u") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.s = 1 } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:1
+w(function() { var o = root.comp.createObject(root); try { o.s = 1.7 } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:1.7
+w(function() { var o = root.comp.createObject(root); try { o.s = "5" } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:5
+w(function() { var o = root.comp.createObject(root); try { o.s = "x" } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:x
+w(function() { var o = root.comp.createObject(root); try { o.s = "" } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:
+w(function() { var o = root.comp.createObject(root); try { o.s = true } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:true
+w(function() { var o = root.comp.createObject(root); try { o.s = null } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:
+w(function() { var o = root.comp.createObject(root); try { o.s = undefined } catch (e) { return "refused" } return rd(o, "s") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.s = {} } catch (e) { return "refused" } return rd(o, "s") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.s = [1, 2] } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:
+w(function() { var o = root.comp.createObject(root); try { o.s = new Date(0) } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:Thu Jan 1 03:00:00 1970 GMT+0300
+w(function() { var o = root.comp.createObject(root); try { o.s = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "s") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.s = function() {} } catch (e) { return "refused" } return rd(o, "s") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.s = root } catch (e) { return "refused" } return rd(o, "s") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.s = /a/ } catch (e) { return "refused" } return rd(o, "s") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.s = "red" } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:red
+w(function() { var o = root.comp.createObject(root); try { o.s = "1,2" } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:1,2
+w(function() { var o = root.comp.createObject(root); try { o.s = "2020-01-02" } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:2020-01-02
+w(function() { var o = root.comp.createObject(root); try { o.s = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:a.png
+w(function() { var o = root.comp.createObject(root); try { o.s = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "s") })
+=> string:string:#ff0000
+w(function() { var o = root.comp.createObject(root); try { o.i = 1 } catch (e) { return "refused" } return rd(o, "i") })
+=> string:number:1
+w(function() { var o = root.comp.createObject(root); try { o.i = 1.7 } catch (e) { return "refused" } return rd(o, "i") })
+=> string:number:1
+w(function() { var o = root.comp.createObject(root); try { o.i = "5" } catch (e) { return "refused" } return rd(o, "i") })
+=> string:number:5
+w(function() { var o = root.comp.createObject(root); try { o.i = "x" } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = "" } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = true } catch (e) { return "refused" } return rd(o, "i") })
+=> string:number:1
+w(function() { var o = root.comp.createObject(root); try { o.i = null } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = undefined } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = {} } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = [1, 2] } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = new Date(0) } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = function() {} } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = root } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = /a/ } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = "red" } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = "1,2" } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = "2020-01-02" } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.i = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "i") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.r = 1 } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:1
+w(function() { var o = root.comp.createObject(root); try { o.r = 1.7 } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:1.7
+w(function() { var o = root.comp.createObject(root); try { o.r = "5" } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:5
+w(function() { var o = root.comp.createObject(root); try { o.r = "x" } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:NaN
+w(function() { var o = root.comp.createObject(root); try { o.r = "" } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:0
+w(function() { var o = root.comp.createObject(root); try { o.r = true } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:1
+w(function() { var o = root.comp.createObject(root); try { o.r = null } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:0
+w(function() { var o = root.comp.createObject(root); try { o.r = undefined } catch (e) { return "refused" } return rd(o, "r") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.r = {} } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:NaN
+w(function() { var o = root.comp.createObject(root); try { o.r = [1, 2] } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:NaN
+w(function() { var o = root.comp.createObject(root); try { o.r = new Date(0) } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:0
+w(function() { var o = root.comp.createObject(root); try { o.r = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:NaN
+w(function() { var o = root.comp.createObject(root); try { o.r = function() {} } catch (e) { return "refused" } return rd(o, "r") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.r = root } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:NaN
+w(function() { var o = root.comp.createObject(root); try { o.r = /a/ } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:NaN
+w(function() { var o = root.comp.createObject(root); try { o.r = "red" } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:NaN
+w(function() { var o = root.comp.createObject(root); try { o.r = "1,2" } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:NaN
+w(function() { var o = root.comp.createObject(root); try { o.r = "2020-01-02" } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:NaN
+w(function() { var o = root.comp.createObject(root); try { o.r = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "r") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.r = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "r") })
+=> string:number:NaN
+w(function() { var o = root.comp.createObject(root); try { o.b = 1 } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = 1.7 } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = "5" } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = "x" } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = "" } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:false
+w(function() { var o = root.comp.createObject(root); try { o.b = true } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = null } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:false
+w(function() { var o = root.comp.createObject(root); try { o.b = undefined } catch (e) { return "refused" } return rd(o, "b") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.b = {} } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = [1, 2] } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = new Date(0) } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = function() {} } catch (e) { return "refused" } return rd(o, "b") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.b = root } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = /a/ } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = "red" } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = "1,2" } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = "2020-01-02" } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.b = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "b") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.b = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "b") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.c = 1 } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = 1.7 } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = "5" } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = "x" } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = "" } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = true } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = null } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = undefined } catch (e) { return "refused" } return rd(o, "c") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.c = {} } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = [1, 2] } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = new Date(0) } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = function() {} } catch (e) { return "refused" } return rd(o, "c") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.c = root } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = /a/ } catch (e) { return "refused" } return rd(o, "c") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.c = "red" } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#ff0000
+w(function() { var o = root.comp.createObject(root); try { o.c = "1,2" } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = "2020-01-02" } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#000000
+w(function() { var o = root.comp.createObject(root); try { o.c = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "c") })
+=> string:object:#ff0000
+w(function() { var o = root.comp.createObject(root); try { o.p = 1 } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = 1.7 } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = "5" } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = "x" } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = "" } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = true } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = null } catch (e) { return "refused" } return rd(o, "p") })
+=> string:object:QPointF(0, 0)
+w(function() { var o = root.comp.createObject(root); try { o.p = undefined } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = {} } catch (e) { return "refused" } return rd(o, "p") })
+=> string:object:QPointF(0, 0)
+w(function() { var o = root.comp.createObject(root); try { o.p = [1, 2] } catch (e) { return "refused" } return rd(o, "p") })
+=> string:object:QPointF(0, 0)
+w(function() { var o = root.comp.createObject(root); try { o.p = new Date(0) } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "p") })
+=> string:object:QPointF(1, 2)
+w(function() { var o = root.comp.createObject(root); try { o.p = function() {} } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = root } catch (e) { return "refused" } return rd(o, "p") })
+=> string:object:QPointF(0, 0)
+w(function() { var o = root.comp.createObject(root); try { o.p = /a/ } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = "red" } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = "1,2" } catch (e) { return "refused" } return rd(o, "p") })
+=> string:object:QPointF(1, 2)
+w(function() { var o = root.comp.createObject(root); try { o.p = "2020-01-02" } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "p") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.p = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "p") })
+=> string:object:QPointF(0, 0)
+w(function() { var o = root.comp.createObject(root); try { o.d = 1 } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = 1.7 } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = "5" } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = "x" } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = "" } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = true } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = null } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = undefined } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = {} } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = [1, 2] } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = new Date(0) } catch (e) { return "refused" } return rd(o, "d") })
+=> string:object:0
+w(function() { var o = root.comp.createObject(root); try { o.d = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = function() {} } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = root } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = /a/ } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = "red" } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = "1,2" } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = "2020-01-02" } catch (e) { return "refused" } return rd(o, "d") })
+=> string:object:1577912400000
+w(function() { var o = root.comp.createObject(root); try { o.d = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.d = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "d") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.f = 1 } catch (e) { return "refused" } return rd(o, "f") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.f = 1.7 } catch (e) { return "refused" } return rd(o, "f") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.f = "5" } catch (e) { return "refused" } return rd(o, "f") })
+=> string:object:5
+w(function() { var o = root.comp.createObject(root); try { o.f = "x" } catch (e) { return "refused" } return rd(o, "f") })
+=> string:object:x
+w(function() { var o = root.comp.createObject(root); try { o.f = "" } catch (e) { return "refused" } return rd(o, "f") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.f = true } catch (e) { return "refused" } return rd(o, "f") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.f = null } catch (e) { return "refused" } return rd(o, "f") })
+=> string:object:Sans Serif
+w(function() { var o = root.comp.createObject(root); try { o.f = undefined } catch (e) { return "refused" } return rd(o, "f") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.f = {} } catch (e) { return "refused" } return rd(o, "f") })
+=> string:object:Sans Serif
+w(function() { var o = root.comp.createObject(root); try { o.f = [1, 2] } catch (e) { return "refused" } return rd(o, "f") })
+=> string:object:Sans Serif
+w(function() { var o = root.comp.createObject(root); try { o.f = new Date(0) } catch (e) { return "refused" } return rd(o, "f") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.f = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "f") })
+=> string:object:Sans Serif
+w(function() { var o = root.comp.createObject(root); try { o.f = function() {} } catch (e) { return "refused" } return rd(o, "f") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.f = root } catch (e) { return "refused" } return rd(o, "f") })
+=> string:object:Sans Serif
+w(function() { var o = root.comp.createObject(root); try { o.f = /a/ } catch (e) { return "refused" } return rd(o, "f") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.f = "red" } catch (e) { return "refused" } return rd(o, "f") })
+=> string:object:red
+w(function() { var o = root.comp.createObject(root); try { o.f = "1,2" } catch (e) { return "refused" } return rd(o, "f") })
+=> string:object:1
+w(function() { var o = root.comp.createObject(root); try { o.f = "2020-01-02" } catch (e) { return "refused" } return rd(o, "f") })
+=> string:object:2020-01-02
+w(function() { var o = root.comp.createObject(root); try { o.f = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "f") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.f = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "f") })
+=> string:object:Sans Serif
+w(function() { var o = root.comp.createObject(root); try { o.li = 1 } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:1
+w(function() { var o = root.comp.createObject(root); try { o.li = 1.7 } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:2
+w(function() { var o = root.comp.createObject(root); try { o.li = "5" } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:53
+w(function() { var o = root.comp.createObject(root); try { o.li = "x" } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:120
+w(function() { var o = root.comp.createObject(root); try { o.li = "" } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:
+w(function() { var o = root.comp.createObject(root); try { o.li = true } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:1
+w(function() { var o = root.comp.createObject(root); try { o.li = null } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:0
+w(function() { var o = root.comp.createObject(root); try { o.li = undefined } catch (e) { return "refused" } return rd(o, "li") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.li = {} } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:0
+w(function() { var o = root.comp.createObject(root); try { o.li = [1, 2] } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:1,2
+w(function() { var o = root.comp.createObject(root); try { o.li = new Date(0) } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:0
+w(function() { var o = root.comp.createObject(root); try { o.li = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:0
+w(function() { var o = root.comp.createObject(root); try { o.li = function() {} } catch (e) { return "refused" } return rd(o, "li") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.li = root } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:0
+w(function() { var o = root.comp.createObject(root); try { o.li = /a/ } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:0
+w(function() { var o = root.comp.createObject(root); try { o.li = "red" } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:114,101,100
+w(function() { var o = root.comp.createObject(root); try { o.li = "1,2" } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:49,44,50
+w(function() { var o = root.comp.createObject(root); try { o.li = "2020-01-02" } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:50,48,50,48,45,48,49,45,48,50
+w(function() { var o = root.comp.createObject(root); try { o.li = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:0
+w(function() { var o = root.comp.createObject(root); try { o.li = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "li") })
+=> string:object:0
+w(function() { var o = root.comp.createObject(root); try { o.o = 1 } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = 1.7 } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = "5" } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = "x" } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = "" } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = true } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = null } catch (e) { return "refused" } return rd(o, "o") })
+=> string:null:null
+w(function() { var o = root.comp.createObject(root); try { o.o = undefined } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = {} } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = [1, 2] } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = new Date(0) } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = function() {} } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = root } catch (e) { return "refused" } return rd(o, "o") })
+=> string:root
+w(function() { var o = root.comp.createObject(root); try { o.o = /a/ } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = "red" } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = "1,2" } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = "2020-01-02" } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.o = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "o") })
+=> string:refused
+w(function() { var o = root.comp.createObject(root); try { o.v = 1 } catch (e) { return "refused" } return rd(o, "v") })
+=> string:number:1
+w(function() { var o = root.comp.createObject(root); try { o.v = 1.7 } catch (e) { return "refused" } return rd(o, "v") })
+=> string:number:1.7
+w(function() { var o = root.comp.createObject(root); try { o.v = "5" } catch (e) { return "refused" } return rd(o, "v") })
+=> string:string:5
+w(function() { var o = root.comp.createObject(root); try { o.v = "x" } catch (e) { return "refused" } return rd(o, "v") })
+=> string:string:x
+w(function() { var o = root.comp.createObject(root); try { o.v = "" } catch (e) { return "refused" } return rd(o, "v") })
+=> string:string:
+w(function() { var o = root.comp.createObject(root); try { o.v = true } catch (e) { return "refused" } return rd(o, "v") })
+=> string:boolean:true
+w(function() { var o = root.comp.createObject(root); try { o.v = null } catch (e) { return "refused" } return rd(o, "v") })
+=> string:null:null
+w(function() { var o = root.comp.createObject(root); try { o.v = undefined } catch (e) { return "refused" } return rd(o, "v") })
+=> string:undefined:undefined
+w(function() { var o = root.comp.createObject(root); try { o.v = {} } catch (e) { return "refused" } return rd(o, "v") })
+=> string:object:[object Object]
+w(function() { var o = root.comp.createObject(root); try { o.v = [1, 2] } catch (e) { return "refused" } return rd(o, "v") })
+=> string:object:1,2
+w(function() { var o = root.comp.createObject(root); try { o.v = new Date(0) } catch (e) { return "refused" } return rd(o, "v") })
+=> string:object:Thu Jan 1 03:00:00 1970 GMT+0300
+w(function() { var o = root.comp.createObject(root); try { o.v = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "v") })
+=> string:object:QPointF(1, 2)
+w(function() { var o = root.comp.createObject(root); try { o.v = function() {} } catch (e) { return "refused" } return rd(o, "v") })
+=> string:function:function() { [native code] }
+w(function() { var o = root.comp.createObject(root); try { o.v = root } catch (e) { return "refused" } return rd(o, "v") })
+=> string:root
+w(function() { var o = root.comp.createObject(root); try { o.v = /a/ } catch (e) { return "refused" } return rd(o, "v") })
+=> string:object:/a/
+w(function() { var o = root.comp.createObject(root); try { o.v = "red" } catch (e) { return "refused" } return rd(o, "v") })
+=> string:string:red
+w(function() { var o = root.comp.createObject(root); try { o.v = "1,2" } catch (e) { return "refused" } return rd(o, "v") })
+=> string:string:1,2
+w(function() { var o = root.comp.createObject(root); try { o.v = "2020-01-02" } catch (e) { return "refused" } return rd(o, "v") })
+=> string:string:2020-01-02
+w(function() { var o = root.comp.createObject(root); try { o.v = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "v") })
+=> string:object:a.png
+w(function() { var o = root.comp.createObject(root); try { o.v = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "v") })
+=> string:object:#ff0000
+w(function() { var o = root.ic.createObject(root); try { o.width = 1 } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:1
+w(function() { var o = root.ic.createObject(root); try { o.width = 1.7 } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:1.7
+w(function() { var o = root.ic.createObject(root); try { o.width = "5" } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:5
+w(function() { var o = root.ic.createObject(root); try { o.width = "x" } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = "" } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = true } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:1
+w(function() { var o = root.ic.createObject(root); try { o.width = null } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = undefined } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = {} } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = [1, 2] } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = new Date(0) } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = function() {} } catch (e) { return "refused" } return rd(o, "width") })
+=> string:refused
+w(function() { var o = root.ic.createObject(root); try { o.width = root } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = /a/ } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = "red" } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = "1,2" } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = "2020-01-02" } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.width = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "width") })
+=> string:refused
+w(function() { var o = root.ic.createObject(root); try { o.width = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "width") })
+=> string:number:0
+w(function() { var o = root.ic.createObject(root); try { o.visible = 1 } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = 1.7 } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = "5" } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = "x" } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = "" } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:false
+w(function() { var o = root.ic.createObject(root); try { o.visible = true } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = null } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:false
+w(function() { var o = root.ic.createObject(root); try { o.visible = undefined } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:refused
+w(function() { var o = root.ic.createObject(root); try { o.visible = {} } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = [1, 2] } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = new Date(0) } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = function() {} } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:refused
+w(function() { var o = root.ic.createObject(root); try { o.visible = root } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = /a/ } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = "red" } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = "1,2" } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = "2020-01-02" } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.visible = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:refused
+w(function() { var o = root.ic.createObject(root); try { o.visible = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "visible") })
+=> string:boolean:true
+w(function() { var o = root.ic.createObject(root); try { o.objectName = 1 } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:1
+w(function() { var o = root.ic.createObject(root); try { o.objectName = 1.7 } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:1.7
+w(function() { var o = root.ic.createObject(root); try { o.objectName = "5" } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:5
+w(function() { var o = root.ic.createObject(root); try { o.objectName = "x" } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:x
+w(function() { var o = root.ic.createObject(root); try { o.objectName = "" } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:
+w(function() { var o = root.ic.createObject(root); try { o.objectName = true } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:true
+w(function() { var o = root.ic.createObject(root); try { o.objectName = null } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:
+w(function() { var o = root.ic.createObject(root); try { o.objectName = undefined } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:refused
+w(function() { var o = root.ic.createObject(root); try { o.objectName = {} } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:refused
+w(function() { var o = root.ic.createObject(root); try { o.objectName = [1, 2] } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:
+w(function() { var o = root.ic.createObject(root); try { o.objectName = new Date(0) } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:Thu Jan 1 03:00:00 1970 GMT+0300
+w(function() { var o = root.ic.createObject(root); try { o.objectName = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:refused
+w(function() { var o = root.ic.createObject(root); try { o.objectName = function() {} } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:refused
+w(function() { var o = root.ic.createObject(root); try { o.objectName = root } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:refused
+w(function() { var o = root.ic.createObject(root); try { o.objectName = /a/ } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:refused
+w(function() { var o = root.ic.createObject(root); try { o.objectName = "red" } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:red
+w(function() { var o = root.ic.createObject(root); try { o.objectName = "1,2" } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:1,2
+w(function() { var o = root.ic.createObject(root); try { o.objectName = "2020-01-02" } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:2020-01-02
+w(function() { var o = root.ic.createObject(root); try { o.objectName = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:a.png
+w(function() { var o = root.ic.createObject(root); try { o.objectName = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "objectName") })
+=> string:string:#ff0000
+w(function() { var o = root.tc.createObject(root); try { o.text = 1 } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:1
+w(function() { var o = root.tc.createObject(root); try { o.text = 1.7 } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:1.7
+w(function() { var o = root.tc.createObject(root); try { o.text = "5" } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:5
+w(function() { var o = root.tc.createObject(root); try { o.text = "x" } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:x
+w(function() { var o = root.tc.createObject(root); try { o.text = "" } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:
+w(function() { var o = root.tc.createObject(root); try { o.text = true } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:true
+w(function() { var o = root.tc.createObject(root); try { o.text = null } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:
+w(function() { var o = root.tc.createObject(root); try { o.text = undefined } catch (e) { return "refused" } return rd(o, "text") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.text = {} } catch (e) { return "refused" } return rd(o, "text") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.text = [1, 2] } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:
+w(function() { var o = root.tc.createObject(root); try { o.text = new Date(0) } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:Thu Jan 1 03:00:00 1970 GMT+0300
+w(function() { var o = root.tc.createObject(root); try { o.text = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "text") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.text = function() {} } catch (e) { return "refused" } return rd(o, "text") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.text = root } catch (e) { return "refused" } return rd(o, "text") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.text = /a/ } catch (e) { return "refused" } return rd(o, "text") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.text = "red" } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:red
+w(function() { var o = root.tc.createObject(root); try { o.text = "1,2" } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:1,2
+w(function() { var o = root.tc.createObject(root); try { o.text = "2020-01-02" } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:2020-01-02
+w(function() { var o = root.tc.createObject(root); try { o.text = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:a.png
+w(function() { var o = root.tc.createObject(root); try { o.text = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "text") })
+=> string:string:#ff0000
+w(function() { var o = root.rec.createObject(root); try { o.color = 1 } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = 1.7 } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = "5" } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = "x" } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = "" } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = true } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = null } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = undefined } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#ffffff
+w(function() { var o = root.rec.createObject(root); try { o.color = {} } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = [1, 2] } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = new Date(0) } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = function() {} } catch (e) { return "refused" } return rd(o, "color") })
+=> string:refused
+w(function() { var o = root.rec.createObject(root); try { o.color = root } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = /a/ } catch (e) { return "refused" } return rd(o, "color") })
+=> string:refused
+w(function() { var o = root.rec.createObject(root); try { o.color = "red" } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#ff0000
+w(function() { var o = root.rec.createObject(root); try { o.color = "1,2" } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = "2020-01-02" } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#000000
+w(function() { var o = root.rec.createObject(root); try { o.color = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "color") })
+=> string:object:#ff0000
+w(function() { var o = root.tmc.createObject(root); try { o.interval = 1 } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:number:1
+w(function() { var o = root.tmc.createObject(root); try { o.interval = 1.7 } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:number:1
+w(function() { var o = root.tmc.createObject(root); try { o.interval = "5" } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:number:5
+w(function() { var o = root.tmc.createObject(root); try { o.interval = "x" } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = "" } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = true } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:number:1
+w(function() { var o = root.tmc.createObject(root); try { o.interval = null } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = undefined } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = {} } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = [1, 2] } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = new Date(0) } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = function() {} } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = root } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = /a/ } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = "red" } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = "1,2" } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = "2020-01-02" } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.interval = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "interval") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.running = 1 } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = 1.7 } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = "5" } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = "x" } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = "" } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:false
+w(function() { var o = root.tmc.createObject(root); try { o.running = true } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = null } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:false
+w(function() { var o = root.tmc.createObject(root); try { o.running = undefined } catch (e) { return "refused" } return rd(o, "running") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.running = {} } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = [1, 2] } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = new Date(0) } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = function() {} } catch (e) { return "refused" } return rd(o, "running") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.running = root } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = /a/ } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = "red" } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = "1,2" } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = "2020-01-02" } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tmc.createObject(root); try { o.running = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "running") })
+=> string:refused
+w(function() { var o = root.tmc.createObject(root); try { o.running = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "running") })
+=> string:boolean:true
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = 1 } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:number:1
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = 1.7 } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:number:2
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = "5" } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = "x" } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = "" } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = true } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:number:1
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = null } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = undefined } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:number:1
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = {} } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = [1, 2] } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = new Date(0) } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = Qt.point(1, 2) } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = function() {} } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = root } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = /a/ } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = "red" } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = "1,2" } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = "2020-01-02" } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = Qt.url("a.png") } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused
+w(function() { var o = root.tc.createObject(root); try { o.horizontalAlignment = Qt.rgba(1, 0, 0, 1) } catch (e) { return "refused" } return rd(o, "horizontalAlignment") })
+=> string:refused

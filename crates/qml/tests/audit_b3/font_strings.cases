@@ -1,0 +1,175 @@
+# fields of a QFont::toString text a QML font does not show; what a list makes of a family
+@property font f
+@property font g
+w(function(){ g = "Arial,12,-1,5,75,2,0,0,1,0"; return g.italic + "|" + String(g) })
+=> string:true|QFont(Arial,12,-1,5,700,2,0,0,1,0,0,0,0,0,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,75,2,0,0,1,0"; g.italic = true; return g.italic + "|" + String(g) })
+=> string:true|QFont(Arial,12,-1,5,700,1,0,0,1,0,0,0,0,0,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,75,2,0,0,1,0"; g.italic = false; return g.italic + "|" + String(g) })
+=> string:false|QFont(Arial,12,-1,5,700,0,0,0,1,0,0,0,0,0,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,75,7,0,0,5,0"; return g.italic + "|" + String(g) })
+=> string:true|QFont(Arial,12,-1,5,700,3,0,0,1,0,0,0,0,0,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,75,-1,2,3,-1,9"; return g.italic + "|" + g.underline + "|" + g.strikeout + "|" + String(g) })
+=> string:true|true|true|QFont(Arial,12,-1,5,700,3,1,1,1,0,0,0,0,0,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,4097,Sty"; return String(g) })
+=> string:QFont(Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,4097,Sty,0,0)
+w(function(){ g = "Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,4097,Sty"; g.preferShaping = true; return String(g) })
+=> string:QFont(Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,1,Sty,0,0)
+w(function(){ g = "Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,4099,Sty"; g.preferShaping = true; g.contextFontMerging = true; return String(g) })
+=> string:QFont(Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,8195,Sty,0,0)
+w(function(){ g = "Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,0,Sty"; return g.preferShaping + "|" + g.contextFontMerging + "|" + g.preferTypoLineMetrics + "|" + String(g) })
+=> string:true|false|false|QFont(Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,0,Sty,0,0)
+w(function(){ g = "Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,0,Sty"; g.preferShaping = false; return String(g) })
+=> string:QFont(Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,4096,Sty,0,0)
+w(function(){ g = "Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,65535,Sty"; return g.preferShaping + "|" + g.contextFontMerging + "|" + g.preferTypoLineMetrics + "|" + String(g) })
+=> string:false|true|true|QFont(Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,65535,Sty,0,0)
+w(function(){ g = "Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,65535,Sty"; g.preferTypoLineMetrics = false; g.contextFontMerging = false; return String(g) })
+=> string:QFont(Arial,12,-1,7,400,0,0,0,1,0,0,0,0,0,87,40959,Sty,0,0)
+w(function(){ g = "Arial,12,-1,99,400,0,0,0,1,0,0,0,0,0,0,1"; return String(g) })
+=> string:QFont(Arial,12,-1,99,400,0,0,0,1,0,0,0,0,0,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,-3,400,0,0,0,1,0,0,0,0,0,5000,1"; return String(g) })
+=> string:QFont(Arial,12,-1,253,400,0,0,0,1,0,0,0,0,0,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,3,4,0,1"; return g.letterSpacing + "|" + String(g) })
+=> string:3|QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,3,4,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,2,3,4,0,1"; return g.letterSpacing + "|" + String(g) })
+=> string:3|QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,3,4,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,3,4,0,1"; g.letterSpacing = 3; return g.letterSpacing + "|" + String(g) })
+=> string:3|QFont(Arial,12,-1,5,400,0,0,0,0,0,0,1,3,4,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,3,4,0,1"; g.wordSpacing = 5; return g.letterSpacing + "|" + String(g) })
+=> string:3|QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,3,5,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,1,0,0,0,0,0,0,1"; return g == Qt.font({family: "Arial", pointSize: 12}) })
+=> boolean:false
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"; return g == Qt.font({family: "Arial", pointSize: 12}) })
+=> boolean:true
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0"; return g == Qt.font({family: "Arial", pointSize: 12}) })
+=> boolean:false
+w(function(){ g = "Arial,12,-1,5,400,2,0,0,0,0,0,0,0,0,0,1"; return g == Qt.font({family: "Arial", pointSize: 12, italic: true}) })
+=> boolean:false
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,liga=1,0"; return String(g) + "|" + JSON.stringify(g.features) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,liga=1,0)|{"liga":1}
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,0,1,wght=650"; return String(g) + "|" + JSON.stringify(g.variableAxes) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,0,1,wght=650)|{"wght":650}
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,2,liga=1,kern=0,1,wght=650"; return String(g) + "|" + JSON.stringify(g.features) + JSON.stringify(g.variableAxes) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,2,kern=0,liga=1,1,wght=650)|{"kern":0,"liga":1}{"wght":650}
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,liga=1"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,liga=1,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,2,liga=1,0"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,liga=1,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,toolong=1,0"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,liga=x,0"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,liga,0"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,0,0)
+w(function(){ f.family = [65, 66]; return f.family.length + ":" + f.family.charCodeAt(0) + "," + f.family.charCodeAt(1) })
+=> string:2:65,66
+w(function(){ f.family = [1, 2]; return f.family.length + ":" + f.family.charCodeAt(0) + "," + f.family.charCodeAt(1) })
+=> string:2:1,2
+w(function(){ f.family = [true]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:1
+w(function(){ f.family = [null]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:0
+w(function(){ f.family = [undefined]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:0
+w(function(){ f.family = [1.5]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:1
+w(function(){ f.family = [65601]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:65
+w(function(){ f.family = [-1]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:65535
+w(function(){ f.family = ["a", 66, "c"]; return f.family.length + ":" + f.family })
+=> string:3:aBc
+w(function(){ f.family = ["a", ["b", "c"]]; return f.family.length + ":" + f.family.charCodeAt(0) + "," + f.family.charCodeAt(1) + "," + f.family.charCodeAt(2) })
+=> string:2:97,0,NaN
+w(function(){ f.family = [["b"]]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:0
+w(function(){ f.family = [{}]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:0
+w(function(){ f.family = ["ab", "cd"]; return f.family.length + ":" + f.family })
+=> string:2:ac
+w(function(){ f.family = ["7"]; return f.family.length + ":" + f.family })
+=> string:1:7
+w(function(){ f.family = [Qt.point(1, 2)]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:0
+w(function(){ f.family = [new Date(0)]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:0
+(function(){ try { f.family = function(){} } catch (e) { return typeof e + "|" + (e instanceof Error) + "|" + e.name + "|" + e.message + "|" + Object.prototype.toString.call(e) } return "no" })()
+=> string:string|false|undefined|undefined|[object String]
+(function(){ try { f.bold = function(){} } catch (e) { return typeof e + "|" + (e instanceof Error) + "|" + e } return "no" })()
+=> string:string|false|Cannot assign JavaScript function to value-type property
+(function(){ try { f.pointSize = function(){} } catch (e) { return typeof e + "|" + (e instanceof Error) + "|" + e } return "no" })()
+=> string:string|false|Cannot assign JavaScript function to value-type property
+(function(){ try { g = function(){} } catch (e) { return typeof e + "|" + (e instanceof Error) + "|" + e } return "no" })()
+=> string:object|true|Error: Cannot assign JavaScript function to QFont
+String(Qt.font({family: "A", preferTypoLineMetrics: true}))
+=> string:QFont(A,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+String(Qt.font({family: "A", preferTypoLineMetrics: true, contextFontMerging: true, preferShaping: false}))
+=> string:QFont(A,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,12289,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,5,liga=1"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,l-g!=7,1,w t =1.5"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,l-g!=7,1,w t =1.5)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,2,liga=-1,kern=1.5,2,wght=x,wdth=-2.25"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,0,1,wdth=-2.25)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1, liga = 1 ,1, wght = 650 "; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,-1,liga=1,1,wght=650"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,x,liga=1,1,wght=650"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,liga=1,3,wght=650"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,liga=1,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,2,liga=1,liga=3,0"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,liga=3,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,liga=1,0"; g.features = {kern: 0}; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,0,,1,kern=0,0)
+w(function(){ g = "Arial,12,-1,5,75,2,0,0,1,0"; var h = g; h.bold = false; return String(h) + "|" + (h == g) })
+=> string:QFont(Arial,12,-1,5,400,2,0,0,1,0,0,0,0,0,0,1,,0,0)|true
+w(function(){ g = "Arial,12,-1,7,400,2,0,0,1,0,0,0,0,0,87,4097,Sty"; f = g; return String(f) + "|" + (f == g) })
+=> string:QFont(Arial,12,-1,7,400,2,0,0,1,0,0,0,0,0,87,4097,Sty,0,0)|true
+w(function(){ f.family = [""]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:0
+w(function(){ f.family = ["", "x"]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:2:0
+w(function(){ f.family = ["\ud83d\ude00"]; return f.family.length + ":" + f.family.charCodeAt(0) })
+=> string:1:55357
+w(function(){ f.styleName = [65, "bc"]; return f.styleName.length + ":" + f.styleName })
+=> string:2:Ab
+w(function(){ f.family = [false, 3e9, NaN, Infinity]; return f.family.length + ":" + f.family.charCodeAt(0) + "," + f.family.charCodeAt(1) + "," + f.family.charCodeAt(2) + "," + f.family.charCodeAt(3) })
+=> string:4:0,24064,0,0
+(function(){ var h = Qt.font({family: "A", preferTypoLineMetrics: true}); return h.preferTypoLineMetrics + "|" + h.contextFontMerging + "|" + h.preferShaping })()
+=> string:false|false|true
+w(function(){ f = Qt.font({family: "A"}); f.preferTypoLineMetrics = true; return f.preferTypoLineMetrics + "|" + String(f) })
+=> string:true|QFont(A,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,16385,,0,0)
+w(function(){ f = Qt.font({family: "A"}); f.preferTypoLineMetrics = true; f.contextFontMerging = true; f.preferShaping = false; f.preferTypoLineMetrics = false; return f.preferTypoLineMetrics + "|" + String(f) })
+=> string:false|QFont(A,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,12289,,0,0)
+w(function(){ f = {family: "A", preferTypoLineMetrics: true}; return f.preferTypoLineMetrics + "|" + String(f) })
+=> string:true|QFont(A,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,16385,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,16384"; return g.preferTypoLineMetrics + "|" + (g == Qt.font({family: "Arial", pointSize: 12, preferTypoLineMetrics: true})) })
+=> string:true|false
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,-1"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,65535,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,65537"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,4000,1"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,4000,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,-5,1"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+w(function(){ g = "Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,4001,1"; return String(g) })
+=> string:QFont(Arial,12,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+@property point pt: Qt.point(1, 2)
+@property vector3d v3
+(function(){ try { pt.x = function(){} } catch (e) { return typeof e + "|" + (e instanceof Error) + "|" + e } return "no " + pt })()
+=> string:string|false|Cannot assign JavaScript function to value-type property
+(function(){ try { v3.x = function(){} } catch (e) { return typeof e + "|" + (e instanceof Error) + "|" + e } return "no " + v3 })()
+=> string:string|false|Cannot assign JavaScript function to value-type property
+(function(){ try { var q = Qt.vector3d(1, 2, 3); q.x = function(){} } catch (e) { return typeof e + "|" + (e instanceof Error) + "|" + e } return "no " + q })()
+=> string:no QVector3D(nan, 2, 3)
+(function(){ try { var q = Qt.font({family: "A"}); q.bold = function(){} } catch (e) { return typeof e + "|" + (e instanceof Error) + "|" + e } return "no " + q })()
+=> string:no QFont(A,9,-1,5,700,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+(function(){ try { return String(Qt.font({preferTypoLineMetrics: true})) } catch (e) { return typeof e + "|" + e } })()
+=> string:QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+(function(){ try { return String(Qt.font({family: function(){}, bold: true})) } catch (e) { return typeof e + "|" + e } })()
+=> string:QFont(Sans Serif,9,-1,5,700,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+(function(){ try { f.features = function(){} } catch (e) { return typeof e + "|" + (e instanceof Error) + "|" + e } return "no" })()
+=> string:string|false|Cannot assign JavaScript function to value-type property

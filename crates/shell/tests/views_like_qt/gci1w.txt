@@ -1,0 +1,2 @@
+ c13 move y 60 c4 hover y 60 c30 far y 60 end cur 30 y 60 n 40
+done

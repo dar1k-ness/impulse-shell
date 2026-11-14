@@ -1,0 +1,2 @@
+warning: Nested.qml:4:5: QML NumberAnimation: setRunning() cannot be used on non-root animation nodes.
+warning: Nested.qml:2:1: QML Nested: setPaused() cannot be used when animation isn't running.

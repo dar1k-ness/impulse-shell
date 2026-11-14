@@ -1,0 +1,165 @@
+# cargo-nextest (https://nexte.st), the runner tools/testenv/ri-gate uses. Every test runs in a
+# process of its own; tests do not rely on it for their environment (HOME, XDG_*,
+# DBUS_*_ADDRESS the engine reads), which they pass to a process of their own
+# (`testenv::run_in_own_process`) and so also pass under plain `cargo test`.
+# Older than 0.9.148, a stress run (`--stress-count`) that does not stop at the first failure
+# exits with the result of its last repeat alone: 0 with failed repeats before it.
+nextest-version = { required = "0.9.151" }
+
+[profile.default]
+# A test that runs for 60 s is reported as slow, and killed (failing) after 5 periods: a hang
+# fails that one test instead of stalling the gate.
+slow-timeout = { period = "60s", terminate-after = 5 }
+fail-fast = false
+
+# tools/testenv/ri-gate's profile (it inherits the default one).
+[profile.gate]
+
+# Tests of different binaries run at once, so the in-process locks that kept a binary's tests
+# apart under cargo test do not reach a test of another binary. Each group below is one
+# machine-wide resource: its tests run one at a time, every other test stays parallel.
+# https://nexte.st/docs/configuration/test-groups/
+[test-groups]
+# The one headless sway (WAYLAND_DISPLAY=wayland-1): its clipboard and primary selection, its
+# seat (keyboard focus, virtual keyboard and pointer, ydotool keys), its output (power,
+# hotplug, session lock) and the screen grim captures; and the process name wf-recorder, which
+# pgrep sees machine-wide (record.sh stops a running one): the record actions of ports_ab's
+# shot tests start a logger by that name, and a test sits in one group only. The Qt
+# of shell::effects_qt and shell::effects_like_qt shows its windows there.
+# So do the PySide of shell::animated_image_qt's played tests, the qml6 of
+# shell::style_shots and shell::rect_antialiasing_qt and the quickshell of one test each of
+# shell::destruction_equiv and shell::lazy_loader_equiv, and each window takes the keyboard
+# focus: shell::wayland_input held_key_repeats_and_input_method_commits presses its key and
+# waits for the shell to repeat it without end. Of 20 runs beside one such test going round
+# it never ended 20 times (current_frame_set_by_hand_shows_what_qt_shows, style_shots,
+# rect_antialiasing_qt, destruction_equiv), 17
+# (where_qt_dies_the_shell_stops_at_the_last_frame), 13 (rounds_and_their_signals_are_qts)
+# and 11 (stills_are_movies_of_one_frame_as_in_qt, lazy_loader_equiv); alone it passed 20
+# times of 20.
+# So does the qml6 of three tests of shell::kirigami_icon_size, and each window takes the
+# keyboard focus: shell::wayland_input held_key_repeats_and_input_method_commits presses its
+# key and waits for the shell to repeat it without end (20 of 20 beside one of those tests
+# going round; none of 20 alone or beside a test of that binary that starts its own sway).
+# shell::settings_pages copy_info_opens_no_url presses "Copy info", which writes that
+# clipboard. shell::frame_animation_equiv moves that pointer as often as sway takes a move,
+# over whatever window is under it. The shell of shell::install_rollback
+# a_shell_started_through_the_switch_reloads_into_the_release_installed_since opens an
+# ApplicationWindow there, which takes the keyboard focus: a key ports_ab's clip tests type at
+# that moment goes to it and their wait for the key never ends. Four more tests use
+# that sway: qml::sysbus_services waffle_only_the_bluetooth_page_scans (the tree's services
+# ask the keyring, and gcr-prompter opens a window there, which takes the keyboard focus
+# too), shell::idle_inhibit_after_login (a layer surface, which a screenshot shows),
+# shell::world_ends_with_runtime (a virtual keyboard on the seat) and the shell's unit test
+# capture_without_screencopy_ends_failed (it asks for the output's power, which a test of
+# the group switches).
+# qml's userenv_sites test runs the record action, which stops every wf-recorder pgrep
+# finds, and starts a program by that name.
+# With several Qt
+# windows opening at once sway can answer a frame later than 100 ms; QtWayland then counts the
+# window as not exposed for that moment, and a qmltestrunner, which asks isExposed() exactly
+# once (quicktest.cpp:680), never starts its test and never exits (2 of 12 started at once,
+# none of 30 one after another). run_qt in crates/shell/tests/effects_qt.rs stops such a
+# runner and renders the reference again.
+sway = { max-threads = 1 }
+# Process names pidof/pgrep/pkill see machine-wide: easyeffects and flatpak.
+easyeffects = { max-threads = 1 }
+# Process names pidof/killall see machine-wide: kded6, mako, dunst, hyprlock, hyprsunset, yay.
+conflict-names = { max-threads = 1 }
+# the original's fixed /tmp/rustshell/ai (request.sh, the upload temp files, wallpaper.jpg).
+quickshell-ai = { max-threads = 1 }
+
+[[profile.default.overrides]]
+filter = """
+    (binary_id(qml) & test(/^ports::tests::(a_copy_waiting_for_the_hosts_loop_ends_with_its_job|a_stalled_reader_blocks_nothing_and_ends_with_its_source|bench_ports|capture_matches_grim|capture_of_powered_off_output_ends|clipboard_text_matches_wl_paste|clipboard_writes_keep_call_order|cliphist_copy_matches_pipeline|cliphist_decode_does_not_follow_symlinks|cliphist_image_decode_matches_pipeline|copy_matches_wl_copy|copy_text_matches_qt_clipboard|full_screenshot_copy_matches_grim_wl_copy|region_copy_matches_magick_wl_copy|superpaste_follows_keyboard_leave_and_the_targets_reads|superpaste_follows_the_pastes_of_this_process|vkbd_sequence)$/))
+    | (binary_id(qml) & test(/^userenv_sites::the_shell_s_own_programs_get_the_user_s_environment$/))
+    | (binary_id(qml::ports_ab) & test(/^(clip|shot)::/))
+    | binary_id(qml::file_cmds_equiv)
+    | binary_id(qml::snip_picker_equiv)
+    | (binary_id(qml::script_ports_equiv) & test(/^(record_script_matches_native|record_program_matches_script|region_recording_has_sound_only_when_asked_for)$/))
+    | (binary_id(shell::record_keybind_script) & test(the_keybind_launch_starts_and_stops_a_full_screen_recording))
+    | (binary_id(shell::settings_pages) & test(copy_info_opens_no_url))
+    | (binary_id(shell::install_rollback) & test(a_shell_started_through_the_switch_reloads_into_the_release_installed_since))
+    | (binary_id(qml::sysbus_services) & test(waffle_only_the_bluetooth_page_scans))
+    | (binary_id(shell::bin/rusty-impulse) & test(capture_without_screencopy_ends_failed))
+    | binary_id(/^shell::(idle_inhibit_after_login|world_ends_with_runtime)$/)
+    | binary_id(/^shell::effects_(qt|like_qt)$/)
+    | (binary_id(shell::animated_image_qt) & test(/^played::/))
+    | binary_id(/^shell::(rect_antialiasing_qt|style_shots)$/)
+    | (binary_id(shell::destruction_equiv) & test(a_root_quickshell_wraps_in_a_window_runs_no_handler))
+    | (binary_id(shell::lazy_loader_equiv) & test(a_binding_loop_ends_as_in_qt))
+    | binary_id(/^shell::(color_picker_off_screen|cursor_without_shape_protocol|frame_animation_equiv|frame_callback_wait|keyboard_focus|kirigami_icon_size|mouse_primary|pointer_focus|primary_device|screen_copy_order|session_lock_finished|shell_control|swipe_start_equiv|timer_clock_equiv|wayland_input|windows_outputs)$/)
+"""
+test-group = "sway"
+# The group runs one test at a time for about as long as all the other tests together take on
+# the remaining threads, so it starts first instead of becoming the run's tail.
+priority = 100
+
+# Scenes that used to stall a frame for half a minute and more (a Shape with coordinates of
+# 1e9, a blur of 200001 taps): each paints in a few seconds at most, so one that takes 20 s
+# has stalled again.
+[[profile.default.overrides]]
+filter = "binary_id(shell::render_limits)"
+slow-timeout = { period = "20s", terminate-after = 1 }
+
+[[profile.default.overrides]]
+filter = "binary_id(qml::ee_equiv) | binary_id(qml::ee_detach)"
+test-group = "easyeffects"
+
+[[profile.default.overrides]]
+filter = "binary_id(qml::probe_qml)"
+test-group = "conflict-names"
+
+[[profile.default.overrides]]
+filter = "binary_id(qml::ai_scripts) & test(/^categorize_/)"
+test-group = "quickshell-ai"
+
+# the original's fixed /tmp/rustshell/media/{cliphist,images}, which file_cmds_equiv snapshots. Every
+# test that loads the original's Directories singleton renews cliphist at startup (Directories.qml's
+# `rm -rf; mkdir -p`, or the native 0700 one), and dozens across binaries do, so no group of
+# writers can be kept complete: the readers run with no other test instead.
+[[profile.default.overrides]]
+filter = "binary_id(qml::file_cmds_equiv)"
+threads-required = "num-test-threads"
+
+# The same /tmp/rustshell/media/images: the overlay's Floating Image copies its picture there
+# and reads it back, and every shell that starts removes the directory (Directories.qml's
+# `Files.removeTree(tempImages)`). A shell of another test starting between the copy and the
+# read leaves the widget with no file to open, and the test waiting for a picture.
+[[profile.default.overrides]]
+filter = "binary_id(shell::shipped_panels) & test(=floating_image_plays_its_gif)"
+threads-required = "num-test-threads"
+
+# CARGO_TARGET_TMPDIR's entries: the scenario lives there and DesktopEntries watches every
+# ancestor of its applications dirs (as Quickshell does), so another test's file in it is a
+# rescan that would also pick up the step's unwatched change (desktopwatch, appsearch) or read
+# the entry desktop_async holds back in a FIFO. No other test may run meanwhile.
+[[profile.default.overrides]]
+filter = "binary_id(qml::desktopwatch) | binary_id(qml::desktop_async) | binary_id(qml::appsearch)"
+threads-required = "num-test-threads"
+
+# The fade test that makes Qt draw no frame for a number: the queued call it waits for makes
+# its step right after the step the scene kept only while Qt's queue holds no update request
+# ahead of it. With twelve runs at once and sixteen busy loops the queue held one at every
+# fade of a run in 2 runs of 36, and the test failed for want of the frame it is about; of 30
+# runs with nothing else running, none. No other test may run meanwhile.
+[[profile.default.overrides]]
+filter = "binary_id(shell::kirigami_icon_fade_equiv) & test(=a_frame_qt_did_not_draw_where_its_fade_began_fails_with_qt)"
+threads-required = "num-test-threads"
+
+# The record action (ports::record::run) first stops every wf-recorder pgrep finds on the
+# machine, as the original's scripts/videos/record.sh does (`pgrep wf-recorder` then `pkill wf-recorder`),
+# and when it stopped one it starts nothing. This test runs that action to have a slurp to
+# stop: beside a test of the sway group it stopped that test's wf-recorder stand-in before
+# the stand-in had logged its launch and written its file (script_ports_equiv's
+# record_script_matches_native then failed for want of both), and waited without end for the
+# pid of a slurp that was never started. Of 150 runs beside record_script_matches_native with
+# nothing else running it never ended 4 times, and that test failed once. The sway group keeps
+# the name wf-recorder, so the test runs there.
+[[profile.default.overrides]]
+filter = "binary_id(qml) & test(=ports::tests::stopping_a_job_ends_the_program_it_waits_for)"
+test-group = "sway"
+
+# How many frames Qt stood before each of its fades is in the log of a passing run too.
+[[profile.default.overrides]]
+filter = "binary_id(shell::kirigami_icon_fade_equiv) & test(/^(animated_icon_fades_into_its_new_source_like_qt|qt_kept_45_ms_in_every_step_stands_before_its_fades)$/)"
+success-output = "immediate"

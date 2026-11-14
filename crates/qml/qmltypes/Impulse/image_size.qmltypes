@@ -1,0 +1,23 @@
+import QtQuick.tooling 1.2
+
+// Prints the pixel size of the image at `path` as `<width> <height>`.
+// A Process whose work is native (crates/qml/src/procs.rs): `running`, `exited`, `stdout` as Process.
+Module {
+    Component {
+        file: "procs.rs"
+        name: "ImpulseImageSize"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/ImageSize 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "path"
+            type: "QString"
+            read: "path"
+            write: "setPath"
+            notify: "pathChanged"
+            index: 0
+        }
+        Signal { name: "pathChanged" }
+    }
+}

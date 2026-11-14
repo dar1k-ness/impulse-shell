@@ -1,0 +1,12 @@
+a.Layout.leftMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.Layout.leftMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+c.Layout.leftMargin: 0
+a.Layout.topMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.Layout.topMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+c.Layout.topMargin: 0
+a.Layout.rightMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.Layout.rightMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+c.Layout.rightMargin: 0
+a.Layout.bottomMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.Layout.bottomMargin [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+c.Layout.bottomMargin: 0

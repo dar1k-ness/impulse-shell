@@ -1,0 +1,130 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Effects
+import QtQuick.Shapes
+Item {
+    id: root
+    width: 200; height: 200
+    property string out: ""
+    property bool flag: true
+    Item { id: other; width: 11; height: 13 }
+    Component { id: comp; Item {} }
+    AnchorChanges {
+        id: c
+
+    }
+    AnchorChanges { id: a0 }
+    AnchorChanges { id: b0;  }
+    AnchorChanges { id: a1 }
+    AnchorChanges { id: b1;  }
+    AnchorChanges { id: a2 }
+    AnchorChanges { id: b2;  }
+    AnchorChanges { id: a3 }
+    AnchorChanges { id: b3;  }
+    AnchorChanges { id: a4 }
+    AnchorChanges { id: b4;  }
+    AnchorChanges { id: a5 }
+    AnchorChanges { id: b5;  }
+    AnchorChanges { id: a6 }
+    AnchorChanges { id: b6;  }
+    function show(v) {
+        if (v === undefined) return "undefined";
+        if (v === null) return "null";
+        if (v === other) return "<other>";
+        if (v === comp) return "<comp>";
+        let t = typeof v;
+        if (t === "number") return String(Math.round(v * 1000) / 1000);
+        if (t === "string") return JSON.stringify(v);
+        if (t === "boolean") return String(v);
+        let s;
+        try { s = String(v) } catch (e) { s = "?" + e.message }
+        return s.replace(/0x[0-9a-f]+/g, "PTR").replace(/_QML(TYPE)?_[0-9]+/g, "");
+    }
+    function geo(o, kind) {
+        if (kind !== "line" && kind !== "item" || o.x === undefined) return "";
+        return "@" + [o.x, o.y, o.width, o.height].join(",");
+    }
+    function get(o, path) {
+        const top = o;
+        try {
+            for (const k of path.split(".")) o = o[k];
+            return show(o) + geo(top, root.kind);
+        } catch (e) { return "!" + e.message }
+    }
+    function set(o, path, v) {
+        const ks = path.split(".");
+        try {
+            for (let i = 0; i + 1 < ks.length; i++) o = o[ks[i]];
+            o[ks[ks.length - 1]] = v;
+            return "";
+        } catch (e) { return " !" + e.message }
+    }
+    function raw(o, path) {
+        for (const k of path.split(".")) o = o[k];
+        return o;
+    }
+    function alt(o, path, kind) {
+        const d = raw(o, path);
+        switch (kind) {
+        case "num": return (typeof d === "number" && isFinite(d) ? d : 0) + 3;
+        case "enum": return (typeof d === "number" ? d : 0) + 1;
+        case "bool": return !d;
+        case "str": return String(d === undefined ? "" : d) + "x";
+        case "color": return "#123456";
+        case "item": return other;
+        case "line": return other[path.split(".").pop()];
+        case "size": return Qt.size(3, 4);
+        case "rect": return Qt.rect(1, 2, 3, 4);
+        case "url": return "x.png";
+        case "comp": return comp;
+        }
+        return undefined;
+    }
+    property string kind: ""
+    property var list: []
+    function probe(o, tag, path, kind) {
+        list.push({ o: o, tag: tag, path: path, kind: kind, l: "", e: "", v: undefined, c: null });
+    }
+    function cline(path) { list.push({ c: path }); }
+    // k even: writes of stage k/2; k odd: reads of stage (k-1)/2. Stages: 0 default, 1 set, 2 reset,
+    // 3 bind, 4 flag false, 5 flag true, 6 reset.
+    function step(k) {
+        const st = Math.floor(k / 2), wr = k % 2 === 0;
+        if (wr && st === 4) root.flag = false;
+        if (wr && (st === 5 || st === 3)) root.flag = true;
+        for (const p of list) {
+            if (p.c !== null) continue;
+            const skip = p.kind === "skip";
+            if (skip && st !== 0 && st !== 2) continue;
+            root.kind = p.path.startsWith("anchors.") ? p.kind : "";
+            if (wr) {
+                if (st === 1) p.e = set(p.o, p.path, alt(p.o, p.path, p.kind));
+                else if (st === 2 || st === 6) p.e = set(p.o, p.path, undefined);
+                else if (st === 3) { const v = alt(p.o, p.path, p.kind); p.e = set(p.o, p.path, Qt.binding(() => root.flag ? v : undefined)); }
+            } else {
+                const g = get(p.o, p.path);
+                if (st === 0) p.l = p.tag + "." + p.path + " [" + p.kind + "]: " + g;
+                else if (st === 1) p.l += " | set" + p.e + " " + g;
+                else if (st === 2 || st === 6) p.l += " | reset" + p.e + " " + g;
+                else if (st === 3) p.l += " | bind" + p.e + " " + g;
+                else p.l += " -> " + g;
+            }
+        }
+        root.kind = "";
+    }
+    function fin() {
+        let s = "";
+        for (const p of list) s += (p.c !== null ? "c." + p.c + ": " + get(c, p.c) : p.l) + "\n";
+        root.out = s;
+    }
+    function go() {
+        probe(a0, "a", "anchors.left", "skip"); probe(b0, "b", "anchors.left", "skip"); cline("anchors.left");
+        probe(a1, "a", "anchors.right", "skip"); probe(b1, "b", "anchors.right", "skip"); cline("anchors.right");
+        probe(a2, "a", "anchors.horizontalCenter", "skip"); probe(b2, "b", "anchors.horizontalCenter", "skip"); cline("anchors.horizontalCenter");
+        probe(a3, "a", "anchors.top", "skip"); probe(b3, "b", "anchors.top", "skip"); cline("anchors.top");
+        probe(a4, "a", "anchors.bottom", "skip"); probe(b4, "b", "anchors.bottom", "skip"); cline("anchors.bottom");
+        probe(a5, "a", "anchors.verticalCenter", "skip"); probe(b5, "b", "anchors.verticalCenter", "skip"); cline("anchors.verticalCenter");
+        probe(a6, "a", "anchors.baseline", "skip"); probe(b6, "b", "anchors.baseline", "skip"); cline("anchors.baseline");
+    }
+}

@@ -1,0 +1,55 @@
+import QtQuick.tooling 1.2
+
+// Cloudflare WARP through its `warp-cli` (crates/qml/src/warp.rs).
+Module {
+    Component {
+        file: "warp.rs"
+        name: "ImpulseWarp"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/Warp 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "available"
+            type: "bool"
+            read: "available"
+            notify: "availableChanged"
+            index: 0
+            isReadonly: true
+        }
+        Property {
+            name: "connected"
+            type: "bool"
+            read: "connected"
+            notify: "connectedChanged"
+            index: 1
+            isReadonly: true
+        }
+        Property {
+            name: "requests"
+            type: "int"
+            read: "requests"
+            notify: "requestsChanged"
+            index: 2
+            isReadonly: true
+        }
+        Signal { name: "availableChanged" }
+        Signal { name: "connectedChanged" }
+        Signal { name: "requestsChanged" }
+        Signal {
+            name: "connectExited"
+            Parameter { name: "request"; type: "int" }
+            Parameter { name: "exitCode"; type: "int" }
+        }
+        Signal {
+            name: "registrationExited"
+            Parameter { name: "request"; type: "int" }
+            Parameter { name: "exitCode"; type: "int" }
+        }
+        Method { name: "refresh"; type: "int" }
+        Method { name: "connect"; type: "int" }
+        Method { name: "disconnect" }
+    }
+}

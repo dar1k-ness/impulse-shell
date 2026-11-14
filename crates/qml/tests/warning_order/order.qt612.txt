@@ -1,0 +1,37 @@
+console: creation 1 pause an idle animation
+warning: order.qml:13:5: QML NumberAnimation: setPaused() cannot be used when animation isn't running.
+console: creation 2 resume it
+console: creation 3 start an animation of a group
+warning: order.qml:16:9: QML NumberAnimation: setRunning() cannot be used on non-root animation nodes.
+console: creation 4 a handler throws
+console: handler 1
+warning: order.qml:22: Error: thrown by onNChanged
+console: creation 5 a function of Connections throws
+console: connection
+warning: order.qml:28: Error: thrown by onPoked
+console: creation 6 a binding fails
+console: creation 7 the end
+console: handler 0
+console: child completed
+warning: order.qml:9: TypeError: Value is null and could not be converted to an object
+warning: order.qml:8: TypeError: Value is null and could not be converted to an object
+warning: order.qml:53: TypeError: Value is null and could not be converted to an object
+warning: order.qml:10: ReferenceError: missing is not defined
+console: timer
+console: timer 1 pause an idle animation
+warning: order.qml:13:5: QML NumberAnimation: setPaused() cannot be used when animation isn't running.
+console: timer 2 resume it
+console: timer 3 start an animation of a group
+warning: order.qml:16:9: QML NumberAnimation: setRunning() cannot be used on non-root animation nodes.
+console: timer 4 a handler throws
+console: handler 1
+warning: order.qml:22: Error: thrown by onNChanged
+console: timer 5 a function of Connections throws
+console: connection
+warning: order.qml:28: Error: thrown by onPoked
+console: timer 6 a binding fails
+warning: order.qml:53: TypeError: Value is null and could not be converted to an object
+warning: order.qml:8: TypeError: Value is null and could not be converted to an object
+warning: order.qml:9: TypeError: Value is null and could not be converted to an object
+console: timer 7 the end
+console: handler 0

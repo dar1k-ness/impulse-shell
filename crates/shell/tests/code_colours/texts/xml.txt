@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE note SYSTEM "note.dtd">
+<!-- a note -->
+<project xmlns:m="http://maven.apache.org/POM/4.0.0" name='demo'>
+  <m:modelVersion>4.0.0</m:modelVersion>
+  <dependency optional="true">
+    <groupId>org.example</groupId>
+    <version>1.0 &lt; 2.0 &#169;</version>
+  </dependency>
+  <script><![CDATA[ if (a < b) { run(); } ]]></script>
+  <empty/>
+</project>

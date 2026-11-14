@@ -1,0 +1,1 @@
+mkdir -p $GEN && printf "#D776DE" > $GEN/color.txt && echo scheme-rainbow > $GEN/scheme_type.txt

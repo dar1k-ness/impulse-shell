@@ -1,0 +1,13 @@
+Object => prototype,name,length,getPrototypeOf,getOwnPropertyDescriptor,getOwnPropertyDescriptors,getOwnPropertyNames,getOwnPropertySymbols,assign,create,defineProperty,defineProperties,entries,seal,freeze,preventExtensions,is,isSealed,isFrozen,isExtensible,keys,setPrototypeOf,values,fromEntries
+Array.prototype => length,constructor,toString,toLocaleString,concat,copyWithin,entries,fill,find,findIndex,includes,join,keys,pop,push,reverse,shift,slice,sort,splice,unshift,indexOf,lastIndexOf,every,some,forEach,map,filter,reduce,reduceRight,values,at,flat,flatMap
+String.prototype => length,constructor,toString,valueOf,charAt,charCodeAt,codePointAt,concat,endsWith,indexOf,includes,lastIndexOf,localeCompare,match,normalize,padEnd,padStart,repeat,replace,search,slice,split,startsWith,substr,substring,toLowerCase,toLocaleLowerCase,toUpperCase,toLocaleUpperCase,trim,arg,at,matchAll,replaceAll,trimEnd,trimStart
+Symbol => prototype,name,length,for,keyFor,hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables,matchAll
+Symbol.prototype => constructor,toString,valueOf,description
+RegExp.prototype => constructor,flags,global,ignoreCase,exec,multiline,source,sticky,test,toString,unicode,compile,dotAll
+Promise => prototype,name,length,resolve,reject,all,race,allSettled,any
+Promise.prototype => constructor,then,catch,finally
+URL => prototype,name,canParse,parse
+URLSearchParams.prototype => constructor,toString,sort,append,delete,has,set,get,getAll,forEach,entries,keys,values,size
+Atomics => add,and,compareExchange,exchange,isLockFree,load,or,store,sub,wait,wake,xor,notify
+%TypedArray%.prototype => buffer,byteLength,byteOffset,length,copyWithin,entries,every,fill,filter,find,findIndex,forEach,includes,indexOf,join,keys,lastIndexOf,map,reduce,reduceRight,reverse,some,set,slice,subarray,toLocaleString,toString,values,at,constructor,findLast,findLastIndex,sort
+exec => 0,length,index,input,groups

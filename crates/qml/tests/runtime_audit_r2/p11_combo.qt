@@ -1,0 +1,31 @@
+b displayTextChanged x
+b currentValueChanged x
+a Pick: x x
+b0 x x
+b displayTextChanged custom
+b custom
+b currentValueChanged y
+b custom y y
+b displayTextChanged y
+b reset y
+b displayTextChanged x
+b currentValueChanged x
+b x
+c currentIndexChanged 0
+c after model change: 0 q
+c currentIndexChanged 2
+c currentIndexChanged 0
+c shrink: 0 "only"
+currentValue only
+c currentIndexChanged -1
+c empty: -1 "" undefined
+d 1 Two 2
+d 2 Three 3
+d model 0 Tri 3
+d idx 1 Uno 1
+d model2 0 A 7
+d missing -1 "" 99
+e -1 "" undefined
+e model 0 z
+f -1 0 undefined
+f model 0 m m

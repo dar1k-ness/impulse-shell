@@ -1,0 +1,40 @@
+import QtQuick.tooling 1.2
+
+// The EasyEffects service (crates/qml/src/easyeffects.rs): whether it is installed and
+// running, and starting, quitting and opening it, without a shell.
+Module {
+    Component {
+        file: "easyeffects.rs"
+        name: "ImpulseEasyEffects"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/EasyEffects 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "available"
+            type: "bool"
+            read: "available"
+            notify: "availableChanged"
+            index: 0
+            isReadonly: true
+        }
+        Property {
+            name: "active"
+            type: "bool"
+            read: "active"
+            notify: "activeChanged"
+            index: 1
+            isReadonly: true
+        }
+        Signal { name: "availableChanged" }
+        Signal { name: "activeChanged" }
+        Method { name: "fetchAvailability" }
+        Method { name: "fetchActiveState" }
+        Method { name: "enable" }
+        Method { name: "disable" }
+        Method { name: "toggle" }
+        Method { name: "open" }
+    }
+}

@@ -1,0 +1,22 @@
+[package]
+name = "heif"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+# AVIF/HEIC through the system libheif (libheif.so.1), opened at run time: Qt reads these
+# through kimageformats/qt6-imageformats and ImageMagick through libheif, so without the
+# library they fail there too, but nothing needs it to build.
+
+[dependencies]
+bits = { path = "../bits" }
+elog = { path = "../elog" }
+libloading.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+testenv = { path = "../testenv" }
+
+[lints]
+workspace = true

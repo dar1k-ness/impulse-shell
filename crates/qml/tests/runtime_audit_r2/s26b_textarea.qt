@@ -1,0 +1,4 @@
+TextArea after text='': 0 0
+insert at cursor: "x" 1
+TextEdit: 0 0 0 ""
+clear(): 0

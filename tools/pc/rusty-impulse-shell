@@ -1,0 +1,6 @@
+#!/bin/bash
+# Start the native shell (rusty-impulse) under its own name (comm "rusty-impulse"): hypridle's
+# pidof and the Ctrl+Super+R killall list rusty-impulse next to qs/quickshell.
+# The previous build keeps its own script: ii-shell.
+cd ~
+exec "$HOME/.local/bin/rusty-impulse" -c rusty-impulse >"${XDG_RUNTIME_DIR:-/tmp}/rusty-impulse.log" 2>&1 </dev/null

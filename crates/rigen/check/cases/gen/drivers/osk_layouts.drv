@@ -1,0 +1,12 @@
+// @js modules/rusty/onScreenKeyboard/layouts.js
+var L = M_modules_rusty_onScreenKeyboard_layouts;
+var names = Object.keys(L.byName);
+var summary = names.map(n => {
+    const l = L.byName[n];
+    const keys = l.keys.flat();
+    return [n, l.name_short, l.keys.length, keys.length,
+        keys.filter(k => k.keytype === "modkey").map(k => k.label).join(" "),
+        keys.reduce((a, k) => a + (k.keycode ?? 0), 0),
+        keys.map(k => k.labelShift ?? k.label).filter(s => s && s.length === 1).join("")];
+});
+var result = JSON.stringify([L.defaultLayout, summary, L.numpad.map(r => r.map(k => k.shape[0] + k.label).join(""))]);

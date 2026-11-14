@@ -1,0 +1,45 @@
+# The cheaper steps of the gate (tools/testenv/ri-gate --workspace) on GitHub-hosted runners:
+# rustfmt and cargo-deny, clippy (the workspace with interp, the shipped shell without), the
+# workspace's unit tests (`--lib`) with the qml no_interp test and the shipped shell (its build
+# and install, which shipped-tests needs, then every shell test without the interpreter:
+# startup_errors, shipped_binary, ...), and the strict AOT check with the QV4 replay. The whole
+# gate, with every reference comparison, is ri-gate.yml. Measured cold (no cache) on ubuntu-26.04 with 41 GB free after the cleanup
+# step: 7.4 GB image pulled in ~1.5 min; clippy 8 min, 4.3 GB target; unit tests 17 min,
+# 2.7 GB; AOT 16 min, 2.5 GB; registry 0.4 GB. (The unit tests were measured without
+# shipped-build, which the job needs and now has; its time there is not measured.)
+#
+# Billed minutes are the sum of the jobs: ~50 a run, against 2,000 a month for a private
+# repository on the Free plan (GitHub docs "GitHub Actions billing"), i.e. ~40 runs. A run
+# per pull request would use that up in days and stall every workflow, so the checks run on
+# what lands on main and impulse-next (pushes in a burst collapse to one run per branch:
+# cancel-in-progress) and by hand (Actions → checks → Run workflow, any branch), not per
+# pull request. A pull request is checked before its merge with tools/ci/gate --workspace
+# (docs/ci.md).
+name: checks
+
+on:
+  push:
+    branches: [main, impulse-next]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    uses: ./.github/workflows/gate-jobs.yml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      # A manual run on a side branch doesn't add entries to the repository cache.
+      save-cache: ${{ github.event_name == 'push' }}
+      jobs: >-
+        [{"name": "lint", "args": "--only fmt,deny"},
+         {"name": "clippy", "args": "--only clippy,shipped-clippy"},
+         {"name": "unit-tests", "args": "--only tests,no-interp,shipped-build,shipped-tests --lib"},
+         {"name": "aot", "args": "--only aot"}]

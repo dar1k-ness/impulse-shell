@@ -1,0 +1,13 @@
+[Windeco]
+BackgroundOpacity=100
+ButtonStyle=macOS
+ButtonSize=Small
+
+[Common]
+ShadowSize=ShadowLarge
+
+[TitleBarOpacity]
+ActiveTitleBarOpacity=100
+OpaqueMaximizedTitleBars=true
+InactiveTitleBarOpacity=100
+

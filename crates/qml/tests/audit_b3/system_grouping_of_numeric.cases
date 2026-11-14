@@ -1,0 +1,87 @@
+# Qt 6.12 under: LANG=en_IN.UTF-8 LC_NUMERIC=de_CH.UTF-8 LC_MONETARY=bn_BD.UTF-8 LC_TIME=hi_IN.UTF-8
+Qt.locale().name
+=> string:en_IN
+(1234567.89).toLocaleString(Qt.locale())
+=> string:1'234'567.89
+(1234567.89).toLocaleString(Qt.locale(), "f", 2)
+=> string:1'234'567.89
+(12345).toLocaleString(Qt.locale(), "f", 0)
+=> string:12'345
+(1234).toLocaleString(Qt.locale(), "f", 0)
+=> string:1'234
+(-123456789).toLocaleString(Qt.locale(), "f", 0)
+=> string:-123'456'789
+(1234567.89).toLocaleString(Qt.locale(), "e", 3)
+=> string:1.235e+06
+(123456789012).toLocaleString(Qt.locale(), "g", 6)
+=> string:1.23457e+11
+Qt.locale().toString(1234567.891, "f", 1)
+=> string:1'234'567.9
+Qt.locale().toString(1234567)
+=> string:1'234'567
+[Qt.locale().decimalPoint, Qt.locale().groupSeparator, Qt.locale().zeroDigit, Qt.locale().negativeSign, Qt.locale().positiveSign, Qt.locale().exponential, Qt.locale().percent].join(" ")
+=> string:. ' 0 - + E %
+Number.fromLocaleString(Qt.locale(), (1234567.89).toLocaleString(Qt.locale()))
+=> number:1234567.89
+(1234567.89).toLocaleCurrencyString(Qt.locale())
+=> string:৳1'234'567.89
+(-1234567.89).toLocaleCurrencyString(Qt.locale())
+=> string:(৳1'234'567.89)
+(1234567.89).toLocaleCurrencyString(Qt.locale(), "X")
+=> string:X1'234'567.89
+[Qt.locale().currencySymbol(Locale.CurrencySymbol), Qt.locale().currencySymbol(Locale.CurrencyIsoCode), Qt.locale().currencySymbol(Locale.CurrencyDisplayName)].join("|")
+=> string:৳|BDT|বাংলাদেশী টাকা
+[Qt.locale().dateFormat(Locale.LongFormat), Qt.locale().dateFormat(Locale.ShortFormat), Qt.locale().dateFormat(Locale.NarrowFormat)].join("|")
+=> string:dddd, d MMMM yyyy|d/M/yy|d/M/yy
+[Qt.locale().timeFormat(Locale.LongFormat), Qt.locale().timeFormat(Locale.ShortFormat)].join("|")
+=> string:h:mm:ss Ap tttt|h:mm Ap
+[Qt.locale().dateTimeFormat(Locale.LongFormat), Qt.locale().dateTimeFormat(Locale.ShortFormat)].join("|")
+=> string:dddd, d MMMM yyyy h:mm:ss Ap tttt|d/M/yy h:mm Ap
+[Qt.locale().dayName(1, Locale.LongFormat), Qt.locale().dayName(1, Locale.ShortFormat), Qt.locale().dayName(1, Locale.NarrowFormat)].join("|")
+=> string:सोमवार|सोम|सो
+[Qt.locale().standaloneDayName(1, Locale.LongFormat), Qt.locale().standaloneDayName(1, Locale.ShortFormat), Qt.locale().standaloneDayName(1, Locale.NarrowFormat)].join("|")
+=> string:सोमवार|सोम|सो
+[Qt.locale().monthName(4, Locale.LongFormat), Qt.locale().monthName(4, Locale.ShortFormat), Qt.locale().monthName(4, Locale.NarrowFormat)].join("|")
+=> string:मई|मई|म
+[Qt.locale().standaloneMonthName(4, Locale.LongFormat), Qt.locale().standaloneMonthName(4, Locale.ShortFormat), Qt.locale().standaloneMonthName(4, Locale.NarrowFormat)].join("|")
+=> string:मई|मई|म
+[Qt.locale().amText, Qt.locale().pmText].join("|")
+=> string:am|pm
+[Qt.locale().firstDayOfWeek, Qt.locale().weekDays.join(",")].join("|")
+=> string:0|1,2,3,4,5,6
+Qt.locale().measurementSystem
+=> number:0
+Qt.locale().uiLanguages.join("|")
+=> string:en-Latn-IN|en-IN|en-Latn|en
+Qt.locale().createSeparatedList(["a", "b", "c"])
+=> string:a, b and c
+Qt.locale().createSeparatedList(["a", "b"])
+=> string:a and b
+[Qt.locale().nativeLanguageName, Qt.locale().nativeTerritoryName, Qt.locale().textDirection, Qt.locale().numberOptions].join("|")
+=> string:English|India|0|0
+Qt.locale().formattedDataSize(123456789)
+=> string:117.74 MiB
+Qt.locale().formattedDataSize(1234567890123, 3)
+=> string:1.123 TiB
+Qt.locale().toString(new Date(2024, 0, 5, 13, 4, 5), Locale.ShortFormat)
+=> string:5/1/24 1:04 pm
+Qt.locale().toString(new Date(2024, 0, 5, 13, 4, 5), "dd.MM.yyyy HH:mm ddd MMM AP")
+=> string:05.01.2024 13:04 शुक्र जन॰ PM
+new Date(2024, 0, 5, 13, 4, 5).toLocaleDateString(Qt.locale(), Locale.ShortFormat)
+=> string:5/1/24
+new Date(2024, 0, 5, 13, 4, 5).toLocaleTimeString(Qt.locale(), Locale.ShortFormat)
+=> string:1:04 pm
+new Date(2024, 0, 5, 13, 4, 5).toLocaleString(Qt.locale(), Locale.ShortFormat)
+=> string:5/1/24 1:04 pm
+new Date(2024, 0, 5, 13, 4, 5).toLocaleDateString()
+=> string:शुक्रवार, 5 जनवरी 2024
+new Date(2024, 0, 5, 13, 4, 5).toLocaleDateString(Qt.locale(), "d MMMM yyyy")
+=> string:5 जनवरी 2024
+Qt.formatDate(new Date(2024, 0, 5), Qt.locale(), Locale.ShortFormat)
+=> string:5/1/24
+Qt.formatDateTime(new Date(2024, 0, 5, 13, 4, 5), "d MMM yy h:mm")
+=> string:5 Jan 24 13:04
+String(Qt.locale())
+=> string:QLocale::system()/* English, Latin, India */
+"я".localeCompare("z")
+=> number:1

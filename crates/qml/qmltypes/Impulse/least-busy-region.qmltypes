@@ -1,0 +1,104 @@
+import QtQuick.tooling 1.2
+
+// The part of an image with the least (or, with `busiest`, the most) detail, for a widget of
+// `regionWidth` x `regionHeight` kept `horizontalPadding` / `verticalPadding` away from the edges
+// of the image as a `screenWidth` x `screenHeight` screen shows it. Setting `running` starts
+// the search off the main thread; `found` carries `center_x`, `center_y`, `width`, `height`,
+// `variance` and `dominant_color`. An image that cannot be read ends the run without `found`.
+// Implemented natively by ri (crates/qml/src/imgjobs.rs, crates/imgtools/src/busy.rs).
+Module {
+    Component {
+        file: "imgjobs.rs"
+        name: "ImpulseLeastBusyRegion"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/LeastBusyRegion 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "imagePath"
+            type: "QString"
+            read: "imagePath"
+            write: "setImagePath"
+            notify: "imagePathChanged"
+            index: 0
+        }
+        Property {
+            name: "screenWidth"
+            type: "int"
+            read: "screenWidth"
+            write: "setScreenWidth"
+            notify: "screenWidthChanged"
+            index: 1
+        }
+        Property {
+            name: "screenHeight"
+            type: "int"
+            read: "screenHeight"
+            write: "setScreenHeight"
+            notify: "screenHeightChanged"
+            index: 2
+        }
+        Property {
+            name: "regionWidth"
+            type: "int"
+            read: "regionWidth"
+            write: "setRegionWidth"
+            notify: "regionWidthChanged"
+            index: 3
+        }
+        Property {
+            name: "regionHeight"
+            type: "int"
+            read: "regionHeight"
+            write: "setRegionHeight"
+            notify: "regionHeightChanged"
+            index: 4
+        }
+        Property {
+            name: "horizontalPadding"
+            type: "int"
+            read: "horizontalPadding"
+            write: "setHorizontalPadding"
+            notify: "horizontalPaddingChanged"
+            index: 5
+        }
+        Property {
+            name: "verticalPadding"
+            type: "int"
+            read: "verticalPadding"
+            write: "setVerticalPadding"
+            notify: "verticalPaddingChanged"
+            index: 6
+        }
+        Property {
+            name: "busiest"
+            type: "bool"
+            read: "busiest"
+            write: "setBusiest"
+            notify: "busiestChanged"
+            index: 7
+        }
+        Property {
+            name: "running"
+            type: "bool"
+            read: "running"
+            write: "setRunning"
+            notify: "runningChanged"
+            index: 8
+        }
+        Signal { name: "imagePathChanged" }
+        Signal { name: "screenWidthChanged" }
+        Signal { name: "screenHeightChanged" }
+        Signal { name: "regionWidthChanged" }
+        Signal { name: "regionHeightChanged" }
+        Signal { name: "horizontalPaddingChanged" }
+        Signal { name: "verticalPaddingChanged" }
+        Signal { name: "busiestChanged" }
+        Signal { name: "runningChanged" }
+        Signal {
+            name: "found"
+            Parameter { name: "region"; type: "QVariant" }
+        }
+        Signal { name: "finished" }
+    }
+}

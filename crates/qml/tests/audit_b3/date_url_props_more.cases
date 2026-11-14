@@ -1,0 +1,140 @@
+@property date dw
+@property date db: new Date(5)
+@property var vv: db
+@property date dc: db
+@property int nd: 0
+@onDwChanged: nd += 1
+w(function(){ dw = "2024-03-10T01:02"; return dw.getTime() })
+=> number:1710021720000
+w(function(){ dw = "2024-03-10T01"; return dw.getTime() })
+=> number:1710021600000
+w(function(){ dw = "2024-03-10T1:02:03"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T24:00:00"; return dw.getTime() })
+=> number:1710104400000
+w(function(){ dw = "2024-03-10T24:00:01"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T23:59:59.9996"; return dw.getTime() })
+=> number:1710104400000
+w(function(){ dw = "2024-03-10T01:02:03,5"; return dw.getTime() })
+=> number:1710021723500
+w(function(){ dw = "2024-03-10T01:02.5"; return dw.getTime() })
+=> number:1710021750000
+w(function(){ dw = "2024-03-10T01.5"; return dw.getTime() })
+=> number:1710023400000
+w(function(){ dw = "2024-03-10T01:02:03."; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T01:02:03z"; return dw.getTime() })
+=> number:1710032523000
+w(function(){ dw = "2024-03-10T01:02:03+0200"; return dw.getTime() })
+=> number:1710025323000
+w(function(){ dw = "2024-03-10T01:02:03+02"; return dw.getTime() })
+=> number:1710025323000
+w(function(){ dw = "2024-03-10T01:02:03-02:30"; return dw.getTime() })
+=> number:1710041523000
+w(function(){ dw = "2024-03-10T01:02:03+24:00"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T01:02:03+2"; return dw.getTime() })
+=> number:1710025323000
+w(function(){ dw = "2024-03-10x01:02:03"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10t01:02:03"; return dw.getTime() })
+=> number:1710021723000
+w(function(){ dw = "2024-03-10_"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-101"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024/03/10"; return dw.getTime() })
+=> number:1710018000000
+w(function(){ dw = "2024.03.10 01:02:03"; return dw.getTime() })
+=> number:1710021723000
+w(function(){ dw = "2024-02-30"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-13-01"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "0000-01-01"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "0001-01-01"; return dw.getTime() })
+=> number:-62135605817000
+w(function(){ dw = "24-03-10"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = " 2024-03-10"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10 "; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-3-10"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T01:02:03.1234567"; return dw.getTime() })
+=> number:1710021723123
+w(function(){ dw = "2024-03-10T01:02:60"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T01:60:00"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T25:00:00"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2010-03-28T02:30:00"; return dw.getTime() })
+=> number:1269732600000
+w(function(){ dw = "2024-03-10T01:02:03 Z"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T01:02:03+02:00:00"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T-01:00"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-06-10T12:00:00.5Z"; return dw.getTime() })
+=> number:1718020800500
+w(function(){ dw = "2024-03-10T01:2:03"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T01:02:3"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T0102"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T01:02:03.4.5"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "2024-03-10T01:02:03+ab"; return dw.getTime() })
+=> string:THROW Error: Cannot assign QString to QDateTime
+w(function(){ dw = "9999-12-31T23:59:59.999Z"; return dw.getTime() })
+=> number:253402300799999
+w(function(){ dw = new Date(-1.5); return dw.getTime() })
+=> number:-1
+w(function(){ dw = new Date(5); var a = nd; root.dw.setHours(1); return a + ">" + nd })
+=> string:20>21
+w(function(){ dw = new Date(5); var a = nd; root.dw.getTime(); return a + ">" + nd })
+=> string:22>22
+w(function(){ dw = new Date(5); var a = nd; var x = dw; x.setTime(6); return a + ">" + nd + " " + dw.getTime()})
+=> string:22>22 5
+w(function(){ dw = new Date(5); var a = nd; dw.setTime(5); return a + ">" + nd })
+=> string:22>22
+w(function(){ dw = new Date(5); var o = {d: dw}; o.d.setTime(6); return dw.getTime()})
+=> number:5
+w(function(){ dw = new Date(5); var f = function() { return dw }; f().setTime(6); return dw.getTime()})
+=> number:5
+vv === vv
+=> boolean:true
+vv.getTime()
+=> number:5
+dc.getTime()
+=> number:5
+w(function(){ vv = new Date(9); var x = vv; x.setTime(10); return vv.getTime() })
+=> number:10
+JSON.stringify(dc)
+=> string:"1970-01-01T00:00:00.005Z"
+dc.toISOString()
+=> string:1970-01-01T00:00:00.005Z
+Object.keys(dc).length
+=> number:0
+dc.constructor === Date
+=> boolean:true
+Object.getPrototypeOf(dc) === Date.prototype
+=> boolean:true
+w(function(){ dw = new Date(5); dw.x = 1; return dw.x })
+=> undefined
+w(function(){ dw = new Date(5); var x = dw; dw = new Date(6); return x.getTime() })
+=> number:5
+w(function(){ dw = new Date(5); (dw).setTime(6); return dw.getTime() })
+=> number:6
+w(function(){ dw = new Date(5); dw.setUTCHours(1); return dw.getTime() })
+=> number:3600005
+w(function(){ dw = new Date(5); dw.setYear(99); return dw.getFullYear() })
+=> number:1999

@@ -1,0 +1,10 @@
+// @js modules/rusty/cheatsheet/periodic_table.js
+var P = M_modules_rusty_cheatsheet_periodic_table;
+var all = P.elements.concat(P.series).flat().filter(e => e.type !== 'empty');
+var byType = {};
+for (const e of all) byType[e.type] = (byType[e.type] || 0) + 1;
+var heaviest = all.reduce((a, e) => e.weight > a.weight ? e : a);
+var sorted = all.slice().sort((a, b) => b.number - a.number).slice(0, 5).map(e => e.symbol);
+var total = all.reduce((s, e) => s + e.weight, 0);
+var result = JSON.stringify([all.length, byType, heaviest.name, sorted, total, total.toFixed(3), P.niceTypes[all[1].type] ?? all[1].type,
+    P.elements.map(r => r.length), all.filter(e => /^[A-C]/.test(e.symbol)).map(e => e.symbol + e.number).join()]);

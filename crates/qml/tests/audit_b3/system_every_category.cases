@@ -1,0 +1,69 @@
+# Qt 6.12 under: LANG=de_DE.UTF-8 LC_NUMERIC=bn_BD.UTF-8 LC_MONETARY=en_IN.UTF-8 LC_TIME=ar_EG.UTF-8 LC_MESSAGES=fr_FR.UTF-8 LC_MEASUREMENT=en_US.UTF-8 LC_COLLATE=C
+Qt.locale().name
+=> string:fr_FR
+(1234567.89).toLocaleString(Qt.locale())
+=> string:১২,৩৪,৫৬৭.৮৯
+(1234567.89).toLocaleString(Qt.locale(), "f", 2)
+=> string:১২,৩৪,৫৬৭.৮৯
+(12345).toLocaleString(Qt.locale(), "f", 0)
+=> string:১২,৩৪৫
+(1234).toLocaleString(Qt.locale(), "f", 0)
+=> string:১,২৩৪
+(-123456789).toLocaleString(Qt.locale(), "f", 0)
+=> string:-১২,৩৪,৫৬,৭৮৯
+(1234567.89).toLocaleString(Qt.locale(), "e", 3)
+=> string:১.২৩৫e+০৬
+(123456789012).toLocaleString(Qt.locale(), "g", 6)
+=> string:১.২৩৪৫৭e+১১
+Qt.locale().toString(1234567.891, "f", 1)
+=> string:১২,৩৪,৫৬৭.৯
+Qt.locale().toString(1234567)
+=> string:১২,৩৪,৫৬৭
+[Qt.locale().decimalPoint, Qt.locale().groupSeparator, Qt.locale().zeroDigit, Qt.locale().negativeSign, Qt.locale().positiveSign, Qt.locale().exponential, Qt.locale().percent].join(" ")
+=> string:. , ০ - + E %
+Number.fromLocaleString(Qt.locale(), (1234567.89).toLocaleString(Qt.locale()))
+=> number:1234567.89
+(1234567.89).toLocaleCurrencyString(Qt.locale())
+=> string:১২,৩৪,৫৬৭.৮৯ ₹
+(-1234567.89).toLocaleCurrencyString(Qt.locale())
+=> string:(১২,৩৪,৫৬৭.৮৯ ₹)
+(1234567.89).toLocaleCurrencyString(Qt.locale(), "X")
+=> string:১২,৩৪,৫৬৭.৮৯ X
+[Qt.locale().currencySymbol(Locale.CurrencySymbol), Qt.locale().currencySymbol(Locale.CurrencyIsoCode), Qt.locale().currencySymbol(Locale.CurrencyDisplayName)].join("|")
+=> string:₹|INR|Indian Rupee
+[Qt.locale().dateFormat(Locale.LongFormat), Qt.locale().dateFormat(Locale.ShortFormat), Qt.locale().dateFormat(Locale.NarrowFormat)].join("|")
+=> string:dddd، d MMMM yyyy|d‏/M‏/yyyy|d‏/M‏/yyyy
+[Qt.locale().timeFormat(Locale.LongFormat), Qt.locale().timeFormat(Locale.ShortFormat)].join("|")
+=> string:h:mm:ss Ap tttt|h:mm Ap
+[Qt.locale().dateTimeFormat(Locale.LongFormat), Qt.locale().dateTimeFormat(Locale.ShortFormat)].join("|")
+=> string:dddd، d MMMM yyyy h:mm:ss Ap tttt|d‏/M‏/yyyy h:mm Ap
+[Qt.locale().dayName(1, Locale.LongFormat), Qt.locale().dayName(1, Locale.ShortFormat), Qt.locale().dayName(1, Locale.NarrowFormat)].join("|")
+=> string:الاثنين|الاثنين|ن
+[Qt.locale().standaloneDayName(1, Locale.LongFormat), Qt.locale().standaloneDayName(1, Locale.ShortFormat), Qt.locale().standaloneDayName(1, Locale.NarrowFormat)].join("|")
+=> string:الاثنين|الاثنين|ن
+[Qt.locale().monthName(4, Locale.LongFormat), Qt.locale().monthName(4, Locale.ShortFormat), Qt.locale().monthName(4, Locale.NarrowFormat)].join("|")
+=> string:مايو|مايو|و
+[Qt.locale().standaloneMonthName(4, Locale.LongFormat), Qt.locale().standaloneMonthName(4, Locale.ShortFormat), Qt.locale().standaloneMonthName(4, Locale.NarrowFormat)].join("|")
+=> string:مايو|مايو|و
+[Qt.locale().amText, Qt.locale().pmText].join("|")
+=> string:ص|م
+[Qt.locale().firstDayOfWeek, Qt.locale().weekDays.join(",")].join("|")
+=> string:6|1,2,3,4,5
+Qt.locale().measurementSystem
+=> number:1
+Qt.locale().uiLanguages.join("|")
+=> string:fr-Latn-FR|fr-FR|fr-Latn|fr
+Qt.locale().createSeparatedList(["a", "b", "c"])
+=> string:a, b et c
+Qt.locale().createSeparatedList(["a", "b"])
+=> string:a et b
+[Qt.locale().nativeLanguageName, Qt.locale().nativeTerritoryName, Qt.locale().textDirection, Qt.locale().numberOptions].join("|")
+=> string:français|France|0|0
+Qt.locale().formattedDataSize(123456789)
+=> string:১১৭.৭৪ Mio
+Qt.locale().formattedDataSize(1234567890123, 3)
+=> string:১.১২৩ Tio
+Qt.formatDateTime(new Date(2024, 0, 5, 13, 4, 5), "d MMM yy h:mm")
+=> string:5 Jan 24 13:04
+String(Qt.locale())
+=> string:QLocale::system()/* French, Latin, France */

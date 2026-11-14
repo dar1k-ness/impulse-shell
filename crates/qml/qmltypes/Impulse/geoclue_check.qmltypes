@@ -1,0 +1,14 @@
+import QtQuick.tooling 1.2
+
+// Exits 0 when GeoClue2 is on the system bus or activatable there, 1 otherwise.
+// A Process whose work is native (crates/qml/src/procs.rs): `running`, `exited`, `stdout` as Process.
+Module {
+    Component {
+        file: "procs.rs"
+        name: "ImpulseGeoClueCheck"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/GeoClueCheck 1.0"]
+        exportMetaObjectRevisions: [256]
+    }
+}

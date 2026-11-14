@@ -1,0 +1,14 @@
+before 1: containsMouse=true
+1: 0 -150
+2: 0 -150
+3: 75 -150
+before 4: containsMouse=false
+4: 150 -150
+5: 150 -75
+6: 150 0
+before 7: hovered=true
+7: 150 -75 hovered=false
+8: 75 -150
+9: 0 -150
+before 10: containsMouse=true
+10: 0 -150

@@ -1,0 +1,26 @@
+# Component.createObject, a number as the initial value of a property whose enumeration has an
+# explicit C++ type (Repeater.delegateModelAccess: QQmlDelegateModel::DelegateModelAccess is a
+# quint8). Qt narrows the number to that type: -1 reads back as 255. Six of these ten differ
+# here (docs/qt-differences.md).
+@property Component rc: Component { Repeater { } }
+@property Component lc: Component { ListView { } }
+w(function() { var o = root.rc.createObject(root); return o.delegateModelAccess })
+=> number:0
+w(function() { var o = root.rc.createObject(root, {delegateModelAccess: 1}); return o ? o.delegateModelAccess : "refused" })
+=> number:1
+w(function() { var o = root.rc.createObject(root, {delegateModelAccess: -1}); return o ? o.delegateModelAccess : "refused" })
+=> number:255
+w(function() { var o = root.rc.createObject(root, {delegateModelAccess: 255}); return o ? o.delegateModelAccess : "refused" })
+=> number:255
+w(function() { var o = root.rc.createObject(root, {delegateModelAccess: 256}); return o ? o.delegateModelAccess : "refused" })
+=> number:0
+w(function() { var o = root.rc.createObject(root, {delegateModelAccess: 257}); return o ? o.delegateModelAccess : "refused" })
+=> number:1
+w(function() { var o = root.rc.createObject(root, {delegateModelAccess: 4294967295}); return o ? o.delegateModelAccess : "refused" })
+=> number:255
+w(function() { var o = root.rc.createObject(root, {delegateModelAccess: 1.7}); return o ? o.delegateModelAccess : "refused" })
+=> number:2
+w(function() { var o = root.rc.createObject(root, {delegateModelAccess: "ReadWrite"}); return o ? o.delegateModelAccess : "refused" })
+=> number:2
+w(function() { var o = root.lc.createObject(root, {delegateModelAccess: -1}); return o ? o.delegateModelAccess : "refused" })
+=> number:255

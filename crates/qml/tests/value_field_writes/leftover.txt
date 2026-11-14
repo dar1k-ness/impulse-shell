@@ -1,0 +1,3 @@
+AnimatedImage.sourceSize	written 2 | written 0 | written 2	written 1 | written 0 | written 1
+DragHandler.persistentTranslation	written 0 | written 0 | written 0	written 1 | written 0 | written 1
+Image.sourceSize	written 2 | written 0 | written 2	written 1 | written 0 | written 1

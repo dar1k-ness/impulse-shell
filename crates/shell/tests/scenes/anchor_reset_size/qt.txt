@@ -1,0 +1,19 @@
+f 0 0 200 100 changes 1 1
+fm 2 5 193 90 c 90 45 20 10 t 0 50
+lr 0 0 200 4 changes 1 edges 0 0 200 100 mid 0 0 200 100 bound 0 0 200 100
+la 0 0 85 40 lb 90 18 30 5
+==
+f 0 0 200 100 changes 1 1
+fm 5 5 190 90 c 90 45 20 10 t 0 50
+lr 0 0 200 4 changes 1 edges 0 0 200 100 mid 0 0 200 100 bound 0 0 200 100
+==
+f 0 0 200 100 changes 1 1
+c 90 45 40 10 lr 0 0 200 4 changes 1 mid 0 0 200 100
+==
+f 0 0 200 100 fm 5 5 290 140 lr 0 0 200 4 edges 100 0 200 100 mid 0 25 200 100 bound 0 0 200 100
+==
+f 0 0 50 100 changes 2 1
+lr 0 0 33 4 changes 2 edges 100 0 200 0 mid 0 25 6 100 bound 0 0 200 0
+==
+f 0 0 300 150 changes 3 2 lr 0 0 300 4 changes 3
+la 0 0 115 40 lb 120 18 30 5

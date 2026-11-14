@@ -1,0 +1,50 @@
+import QtQuick.tooling 1.2
+
+// Impulse/Download: a Process that fetches `url` into the file `path` unless the file is
+// already there (crates/qml/src/jobs.rs `download`). Exits 0 when the file is there.
+Module {
+    Component {
+        file: "jobs.rs"
+        name: "ImpulseDownload"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/Download 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "url"
+            type: "QString"
+            read: "url"
+            write: "setUrl"
+            notify: "urlChanged"
+            index: 0
+        }
+        Property {
+            name: "path"
+            type: "QString"
+            read: "path"
+            write: "setPath"
+            notify: "pathChanged"
+            index: 1
+        }
+        Property {
+            name: "userAgent"
+            type: "QString"
+            read: "userAgent"
+            write: "setUserAgent"
+            notify: "userAgentChanged"
+            index: 2
+        }
+        Property {
+            name: "ipv4"
+            type: "bool"
+            read: "ipv4"
+            write: "setIpv4"
+            notify: "ipv4Changed"
+            index: 3
+        }
+        Signal { name: "urlChanged" }
+        Signal { name: "pathChanged" }
+        Signal { name: "userAgentChanged" }
+        Signal { name: "ipv4Changed" }
+    }
+}

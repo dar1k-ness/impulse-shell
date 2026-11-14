@@ -1,0 +1,21 @@
+# pre-commit (https://pre-commit.com). Once per clone: `pre-commit install`.
+# A commit that touches Rust code is checked with rustfmt (the host's cargo; rustup installs
+# the pinned toolchain). A push is checked with clippy, the gate's two clippy steps in the
+# ri-testenv image (docs/ci.md): the host needs Docker, not the shell's build dependencies.
+default_install_hook_types: [pre-commit, pre-push]
+repos:
+  - repo: local
+    hooks:
+      - id: rustfmt
+        name: rustfmt (cargo fmt --check)
+        language: system
+        entry: sh -c 'cargo fmt --all --check && cd crates/rigen/check && cargo fmt --check'
+        pass_filenames: false
+        files: \.rs$
+      - id: clippy
+        name: clippy (tools/ci/gate --workspace --only clippy,shipped-clippy)
+        language: system
+        entry: tools/ci/gate --workspace --only clippy,shipped-clippy
+        pass_filenames: false
+        files: \.rs$|(^|/)Cargo\.(toml|lock)$|^clippy\.toml$|^rust-toolchain\.toml$
+        stages: [pre-push]

@@ -1,0 +1,5 @@
+Text qs:@/qs/shell.qml
+TextEdit qs:@/qs/shell.qml
+Loader qs:@/qs/sub/Loaded.qml
+set x.png
+reset qs:@/qs/shell.qml

@@ -1,0 +1,400 @@
+TI 0 select(20,30) -> hello world|4|2|4|ll|11
+TI 0 select(-5,3) -> hello world|4|2|4|ll|11
+TI 0 select(3,99) -> hello world|4|2|4|ll|11
+TI 0 select(3,-1) -> hello world|4|2|4|ll|11
+TI 0 select(12,0) -> hello world|4|2|4|ll|11
+TI 0 select(6,1) -> hello world|1|1|6|ello |11
+TI 0 select(1,6) -> hello world|6|1|6|ello |11
+TI 0 select(2,4) -> hello world|4|2|4|ll|11
+TI 0 select(4,2) -> hello world|2|2|4|ll|11
+TI 0 select(0,11) -> hello world|11|0|11|hello world|11
+TI 0 select(11,0) -> hello world|0|0|11|hello world|11
+TI 0 select(11,11) -> hello world|11|11|11||11
+TI 0 select(3,3) -> hello world|3|3|3||11
+TI 0 select(1.7,3.2) -> hello world|3|1|3|el|11
+TI 0 insert(-1,Y) -> hello world|4|2|4|ll|11
+TI 0 insert(99,X) -> hello world|4|2|4|ll|11
+TI 0 insert(12,X) -> hello world|4|2|4|ll|11
+TI 0 insert(0,5) -> 5hello world|5|3|5|ll|12
+TI 0 insert(0,ab) -> abhello world|6|4|6|ll|13
+TI 0 insert(2,A) -> heAllo world|5|3|5|ll|12
+TI 0 insert(3,ZZ) -> helZZlo world|6|2|6|lZZl|13
+TI 0 insert(4,B) -> hellBo world|5|2|5|llB|12
+TI 0 insert(5,Z) -> helloZ world|4|2|4|ll|12
+TI 0 insert(8,Q) -> hello woQrld|4|2|4|ll|12
+TI 0 insert(11,!) -> hello world!|4|2|4|ll|12
+TI 0 insert(3,) -> hello world|4|2|4|ll|11
+TI 0 insert(length,!) -> hello world!|4|2|4|ll|12
+TI 0 remove(6,9) -> hello ld|4|2|4|ll|8
+TI 0 remove(5,99) -> hello|4|2|4|ll|5
+TI 0 remove(8,3) -> helrld|3|2|4|lr|6
+TI 0 remove(50,60) -> hello world|4|2|4|ll|11
+TI 0 remove(-3,3) -> lo world|1|0|1|l|8
+TI 0 remove(0,1) -> ello world|3|1|3|ll|10
+TI 0 remove(0,2) -> llo world|2|0|2|ll|9
+TI 0 remove(1,5) -> h world|1|1|4| wo|7
+TI 0 remove(2,4) -> heo world|2|2|2||9
+TI 0 remove(3,4) -> helo world|3|2|3|l|10
+TI 0 remove(4,7) -> hellorld|4|2|4|ll|8
+TI 0 remove(0,11) -> |0|0|0||0
+TI 0 remove(4,4) -> hello world|4|2|4|ll|11
+TI 0 remove(9,11) -> hello wor|4|2|4|ll|9
+TI 0 getText(3,1) -> "el" hello world|4|2|4|ll|11
+TI 0 getText(2,5) -> "llo" hello world|4|2|4|ll|11
+TI 0 getText(-2,99) -> "hello world" hello world|4|2|4|ll|11
+TI 0 selectAll -> hello world|11|0|11|hello world|11
+TI 0 deselect -> hello world|4|4|4||11
+TI 0 clear -> |0|0|0||0
+TI 0 cursorPosition=7 -> hello world|7|7|7||11
+TI 0 cursorPosition=3 -> hello world|3|3|3||11
+TI 0 text=xy -> xy|2|2|2||2
+TI 0 text=same -> hello world|4|2|4|ll|11
+TI 1 select(20,30) -> hello world|2|2|4|ll|11
+TI 1 select(-5,3) -> hello world|2|2|4|ll|11
+TI 1 select(3,99) -> hello world|2|2|4|ll|11
+TI 1 select(3,-1) -> hello world|2|2|4|ll|11
+TI 1 select(12,0) -> hello world|2|2|4|ll|11
+TI 1 select(6,1) -> hello world|1|1|6|ello |11
+TI 1 select(1,6) -> hello world|6|1|6|ello |11
+TI 1 select(2,4) -> hello world|4|2|4|ll|11
+TI 1 select(4,2) -> hello world|2|2|4|ll|11
+TI 1 select(0,11) -> hello world|11|0|11|hello world|11
+TI 1 select(11,0) -> hello world|0|0|11|hello world|11
+TI 1 select(11,11) -> hello world|11|11|11||11
+TI 1 select(3,3) -> hello world|3|3|3||11
+TI 1 select(1.7,3.2) -> hello world|3|1|3|el|11
+TI 1 insert(-1,Y) -> hello world|2|2|4|ll|11
+TI 1 insert(99,X) -> hello world|2|2|4|ll|11
+TI 1 insert(12,X) -> hello world|2|2|4|ll|11
+TI 1 insert(0,5) -> 5hello world|3|3|5|ll|12
+TI 1 insert(0,ab) -> abhello world|4|4|6|ll|13
+TI 1 insert(2,A) -> heAllo world|3|3|5|ll|12
+TI 1 insert(3,ZZ) -> helZZlo world|2|2|6|lZZl|13
+TI 1 insert(4,B) -> hellBo world|2|2|5|llB|12
+TI 1 insert(5,Z) -> helloZ world|2|2|4|ll|12
+TI 1 insert(8,Q) -> hello woQrld|2|2|4|ll|12
+TI 1 insert(11,!) -> hello world!|2|2|4|ll|12
+TI 1 insert(3,) -> hello world|2|2|4|ll|11
+TI 1 insert(length,!) -> hello world!|2|2|4|ll|12
+TI 1 remove(6,9) -> hello ld|2|2|4|ll|8
+TI 1 remove(5,99) -> hello|2|2|4|ll|5
+TI 1 remove(8,3) -> helrld|2|2|4|lr|6
+TI 1 remove(50,60) -> hello world|2|2|4|ll|11
+TI 1 remove(-3,3) -> lo world|0|0|1|l|8
+TI 1 remove(0,1) -> ello world|1|1|3|ll|10
+TI 1 remove(0,2) -> llo world|0|0|2|ll|9
+TI 1 remove(1,5) -> h world|1|1|4| wo|7
+TI 1 remove(2,4) -> heo world|2|2|2||9
+TI 1 remove(3,4) -> helo world|2|2|3|l|10
+TI 1 remove(4,7) -> hellorld|2|2|4|ll|8
+TI 1 remove(0,11) -> |0|0|0||0
+TI 1 remove(4,4) -> hello world|2|2|4|ll|11
+TI 1 remove(9,11) -> hello wor|2|2|4|ll|9
+TI 1 getText(3,1) -> "el" hello world|2|2|4|ll|11
+TI 1 getText(2,5) -> "llo" hello world|2|2|4|ll|11
+TI 1 getText(-2,99) -> "hello world" hello world|2|2|4|ll|11
+TI 1 selectAll -> hello world|11|0|11|hello world|11
+TI 1 deselect -> hello world|2|2|2||11
+TI 1 clear -> |0|0|0||0
+TI 1 cursorPosition=7 -> hello world|7|7|7||11
+TI 1 cursorPosition=3 -> hello world|3|3|3||11
+TI 1 text=xy -> xy|2|2|2||2
+TI 1 text=same -> hello world|2|2|4|ll|11
+TI 2 select(20,30) -> hello world|5|5|5||11
+TI 2 select(-5,3) -> hello world|5|5|5||11
+TI 2 select(3,99) -> hello world|5|5|5||11
+TI 2 select(3,-1) -> hello world|5|5|5||11
+TI 2 select(12,0) -> hello world|5|5|5||11
+TI 2 select(6,1) -> hello world|1|1|6|ello |11
+TI 2 select(1,6) -> hello world|6|1|6|ello |11
+TI 2 select(2,4) -> hello world|4|2|4|ll|11
+TI 2 select(4,2) -> hello world|2|2|4|ll|11
+TI 2 select(0,11) -> hello world|11|0|11|hello world|11
+TI 2 select(11,0) -> hello world|0|0|11|hello world|11
+TI 2 select(11,11) -> hello world|11|11|11||11
+TI 2 select(3,3) -> hello world|3|3|3||11
+TI 2 select(1.7,3.2) -> hello world|3|1|3|el|11
+TI 2 insert(-1,Y) -> hello world|5|5|5||11
+TI 2 insert(99,X) -> hello world|5|5|5||11
+TI 2 insert(12,X) -> hello world|5|5|5||11
+TI 2 insert(0,5) -> 5hello world|6|6|6||12
+TI 2 insert(0,ab) -> abhello world|7|7|7||13
+TI 2 insert(2,A) -> heAllo world|6|6|6||12
+TI 2 insert(3,ZZ) -> helZZlo world|7|7|7||13
+TI 2 insert(4,B) -> hellBo world|6|6|6||12
+TI 2 insert(5,Z) -> helloZ world|6|6|6||12
+TI 2 insert(8,Q) -> hello woQrld|5|5|5||12
+TI 2 insert(11,!) -> hello world!|5|5|5||12
+TI 2 insert(3,) -> hello world|5|5|5||11
+TI 2 insert(length,!) -> hello world!|5|5|5||12
+TI 2 remove(6,9) -> hello ld|5|5|5||8
+TI 2 remove(5,99) -> hello|5|5|5||5
+TI 2 remove(8,3) -> helrld|3|3|3||6
+TI 2 remove(50,60) -> hello world|5|5|5||11
+TI 2 remove(-3,3) -> lo world|2|2|2||8
+TI 2 remove(0,1) -> ello world|4|4|4||10
+TI 2 remove(0,2) -> llo world|3|3|3||9
+TI 2 remove(1,5) -> h world|1|1|1||7
+TI 2 remove(2,4) -> heo world|3|3|3||9
+TI 2 remove(3,4) -> helo world|4|4|4||10
+TI 2 remove(4,7) -> hellorld|4|4|4||8
+TI 2 remove(0,11) -> |0|0|0||0
+TI 2 remove(4,4) -> hello world|5|5|5||11
+TI 2 remove(9,11) -> hello wor|5|5|5||9
+TI 2 getText(3,1) -> "el" hello world|5|5|5||11
+TI 2 getText(2,5) -> "llo" hello world|5|5|5||11
+TI 2 getText(-2,99) -> "hello world" hello world|5|5|5||11
+TI 2 selectAll -> hello world|11|0|11|hello world|11
+TI 2 deselect -> hello world|5|5|5||11
+TI 2 clear -> |0|0|0||0
+TI 2 cursorPosition=7 -> hello world|7|7|7||11
+TI 2 cursorPosition=3 -> hello world|3|3|3||11
+TI 2 text=xy -> xy|2|2|2||2
+TI 2 text=same -> hello world|5|5|5||11
+TI 3 select(20,30) -> hello world|11|11|11||11
+TI 3 select(-5,3) -> hello world|11|11|11||11
+TI 3 select(3,99) -> hello world|11|11|11||11
+TI 3 select(3,-1) -> hello world|11|11|11||11
+TI 3 select(12,0) -> hello world|11|11|11||11
+TI 3 select(6,1) -> hello world|1|1|6|ello |11
+TI 3 select(1,6) -> hello world|6|1|6|ello |11
+TI 3 select(2,4) -> hello world|4|2|4|ll|11
+TI 3 select(4,2) -> hello world|2|2|4|ll|11
+TI 3 select(0,11) -> hello world|11|0|11|hello world|11
+TI 3 select(11,0) -> hello world|0|0|11|hello world|11
+TI 3 select(11,11) -> hello world|11|11|11||11
+TI 3 select(3,3) -> hello world|3|3|3||11
+TI 3 select(1.7,3.2) -> hello world|3|1|3|el|11
+TI 3 insert(-1,Y) -> hello world|11|11|11||11
+TI 3 insert(99,X) -> hello world|11|11|11||11
+TI 3 insert(12,X) -> hello world|11|11|11||11
+TI 3 insert(0,5) -> 5hello world|12|12|12||12
+TI 3 insert(0,ab) -> abhello world|13|13|13||13
+TI 3 insert(2,A) -> heAllo world|12|12|12||12
+TI 3 insert(3,ZZ) -> helZZlo world|13|13|13||13
+TI 3 insert(4,B) -> hellBo world|12|12|12||12
+TI 3 insert(5,Z) -> helloZ world|12|12|12||12
+TI 3 insert(8,Q) -> hello woQrld|12|12|12||12
+TI 3 insert(11,!) -> hello world!|12|12|12||12
+TI 3 insert(3,) -> hello world|11|11|11||11
+TI 3 insert(length,!) -> hello world!|12|12|12||12
+TI 3 remove(6,9) -> hello ld|8|8|8||8
+TI 3 remove(5,99) -> hello|5|5|5||5
+TI 3 remove(8,3) -> helrld|6|6|6||6
+TI 3 remove(50,60) -> hello world|11|11|11||11
+TI 3 remove(-3,3) -> lo world|8|8|8||8
+TI 3 remove(0,1) -> ello world|10|10|10||10
+TI 3 remove(0,2) -> llo world|9|9|9||9
+TI 3 remove(1,5) -> h world|7|7|7||7
+TI 3 remove(2,4) -> heo world|9|9|9||9
+TI 3 remove(3,4) -> helo world|10|10|10||10
+TI 3 remove(4,7) -> hellorld|8|8|8||8
+TI 3 remove(0,11) -> |0|0|0||0
+TI 3 remove(4,4) -> hello world|11|11|11||11
+TI 3 remove(9,11) -> hello wor|9|9|9||9
+TI 3 getText(3,1) -> "el" hello world|11|11|11||11
+TI 3 getText(2,5) -> "llo" hello world|11|11|11||11
+TI 3 getText(-2,99) -> "hello world" hello world|11|11|11||11
+TI 3 selectAll -> hello world|11|0|11|hello world|11
+TI 3 deselect -> hello world|11|11|11||11
+TI 3 clear -> |0|0|0||0
+TI 3 cursorPosition=7 -> hello world|7|7|7||11
+TI 3 cursorPosition=3 -> hello world|3|3|3||11
+TI 3 text=xy -> xy|2|2|2||2
+TI 3 text=same -> hello world|11|11|11||11
+TE 0 select(20,30) -> hello world|4|2|4|ll|11
+TE 0 select(-5,3) -> hello world|4|2|4|ll|11
+TE 0 select(3,99) -> hello world|4|2|4|ll|11
+TE 0 select(3,-1) -> hello world|4|2|4|ll|11
+TE 0 select(12,0) -> hello world|4|2|4|ll|11
+TE 0 select(6,1) -> hello world|1|1|6|ello |11
+TE 0 select(1,6) -> hello world|6|1|6|ello |11
+TE 0 select(2,4) -> hello world|4|2|4|ll|11
+TE 0 select(4,2) -> hello world|2|2|4|ll|11
+TE 0 select(0,11) -> hello world|11|0|11|hello world|11
+TE 0 select(11,0) -> hello world|0|0|11|hello world|11
+TE 0 select(11,11) -> hello world|11|11|11||11
+TE 0 select(3,3) -> hello world|3|3|3||11
+TE 0 select(1.7,3.2) -> hello world|3|1|3|el|11
+TE 0 insert(-1,Y) -> hello world|4|2|4|ll|11
+TE 0 insert(99,X) -> hello world|4|2|4|ll|11
+TE 0 insert(12,X) -> hello world|4|2|4|ll|11
+TE 0 insert(0,5) -> 5hello world|5|3|5|ll|12
+TE 0 insert(0,ab) -> abhello world|6|4|6|ll|13
+TE 0 insert(2,A) -> heAllo world|5|3|5|ll|12
+TE 0 insert(3,ZZ) -> helZZlo world|6|2|6|lZZl|13
+TE 0 insert(4,B) -> hellBo world|5|2|5|llB|12
+TE 0 insert(5,Z) -> helloZ world|4|2|4|ll|12
+TE 0 insert(8,Q) -> hello woQrld|4|2|4|ll|12
+TE 0 insert(11,!) -> hello world!|4|2|4|ll|12
+TE 0 insert(3,) -> hello world|4|2|4|ll|11
+TE 0 insert(length,!) -> hello world!|4|2|4|ll|12
+TE 0 remove(6,9) -> hello ld|4|2|4|ll|8
+TE 0 remove(5,99) -> hello|4|2|4|ll|5
+TE 0 remove(8,3) -> helrld|3|2|3|l|6
+TE 0 remove(50,60) -> hello world|4|2|4|ll|11
+TE 0 remove(-3,3) -> lo world|1|0|1|l|8
+TE 0 remove(0,1) -> ello world|3|1|3|ll|10
+TE 0 remove(0,2) -> llo world|2|0|2|ll|9
+TE 0 remove(1,5) -> h world|1|1|1||7
+TE 0 remove(2,4) -> heo world|2|2|2||9
+TE 0 remove(3,4) -> helo world|3|2|3|l|10
+TE 0 remove(4,7) -> hellorld|4|2|4|ll|8
+TE 0 remove(0,11) -> |0|0|0||0
+TE 0 remove(4,4) -> hello world|4|2|4|ll|11
+TE 0 remove(9,11) -> hello wor|4|2|4|ll|9
+TE 0 getText(3,1) -> "el" hello world|4|2|4|ll|11
+TE 0 getText(2,5) -> "llo" hello world|4|2|4|ll|11
+TE 0 getText(-2,99) -> "hello world" hello world|4|2|4|ll|11
+TE 0 selectAll -> hello world|11|0|11|hello world|11
+TE 0 deselect -> hello world|4|4|4||11
+TE 0 clear -> |0|0|0||0
+TE 0 cursorPosition=7 -> hello world|7|7|7||11
+TE 0 cursorPosition=3 -> hello world|3|3|3||11
+TE 1 select(20,30) -> hello world|2|2|4|ll|11
+TE 1 select(-5,3) -> hello world|2|2|4|ll|11
+TE 1 select(3,99) -> hello world|2|2|4|ll|11
+TE 1 select(3,-1) -> hello world|2|2|4|ll|11
+TE 1 select(12,0) -> hello world|2|2|4|ll|11
+TE 1 select(6,1) -> hello world|1|1|6|ello |11
+TE 1 select(1,6) -> hello world|6|1|6|ello |11
+TE 1 select(2,4) -> hello world|4|2|4|ll|11
+TE 1 select(4,2) -> hello world|2|2|4|ll|11
+TE 1 select(0,11) -> hello world|11|0|11|hello world|11
+TE 1 select(11,0) -> hello world|0|0|11|hello world|11
+TE 1 select(11,11) -> hello world|11|11|11||11
+TE 1 select(3,3) -> hello world|3|3|3||11
+TE 1 select(1.7,3.2) -> hello world|3|1|3|el|11
+TE 1 insert(-1,Y) -> hello world|2|2|4|ll|11
+TE 1 insert(99,X) -> hello world|2|2|4|ll|11
+TE 1 insert(12,X) -> hello world|2|2|4|ll|11
+TE 1 insert(0,5) -> 5hello world|3|3|5|ll|12
+TE 1 insert(0,ab) -> abhello world|4|4|6|ll|13
+TE 1 insert(2,A) -> heAllo world|3|3|5|ll|12
+TE 1 insert(3,ZZ) -> helZZlo world|2|2|6|lZZl|13
+TE 1 insert(4,B) -> hellBo world|2|2|5|llB|12
+TE 1 insert(5,Z) -> helloZ world|2|2|4|ll|12
+TE 1 insert(8,Q) -> hello woQrld|2|2|4|ll|12
+TE 1 insert(11,!) -> hello world!|2|2|4|ll|12
+TE 1 insert(3,) -> hello world|2|2|4|ll|11
+TE 1 insert(length,!) -> hello world!|2|2|4|ll|12
+TE 1 remove(6,9) -> hello ld|2|2|4|ll|8
+TE 1 remove(5,99) -> hello|2|2|4|ll|5
+TE 1 remove(8,3) -> helrld|2|2|3|l|6
+TE 1 remove(50,60) -> hello world|2|2|4|ll|11
+TE 1 remove(-3,3) -> lo world|0|0|1|l|8
+TE 1 remove(0,1) -> ello world|1|1|3|ll|10
+TE 1 remove(0,2) -> llo world|0|0|2|ll|9
+TE 1 remove(1,5) -> h world|1|1|1||7
+TE 1 remove(2,4) -> heo world|2|2|2||9
+TE 1 remove(3,4) -> helo world|2|2|3|l|10
+TE 1 remove(4,7) -> hellorld|2|2|4|ll|8
+TE 1 remove(0,11) -> |0|0|0||0
+TE 1 remove(4,4) -> hello world|2|2|4|ll|11
+TE 1 remove(9,11) -> hello wor|2|2|4|ll|9
+TE 1 getText(3,1) -> "el" hello world|2|2|4|ll|11
+TE 1 getText(2,5) -> "llo" hello world|2|2|4|ll|11
+TE 1 getText(-2,99) -> "hello world" hello world|2|2|4|ll|11
+TE 1 selectAll -> hello world|11|0|11|hello world|11
+TE 1 deselect -> hello world|2|2|2||11
+TE 1 clear -> |0|0|0||0
+TE 1 cursorPosition=7 -> hello world|7|7|7||11
+TE 1 cursorPosition=3 -> hello world|3|3|3||11
+TE 2 select(20,30) -> hello world|5|5|5||11
+TE 2 select(-5,3) -> hello world|5|5|5||11
+TE 2 select(3,99) -> hello world|5|5|5||11
+TE 2 select(3,-1) -> hello world|5|5|5||11
+TE 2 select(12,0) -> hello world|5|5|5||11
+TE 2 select(6,1) -> hello world|1|1|6|ello |11
+TE 2 select(1,6) -> hello world|6|1|6|ello |11
+TE 2 select(2,4) -> hello world|4|2|4|ll|11
+TE 2 select(4,2) -> hello world|2|2|4|ll|11
+TE 2 select(0,11) -> hello world|11|0|11|hello world|11
+TE 2 select(11,0) -> hello world|0|0|11|hello world|11
+TE 2 select(11,11) -> hello world|11|11|11||11
+TE 2 select(3,3) -> hello world|3|3|3||11
+TE 2 select(1.7,3.2) -> hello world|3|1|3|el|11
+TE 2 insert(-1,Y) -> hello world|5|5|5||11
+TE 2 insert(99,X) -> hello world|5|5|5||11
+TE 2 insert(12,X) -> hello world|5|5|5||11
+TE 2 insert(0,5) -> 5hello world|6|6|6||12
+TE 2 insert(0,ab) -> abhello world|7|7|7||13
+TE 2 insert(2,A) -> heAllo world|6|6|6||12
+TE 2 insert(3,ZZ) -> helZZlo world|7|7|7||13
+TE 2 insert(4,B) -> hellBo world|6|6|6||12
+TE 2 insert(5,Z) -> helloZ world|6|6|6||12
+TE 2 insert(8,Q) -> hello woQrld|5|5|5||12
+TE 2 insert(11,!) -> hello world!|5|5|5||12
+TE 2 insert(3,) -> hello world|5|5|5||11
+TE 2 insert(length,!) -> hello world!|5|5|5||12
+TE 2 remove(6,9) -> hello ld|5|5|5||8
+TE 2 remove(5,99) -> hello|5|5|5||5
+TE 2 remove(8,3) -> helrld|3|3|3||6
+TE 2 remove(50,60) -> hello world|5|5|5||11
+TE 2 remove(-3,3) -> lo world|2|2|2||8
+TE 2 remove(0,1) -> ello world|4|4|4||10
+TE 2 remove(0,2) -> llo world|3|3|3||9
+TE 2 remove(1,5) -> h world|1|1|1||7
+TE 2 remove(2,4) -> heo world|3|3|3||9
+TE 2 remove(3,4) -> helo world|4|4|4||10
+TE 2 remove(4,7) -> hellorld|4|4|4||8
+TE 2 remove(0,11) -> |0|0|0||0
+TE 2 remove(4,4) -> hello world|5|5|5||11
+TE 2 remove(9,11) -> hello wor|5|5|5||9
+TE 2 getText(3,1) -> "el" hello world|5|5|5||11
+TE 2 getText(2,5) -> "llo" hello world|5|5|5||11
+TE 2 getText(-2,99) -> "hello world" hello world|5|5|5||11
+TE 2 selectAll -> hello world|11|0|11|hello world|11
+TE 2 deselect -> hello world|5|5|5||11
+TE 2 clear -> |0|0|0||0
+TE 2 cursorPosition=7 -> hello world|7|7|7||11
+TE 2 cursorPosition=3 -> hello world|3|3|3||11
+TE 3 select(20,30) -> hello world|11|11|11||11
+TE 3 select(-5,3) -> hello world|11|11|11||11
+TE 3 select(3,99) -> hello world|11|11|11||11
+TE 3 select(3,-1) -> hello world|11|11|11||11
+TE 3 select(12,0) -> hello world|11|11|11||11
+TE 3 select(6,1) -> hello world|1|1|6|ello |11
+TE 3 select(1,6) -> hello world|6|1|6|ello |11
+TE 3 select(2,4) -> hello world|4|2|4|ll|11
+TE 3 select(4,2) -> hello world|2|2|4|ll|11
+TE 3 select(0,11) -> hello world|11|0|11|hello world|11
+TE 3 select(11,0) -> hello world|0|0|11|hello world|11
+TE 3 select(11,11) -> hello world|11|11|11||11
+TE 3 select(3,3) -> hello world|3|3|3||11
+TE 3 select(1.7,3.2) -> hello world|3|1|3|el|11
+TE 3 insert(-1,Y) -> hello world|11|11|11||11
+TE 3 insert(99,X) -> hello world|11|11|11||11
+TE 3 insert(12,X) -> hello world|11|11|11||11
+TE 3 insert(0,5) -> 5hello world|12|12|12||12
+TE 3 insert(0,ab) -> abhello world|13|13|13||13
+TE 3 insert(2,A) -> heAllo world|12|12|12||12
+TE 3 insert(3,ZZ) -> helZZlo world|13|13|13||13
+TE 3 insert(4,B) -> hellBo world|12|12|12||12
+TE 3 insert(5,Z) -> helloZ world|12|12|12||12
+TE 3 insert(8,Q) -> hello woQrld|12|12|12||12
+TE 3 insert(11,!) -> hello world!|12|12|12||12
+TE 3 insert(3,) -> hello world|11|11|11||11
+TE 3 insert(length,!) -> hello world!|12|12|12||12
+TE 3 remove(6,9) -> hello ld|8|8|8||8
+TE 3 remove(5,99) -> hello|5|5|5||5
+TE 3 remove(8,3) -> helrld|6|6|6||6
+TE 3 remove(50,60) -> hello world|11|11|11||11
+TE 3 remove(-3,3) -> lo world|8|8|8||8
+TE 3 remove(0,1) -> ello world|10|10|10||10
+TE 3 remove(0,2) -> llo world|9|9|9||9
+TE 3 remove(1,5) -> h world|7|7|7||7
+TE 3 remove(2,4) -> heo world|9|9|9||9
+TE 3 remove(3,4) -> helo world|10|10|10||10
+TE 3 remove(4,7) -> hellorld|8|8|8||8
+TE 3 remove(0,11) -> |0|0|0||0
+TE 3 remove(4,4) -> hello world|11|11|11||11
+TE 3 remove(9,11) -> hello wor|9|9|9||9
+TE 3 getText(3,1) -> "el" hello world|11|11|11||11
+TE 3 getText(2,5) -> "llo" hello world|11|11|11||11
+TE 3 getText(-2,99) -> "hello world" hello world|11|11|11||11
+TE 3 selectAll -> hello world|11|0|11|hello world|11
+TE 3 deselect -> hello world|11|11|11||11
+TE 3 clear -> |0|0|0||0
+TE 3 cursorPosition=7 -> hello world|7|7|7||11
+TE 3 cursorPosition=3 -> hello world|3|3|3||11

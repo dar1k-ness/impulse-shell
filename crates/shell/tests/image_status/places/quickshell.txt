@@ -1,0 +1,11 @@
+qml: StyledImage: status 1
+qml: StyledImage: opaque at once
+qml: StyledImage: completed with status 1 opacity 1
+qml: ThumbnailImage: status 2
+qml: ThumbnailImage: completed with status 2 opacity 0
+qml: WaffleLock: bg status 1 y -200 opening true
+qml: WaffleLock: surface completed, bg status 1 y -200 opening true
+qml: ThumbnailImage: status 1
+qml: ThumbnailImage: opaque after a fade
+qml: WaffleLock: opened, y 0
+status 0

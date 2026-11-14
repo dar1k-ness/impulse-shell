@@ -1,0 +1,13 @@
+#!/bin/sh
+# tools/gen/qqmljs/tables: rebuilds crates/qml/src/qqmljs/grammar.rs, the tables of Qt's QML
+# parser, from tools/gen/qqmljs/qqmljs.g with Qt's parser generator. Run by hand after replacing
+# qqmljs.g with the one of another Qt release; no build and no image runs it or has qlalr.
+#
+#   QLALR=/usr/lib/qt6/libexec/qlalr tools/gen/qqmljs/tables      (Debian: qt6-base-dev-tools)
+set -eu
+cd "$(dirname "$0")"
+qlalr=${QLALR:-/usr/lib/qt6/libexec/qlalr}
+out=$(mktemp -d)
+trap 'rm -rf "$out"' EXIT
+(cd "$out" && "$qlalr" --no-debug --no-lines --qt "$OLDPWD/qqmljs.g" >/dev/null)
+python3 tables.py qqmljs.g "$out" >../../../crates/qml/src/qqmljs/grammar.rs

@@ -1,0 +1,21 @@
+e sectionChanged 0 a
+e sectionChanged 1 a
+e sectionChanged 2 b
+e sectionChanged 3 b
+e sectionChanged 4 B
+d 0 a "" "" ""
+section created Apps
+d 1 b "" "" ""
+d 2 c "" "" ""
+section created Files
+d 3 d "" "" ""
+section created apps
+d 4 e "" "" ""
+d 5 f "" "" ""
+section created 
+d 6 g "" "" ""
+section created Web
+d 7 h "" "" ""
+lv 8 398 Apps lv2 130 a lv3 100 "fruit"
+lv2 after 130 5
+currentSection scrolled Files

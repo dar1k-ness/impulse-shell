@@ -1,0 +1,124 @@
+g1.rowSpacing	number:-1
+g1.columnSpacing	number:-1
+g2.rowSpacing	number:-1
+g2.columnSpacing	number:-1
+sv.contentWidth	number:-1
+sv.contentHeight	number:-1
+sw.contentWidth	number:0
+sw.contentHeight	number:0
+pn.contentWidth	number:0
+pn.contentHeight	number:0
+tb.contentWidth	number:0
+tb.contentHeight	number:0
+r1.topLeftRadius	number:7
+r1.bottomRightRadius	number:7
+r2.topLeftRadius	number:0
+co.leftPadding	number:3
+co.topPadding	number:3
+tx.leftPadding	number:3
+bt.leftPadding	number:5
+bt.horizontalPadding	number:5
+bt.spacing	number:0
+bt.implicitWidth	number:0
+bt2.leftPadding	number:8
+bt2.topInset	number:0
+ld.sourceComponent	object:null
+ld.width	number:0
+lm.LayoutMirroring.enabled	boolean:false
+fl.contentWidth	number:-1
+fl.contentHeight	number:-1
+fl.contentX	number:0
+g3.spacing	number:0
+g3.columns	number:-1
+g3.rows	number:-1
+bt3.text	string:
+bt3.checkable	boolean:false
+bt3.down	boolean:false
+bt3.flat	boolean:false
+sl.from	number:0
+sl.value	number:0
+sl.stepSize	number:0
+sv2.clip	boolean:false
+sv2.focusPolicy	number:0
+h.v	undefined:undefined
+h.vv	undefined:undefined
+h.i	number:0
+h.r	number:0
+h.d	number:0
+h.s	string:
+h.bo	boolean:false
+h.col	object:#000000
+h.u	object:
+h.pt	object:QPointF(0, 0)
+h.sz	object:QSizeF(-1, -1)
+h.rc	object:QRectF(0, 0, 0, 0)
+h.fn.family === Qt.application.font.family	boolean:true
+h.it	object:null
+h.qo	object:null
+h.cmp	object:null
+h.li.length	number:0
+h.lo.length	number:0
+h.lv.length	number:0
+h.vl.length + " " + h.vl[0]	string:1 undefined
+h.rv	undefined:undefined
+h.ri	number:0
+h.qv	undefined:undefined
+al.ax	number:3
+al.at	string:t
+al.av	undefined:undefined
+al.ai	number:4
+al.am	number:11
+al.ar	number:7
+al.aa	number:5.328125
+al.inn.x + " " + al.inn.v + " " + al.inn.n + " " + al.inn.anchors.leftMargin	string:3 undefined 4 11
+{ al2.aw = undefined; return al2.aw }	number:13
+al2.at	string:t
+{ al2.av = undefined; return al2.av }	undefined:undefined
+al2.ai	number:4
+{ al2.am = undefined; return al2.am }	number:11
+{ al2.ar = undefined; return al2.ar }	number:7
+{ sa.w = undefined; return sa.w }	number:21
+sa.o	number:0.5
+an.anchors.leftMargin	number:11
+an.anchors.topMargin	number:11
+an.anchors.baselineOffset	number:0
+an.anchors.horizontalCenterOffset	number:0
+an.anchors.alignWhenCentered	boolean:true
+an2.anchors.margins	number:0
+an2.anchors.rightMargin	number:0
+bd.border.width	number:1
+bd.border.color	object:#000000
+bd.border.pixelAligned	boolean:true
+ft.font.pixelSize	number:12
+ft.font.bold	boolean:false
+ft.font.weight	number:400
+ft.font.letterSpacing	number:0
+ft.font.capitalization	number:0
+ft2.font.family === Qt.application.font.family	boolean:true
+ft3.font.pixelSize	number:12
+im.sourceSize.width	number:0
+im.sourceSize.height	number:0
+ly.layer.enabled	boolean:false
+ly.layer.textureSize	object:QSize(-1, -1)
+ly.layer.smooth	boolean:false
+l1.Layout.leftMargin	number:6
+l1.Layout.topMargin	number:6
+l1.Layout.rightMargin	number:6
+l2.Layout.leftMargin	number:0
+l2.Layout.margins	number:0
+l3.Layout.preferredWidth	number:-1
+l3.Layout.minimumWidth	number:0
+l3.Layout.fillWidth	boolean:false
+l3.Layout.fillHeight	boolean:false
+l3.Layout.alignment	number:0
+l3.Layout.row	number:0
+l4.Layout.fillWidth	boolean:false
+ky.Keys.priority	number:0
+ky.KeyNavigation.tab	object:null
+tt1.ToolTip.text	string:
+tt1.ToolTip.visible	boolean:false
+dr.Drag.active	boolean:false
+dr.Drag.hotSpot	object:QPointF(0, 0)
+dr.Drag.keys.length	number:0
+sb.ScrollBar.vertical	object:null
+lm2.LayoutMirroring.childrenInherit	boolean:false

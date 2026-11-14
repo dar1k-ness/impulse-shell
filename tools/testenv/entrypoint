@@ -1,0 +1,36 @@
+#!/bin/sh
+# Starts the headless compositor the Wayland equivalence tests run under, then the command
+# (as root: prefix `as-tester` for the tests that need a normal user).
+set -e
+# HOST_ID (tools/ci/in-testenv): the uid:gid of the caller, who owns the checkout and the
+# caches mounted from the host. `tester` gets that uid and gid, so what cargo writes there is
+# the caller's from the first file on, however the container ends. /etc/passwd and /etc/group
+# are edited in place (usermod would walk the home directory), and of the home directory
+# only what `tester` writes changes owner: the toolchain and the tools in it are only read,
+# and the Cargo directories mounted from the host are the caller's already. A caller who is
+# root keeps `tester` as it is: in-testenv hands the directories over and back.
+if [ -n "${HOST_ID-}" ] && [ "${HOST_ID%%:*}" != 0 ] &&
+    [ "$HOST_ID" != "$(id -u tester):$(id -g tester)" ]; then
+    sed -i "s/^tester:x:[0-9]*:[0-9]*:/tester:x:${HOST_ID%%:*}:${HOST_ID##*:}:/" /etc/passwd
+    sed -i "s/^tester:x:[0-9]*:/tester:x:${HOST_ID##*:}:/" /etc/group
+    find "$HOME" \( -path "$HOME/.rustup/toolchains" -o -path "$HOME/.local" \
+        -o -path "$HOME/.cargo/registry" -o -path "$HOME/.cargo/git" \) -prune \
+        -o -exec chown -h "$HOST_ID" {} +
+fi
+mkdir -p -m 700 "$XDG_RUNTIME_DIR"
+chown tester:tester "$XDG_RUNTIME_DIR"
+# sway defers its config's `exec` commands until its backend started and its socket listens;
+# the one in sway.conf writes the socket name to fd 3, a FIFO only sway and its children hold
+# open for writing, so the read returns that line, or EOF once sway exits before it.
+d=$(mktemp -d)
+mkfifo "$d/ready"
+as-tester sway -c "$HOME/sway.conf" >/tmp/sway.log 2>&1 3>"$d/ready" &
+name=
+read -r name <"$d/ready" || true
+rm -r "$d"
+if [ "$name" != "$WAYLAND_DISPLAY" ]; then
+    echo "ri-testenv: sway did not start on $WAYLAND_DISPLAY (got '$name'):" >&2
+    cat /tmp/sway.log >&2
+    exit 1
+fi
+exec "$@"

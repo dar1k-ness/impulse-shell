@@ -1,0 +1,29 @@
+# a write to a method name of a value type
+(function(){ var v = Qt.vector3d(1, 2, 3); v.dotProduct = 5; return String(v) })()
+=> string:QVector3D(1, 2, 5)
+(function(){ var v = Qt.vector3d(1, 2, 3); v.crossProduct = 5; return String(v) })()
+=> string:QVector3D(1, 5, 3)
+(function(){ var v = Qt.vector3d(1, 2, 3); v.toString = 5; return String(v) })()
+=> string:QVector3D(5, 2, 3)
+(function(){ var v = Qt.vector3d(1, 2, 3); v.dotProduct = "7"; return String(v) })()
+=> string:QVector3D(1, 2, 7)
+(function(){ var v = Qt.vector3d(1, 2, 3); try { v.dotProduct = {}; return String(v) } catch (e) { return String(e) } })()
+=> string:QVector3D(1, 2, nan)
+(function(){ var v = Qt.vector2d(1, 2); var r = []; ["toString", "dotProduct", "times", "plus", "minus", "normalized", "length", "toVector3d", "toVector4d", "fuzzyEquals"].forEach(function(k){ try { v[k] = 5; r.push(k + "=" + v) } catch (e) { r.push(k + ":" + e) } }); return r.join("|") })()
+=> string:toString=QVector2D(5, 2)|dotProduct=QVector2D(5, 5)|times:Error: Cannot assign int to |plus:Error: Cannot assign int to |minus:Error: Cannot assign int to |normalized:Error: Cannot assign int to |length:Error: Cannot assign int to |toVector3d:Error: Cannot assign int to |toVector4d:Error: Cannot assign int to |fuzzyEquals:Error: Cannot assign int to 
+(function(){ var v = Qt.vector3d(1, 2, 3); var r = []; ["toString", "crossProduct", "dotProduct", "times", "plus", "minus", "normalized", "length", "toVector2d", "toVector4d", "fuzzyEquals"].forEach(function(k){ try { v[k] = 5; r.push(k + "=" + v) } catch (e) { r.push(k + ":" + e) } }); return r.join("|") })()
+=> string:toString=QVector3D(5, 2, 3)|crossProduct=QVector3D(5, 5, 3)|dotProduct=QVector3D(5, 5, 5)|times:Error: Cannot assign int to |plus:Error: Cannot assign int to |minus:Error: Cannot assign int to |normalized:Error: Cannot assign int to |length:Error: Cannot assign int to |toVector2d:Error: Cannot assign int to |toVector4d:Error: Cannot assign int to |fuzzyEquals:Error: Cannot assign int to 
+(function(){ var v = Qt.vector4d(1, 2, 3, 4); var r = []; ["toString", "dotProduct", "times", "plus", "minus", "normalized", "length", "toVector2d", "toVector3d", "fuzzyEquals"].forEach(function(k){ try { v[k] = 5; r.push(k + "=" + v) } catch (e) { r.push(k + ":" + e) } }); return r.join("|") })()
+=> string:toString=QVector4D(5, 2, 3, 4)|dotProduct=QVector4D(5, 5, 3, 4)|times:Error: Cannot assign int to |plus:Error: Cannot assign int to |minus:Error: Cannot assign int to |normalized:Error: Cannot assign int to |length:Error: Cannot assign int to |toVector2d:Error: Cannot assign int to |toVector3d:Error: Cannot assign int to |fuzzyEquals:Error: Cannot assign int to 
+(function(){ var v = Qt.quaternion(1, 2, 3, 4); var r = []; ["toString", "dotProduct", "times", "plus", "minus", "normalized", "inverted", "conjugated", "length", "toEulerAngles", "toVector4d", "fuzzyEquals"].forEach(function(k){ try { v[k] = 5; r.push(k + "=" + v) } catch (e) { r.push(k + ":" + e) } }); return r.join("|") })()
+=> string:toString=QQuaternion(5, 2, 3, 4)|dotProduct=QQuaternion(5, 5, 3, 4)|times:Error: Cannot assign int to |plus:Error: Cannot assign int to |minus:Error: Cannot assign int to |normalized:Error: Cannot assign int to |inverted:Error: Cannot assign int to |conjugated:Error: Cannot assign int to |length:Error: Cannot assign int to |toEulerAngles:Error: Cannot assign int to |toVector4d:Error: Cannot assign int to |fuzzyEquals:Error: Cannot assign int to 
+(function(){ var v = Qt.matrix4x4(); var r = []; ["toString", "translate", "rotate", "scale", "lookAt", "times", "plus", "minus", "row", "column", "determinant", "inverted", "transposed", "map", "mapRect", "fuzzyEquals"].forEach(function(k){ try { v[k] = 5; r.push(k + "=" + v) } catch (e) { r.push(k + ":" + e) } }); return r.join("|") })()
+=> string:toString=QMatrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)|translate=QMatrix4x4(5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)|rotate=QMatrix4x4(5, 0, 5, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)|scale=QMatrix4x4(5, 0, 5, 0, 0, 5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)|lookAt=QMatrix4x4(5, 0, 5, 0, 0, 5, 5, 0, 0, 0, 1, 0, 0, 0, 0, 1)|times=QMatrix4x4(5, 0, 5, 0, 0, 5, 5, 0, 0, 0, 5, 0, 0, 0, 0, 1)|plus=QMatrix4x4(5, 0, 5, 0, 0, 5, 5, 0, 0, 0, 5, 5, 0, 0, 0, 1)|minus=QMatrix4x4(5, 0, 5, 0, 0, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 1)|row=QMatrix4x4(5, 0, 5, 0, 0, 5, 5, 0, 0, 0, 5, 5, 5, 5, 0, 1)|column=QMatrix4x4(5, 0, 5, 0, 0, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 1)|determinant=QMatrix4x4(5, 0, 5, 0, 0, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5)|inverted:Error: Cannot assign int to |transposed:Error: Cannot assign int to |map:Error: Cannot assign int to |mapRect:Error: Cannot assign int to |fuzzyEquals:Error: Cannot assign int to 
+(function(){ var v = Qt.rect(1, 2, 3, 4); try { v.toString = 5; return String(v) } catch (e) { return String(e) } })()
+=> string:QRectF(5, 2, 3, 4)
+(function(){ var v = Qt.point(1, 2); try { v.toString = 5; return String(v) } catch (e) { return String(e) } })()
+=> string:QPointF(5, 2)
+(function(){ var v = Qt.size(1, 2); try { v.toString = 5; return String(v) } catch (e) { return String(e) } })()
+=> string:QSizeF(5, 2)
+(function(){ var v = Qt.font({family: "A"}); try { v.toString = 5; return String(v) } catch (e) { return String(e) } })()
+=> string:QFont(5,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)

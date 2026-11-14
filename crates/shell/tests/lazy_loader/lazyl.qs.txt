@@ -1,0 +1,56 @@
+qml: seen -1
+qml: dep -2
+qml: f -1
+qml: init -1 -2 -1 seen 1 dep 1 got 0 f 1
+WARN scene: QML QtObject at @lazyl.qml[21:9]: Binding loop detected for property "got":
+qs:@/qs/lazyl.qml:21:20
+qml: c obj completed 6
+qml: -- state
+qml: -1 -2 6 -1 seen 1 dep 1 got 1 f 1
+qml: -- a.loading=true; k++
+qml: a item true
+WARN scene: QML Scope at @lazyl.qml[3:1]: Binding loop detected for property "seen":
+qs:@/qs/lazyl.qml:12:5
+qml: seen 5
+qml: dep 10
+qml: after 5 10 seen 2 dep 2 got 1 f 1
+qml: -- state
+qml: 5 10 seen 2 dep 2 got 1 f 1
+qml: -- a.active=false; k++
+qml: a item false
+qml: seen -1
+qml: dep -2
+qml: after -1 -2 seen 4 dep 3 got 1 f 1
+qml: -- state
+qml: -1 -2 seen 4 dep 3 got 1 f 1
+qml: -- a.loading=true; k++ again
+qml: a item true
+WARN scene: QML Scope at @lazyl.qml[3:1]: Binding loop detected for property "seen":
+qs:@/qs/lazyl.qml:12:5
+qml: seen 5
+qml: dep 10
+qml: after 5 10 seen 5 dep 4 got 1 f 1
+qml: -- state
+qml: 5 10 seen 5 dep 4 got 1 f 1
+qml: -- a.active=false
+qml: a item false
+qml: seen -1
+qml: dep -2
+qml: after -1 -2 seen 6 dep 5 got 1 f 1
+qml: -- a.loading=true
+qml: after -1 -2 seen 6 dep 5 got 1 f 1
+qml: a item true
+qml: seen 5
+qml: dep 10
+qml: -- state
+qml: 5 10 seen 7 dep 6 got 1 f 1
+qml: -- d.loading=true; kf++
+WARN scene: QML Scope at @lazyl.qml[3:1]: Binding loop detected for property "f":
+qs:@/qs/lazyl.qml:28:5
+qml: f 9
+qml: after 9 seen 7 dep 6 got 1 f 2
+qml: -- state
+qml: 9 seen 7 dep 6 got 1 f 2
+qml: -- kf++
+qml: after 9 seen 7 dep 6 got 1 f 3
+qml: done

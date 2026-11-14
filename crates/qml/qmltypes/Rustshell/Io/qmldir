@@ -1,0 +1,11 @@
+module Rustshell.Io
+linktarget rustshell-ioplugin
+optional plugin rustshell-ioplugin
+classname Rustshell_IoPlugin
+typeinfo rustshell-io.qmltypes
+depends QtQml
+prefer :/qt/qml/Rustshell/Io/
+FileView 0.0 FileView.qml
+depends Rustshell
+depends QtQuick
+

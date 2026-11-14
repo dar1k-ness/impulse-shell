@@ -1,0 +1,2 @@
+module Impulse
+depends QtQuick

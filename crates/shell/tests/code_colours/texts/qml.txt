@@ -1,0 +1,19 @@
+import QtQuick 2.15
+import QtQuick.Controls as QQC
+// A button
+Rectangle {
+    id: root
+    property int count: 0
+    property alias label: txt.text
+    readonly property real ratio: 1.5
+    signal clicked(var mouse)
+    width: 200; height: parent ? parent.height / 2 : 40
+    color: hovered ? "#ff5500" : Qt.rgba(0, 0, 0, 0.5)
+    Text { id: txt; anchors.centerIn: parent; text: qsTr("Count: %1").arg(root.count) }
+    MouseArea {
+        anchors.fill: parent
+        onClicked: (mouse) => { root.count += 1; root.clicked(mouse) }
+    }
+    function reset() { count = 0; return true }
+    Component.onCompleted: console.log(`ready ${width}`)
+}

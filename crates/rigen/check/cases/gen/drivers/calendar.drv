@@ -1,0 +1,14 @@
+// @js modules/rusty/sidebarRight/calendar/calendar_layout.js
+// v4: [["28,29,30,2,4,6,8|10,12,14,16,18,20,22|24,26,28,30,32,34,36|38,40,42,44,46,48,50|52,81,56,58,60,62,1|2,3,4,5,6,7,8","29,30,31,2,4,6,8|10,12,14,16,18,20,22|24,26,28,30,32,34,36|38,40,42,44,46,48,50|52,54,56,87,1,2,3|4,5,6,7,8,9,10","30,31,3,4,6,8,10|12,14,16,18,20,22,24|26,28,30,32,34,36,38|40,42,44,46,48,50,52|54,56,1,2,3,4,5|6,7,8,9,10,11,12","27,28,29,30,2,4,6|8,10,12,14,16,18,20|22,24,26,28,30,32,34|36,38,40,42,44,46,48|50,52,54,56,58,60,93|1,2,3,4,5,6,7","26,27,28,2,4,6,8|10,12,14,16,18,20,22|24,26,28,45,32,34,36|38,40,42,44,46,48,50|52,54,56,58,60,62,1|2,3,4,5,6,7,8","29,30,31,3,4,6,8|10,12,14,16,18,20,22|24,26,28,30,32,34,36|38,40,42,44,46,48,50|52,54,56,58,60,62,1|2,3,4,5,6,7,8"],[false,true,false,true],[[31,28,31],[29,31,31],[31,30,29],[30,31,31],[31,30,30],[30,31,31],[31,30,30],[31,30,30],[30,31,31],[31,30,30],[30,31,31],[31,31,30]],true,1,[{"day":"Mo","today":0},{"day":"Tu","today":0},{"day":"We","today":0},{"day":"Th","today":0},{"day":"Fr","today":0},{"day":"Sa","today":0},{"day":"Su","today":0}],6]
+var C = M_modules_rusty_sidebarRight_calendar_calendar_layout;
+var out = [];
+for (const [y, m, d] of [[2026, 9, 27], [2024, 1, 29], [2023, 1, 1], [2000, 11, 31], [1900, 2, 15], [2026, 0, 1]]) {
+    const lay = C.getCalendarLayout(new Date(y, m, d), d % 2 == 1);
+    out.push(lay.map(row => row.map(c => c.day * (c.today + 2)).join(",")).join("|"));
+}
+var leap = [1900, 2000, 2023, 2024].map(C.checkLeapYear);
+var days = [];
+for (let mo = 1; mo <= 12; mo++) days.push([C.getMonthDays(mo, 2024), C.getNextMonthDays(mo, 2023), C.getPrevMonthDays(mo, 2024)]);
+var x0 = C.getDateInXMonthsTime(0) instanceof Date;
+var x5 = C.getDateInXMonthsTime(-15).getDate();
+var result = JSON.stringify([out, leap, days, x0, x5, C.weekDays, C.getCalendarLayout(null, false).length]);

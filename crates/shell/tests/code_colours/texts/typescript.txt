@@ -1,0 +1,20 @@
+import type { Request } from "express";
+// Generic cache
+interface Entry<T> { value: T; expires?: number }
+type Key = string | number;
+enum Color { Red = 1, Green, Blue }
+export abstract class Cache<K extends Key, V> {
+  private readonly items = new Map<K, Entry<V>>();
+  constructor(protected ttl: number = 60_000) {}
+  get(key: K): V | undefined {
+    const e = this.items.get(key);
+    return e && (e.expires ?? Infinity) > Date.now() ? e.value : undefined;
+  }
+  abstract load(key: K): Promise<V>;
+}
+function isString(x: unknown): x is string { return typeof x === "string"; }
+const pick = <T, U extends keyof T>(o: T, k: U): T[U] => o[k];
+declare global { interface Window { app: any } }
+let tuple: [string, number] = [`a${1}`, 0b1010] as const;
+@Component({ selector: "x" })
+export default class X implements OnInit { ngOnInit(): void {} }

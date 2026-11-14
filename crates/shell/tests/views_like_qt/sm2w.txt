@@ -1,0 +1,192 @@
+valuesChanged ["a","b","c"]
+lv data a 0
+lv + a 0
+lv data b 0
+lv idx b 1
+lv + b 1
+lv data c 0
+lv idx c 2
+lv + c 2
+repn data {"id":1,"n":"x"} 0
+repn + {"id":1,"n":"x"} 0
+repn data {"id":2,"n":"y"} 0
+repn idx {"id":2,"n":"y"} 1
+repn + {"id":2,"n":"y"} 1
+repo data {"id":1,"n":"x"} 0
+repo + {"id":1,"n":"x"} 0
+repo data {"id":2,"n":"y"} 0
+repo idx {"id":2,"n":"y"} 1
+repo + {"id":2,"n":"y"} 1
+rep data a 0
+rep + a 0
+rep data b 0
+rep idx b 1
+rep + b 1
+rep data c 0
+rep idx c 2
+rep + c 2
+-- same content new array
+values ["a","b","c"] 3 [{"id":1,"n":"x"},{"id":2,"n":"y"}]
+-- append
+rep data d 0
+rep idx d 3
+rep + d 3
+valuesChanged ["a","b","c","d"]
+lv data d 0
+lv idx d 3
+lv + d 3
+values ["a","b","c","d"] 4 [{"id":1,"n":"x"},{"id":2,"n":"y"}]
+-- remove middle
+lv idx b -1
+lv idx c 1
+lv idx d 2
+rep idx b -1
+rep idx c 1
+rep idx d 2
+rep - b
+valuesChanged ["a","c","d"]
+lv - b
+values ["a","c","d"] 3 [{"id":1,"n":"x"},{"id":2,"n":"y"}]
+-- move
+lv idx a 1
+lv idx c 2
+lv idx d 0
+rep idx a 1
+rep idx c 2
+rep idx d 0
+valuesChanged ["d","a","c"]
+values ["d","a","c"] 3 [{"id":1,"n":"x"},{"id":2,"n":"y"}]
+-- replace one
+lv idx a 2
+lv idx c 3
+rep idx a 2
+rep idx c 3
+rep data X 0
+rep idx X 1
+rep + X 1
+lv idx a -1
+lv idx c 2
+rep idx a -1
+rep idx c 2
+rep - a
+valuesChanged ["d","X","c"]
+lv data X 0
+lv idx X 1
+lv + X 1
+lv - a
+values ["d","X","c"] 3 [{"id":1,"n":"x"},{"id":2,"n":"y"}]
+-- dups
+lv idx X 2
+lv idx c 3
+rep idx X 2
+rep idx c 3
+rep data d 0
+rep idx d 1
+rep + d 1
+lv idx X -1
+lv idx c 2
+rep idx X -1
+rep idx c 2
+rep - X
+rep data d 0
+rep idx d 3
+rep + d 3
+valuesChanged ["d","d","c","d"]
+lv data d 0
+lv idx d 1
+lv + d 1
+lv data d 0
+lv idx d 3
+lv + d 3
+lv - X
+values ["d","d","c","d"] 4 [{"id":1,"n":"x"},{"id":2,"n":"y"}]
+-- clear
+lv idx d -1
+lv idx d -1
+lv idx c -1
+lv idx d -1
+rep idx d -1
+rep idx d -1
+rep idx c -1
+rep idx d -1
+rep - d
+rep - d
+rep - c
+rep - d
+valuesChanged []
+lv - d
+lv - d
+lv - d
+lv - c
+values [] 0 [{"id":1,"n":"x"},{"id":2,"n":"y"}]
+-- numbers
+rep data 1 0
+rep + 1 0
+rep data 2 0
+rep idx 2 1
+rep + 2 1
+rep data 3 0
+rep idx 3 2
+rep + 3 2
+valuesChanged [1,2,3]
+lv data 1 0
+lv + 1 0
+lv data 2 0
+lv idx 2 1
+lv + 2 1
+lv data 3 0
+lv idx 3 2
+lv + 3 2
+values [1,2,3] 3 [{"id":1,"n":"x"},{"id":2,"n":"y"}]
+-- direct write
+lv idx 1 1
+lv idx 2 2
+lv idx 3 0
+rep idx 1 1
+rep idx 2 2
+rep idx 3 0
+lv idx 1 2
+lv idx 2 1
+rep idx 1 2
+rep idx 2 1
+valuesChanged [3,2,1]
+values [3,2,1] 3 [{"id":1,"n":"x"},{"id":2,"n":"y"}]
+-- objs same ids changed field
+repn idx {"id":1,"n":"x"} 1
+repn idx {"id":2,"n":"y"} 2
+repn data {"id":1,"n":"x2"} 0
+repn + {"id":1,"n":"x2"} 0
+repn idx {"id":1,"n":"x"} -1
+repn idx {"id":2,"n":"y"} 1
+repn - {"id":1,"n":"x"}
+repn data {"id":2,"n":"y"} 1
+repo data {"id":1,"n":"x2"} 0
+repo data {"id":2,"n":"y"} 1
+values [3,2,1] 3 [{"id":1,"n":"x2"},{"id":2,"n":"y"}]
+-- objs reorder + new
+repn idx {"id":1,"n":"x2"} 1
+repn idx {"id":2,"n":"y"} 0
+repn idx {"id":1,"n":"x2"} 2
+repn data {"id":3,"n":"z"} 0
+repn idx {"id":3,"n":"z"} 1
+repn + {"id":3,"n":"z"} 1
+repn data {"id":1,"n":"x2"} 2
+repo idx {"id":1,"n":"x2"} 1
+repo idx {"id":2,"n":"y"} 0
+repo idx {"id":1,"n":"x2"} 2
+repo data {"id":3,"n":"z"} 0
+repo idx {"id":3,"n":"z"} 1
+repo + {"id":3,"n":"z"} 1
+repo data {"id":1,"n":"x2"} 2
+values [3,2,1] 3 [{"id":2,"n":"y"},{"id":3,"n":"z"},{"id":1,"n":"x2"}]
+-- objs same refs
+repn idx {"id":2,"n":"y"} 1
+repn idx {"id":3,"n":"z"} 0
+repn data {"id":2,"n":"y"} 1
+repo idx {"id":2,"n":"y"} 1
+repo idx {"id":3,"n":"z"} 0
+repo data {"id":2,"n":"y"} 1
+values [3,2,1] 3 [{"id":3,"n":"z"},{"id":2,"n":"y"},{"id":1,"n":"x2"}]
+-- undefined
+values [3,2,1] 3 [{"id":3,"n":"z"},{"id":2,"n":"y"},{"id":1,"n":"x2"}]
+done

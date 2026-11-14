@@ -1,0 +1,440 @@
+# B3-7 decimalPoint
+Qt.locale("de_DE").decimalPoint
+=> string:,
+Qt.locale("ru_RU").decimalPoint
+=> string:,
+Qt.locale("ar_EG").decimalPoint
+=> string:٫
+Qt.locale("en_US").decimalPoint
+=> string:.
+Qt.locale("fr_CH").decimalPoint
+=> string:,
+Qt.locale("C").decimalPoint
+=> string:.
+Qt.locale("hi_IN").decimalPoint
+=> string:.
+# B3-8 properties and methods
+Qt.locale("en_US").groupSeparator
+=> string:,
+Qt.locale("de_DE").groupSeparator
+=> string:.
+Qt.locale("fr_FR").groupSeparator.charCodeAt(0)
+=> number:8239
+Qt.locale("en_US").percent
+=> string:%
+Qt.locale("ar_EG").percent
+=> string:٪؜
+Qt.locale("en_US").zeroDigit
+=> string:0
+Qt.locale("ar_EG").zeroDigit
+=> string:٠
+Qt.locale("en_US").negativeSign
+=> string:-
+Qt.locale("sv_SE").negativeSign.charCodeAt(0)
+=> number:8722
+Qt.locale("en_US").positiveSign
+=> string:+
+Qt.locale("en_US").exponential
+=> string:E
+Qt.locale("sv_SE").exponential
+=> string:×10^
+Qt.locale("de_DE").nativeLanguageName
+=> string:Deutsch
+Qt.locale("ru_RU").nativeLanguageName
+=> string:русский
+Qt.locale("de_DE").nativeTerritoryName
+=> string:Deutschland
+Qt.locale("ru_RU").nativeTerritoryName
+=> string:Россия
+Qt.locale("C").nativeLanguageName
+=> string:
+Qt.locale("C").nativeTerritoryName
+=> string:
+Qt.locale("en_US").textDirection
+=> number:0
+Qt.locale("ar_EG").textDirection
+=> number:1
+Qt.locale("he_IL").textDirection
+=> number:1
+Qt.locale("en_US").measurementSystem
+=> number:1
+Qt.locale("de_DE").measurementSystem
+=> number:0
+Qt.locale("en_GB").measurementSystem
+=> number:2
+Qt.locale("C").measurementSystem
+=> number:0
+Qt.locale("en_US").weekDays.join(",")
+=> string:1,2,3,4,5
+Qt.locale("ar_EG").weekDays.join(",")
+=> string:1,2,3,4,0
+Qt.locale("he_IL").weekDays.join(",")
+=> string:1,2,3,4,0
+Qt.locale("en_US").uiLanguages.join("|")
+=> string:en-Latn-US|en-US|en-Latn|en
+Qt.locale("de_DE").uiLanguages.join("|")
+=> string:de-Latn-DE|de-DE|de-Latn|de
+Qt.locale("sr_BA").uiLanguages.join("|")
+=> string:sr-Cyrl-BA|sr-BA|sr-Cyrl|sr
+Qt.locale("zh_TW").uiLanguages.join("|")
+=> string:zh-Hant-TW|zh-TW|zh-Hant|zh
+Qt.locale("C").uiLanguages.join("|")
+=> string:C
+Qt.locale("en_US").numberOptions
+=> number:0
+Qt.locale("C").numberOptions
+=> number:1
+Qt.locale("en_US").currencySymbol()
+=> string:$
+Qt.locale("de_DE").currencySymbol()
+=> string:€
+Qt.locale("ru_RU").currencySymbol(Locale.CurrencySymbol)
+=> string:₽
+Qt.locale("ru_RU").currencySymbol(Locale.CurrencyIsoCode)
+=> string:RUB
+Qt.locale("ru_RU").currencySymbol(Locale.CurrencyDisplayName)
+=> string:российский рубль
+Qt.locale("en_US").currencySymbol(Locale.CurrencyDisplayName)
+=> string:US Dollar
+Qt.locale("en_US").currencySymbol(7)
+=> string:
+Qt.locale("C").currencySymbol()
+=> string:
+Qt.locale("en_US").formattedDataSize(1000)
+=> string:1,000 bytes
+Qt.locale("en_US").formattedDataSize(1024)
+=> string:1.00 KiB
+Qt.locale("en_US").formattedDataSize(123456789)
+=> string:117.74 MiB
+Qt.locale("en_US").formattedDataSize(123456789, 3)
+=> string:117.738 MiB
+Qt.locale("en_US").formattedDataSize(123456789, 1, Locale.DataSizeSIFormat)
+=> string:123.5 MB
+Qt.locale("en_US").formattedDataSize(123456789, 2, Locale.DataSizeTraditionalFormat)
+=> string:117.74 MB
+Qt.locale("en_US").formattedDataSize(123456789, 2, Locale.DataSizeIecFormat)
+=> string:117.74 MiB
+Qt.locale("de_DE").formattedDataSize(123456789)
+=> string:117,74 MiB
+Qt.locale("ru_RU").formattedDataSize(1536)
+=> string:1,50 KiB
+Qt.locale("en_US").formattedDataSize(0)
+=> string:0 bytes
+Qt.locale("en_US").formattedDataSize(-2048)
+=> string:-2.00 KiB
+Qt.locale("en_US").formattedDataSize(1e18)
+=> string:888.18 PiB
+Qt.locale("en_US").formattedDataSize(1023)
+=> string:1,023 bytes
+Qt.locale("en_US").formattedDataSize(999, 2, Locale.DataSizeSIFormat)
+=> string:999 bytes
+Qt.locale("en_US").formattedDataSize(123456789, 0)
+=> string:118 MiB
+Qt.locale("en_US").formattedDataSize()
+=> THROW Error: Locale: formattedDataSize(): Expected 1-3 arguments, but received 0
+Qt.locale("en_US").formattedDataSize("x")
+=> string:0 bytes
+Qt.locale("en_US").formattedDataSize(1, 2, 3, 4)
+=> THROW Error: Locale: formattedDataSize(): Expected 1-3 arguments, but received 4
+Qt.locale("en_US").createSeparatedList(["a", "b", "c"])
+=> string:a, b, and c
+Qt.locale("en_US").createSeparatedList(["a", "b"])
+=> string:a and b
+Qt.locale("en_US").createSeparatedList(["a"])
+=> string:a
+Qt.locale("en_US").createSeparatedList([])
+=> string:
+Qt.locale("en_US").createSeparatedList(["a", "b", "c", "d"])
+=> string:a, b, c, and d
+Qt.locale("de_DE").createSeparatedList(["a", "b", "c"])
+=> string:a, b und c
+Qt.locale("ru_RU").createSeparatedList(["a", "b", "c"])
+=> string:a, b и c
+Qt.locale("ja_JP").createSeparatedList(["a", "b", "c"])
+=> string:a、b、c
+Qt.locale("en_GB").createSeparatedList(["a", "b", "c"])
+=> string:a, b and c
+Qt.locale("C").createSeparatedList(["a", "b", "c"])
+=> string:a, b, c
+Qt.locale("en_US").createSeparatedList()
+=> THROW Error: Insufficient arguments
+Qt.locale("en_US").createSeparatedList("abc")
+=> string:abc
+typeof Qt.locale("en_US").currencySymbol + typeof Qt.locale("en_US").formattedDataSize + typeof Qt.locale("en_US").createSeparatedList
+=> string:functionfunctionfunction
+Locale.CurrencyIsoCode + " " + Locale.CurrencySymbol + " " + Locale.CurrencyDisplayName + " " + Locale.DataSizeIecFormat + " " + Locale.DataSizeTraditionalFormat + " " + Locale.DataSizeSIFormat
+=> string:0 1 2 0 2 3
+Locale.MetricSystem + " " + Locale.ImperialUSSystem + " " + Locale.ImperialUKSystem + " " + Locale.ImperialSystem
+=> string:0 1 2 1
+Locale.OmitGroupSeparator + " " + Locale.RejectGroupSeparator + " " + Locale.DefaultNumberOptions + " " + Locale.OmitLeadingZeroInExponent
+=> string:1 2 0 4
+Locale.LongFormat + " " + Locale.ShortFormat + " " + Locale.NarrowFormat + " " + Locale.Sunday + " " + Locale.Saturday
+=> string:0 1 2 0 6
+Object.keys(Qt.locale("en_US")).sort().join(",")
+=> string:amText,decimalPoint,exponential,firstDayOfWeek,groupSeparator,measurementSystem,name,nativeCountryName,nativeLanguageName,nativeTerritoryName,negativeSign,numberOptions,percent,pmText,positiveSign,textDirection,uiLanguages,weekDays,zeroDigit
+# B3-9 names
+Qt.locale("en").name
+=> string:en_US
+Qt.locale("de").name
+=> string:de_DE
+Qt.locale("pt").name
+=> string:pt_BR
+Qt.locale("zz_ZZ").name
+=> string:C
+Qt.locale("en_GB.UTF-8").name
+=> string:en_GB
+Qt.locale("en-GB").name
+=> string:en_GB
+Qt.locale("ru_RU@euro").name
+=> string:ru_RU
+Qt.locale("C").name
+=> string:C
+Qt.locale("POSIX").name
+=> string:C
+Qt.locale("").name
+=> string:C
+Qt.locale("en_XX").name
+=> string:en_US
+Qt.locale("en_RU").name
+=> string:en_US
+Qt.locale("EN_us").name
+=> string:en_US
+Qt.locale("sr").name
+=> string:sr_RS
+Qt.locale("sr_BA").name
+=> string:sr_BA
+Qt.locale("sr_Latn").name
+=> string:sr_RS
+Qt.locale("sr_Latn_RS").name
+=> string:sr_RS
+Qt.locale("sr_Cyrl_BA").name
+=> string:sr_BA
+Qt.locale("zh").name
+=> string:zh_CN
+Qt.locale("zh_TW").name
+=> string:zh_TW
+Qt.locale("zh_Hant").name
+=> string:zh_TW
+Qt.locale("zh_Hans_HK").name
+=> string:zh_HK
+Qt.locale("zh_HK").name
+=> string:zh_HK
+Qt.locale("es_419").name
+=> string:es_419
+Qt.locale("de_AT").name
+=> string:de_AT
+Qt.locale("uk").name
+=> string:uk_UA
+Qt.locale("xx").name
+=> string:C
+Qt.locale("english").name
+=> string:C
+Qt.locale("en_").name
+=> string:en_US
+Qt.locale("_US").name
+=> string:C
+Qt.locale("en_US_POSIX").name
+=> string:en_US
+Qt.locale("nb_NO").name
+=> string:nb_NO
+Qt.locale("no").name
+=> string:nb_NO
+Qt.locale("fil").name
+=> string:fil_PH
+Qt.locale("en US").name
+=> string:C
+Qt.locale(5).name
+=> string:C
+Qt.locale(null).name
+=> string:C
+Qt.locale("en", "x").name
+=> THROW Error: Too many arguments
+Qt.locale("zz_ZZ").decimalPoint + Qt.locale("zz_ZZ").dayName(1)
+=> string:.Monday
+Qt.locale("en_GB.UTF-8").dateFormat(Locale.ShortFormat)
+=> string:dd/MM/yyyy
+Qt.locale("sr_Latn_RS").dayName(1) + " " + Qt.locale("sr_RS").dayName(1) + " " + Qt.locale("sr_BA").dayName(1) + " " + Qt.locale("sr_ME").dayName(1)
+=> string:ponedeljak понедељак понедјељак ponedeljak
+Qt.locale("zh_HK").monthName(0) + Qt.locale("zh_Hans_HK").dateFormat()
+=> string:1月yyyy年M月d日dddd
+Qt.locale("en").firstDayOfWeek + " " + Qt.locale("en_GB").firstDayOfWeek + " " + Qt.locale("ar").firstDayOfWeek + " " + Qt.locale("pt_PT").firstDayOfWeek + " " + Qt.locale("zz").firstDayOfWeek + " " + Qt.locale("fa_AF").firstDayOfWeek
+=> string:0 1 6 0 1 6
+# B3-10 month/day range
+Qt.locale("en_US").monthName(12)
+=> string:
+Qt.locale("en_US").monthName(-1)
+=> string:
+Qt.locale("en_US").monthName(11)
+=> string:December
+Qt.locale("en_US").monthName(0)
+=> string:January
+Qt.locale("en_US").monthName(1.7)
+=> string:February
+Qt.locale("en_US").monthName("3")
+=> string:April
+Qt.locale("en_US").monthName(NaN)
+=> string:January
+Qt.locale("en_US").monthName(1e10)
+=> string:
+Qt.locale("en_US").monthName()
+=> THROW Error: Unable to determine callable overload.  Candidates are:
+Qt.locale("en_US").monthName(0, 5)
+=> string:January
+Qt.locale("en_US").monthName(0, "x")
+=> string:January
+Qt.locale("en_US").monthName(0, 1, 2)
+=> string:Jan
+Qt.locale("en_US").standaloneMonthName(12)
+=> string:
+Qt.locale("en_US").standaloneMonthName(-1)
+=> string:
+Qt.locale("en_US").standaloneMonthName()
+=> THROW Error: Unable to determine callable overload.  Candidates are:
+Qt.locale("en_US").dayName(8)
+=> string:
+Qt.locale("en_US").dayName(7)
+=> string:Sunday
+Qt.locale("en_US").dayName(0)
+=> string:Sunday
+Qt.locale("en_US").dayName(6)
+=> string:Saturday
+Qt.locale("en_US").dayName(-1)
+=> string:
+Qt.locale("en_US").dayName(2.9)
+=> string:Tuesday
+Qt.locale("en_US").dayName("2")
+=> string:Tuesday
+Qt.locale("en_US").dayName()
+=> THROW Error: Unable to determine callable overload.  Candidates are:
+Qt.locale("en_US").dayName(NaN)
+=> string:Sunday
+Qt.locale("en_US").dayName(1, 7)
+=> string:
+Qt.locale("en_US").standaloneDayName(8)
+=> string:
+Qt.locale("en_US").standaloneDayName(7)
+=> string:Sunday
+Qt.locale("en_US").standaloneDayName(-1)
+=> string:
+Qt.locale("en_US").standaloneDayName()
+=> THROW Error: Unable to determine callable overload.  Candidates are:
+Qt.locale("en_US").dateFormat(9)
+=> string:M/d/yy
+Qt.locale("en_US").dateFormat("x")
+=> string:dddd, MMMM d, yyyy
+Qt.locale("en_US").dateFormat(1, 2)
+=> string:M/d/yy
+Qt.locale("en_US").timeFormat(1, 2)
+=> string:h:mm Ap
+Qt.locale("en_US").dateTimeFormat(1, 2)
+=> string:M/d/yy h:mm Ap
+# B3-11 toString
+Qt.locale("en_US").toString(1234567.891, "f", 1)
+=> string:1,234,567.9
+Qt.locale("en_US").toString(1234567.891)
+=> string:1.23457e+06
+Qt.locale("de_DE").toString(1234567.891)
+=> string:1,23457e+06
+Qt.locale("de_DE").toString(1234567.891, "f")
+=> string:1.234.567,891000
+Qt.locale("de_DE").toString(1234567.891, "e", 3)
+=> string:1,235e+06
+Qt.locale("de_DE").toString(1234567.891, "g", 9)
+=> string:1.234.567,89
+Qt.locale("en_US").toString(1234567.891, "f", 1, 2)
+=> THROW Error: Locale: toString(): Expected 1-3 arguments, but received 4
+Qt.locale("en_US").toString(1234567.891, 2)
+=> string:1,234,567.891000
+Qt.locale("en_US").toString(1234567.891, "f", "x")
+=> THROW Error: Locale: the third argument to the toString overload whose first argument is a double should be an int
+Qt.locale("en_US").toString(5)
+=> string:5
+Qt.locale("en_US").toString(1234567)
+=> string:1,234,567
+Qt.locale("de_DE").toString(1234567)
+=> string:1.234.567
+Qt.locale("en_US").toString(-0.5)
+=> string:-0.5
+Qt.locale("en_US").toString(1e21)
+=> string:1e+21
+Qt.locale("en_US").toString(NaN)
+=> string:nan
+Qt.locale("en_US").toString(Infinity)
+=> string:inf
+Qt.locale("en_US").toString(12, "x")
+=> string:12.000000
+Qt.locale("en_US").toString(12, "E", 2)
+=> string:1.20E+01
+Qt.locale("en_US").toString(12, "G", 2)
+=> string:12
+Qt.locale("en_US").toString(12, "ff", 2)
+=> string:12.00
+Qt.locale("en_US").toString(12, "", 2)
+=> string:
+Qt.locale("en_US").toString()
+=> string:QLocale(English, Latin, United States)
+Qt.locale("en_US").toString("abc")
+=> THROW TypeError: Passing incompatible arguments to C++ functions from JavaScript is not allowed.
+Qt.locale("en_US").toString(true)
+=> string:1
+Qt.locale("en_US").toString(null)
+=> THROW Error: Locale: toString() expects either an int, double, or Date as its first argument
+Qt.locale("en_US").toString({})
+=> THROW Error: Locale: toString() expects either an int, double, or Date as its first argument
+Qt.locale("en_US").toString(new Date(2024, 0, 5, 13, 4, 5), Locale.ShortFormat)
+=> string:1/5/24 1:04 PM
+Qt.locale("en_US").toString(new Date(2024, 0, 5, 13, 4, 5), "yyyy")
+=> string:2024
+Qt.locale("en_US").toString(new Date(2024, 0, 5, 13, 4, 5), 7)
+=> string:1/5/24 1:04 PM
+Qt.locale("en_US").toString(new Date(2024, 0, 5, 13, 4, 5), "yyyy", 1)
+=> THROW Error: Locale: the toString() overload that takes a Date as its first argument expects 1 or 2 arguments, but received 3
+Qt.locale("en_US").toString(new Date(2024, 0, 5, 13, 4, 5), null)
+=> THROW Error: Locale: the second argument to the toString overloads whose first argument is a Date should be a string or FormatType
+String(Qt.locale("en_US"))
+=> string:QLocale(English, Latin, United States)
+String(Qt.locale("de_DE"))
+=> string:QLocale(German, Latin, Germany)
+String(Qt.locale("zh_TW"))
+=> string:QLocale(Chinese, Traditional Han, Taiwan)
+String(Qt.locale("C"))
+=> string:QLocale(C, Default, Default)
+String(Qt.locale("sr_Latn_RS"))
+=> string:QLocale(Serbian, Latin, Serbia)
+"" + Qt.locale("ru_RU")
+=> string:QLocale(Russian, Cyrillic, Russia)
+Qt.locale("en_US") + 1
+=> string:QLocale(English, Latin, United States)1
+JSON.stringify(Qt.locale("en_US")).length > 2
+=> boolean:true
+typeof Qt.locale("en_US")
+=> string:object
+# B3-12 equality
+Qt.locale("en_US") == Qt.locale("en_US")
+=> boolean:true
+Qt.locale("en_US") === Qt.locale("en_US")
+=> boolean:true
+Qt.locale("en_US") != Qt.locale("en_US")
+=> boolean:false
+Qt.locale("en_US") == Qt.locale("en")
+=> boolean:true
+Qt.locale("en_US") == Qt.locale("en_GB")
+=> boolean:false
+Qt.locale("en_US") == Qt.locale("de_DE")
+=> boolean:false
+Qt.locale("zz") == Qt.locale("C")
+=> boolean:true
+Qt.locale("sr_Latn_RS") == Qt.locale("sr_RS")
+=> boolean:false
+Qt.locale("en_US") == "en_US"
+=> boolean:false
+Qt.locale("en_US") == null
+=> boolean:false
+(function(){ var a = Qt.locale("en_US"); return a == a && a === a })()
+=> boolean:true
+[Qt.locale("en_US")].indexOf(Qt.locale("en_US"))
+=> number:0
+[Qt.locale("en_US")].includes(Qt.locale("en_US"))
+=> boolean:true
+Object.is(Qt.locale("en_US"), Qt.locale("en_US"))
+=> boolean:true

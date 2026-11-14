@@ -1,0 +1,28 @@
+init r true a true orphan true oc true
+b.visibleChanged false
+d.visibleChanged false
+b false c false
+b after own true false
+b.visibleChanged true
+d.visibleChanged true
+b true c false
+d.visibleChanged false
+d unparented false
+d.visibleChanged true
+d true
+d.visibleChanged false
+d under hidden false
+d.visibleChanged true
+d back true
+d.visibleChanged false
+d hidden unparented false
+d shown unparented false
+d.visibleChanged true
+d back again true
+dyn without a parent true
+dyn.visibleChanged false
+dyn toggled false
+dyn.visibleChanged true
+dyn parented true
+dyn.visibleChanged false
+dyn unparented false

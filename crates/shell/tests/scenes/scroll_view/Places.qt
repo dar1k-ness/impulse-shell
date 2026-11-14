@@ -1,0 +1,61 @@
+a view: 0 0 260 78 content 65.64 190 available 260 78 implicit 65.64 190
+a flickable: 0 0 260 78 content 65.64 190 at 0 0 clip true in view true
+a contentItem: 0 0 65.64 190
+a field: 0 0 65.64 190 implicit 65.64 190 in contentItem true
+a vertical: 250 0 10 78 in view true orientation 2 visible true policy 0
+a vertical size 0.41 position 0 visualSize 0.41 visualPosition 0
+a vertical content: 2 2 6 30.38
+a horizontal: 0 68 260 10 in view true orientation 1 visible true policy 0
+a horizontal size 1 position 0 visualSize 1 visualPosition 0
+a horizontal content: 2 2 256 6
+b view: 0 0 260 130 content 93.64 218 available 260 130 implicit 93.64 218
+b flickable: 0 0 260 130 content 93.64 218 at 0 0 clip true in view true
+b contentItem: 0 0 93.64 218
+b field: 0 0 93.64 218 implicit 93.64 218 in contentItem true
+b vertical: 250 0 10 130 in view true orientation 2 visible true policy 0
+b vertical size 0.6 position 0 visualSize 0.6 visualPosition 0
+b vertical content: 2 2 6 75.14
+b horizontal: 0 120 260 10 in view true orientation 1 visible true policy 0
+b horizontal size 1 position 0 visualSize 1 visualPosition 0
+b horizontal content: 2 2 256 6
+c view: 0 0 260 61 content 569.69 60 available 260 61 implicit 260 61
+c flickable: 0 0 260 61 content 569.69 60 at 0 0 clip true in view true
+c contentItem: 0 0 569.69 60
+c field: 0 0 569.69 61 implicit 570.69 60 in contentItem true
+c vertical: 250 0 10 61 in view true orientation 2 visible false policy 1
+c vertical size 1 position 0 visualSize 1 visualPosition 0
+c vertical content: 2 2 6 57
+c horizontal: 0 45 260 16 in view true orientation 1 visible true policy 0
+c horizontal size 0.46 position 0 visualSize 0.46 visualPosition 0
+c horizontal content: 5 5 114.1 6
+==
+a view: 0 0 260 78 content 65.64 190 available 260 78 implicit 65.64 190
+a flickable: 0 0 260 78 content 65.64 190 at 0 112 clip true in view true
+a contentItem: 0 -112 65.64 190
+a field: 0 0 65.64 190 implicit 65.64 190 in contentItem true
+a vertical: 250 0 10 78 in view true orientation 2 visible true policy 0
+a vertical size 0.41 position 0.59 visualSize 0.41 visualPosition 0.59
+a vertical content: 2 45.62 6 30.38
+a horizontal: 0 68 260 10 in view true orientation 1 visible true policy 0
+a horizontal size 1 position 0 visualSize 1 visualPosition 0
+a horizontal content: 2 2 256 6
+b view: 0 0 260 130 content 93.64 218 available 260 130 implicit 93.64 218
+b flickable: 0 0 260 130 content 93.64 218 at 0 88 clip true in view true
+b contentItem: 0 -88 93.64 218
+b field: 0 0 93.64 218 implicit 93.64 218 in contentItem true
+b vertical: 250 0 10 130 in view true orientation 2 visible true policy 0
+b vertical size 0.6 position 0.4 visualSize 0.6 visualPosition 0.4
+b vertical content: 2 52.86 6 75.14
+b horizontal: 0 120 260 10 in view true orientation 1 visible true policy 0
+b horizontal size 1 position 0 visualSize 1 visualPosition 0
+b horizontal content: 2 2 256 6
+c view: 0 0 260 61 content 569.69 60 available 260 61 implicit 260 61
+c flickable: 0 0 260 61 content 569.69 60 at 310 0 clip true in view true
+c contentItem: -310 0 569.69 60
+c field: 0 0 569.69 61 implicit 570.69 60 in contentItem true
+c vertical: 250 0 10 61 in view true orientation 2 visible false policy 1
+c vertical size 1 position 0 visualSize 1 visualPosition 0
+c vertical content: 2 2 6 57
+c horizontal: 0 45 260 16 in view true orientation 1 visible true policy 0
+c horizontal size 0.46 position 0.54 visualSize 0.46 visualPosition 0.54
+c horizontal content: 141.04 5 113.96 6

@@ -1,0 +1,168 @@
+@property color c
+@property color ci
+@property var vc: Qt.rgba(1, 0, 0, 1)
+@property int nc: 0
+@onCChanged: nc += 1
+@Rectangle { id: rect; color: "red"; border.color: "red" }
+w(function(){ c = "red"; c.r = 2; return c + " " + c.valid + " " + nc })
+=> string:#ff0000 true 2
+w(function(){ c = "red"; c.r = 1.5; return c + " " + c.valid + " " + nc })
+=> string:#ff0000 true 4
+w(function(){ c = "red"; c.r = -0.5; return c + " " + c.valid + " " + nc })
+=> string:#000000 true 6
+w(function(){ c = "red"; c.g = 1.00001; return c + " " + c.valid + " " + nc })
+=> string:#ffff00 true 8
+w(function(){ c = "red"; c.a = 2; return c + " " + c.valid + " " + nc })
+=> string:#ff0000 true 9
+w(function(){ c = "red"; c.a = -1; return c + " " + c.valid + " " + nc })
+=> string:#00ff0000 true 10
+w(function(){ c = "red"; c.a = NaN; return c + " " + c.valid + " " + nc })
+=> string:#00ff0000 true 12
+w(function(){ c = "red"; c.a = "0.25"; return c + " " + c.valid + " " + nc })
+=> string:#40ff0000 true 14
+w(function(){ c = "red"; c.hsvHue = 2; return c + " " + c.valid + " " + nc })
+=> string:#000000 false 16
+w(function(){ c = "red"; c.hsvHue = -1; return c + " " + c.valid + " " + nc })
+=> string:#ffffff true 18
+w(function(){ c = "red"; c.hsvHue = -0.5; return c + " " + c.valid + " " + nc })
+=> string:#000000 false 20
+w(function(){ c = "red"; c.hsvSaturation = 2; return c + " " + c.valid + " " + nc })
+=> string:#000000 false 22
+w(function(){ c = "red"; c.hsvValue = -1; return c + " " + c.valid + " " + nc })
+=> string:#000000 false 24
+w(function(){ c = "red"; c.hslHue = 1; return c + " " + c.valid + " " + nc })
+=> string:#ff0000 true 26
+w(function(){ c = "red"; c.hslHue = 1.5; return c + " " + c.valid + " " + nc })
+=> string:#000000 false 28
+w(function(){ c = "red"; c.hslLightness = -1; return c + " " + c.valid + " " + nc })
+=> string:#000000 false 30
+w(function(){ c = "red"; c.hslSaturation = NaN; return c + " " + c.valid + " " + nc })
+=> string:#000000 false 32
+w(function(){ c = "red"; c.hsvHue = NaN; return c + " " + c.valid + " " + nc })
+=> string:#000000 false 34
+w(function(){ c = "red"; c.r = "x"; return c + " " + c.valid + " " + nc })
+=> string:#000000 true 36
+w(function(){ c = "red"; c.r = true; return c + " " + c.valid + " " + nc })
+=> string:#ff0000 true 37
+w(function(){ c = "red"; c.r = [0.5]; return c + " " + c.valid + " " + nc })
+=> string:#800000 true 38
+w(function(){ c = "red"; c.foo = 1; return c + " " + c.valid + " " + nc })
+=> string:#ff0000 true 39
+w(function(){ c = "red"; c.r -= 0.5; return c + " " + c.valid + " " + nc })
+=> string:#800000 true 40
+w(function(){ c = "red"; c.r *= 0.25; return c + " " + c.valid + " " + nc })
+=> string:#400000 true 42
+w(function(){ c = "red"; c.r = 0.1; c.g = 0.2; c.b = 0.3; c.a = 0.4; return c + " " + c.valid + " " + nc })
+=> string:#661a334d true 47
+w(function(){ c = "red"; c.r = Infinity; return c + " " + c.valid + " " + nc })
+=> string:#ff0000 true 49
+w(function(){ c = "red"; c.r = 0.999999; return c + " " + c.valid + " " + nc })
+=> string:#ff0000 true 50
+w(function(){ c = "red"; c.b = 0.5019; return c + " " + c.valid + " " + nc })
+=> string:#ff0080 true 51
+w(function(){ c = "red"; c.hsvValue = 0.3; c.hslLightness = 0.3; c.r = 0.9; return c + " " + c.valid + " " + nc })
+=> string:#e60000 true 55
+w(function(){ c = Qt.hsva(0.5, 1, 1, 1); c.r = 0.5; return c + " " + nc })
+=> string:#80ffff 57
+w(function(){ c = Qt.hsva(0.5, 1, 1, 1); c.a = 0.25; return c + " " + nc })
+=> string:#4000ffff 59
+w(function(){ c = Qt.hsva(0.5, 1, 1, 1); c.hsvValue = 0.5; return c + " " + nc })
+=> string:#008080 61
+w(function(){ c = Qt.hsva(0.5, 1, 1, 1); c.hslSaturation = 0.5; return c + " " + nc })
+=> string:#40bfbf 63
+w(function(){ c = Qt.hsva(0.5, 1, 1, 1); c.hsvHue = 0.25; return c + " " + nc })
+=> string:#80ff00 65
+w(function(){ c = Qt.hsva(0.5, 1, 1, 1); c.hslHue = 0.75; return c + " " + nc })
+=> string:#8000ff 67
+w(function(){ c = Qt.hsla(0.5, 1, 0.5, 1); c.r = 0.5; return c + " " + nc })
+=> string:#80ffff 69
+w(function(){ c = Qt.hsla(0.5, 1, 0.5, 1); c.a = 0.25; return c + " " + nc })
+=> string:#4000ffff 71
+w(function(){ c = Qt.hsla(0.5, 1, 0.5, 1); c.hsvValue = 0.5; return c + " " + nc })
+=> string:#008080 73
+w(function(){ c = Qt.hsla(0.5, 1, 0.5, 1); c.hslSaturation = 0.5; return c + " " + nc })
+=> string:#40bfbf 75
+w(function(){ c = Qt.hsla(0.5, 1, 0.5, 1); c.hsvHue = 0.25; return c + " " + nc })
+=> string:#80ff00 77
+w(function(){ c = Qt.hsla(0.5, 1, 0.5, 1); c.hslHue = 0.75; return c + " " + nc })
+=> string:#8000ff 79
+w(function(){ c = Qt.hsva(0.5, 0.25, 0.75, 0.5); c.r = 0.5; return c + " " + nc })
+=> string:#8080bfbf 81
+w(function(){ c = Qt.hsva(0.5, 0.25, 0.75, 0.5); c.a = 0.25; return c + " " + nc })
+=> string:#408fbfbf 83
+w(function(){ c = Qt.hsva(0.5, 0.25, 0.75, 0.5); c.hsvValue = 0.5; return c + " " + nc })
+=> string:#80608080 85
+w(function(){ c = Qt.hsva(0.5, 0.25, 0.75, 0.5); c.hslSaturation = 0.5; return c + " " + nc })
+=> string:#807cd3d3 87
+w(function(){ c = Qt.hsva(0.5, 0.25, 0.75, 0.5); c.hsvHue = 0.25; return c + " " + nc })
+=> string:#80a7bf8f 89
+w(function(){ c = Qt.hsva(0.5, 0.25, 0.75, 0.5); c.hslHue = 0.75; return c + " " + nc })
+=> string:#80a78fbf 91
+w(function(){ c = "#80102030"; c.r = 0.5; return c + " " + nc })
+=> string:#80802030 93
+w(function(){ c = "#80102030"; c.a = 0.25; return c + " " + nc })
+=> string:#40102030 95
+w(function(){ c = "#80102030"; c.hsvValue = 0.5; return c + " " + nc })
+=> string:#802b5580 97
+w(function(){ c = "#80102030"; c.hslSaturation = 0.5; return c + " " + nc })
+=> string:#80102030 99
+w(function(){ c = "#80102030"; c.hsvHue = 0.25; return c + " " + nc })
+=> string:#80203010 101
+w(function(){ c = "#80102030"; c.hslHue = 0.75; return c + " " + nc })
+=> string:#80201030 103
+w(function(){ c = "transparent"; c.r = 0.5; return c + " " + nc })
+=> string:#00800000 105
+w(function(){ c = "transparent"; c.a = 0.25; return c + " " + nc })
+=> string:#40000000 107
+w(function(){ c = "transparent"; c.hsvValue = 0.5; return c + " " + nc })
+=> string:#00808080 109
+w(function(){ c = "transparent"; c.hslSaturation = 0.5; return c + " " + nc })
+=> string:#00000000 111
+w(function(){ c = "transparent"; c.hsvHue = 0.25; return c + " " + nc })
+=> string:#00000000 113
+w(function(){ c = "transparent"; c.hslHue = 0.75; return c + " " + nc })
+=> string:#00000000 115
+w(function(){ c = "gray"; c.r = 0.5; return c + " " + nc })
+=> string:#808080 117
+w(function(){ c = "gray"; c.a = 0.25; return c + " " + nc })
+=> string:#40808080 119
+w(function(){ c = "gray"; c.hsvValue = 0.5; return c + " " + nc })
+=> string:#808080 121
+w(function(){ c = "gray"; c.hslSaturation = 0.5; return c + " " + nc })
+=> string:#808080 123
+w(function(){ c = "gray"; c.hsvHue = 0.25; return c + " " + nc })
+=> string:#808080 125
+w(function(){ c = "gray"; c.hslHue = 0.75; return c + " " + nc })
+=> string:#808080 127
+w(function(){ ci.r = 0.5; return ci + " " + ci.valid })
+=> string:#800000 true
+w(function(){ ci = undefined; return ci + " " + ci.valid })
+=> string:THROW Error: Cannot assign [undefined] to QColor
+w(function(){ ci.a = 0.5; return ci + " " + ci.valid })
+=> string:#80800000 true
+w(function(){ ci.hsvHue = 0.5; return ci + " " + ci.valid })
+=> string:#80008080 true
+w(function(){ c = "red"; return (c.r = 0.5) + " " + c })
+=> string:0.5 #800000
+w(function(){ c = "red"; return (c.r = "0.5") + " " + typeof (c.r = "0.5") })
+=> string:0.5 string
+w(function(){ c = "red"; return (c.r += 0.5) + " " + c })
+=> string:1.5 #ff0000
+w(function(){ c = "red"; return (c.b++) + " " + c })
+=> string:0 #ff00ff
+w(function(){ c = "red"; return (++c.b) + " " + c })
+=> string:1 #ff00ff
+w(function(){ vc = Qt.rgba(1, 0, 0, 1); root.vc.g = 1; return vc })
+=> object:#ffff00
+w(function(){ var x = Qt.rgba(1, 0, 0, 1); x.valid = true; return x })
+=> string:THROW Error: Cannot assign bool to bool
+w(function(){ var x = "red"; x.r = 0.5; return x })
+=> string:red
+w(function(){ c = "red"; c["r"] = 0.5; var k = "g"; c[k] = 0.5; return c })
+=> object:#808000
+w(function(){ c = "red"; this.c.b = 0.5; return c })
+=> string:THROW TypeError: Value is undefined and could not be converted to an object
+w(function(){ c = "red"; with (root) { c.b = 0.5 }; return c })
+=> object:#ff0080
+w(function(){ const x = Qt.rgba(1, 0, 0, 1); x.r = 0.5; return x })
+=> object:#800000

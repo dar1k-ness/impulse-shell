@@ -1,0 +1,25 @@
+qml: ready single
+qml: quit
+qml: destroyed grandchild
+qml: destroyed child 1
+qml: destroyed child 2
+qml: destroyed loader
+qml: destroyed repeater
+qml: destroyed parent
+qml: destroyed root, sees first object of root parent
+qml: destroyed created under root
+qml: destroyed created without a parent
+qml: destroyed loader item child
+qml: destroyed loader item
+qml: destroyed delegate 2
+qml: destroyed object of delegate undefined
+qml: destroyed delegate 1
+qml: destroyed object of delegate undefined
+qml: destroyed delegate 0
+qml: destroyed object of delegate undefined
+qml: destroyed last object of root
+qml: destroyed object of parent
+qml: destroyed first object of root
+qml: destroyed singleton's object
+qml: destroyed singleton
+status 0

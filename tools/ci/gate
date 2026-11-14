@@ -1,0 +1,58 @@
+#!/bin/sh
+# tools/ci/gate [--workspace] [--only STEP[,STEP...]] [--skip STEP[,STEP...]] [NEXTEST ARGS...]
+# runs tools/testenv/ri-gate on this checkout in the ri-testenv image, the way the CI
+# workflows run it, with nothing but Docker on the host. See docs/ci.md.
+#
+#   tools/ci/gate --workspace                    the full gate: what a pull request must pass
+#   tools/ci/gate --workspace --only fmt,clippy  some of its steps
+#   tools/ci/gate --run CMD...                   CMD in the image instead (as root; `as-tester
+#                                                CMD` as the user the tests run as)
+#
+# The image is built on first use and again whenever rust-toolchain.toml or tools/testenv
+# change (tools/ci/image-tag). The target dir and Cargo's registry are kept between runs in
+# $RI_GATE_DIR (default: $XDG_CACHE_HOME/ri-gate, ~/.cache/ri-gate). One run at a time uses a
+# checkout, and one a cache directory.
+#
+# `-h` / `--help` and an argument the gate does not take print the usage and start nothing:
+# no lock, no image build, no container (tools/testenv/ri-gate reads the arguments).
+set -eu
+if [ "${1-}" = --run ]; then
+    if [ $# -lt 2 ]; then
+        echo "tools/ci/gate: --run needs a command" >&2
+        exit 2
+    fi
+else
+    rc=0
+    sh "$(dirname "$0")/../testenv/ri-gate" --check-args "$@" || rc=$?
+    case $rc in
+        0) ;;
+        100) exit 0 ;;
+        *) exit "$rc" ;;
+    esac
+fi
+cd "$(git rev-parse --show-toplevel)"
+RI_GATE_DIR=${RI_GATE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/ri-gate}
+export RI_GATE_DIR
+mkdir -p "$RI_GATE_DIR"
+# Both held by the container's client until the run ends: a second run would build in the
+# same target dir, or hand the checkout back to the host user under the first one.
+exec 8>"$(git rev-parse --git-dir)/ri-gate.lock" 9>"$RI_GATE_DIR/lock"
+if ! flock -n 8; then
+    echo "tools/ci/gate: another run is using this checkout; wait for it" >&2
+    exit 1
+fi
+if ! flock -n 9; then
+    echo "tools/ci/gate: another run is using $RI_GATE_DIR; wait for it or set RI_GATE_DIR" >&2
+    exit 1
+fi
+export RI_GATE_LOCKED=1
+image=ri-testenv:$(tools/ci/image-tag)
+if ! docker image inspect "$image" >/dev/null 2>&1; then
+    echo "tools/ci/gate: building $image" >&2
+    docker build -t "$image" -f tools/testenv/Containerfile . >&2
+fi
+if [ "${1-}" = --run ]; then
+    shift
+    exec tools/ci/in-testenv "$image" "$@"
+fi
+exec tools/ci/in-testenv "$image" ri-gate "$@"

@@ -1,0 +1,19 @@
+own sum 1
+write a
+own a 1 b 0
+kid twice 2 b 0
+own b 2
+conn b 2
+conn a 1 b 2
+written 2 2
+write k
+kid k 5 sum 1
+own sum 6
+conn k 5 sum 6
+written 6
+write one
+look one true false both false
+write two
+look two true true both false
+own both true
+written true

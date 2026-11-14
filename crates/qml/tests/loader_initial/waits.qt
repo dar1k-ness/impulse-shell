@@ -1,0 +1,49 @@
+# Cases of expected.qt where what a script's own write gives is not Qt's yet (the value is
+# converted or refused by another rule, or the error is worded otherwise): Loader.setSource
+# follows the script in each of them. That rule is not this fixture's: a case listed here
+# that became Qt's fails the test, and its line is then removed.
+bound = 'x'
+bound = ''
+bound = null
+bound = {}
+bound = []
+bound = [1,2]
+bound = 'red'
+bound = '1,2'
+bound = url
+bound = QtObject
+bound = Item
+bound = Qt.point
+bound = Qt.rect
+bound = Qt.size
+bound = Date
+bound = '2020-01-02'
+bound = Qt.rgba
+bound = Qt.font
+onWidthChanged = 1
+onWidthChanged = 1.5
+onWidthChanged = 'x'
+onWidthChanged = ''
+onWidthChanged = true
+onWidthChanged = null
+onWidthChanged = undefined
+onWidthChanged = {}
+onWidthChanged = []
+onWidthChanged = [1,2]
+onWidthChanged = 'red'
+onWidthChanged = '1,2'
+onWidthChanged = url
+onWidthChanged = QtObject
+onWidthChanged = Item
+onWidthChanged = Qt.point
+onWidthChanged = Qt.rect
+onWidthChanged = Qt.size
+onWidthChanged = Date
+onWidthChanged = '2020-01-02'
+onWidthChanged = fn
+onWidthChanged = NaN
+onWidthChanged = '7'
+onWidthChanged = Qt.rgba
+onWidthChanged = Qt.font
+onWidthChanged = 1e20
+onWidthChanged = -1

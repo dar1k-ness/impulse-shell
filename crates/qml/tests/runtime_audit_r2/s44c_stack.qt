@@ -1,0 +1,18 @@
+first activated
+init 1 first false
+sub activating
+sub activated
+first deactivating
+first deactivated
+push -> sub 2 sub first visible 2
+t100 busy false depth 2
+sub deactivating
+sub deactivated
+sub removed
+first activating
+first activated
+pop -> sub 1 first
+pop at depth 1 -> null 1
+sub destroyed
+t300 depth 1 held null children 1
+first destroyed

@@ -1,0 +1,82 @@
+import QtQuick.tooling 1.2
+
+// Switches the wallpaper and the colours made from it, in process, to `image` (asked for when
+// there is none to use), in `mode` ("dark" or "light"; the one in use when empty) and
+// `schemeType` (the configured one when empty). `noSwitch` keeps the wallpaper in use and makes
+// its colours again. The accent the colours are made from in place of the wallpaper: `color`
+// sets it (#rrggbb), `clearColor` removes it, `pickColor` takes the one picked on the screen.
+// A program is run with a Process.
+// A Process whose work is native (crates/qml/src/procs.rs): `running`, `exited`, `stdout` as Process.
+Module {
+    Component {
+        file: "procs.rs"
+        name: "ImpulseWallpaperSwitch"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/WallpaperSwitch 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "image"
+            type: "QString"
+            read: "image"
+            write: "setImage"
+            notify: "imageChanged"
+            index: 0
+        }
+        Property {
+            name: "mode"
+            type: "QString"
+            read: "mode"
+            write: "setMode"
+            notify: "modeChanged"
+            index: 1
+        }
+        Property {
+            name: "schemeType"
+            type: "QString"
+            read: "schemeType"
+            write: "setSchemeType"
+            notify: "schemeTypeChanged"
+            index: 2
+        }
+        Property {
+            name: "color"
+            type: "QString"
+            read: "color"
+            write: "setColor"
+            notify: "colorChanged"
+            index: 3
+        }
+        Property {
+            name: "clearColor"
+            type: "bool"
+            read: "clearColor"
+            write: "setClearColor"
+            notify: "clearColorChanged"
+            index: 4
+        }
+        Property {
+            name: "pickColor"
+            type: "bool"
+            read: "pickColor"
+            write: "setPickColor"
+            notify: "pickColorChanged"
+            index: 5
+        }
+        Property {
+            name: "noSwitch"
+            type: "bool"
+            read: "noSwitch"
+            write: "setNoSwitch"
+            notify: "noSwitchChanged"
+            index: 6
+        }
+        Signal { name: "imageChanged" }
+        Signal { name: "modeChanged" }
+        Signal { name: "schemeTypeChanged" }
+        Signal { name: "colorChanged" }
+        Signal { name: "clearColorChanged" }
+        Signal { name: "pickColorChanged" }
+        Signal { name: "noSwitchChanged" }
+    }
+}

@@ -1,0 +1,759 @@
+@ TZ=Asia/Kolkata
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|India Standard Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|India Standard Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|India Standard Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|India Standard Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM India Standard Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:C/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|GMT+05:30
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM GMT+05:30
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:C/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=de_DE
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Indische Normalzeit
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Indische Normalzeit
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|Indische Normalzeit
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Indische Normalzeit
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Indische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Indische Normalzeit
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:de_DE/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=cs_CZ
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|indický čas
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|indický čas
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|GMT+05:30
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|indický čas
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|indický čas
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM indický čas
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:cs_CZ/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=iu_CA
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|GMT+05:30
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM GMT+05:30
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:iu_CA/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=nds_DE
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|UTC+05.30
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM UTC+05.30
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:nds_DE/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=ia_FR
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|hora normal de India
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|hora normal de India
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|hora normal de India
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|hora normal de India
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|hora normal de India
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM hora normal de India
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:ia_001/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=la_VA
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|GMT+05:30
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM GMT+05:30
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:la_VA/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=ku_TR
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Saeta Hindistanê ya Standard
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Saeta Hindistanê ya Standard
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|Saeta Hindistanê ya Standard
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Saeta Hindistanê ya Standard
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|Saeta Hindistanê ya Standard
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Saeta Hindistanê ya Standard
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:ku_TR/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=kxv_Latn_IN
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|bārat mānānka belā
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM bārat mānānka belā
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:kxv_IN/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=n
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|GMT+05:30
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM GMT+05:30
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:C/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=nd_ZW
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|GMT+05:30
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM GMT+05:30
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:nd_ZW/iu_CA/kaa_UZ
+@ TZ=Europe/Moscow LANG=ru_RU
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Москва, стандартное время
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|mosko mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+3|+0300|+03:00|UTC+03.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Москва, стандартное время
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|GMT+03:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:MSK|+0300|+03:00|Москва, стандартное время
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Москва, стандартное время
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Москва, стандартное время
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+03.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Москва, стандартное время
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:ru_RU/iu_CA/kaa_UZ
+@ TZ=Europe/Moscow LANG=sr_Latn_RS
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moskva, standardno vreme
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|mosko mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+3|+0300|+03:00|UTC+03.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moskva, standardno vreme
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|GMT+03:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:MSK|+0300|+03:00|Moskva, standardno vreme
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moskva, standardno vreme
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moskva, standardno vreme
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+03.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Moskva, standardno vreme
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:sr_RS/iu_CA/kaa_UZ
+@ TZ=Europe/Moscow LANG=C
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moscow Standard Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|mosko mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+3|+0300|+03:00|UTC+03.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moscow Standard Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|GMT+03:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:MSK|+0300|+03:00|Moscow Standard Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moscow Standard Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moscow Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+03.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Moscow Standard Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:C/iu_CA/kaa_UZ
+@ TZ=Europe/Moscow LANG=en_US LC_MESSAGES=uz_Cyrl_UZ
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Москва стандарт вақти
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|mosko mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+3|+0300|+03:00|UTC+03.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Москва стандарт вақти
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|GMT+03:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:MSK|+0300|+03:00|Москва стандарт вақти
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Москва стандарт вақти
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Москва стандарт вақти
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+03.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Москва стандарт вақти
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:uz_UZ/iu_CA/kaa_UZ
+@ TZ=America/New_York LANG=fr_FR LC_ALL=hi_Latn_IN
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|North America Eastern Standard Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|veḍahapu mananka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-5|-0500|-05:00|UTC-05.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|North America Eastern Standard Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|GMT-05:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:EST|-0500|-05:00|North America Eastern Standard Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|North America Eastern Standard Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|North America Eastern Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC-05.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM North America Eastern Standard Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:hi_IN/iu_CA/kaa_UZ
+@ TZ=Europe/Moscow LANG=en_US LC_TIME=iu_CA
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moscow Standard Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|mosko mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+3|+0300|+03:00|UTC+03.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moscow Standard Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|GMT+03:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:MSK|+0300|+03:00|Moscow Standard Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moscow Standard Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|Moscow Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+03.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Moscow Standard Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:en_US/iu_CA/kaa_UZ
+@ TZ=Europe/Moscow LANG=iu_CA LC_MESSAGES=ja_JP
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|モスクワ標準時
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|mosko mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+3|+0300|+03:00|UTC+03.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|モスクワ標準時
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|GMT+03:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:MSK|+0300|+03:00|モスクワ標準時
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|モスクワ標準時
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|モスクワ標準時
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+03.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM モスクワ標準時
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:ja_JP/iu_CA/kaa_UZ
+@ TZ=Europe/Moscow LANG=nds_DE LANGUAGE=fr
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+3|+0300|+03:00|UTC+03.00
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|mosko mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+3|+0300|+03:00|UTC+03.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+3|+0300|+03:00|UTC+03.00
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+3|+0300|+03:00|GMT+03:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:MSK|+0300|+03:00|UTC+03.00
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+3|+0300|+03:00|UTC+03.00
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+3|+0300|+03:00|UTC+03.00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+03.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM UTC+03.00
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:fr_FR/iu_CA/kaa_UZ
+@ TZ=Europe/Berlin LANG=en_GB
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Central European Standard Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|mādinā yuropiāti mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+1|+0100|+01:00|UTC+01.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Central European Standard Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|GMT+01:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Central European Standard Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Central European Standard Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Central European Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+01.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Central European Standard Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:en_GB/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=en_IN
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|India Standard Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|India Standard Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|India Standard Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|India Standard Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|India Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM India Standard Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:en_IN/iu_CA/kaa_UZ
+@ TZ=America/New_York LANG=en_US
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:EST|-0500|-05:00|Eastern Standard Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|veḍahapu mananka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-5|-0500|-05:00|UTC-05.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:EST|-0500|-05:00|Eastern Standard Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|GMT-05:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:EST|-0500|-05:00|Eastern Standard Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:EST|-0500|-05:00|Eastern Standard Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:EST|-0500|-05:00|Eastern Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC-05.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Eastern Standard Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:en_US/iu_CA/kaa_UZ
+@ TZ=America/New_York LANG=en_GB
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|Eastern Standard Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|veḍahapu mananka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-5|-0500|-05:00|UTC-05.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|Eastern Standard Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|GMT-05:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:EST|-0500|-05:00|Eastern Standard Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|Eastern Standard Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|Eastern Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC-05.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Eastern Standard Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:en_GB/iu_CA/kaa_UZ
+@ TZ=Europe/Berlin LANG=de_DE
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:MEZ|+0100|+01:00|Mitteleuropäische Normalzeit
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|mādinā yuropiāti mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+1|+0100|+01:00|UTC+01.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:MEZ|+0100|+01:00|Mitteleuropäische Normalzeit
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|GMT+01:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Mitteleuropäische Normalzeit
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:MEZ|+0100|+01:00|Mitteleuropäische Normalzeit
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:MEZ|+0100|+01:00|Mitteleuropäische Normalzeit
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+01.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Mitteleuropäische Normalzeit
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:de_DE/iu_CA/kaa_UZ
+@ TZ=America/New_York LANG=fr_CA
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HNE|-0500|-05:00|heure normale de l’Est
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|veḍahapu mananka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC-5|-0500|-05:00|UTC-05.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HNE|-0500|-05:00|heure normale de l’Est
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT-5|-0500|-05:00|GMT-05:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:EST|-0500|-05:00|heure normale de l’Est
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HNE|-0500|-05:00|heure normale de l’Est
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:HNE|-0500|-05:00|heure normale de l’Est
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC-05.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM heure normale de l’Est
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:fr_CA/iu_CA/kaa_UZ
+@ TZ=Australia/Sydney LANG=en_AU
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|Australian Eastern Daylight Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|āstreliāti weḍāhapū delāiti belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|UTC+11.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|Australian Eastern Daylight Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|GMT+11:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|Australian Eastern Daylight Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|Australian Eastern Daylight Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|Australian Eastern Daylight Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+11.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Australian Eastern Daylight Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:en_AU/iu_CA/kaa_UZ
+@ TZ=Europe/Berlin LANG=en_DE
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Central European Standard Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|mādinā yuropiāti mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+1|+0100|+01:00|UTC+01.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Central European Standard Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|GMT+01:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Central European Standard Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Central European Standard Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Central European Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+01.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Central European Standard Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:en_DE/iu_CA/kaa_UZ
+@ TZ=Europe/Berlin
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|Central European Standard Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|mādinā yuropiāti mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+1|+0100|+01:00|UTC+01.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|Central European Standard Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|GMT+01:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:CET|+0100|+01:00|Central European Standard Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|Central European Standard Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+1|+0100|+01:00|Central European Standard Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+01.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Central European Standard Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:C/iu_CA/kaa_UZ
+@ TZ=Europe/London LANG=en_IE LC_MESSAGES=en_ZA
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT|+0000|+00:00|Greenwich Mean Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+0|+0000|+00:00|grinwic mīn belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+0|+0000|+00:00|Gröönwisch-Welttiet
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT|+0000|+00:00|Greenwich Mean Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+0|+0000|+00:00|GMT+00:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT|+0000|+00:00|Greenwich Mean Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT|+0000|+00:00|Greenwich Mean Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT|+0000|+00:00|Greenwich Mean Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (Gröönwisch-Welttiet)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM Greenwich Mean Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:en_ZA/iu_CA/kaa_UZ
+@ TZ=Australia/Sydney LANG=en_Dsrt_US
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|GMT+11:00
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|āstreliāti weḍāhapū delāiti belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+11:00|+1100|+11:00|UTC+11.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|GMT+11:00
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|GMT+11:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:AEDT|+1100|+11:00|GMT+11:00
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|GMT+11:00
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+11|+1100|+11:00|GMT+11:00
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+11.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM GMT+11:00
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:en_US/iu_CA/kaa_UZ
+@ TZ=Pacific/Auckland LANG=en_NZ LANGUAGE=de
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:NZDT|+1300|+13:00|New Zealand Daylight Time
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+13|+1300|+13:00|niūjilānḍ ḍelāiṭ belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+13:00|+1300|+13:00|UTC+13.00
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:NZDT|+1300|+13:00|New Zealand Daylight Time
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+13|+1300|+13:00|GMT+13:00
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:NZDT|+1300|+13:00|New Zealand Daylight Time
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:NZDT|+1300|+13:00|New Zealand Daylight Time
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:NZDT|+1300|+13:00|New Zealand Daylight Time
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+13.00)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM New Zealand Daylight Time
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:de_DE/iu_CA/kaa_UZ
+@ TZ=Asia/Kolkata LANG=lag_TZ
+Qt.locale("iu_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kxv_IN").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|bārat mānānka belā
+Qt.locale("nds_DE").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:UTC+5.30|+0530|+05:30|UTC+05.30
+Qt.locale("la_VA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("bm_ML").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("C").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:IST|+0530|+05:30|GMT+05:30
+Qt.locale("iu_Latn_CA").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+Qt.locale("kaa_Latn_UZ").toString(new Date(2024, 0, 10, 9, 5, 7), "t|tt|ttt|tttt")
+=> string:GMT+5:30|+0530|+05:30|GMT+05:30
+new Date(2024, 0, 10, 9, 5, 7).toLocaleString(Qt.locale("nds_DE"), Locale.LongFormat)
+=> string:Middeweken, de 10. Januaar 2024 Klock 9.05:07 (UTC+05.30)
+Qt.formatDateTime(new Date(2024, 0, 10, 9, 5, 7), Qt.locale("iu_CA"), Locale.LongFormat)
+=> string:ᐱᖓᑦᓯᖅ, ᔭᓐᓄᐊᓕ 10, 2024 9:05:07 AM GMT+05:30
+Qt.locale().name + "/" + Qt.locale("iu_CA").name + "/" + Qt.locale("kaa_Latn_UZ").name
+=> string:lag_TZ/iu_CA/kaa_UZ

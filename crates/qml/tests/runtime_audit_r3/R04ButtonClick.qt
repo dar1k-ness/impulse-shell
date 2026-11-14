@@ -1,0 +1,49 @@
+--b
+pressedChanged true
+downChanged true
+pressed checked=false pressed=true down=true
+pressedChanged false
+downChanged false
+checkedChanged true
+toggled true
+released checked=true pressed=false
+clicked checked=true
+--b again
+pressedChanged true
+downChanged true
+pressed checked=true pressed=true down=true
+pressedChanged false
+downChanged false
+checkedChanged false
+toggled false
+released checked=false pressed=false
+clicked checked=false
+--plain
+plain pressed
+plain released
+plain clicked
+--d
+--r1
+r1 clicked true
+--r2
+r1 checked false
+r2 checked true
+r2 toggled true
+r2 clicked true
+--sw
+sw toggled true
+sw clicked true
+--tb
+tb2 toggled true
+tb2 clicked true
+tb2 clicked true
+tb1 toggled true
+tb1 clicked true
+--down set
+ed downChanged true
+ed downChanged false
+ed pressedChanged true
+ed pressed down=false
+ed pressedChanged false
+ed clicked down=false
+--end

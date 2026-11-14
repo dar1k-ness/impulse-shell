@@ -1,0 +1,7 @@
+[Windeco]
+BackgroundOpacity=100
+ButtonStyle=macOS
+
+[Common]
+ShadowSize=ShadowLarge
+

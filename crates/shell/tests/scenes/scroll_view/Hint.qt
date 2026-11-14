@@ -1,0 +1,8 @@
+a: view 291x37 content 24x37 flickable 291x37 field 0,0 24x37 implicit 24x37 hint 0x17 lines 1 visible true
+b: view 291x37 content 24x37 flickable 291x37 field 0,0 24x37 implicit 24x37 hint 267x17 lines 1 visible true
+==
+a: view 291x37 content 24x37 flickable 291x37 field 0,0 24x37 implicit 24x37 hint 0x17 lines 1 visible true
+b: view 291x54 content 24x37 flickable 291x54 field 0,0 24x37 implicit 24x37 hint 267x34 lines 2 visible true
+==
+a: view 291x37 content 32.28x37 flickable 291x37 field 0,0 32.28x37 implicit 32.28x37 hint 8.28x935 lines 55 visible false
+b: view 291x37 content 32.28x37 flickable 291x37 field 0,0 32.28x37 implicit 32.28x37 hint 267x34 lines 2 visible false

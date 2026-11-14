@@ -1,0 +1,94 @@
+end        /|0 0 0
+state      on/|0 0 0
+q          on/|0 160 0
+sum        on/|0 160 0 160
+p          on/|80 160 0
+sum        on/|80 160 0 240
+after on   on/|80 160 0
+end        on/|80 160 0
+state      /|80 160 0
+q          /|80 0 0
+sum        /|80 0 0 80
+p          /|0 0 0
+sum        /|0 0 0 0
+after ''   /|0 0 0
+end        /|0 0 0
+state      two/|0 0 0
+p          two/|3 0 0
+sg.state   two/g|3 0 0
+r          two/g|3 0 33
+sum        two/g|3 0 33 3
+q          two/g|3 7 33
+sum        two/g|3 7 33 10
+after two  two/g|3 7 33
+end        two/g|3 7 33
+state      on/g|3 7 33
+q          on/g|3 160 33
+sum        on/g|3 160 33 163
+p          on/g|80 160 33
+sum        on/g|80 160 33 240
+after on   on/g|80 160 33
+end        on/g|80 160 33
+state      /g|80 160 33
+p          /g|0 160 33
+sum        /g|0 160 33 160
+q          /g|0 0 33
+sum        /g|0 0 33 0
+sg.state   /|0 0 33
+r          /|0 0 0
+after ''   /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0
+end        /|0 0 0

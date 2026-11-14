@@ -1,0 +1,23 @@
+import QtQuick.tooling 1.2
+
+// The transition between two rounded polygons: `create(from, to)` matches their outlines,
+// and the result's `asCubics(progress)` is the outline at `progress` (0 = `from`, 1 = `to`).
+// Implemented natively by ri (crates/qml/src/shapes/mod.rs).
+Module {
+    Component {
+        file: "mod.rs"
+        name: "ImpulseMorph"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Impulse/Morph 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Method {
+            name: "create"
+            type: "QVariant"
+            Parameter { name: "from"; type: "QVariant" }
+            Parameter { name: "to"; type: "QVariant" }
+        }
+    }
+}

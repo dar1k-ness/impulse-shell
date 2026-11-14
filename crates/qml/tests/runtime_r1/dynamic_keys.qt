@@ -1,0 +1,11 @@
+0
+declared number true
+width number true
+border object true
+anchors object true
+poked function true
+declaredChanged function true
+activeFocusOnTab boolean true
+baselineOffsetChanged function true
+containmentMask object true
+r1_nothing undefined false

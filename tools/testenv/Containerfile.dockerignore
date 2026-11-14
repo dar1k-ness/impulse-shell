@@ -1,0 +1,4 @@
+# Build context for Containerfile (run from the repo root): only what the image copies.
+*
+!rust-toolchain.toml
+!tools/testenv/

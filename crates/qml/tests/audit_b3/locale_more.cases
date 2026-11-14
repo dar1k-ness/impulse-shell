@@ -1,0 +1,228 @@
+[2,3,-1,7,1.5,"1",null].map(f => Qt.locale("en_US").monthName(0, f)).join("|")
+=> string:J|January|January|January|Jan|Jan|January
+[2,3,-1,7,1.5,"1",null].map(f => Qt.locale("en_US").standaloneMonthName(0, f)).join("|")
+=> string:J|January|January|January|Jan|Jan|January
+[0,1,2,3,-1,5,7,1.5,"1",null].map(f => Qt.locale("en_US").dayName(1, f)).join("|")
+=> string:Monday|Mon|M|||||Mon|Mon|Monday
+[0,1,2,3,-1,5,7,1.5,"1",null].map(f => Qt.locale("en_US").standaloneDayName(1, f)).join("|")
+=> string:Monday|Mon|M|||||Mon|Mon|Monday
+[0,1,2,3,-1,5,7,1.5,"1",null].map(f => Qt.locale("en_US").dateFormat(f)).join("|")
+=> string:dddd, MMMM d, yyyy|M/d/yy|M/d/yy|M/d/yy|M/d/yy|M/d/yy|M/d/yy|M/d/yy|M/d/yy|dddd, MMMM d, yyyy
+[0,1,2,3,-1].map(f => Qt.locale("en_US").timeFormat(f)).join("|")
+=> string:h:mm:ss Ap tttt|h:mm Ap|h:mm Ap|h:mm Ap|h:mm Ap
+Qt.locale("en_US").nativeCountryName + Qt.locale("en_US").nativeLanguageName + Qt.locale("en_GB").nativeLanguageName
+=> string:United StatesAmerican EnglishBritish English
+Qt.locale(undefined).name
+=> string:C
+Qt.locale(undefined) == Qt.locale()
+=> boolean:true
+Qt.locale("en_US").monthName(undefined) + "|" + Qt.locale("en_US").monthName(null) + "|" + Qt.locale("en_US").monthName(4294967297) + "|" + Qt.locale("en_US").dayName(4294967297)
+=> string:January|January|February|Monday
+Qt.locale("en_US").monthName({})
+=> string:January
+Qt.locale("en_US").dayName(undefined) + "|" + Qt.locale("en_US").dayName(null)
+=> string:Sunday|Sunday
+[0,1,2,3,-1,"x",null,undefined].map(f => Qt.locale("ru_RU").currencySymbol(f)).join("|")
+=> string:RUB|₽|российский рубль|||RUB|RUB|₽
+Qt.locale("en_US").currencySymbol(1, 2)
+=> string:$
+[-1, 0, 1, 2, 3, 4, 7, "x"].map(f => Qt.locale("en_US").formattedDataSize(123456789, 2, f)).join("|")
+=> THROW Error: Locale: formattedDataSize(): Invalid argument ('format' must be DataSizeFormat)
+[-1, 0, 1, 2.7, 9, "x", null, undefined, 1e10].map(p => Qt.locale("en_US").formattedDataSize(123456789, p)).join("|")
+=> THROW Error: Locale: formattedDataSize(): Invalid argument ('precision' must be an int)
+[1.9, -1.9, 1e19, -1e19, 9007199254740993, NaN, Infinity, null, undefined, true, "2048", {}].map(b => Qt.locale("en_US").formattedDataSize(b)).join("|")
+=> string:1 bytes|-1 bytes|-8.00 EiB|-8.00 EiB|8.00 PiB|0 bytes|-8.00 EiB|0 bytes|0 bytes|1 bytes|2.00 KiB|0 bytes
+Qt.locale("ru_RU").formattedDataSize(1000) + "|" + Qt.locale("ru_RU").formattedDataSize(123456789, 1, Locale.DataSizeSIFormat) + "|" + Qt.locale("fr_FR").formattedDataSize(123456789) + "|" + Qt.locale("de_DE").formattedDataSize(999)
+=> string:1 000 байты|123,5 МБ|117,74 Mio|999 Bytes
+Qt.locale("en_US").createSeparatedList(["a", 1, null, undefined, {}])
+=> string:a, 1, null, undefined, and [object Object]
+Qt.locale("en_US").createSeparatedList(5) + "|" + Qt.locale("en_US").createSeparatedList(null) + "|" + Qt.locale("en_US").createSeparatedList({}) + "|" + Qt.locale("en_US").createSeparatedList(["a"], ["b"])
+=> THROW TypeError: Passing incompatible arguments to C++ functions from JavaScript is not allowed.
+Qt.locale("en_US").toString(5.0) + "|" + Qt.locale("en_US").toString(2147483648) + "|" + Qt.locale("en_US").toString(-2147483648) + "|" + Qt.locale("en_US").toString(-0) + "|" + Qt.locale("en_US").toString(false)
+=> string:5|2.14748e+09|-2,147,483,648|0|0
+Qt.locale("en_US").toString(1234567, "f") + "|" + Qt.locale("en_US").toString(1234567, "g", 3) + "|" + Qt.locale("en_US").toString(12.5, "f", 1.0) + "|" + Qt.locale("en_US").toString(12.5, null) + "|" + Qt.locale("en_US").toString(12.5, undefined)
+=> THROW Error: Locale: the second argument to the toString overload whose first argument is a double should be a char
+Qt.locale("en_US").toString(12.5, "f", 1.5)
+=> string:12.5
+Qt.locale("en_US").toString(12.5, "f", null)
+=> THROW Error: Locale: the third argument to the toString overload whose first argument is a double should be an int
+Qt.locale("en_US").toString(12.5, "f", -1) + "|" + Qt.locale("en_US").toString(12.5, "e", -1) + "|" + Qt.locale("en_US").toString(0.1, "g", -1) + "|" + Qt.locale("en_US").toString(1e21, "f", 0)
+=> string:12.500000|1.250000e+01|0.1|1,000,000,000,000,000,000,000
+Qt.locale("ar_EG").toString(1234567.891, "f", 2) + "|" + Qt.locale("ar_EG").toString(-5) + "|" + Qt.locale("sv_SE").toString(-1234.5, "e", 2) + "|" + Qt.locale("C").toString(1234567) + "|" + Qt.locale("en_IN").toString(1234567)
+=> string:١٬٢٣٤٬٥٦٧٫٨٩|؜-٥|−1,23×10^+03|1234567|12,34,567
+Qt.locale("en_US").toString(new Date(NaN))
+=> string:
+Qt.locale("en_US").toString(new Date(2024, 0, 5, 13, 4, 5), Locale.NarrowFormat)
+=> string:1/5/24 1:04 PM
+Qt.locale("de_DE").toString(new Date(2024, 0, 5, 13, 4, 5), "dddd d MMMM yyyy")
+=> string:Freitag 5 Januar 2024
+Qt.locale("en_US").toString(undefined)
+=> string:QLocale(English, Latin, United States)
+Qt.locale("en_US").toString([1])
+=> THROW Error: Locale: toString() expects either an int, double, or Date as its first argument
+Object.getOwnPropertyNames(Qt.locale("en_US")).sort().join(",")
+=> string:amText,decimalPoint,exponential,firstDayOfWeek,groupSeparator,measurementSystem,name,nativeCountryName,nativeLanguageName,nativeTerritoryName,negativeSign,numberOptions,percent,pmText,positiveSign,textDirection,uiLanguages,weekDays,zeroDigit
+(function(){ var l = Qt.locale("en_US"); l.name = "x"; l.decimalPoint = "!"; return l.name + l.decimalPoint })()
+=> THROW Error: Cannot assign QString to QString
+(function(){ var l = Qt.locale("en_US"); l.numberOptions = Locale.OmitGroupSeparator; return l.numberOptions + " " + l.toString(1234567) + " " + (l == Qt.locale("en_US")) })()
+=> string:1 1234567 false
+(function(){ var l = Qt.locale("en_US"); l.foo = 1; return l.foo })()
+=> undefined
+Qt.locale("en_US").zeroDigit + Qt.locale("fa_IR").zeroDigit + Qt.locale("fa_IR").percent + Qt.locale("fa_IR").decimalPoint + Qt.locale("fa_IR").negativeSign.length + Qt.locale("fa_IR").positiveSign.length + Qt.locale("de_CH").groupSeparator
+=> string:0۰٪٫22'
+Qt.locale("hi_IN").toString(12345678.5, "f", 1) + "|" + Qt.locale("ur_PK").textDirection + Qt.locale("en_LR").measurementSystem + Qt.locale("en_MM").measurementSystem + Qt.locale("es_PR").measurementSystem
+=> string:1,23,45,678.5|1010
+Qt.locale("eng_US").name + Qt.locale("deu").name + Qt.locale("ger_AT").name + Qt.locale("rus").name + Qt.locale("zho_Hant").name + Qt.locale("iw").name + Qt.locale("in").name + Qt.locale("tl").name + Qt.locale("mo").name + Qt.locale("sh").name
+=> string:en_USde_DEde_ATru_RUzh_TWhe_ILid_IDfil_PHro_ROsr_RS
+Qt.locale("en_001").name + Qt.locale("en_150").name + Qt.locale("es_419").name + Qt.locale("ar_001").name + Qt.locale("en_USA").name + Qt.locale("en_840").name + Qt.locale("en-u-ca").name + Qt.locale("de-1996").name
+=> string:en_001en_150es_419ar_001en_USen_USen_USde_DE
+Qt.locale("sr_Cyrl").name + Qt.locale("sr_latn").name + Qt.locale("sr_LATN_RS").name + Qt.locale("uz_Arab").name + Qt.locale("uz_AF").name + Qt.locale("pa_PK").name + Qt.locale("pa_Arab").name + Qt.locale("zh_Hant_CN").name + Qt.locale("en_Cyrl_GB").name
+=> string:sr_RSsr_RSsr_RSuz_AFuz_AFpa_PKpa_PKzh_TWen_GB
+Qt.locale("und").name + Qt.locale("und_US").name + Qt.locale("und_Cyrl").name + Qt.locale("c").name + Qt.locale("C.UTF-8").name + Qt.locale("posix").name + Qt.locale("e1").name + Qt.locale("en__US").name + Qt.locale("en_US_").name
+=> string:CCCCCCCen_USen_US
+JSON.stringify(Qt.locale("C").uiLanguages) + JSON.stringify(Qt.locale("en_GB").uiLanguages) + JSON.stringify(Qt.locale("sr_Latn_BA").uiLanguages) + JSON.stringify(Qt.locale("zh_Hans_HK").uiLanguages) + JSON.stringify(Qt.locale("pt_PT").uiLanguages)
+=> string:["C"]["en-Latn-GB","en-GB","en-Latn","en"]["sr-Latn-BA","sr-Latn","sr"]["zh-Hans-HK","zh-Hans","zh"]["pt-Latn-PT","pt-PT","pt-Latn","pt"]
+Locale.RejectLeadingZeroInExponent + " " + Locale.IncludeTrailingZeroesAfterDot + " " + Locale.RejectTrailingZeroesAfterDot + " " + Locale.Monday + " " + Locale.Friday + " " + Locale.ImperialSystem + " " + Object.keys(Locale).length
+=> string:8 16 32 1 5 1 0
+Qt.locale("en_US").amText + Qt.locale("en_US").pmText + Qt.locale("de_DE").amText + Qt.locale("ja_JP").pmText + Qt.locale("C").amText
+=> string:AMPMAM午後AM
+JSON.stringify(Qt.locale("en_US")).length + " " + JSON.stringify(Qt.locale("en_US")).slice(0, 60)
+=> string:436 {"firstDayOfWeek":0,"measurementSystem":1,"textDirection":0,
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, -1) })
+=> string:123.46 MB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, 0) })
+=> string:117.74 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, 1) })
+=> string:123.46 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, 2) })
+=> string:117.74 MB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, 3) })
+=> string:123.46 MB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, 4) })
+=> string:117.74 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, 7) })
+=> string:123.46 MB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, "x") })
+=> string:THROW Error: Locale: formattedDataSize(): Invalid argument ('format' must be DataSizeFormat)
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, null) })
+=> string:THROW Error: Locale: formattedDataSize(): Invalid argument ('format' must be DataSizeFormat)
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, undefined) })
+=> string:117.74 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, 2.5) })
+=> string:117.74 MB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2, true) })
+=> string:123.46 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, -1) })
+=> string:117.737569 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 0) })
+=> string:118 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 1) })
+=> string:117.7 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 2.7) })
+=> string:117.74 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 9) })
+=> string:117.737569 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, "x") })
+=> string:THROW Error: Locale: formattedDataSize(): Invalid argument ('precision' must be an int)
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, null) })
+=> string:THROW Error: Locale: formattedDataSize(): Invalid argument ('precision' must be an int)
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, undefined) })
+=> string:117.74 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, 1e10) })
+=> string:117.737569 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, true) })
+=> string:117.7 MiB
+w(function(){ return Qt.locale("en_US").formattedDataSize(123456789, "3") })
+=> string:THROW Error: Locale: formattedDataSize(): Invalid argument ('precision' must be an int)
+w(function(){ return Qt.locale("en_US").toString(12.5, true) })
+=> string:12.500000
+w(function(){ return Qt.locale("en_US").toString(12.5, "f", true) })
+=> string:12.5
+w(function(){ return Qt.locale("en_US").toString(12.5, {}) })
+=> string:THROW Error: Locale: the second argument to the toString overload whose first argument is a double should be a char
+w(function(){ return Qt.locale("en_US").toString(12.5, "f", {}) })
+=> string:THROW Error: Locale: the third argument to the toString overload whose first argument is a double should be an int
+w(function(){ return Qt.locale("en_US").toString(12.5, []) })
+=> string:THROW Error: Locale: the second argument to the toString overload whose first argument is a double should be a char
+w(function(){ return Qt.locale("en_US").toString(12.5, "f", []) })
+=> string:THROW Error: Locale: the third argument to the toString overload whose first argument is a double should be an int
+w(function(){ return Qt.locale("en_US").toString(12.5, "g") })
+=> string:12.5
+w(function(){ return Qt.locale("en_US").toString(12.5, "f", "g") })
+=> string:THROW Error: Locale: the third argument to the toString overload whose first argument is a double should be an int
+w(function(){ return Qt.locale("en_US").toString(12.5, new Date(0)) })
+=> string:12.500000
+w(function(){ return Qt.locale("en_US").toString(12.5, "f", new Date(0)) })
+=> string:THROW Error: Locale: the third argument to the toString overload whose first argument is a double should be an int
+w(function(){ return Qt.locale("en_US").toString(new Date(2024, 0, 5, 13, 4, 5), true) })
+=> string:1/5/24 1:04 PM
+w(function(){ return Qt.locale("en_US").toString(new Date(2024, 0, 5, 13, 4, 5), {}) })
+=> string:THROW Error: Locale: the second argument to the toString overloads whose first argument is a Date should be a string or FormatType
+w(function(){ return Qt.locale("en_US").toString(new Date(2024, 0, 5, 13, 4, 5), []) })
+=> string:THROW Error: Locale: the second argument to the toString overloads whose first argument is a Date should be a string or FormatType
+w(function(){ return Qt.locale("en_US").toString(new Date(2024, 0, 5, 13, 4, 5), 2.5) })
+=> string:1/5/24 1:04 PM
+Qt.locale("en_US").toString(1234567, "f")
+=> string:1,234,567.000000
+Qt.locale("en_US").toString(1234567, "g", 3)
+=> string:1.23e+06
+Qt.locale("en_US").toString(12.5, "f", 1.0)
+=> string:12.5
+Qt.locale("en_US").toString(5, "f", 1)
+=> string:5.0
+Qt.locale("en_US").toString(true, "f", 1)
+=> string:1.0
+Qt.locale(undefined).name + "|" + (Qt.locale(undefined) == Qt.locale()) + "|" + Qt.locale(null).name + "|" + Qt.locale(5).name + "|" + Qt.locale("").name + "|" + (Qt.locale("") == Qt.locale())
+=> string:C|true|C|C|C|false
+(function(){ var l = Qt.locale("en_US"); l.numberOptions = 1; return (1234567.5).toLocaleString(l) + " " + l.formattedDataSize(1000) + " " + (l == l) })()
+=> string:1234567.50 1000 bytes true
+Qt.locale("en_US").dayName(1, 0.5) + "|" + Qt.locale("en_US").dayName(1, 2.5) + "|" + Qt.locale("en_US").monthName(1, 2.5) + "|" + Qt.locale("en_US").dateFormat(0.5) + "|" + Qt.locale("en_US").dateFormat(true) + "|" + Qt.locale("en_US").currencySymbol(1.5) + "|" + Qt.locale("en_US").currencySymbol(true)
+=> string:Monday|M|F|dddd, MMMM d, yyyy|M/d/yy|$|$
+Qt.locale("en_US").dayName(7.5) + "|" + Qt.locale("en_US").dayName(-0.5) + "|" + Qt.locale("en_US").monthName(11.9) + "|" + Qt.locale("en_US").monthName(-0.5) + "|" + Qt.locale("en_US").monthName(true)
+=> string:Sunday|Sunday|December|January|February
+JSON.stringify(Qt.locale("en_US"))
+=> string:{"firstDayOfWeek":0,"measurementSystem":1,"textDirection":0,"weekDays":[1,2,3,4,5],"uiLanguages":["en-Latn-US","en-US","en-Latn","en"],"name":"en_US","nativeLanguageName":"American English","nativeCountryName":"United States","nativeTerritoryName":"United States","decimalPoint":".","groupSeparator":",","percent":"%","zeroDigit":"0","negativeSign":"-","positiveSign":"+","exponential":"E","amText":"AM","pmText":"PM","numberOptions":0}
+Object.keys(Qt.locale("en_US")).join(",")
+=> string:firstDayOfWeek,measurementSystem,textDirection,weekDays,uiLanguages,name,nativeLanguageName,nativeCountryName,nativeTerritoryName,decimalPoint,groupSeparator,percent,zeroDigit,negativeSign,positiveSign,exponential,amText,pmText,numberOptions
+(function(){ var l = Qt.locale("en_US"); l.firstDayOfWeek = 3; return l.firstDayOfWeek })()
+=> THROW Error: Cannot assign int to QQmlLocale::DayOfWeek
+(function(){ var l = Qt.locale("en_US"); l.weekDays = [1]; return l.weekDays.length })()
+=> THROW Error: Cannot assign QList<QQmlLocale::DayOfWeek> to QList<QQmlLocale::DayOfWeek>
+(function(){ var l = Qt.locale("en_US"); l.name = 5; return l.name })()
+=> THROW Error: Cannot assign int to QString
+(function(){ var l = Qt.locale("en_US"); l.amText = "x"; return l.amText })()
+=> THROW Error: Cannot assign QString to QString
+(function(){ var l = Qt.locale("en_US"); l.textDirection = 1; return l.textDirection })()
+=> THROW Error: Cannot assign int to Qt::LayoutDirection
+(function(){ var l = Qt.locale("en_US"); l.uiLanguages = ["a"]; return l.uiLanguages.length })()
+=> THROW Error: Cannot assign QStringList to QStringList
+(function(){ var l = Qt.locale("en_US"); l.measurementSystem = 0; return l.measurementSystem })()
+=> THROW Error: Cannot assign int to QLocale::MeasurementSystem
+(function(){ var l = Qt.locale("en_US"); l.toString = 1; return typeof l.toString })()
+=> THROW Error: Cannot assign int to 
+(function(){ var l = Qt.locale("en_US"); l.numberOptions = "x"; return l.numberOptions })()
+=> THROW Error: Cannot assign QString to QFlags<QLocale::NumberOption>
+(function(){ var l = Qt.locale("en_US"); l.numberOptions = 2.7; return l.numberOptions })()
+=> number:3
+(function(){ var l = Qt.locale("en_US"); l.numberOptions = -1; return l.numberOptions })()
+=> number:-1
+(function(){ var l = Qt.locale("en_US"); l.numberOptions = null; return l.numberOptions })()
+=> THROW Error: Cannot assign std::nullptr_t to QFlags<QLocale::NumberOption>
+(function(){ var l = Qt.locale("en_US"); l.numberOptions = 4; return l.toString(1.5e-7, "e", 2) + " " + (1.5e-7).toLocaleString(l, "e", 2) })()
+=> string:1.50e-7 1.50e-7
+(function(){ var l = Qt.locale("en_US"); l.numberOptions = 16; return l.toString(1.5, "g", 6) + " " + l.toString(1.25) + " " + l.toString(3) })()
+=> string:1.50000 1.25000 3
+(function(){ "use strict"; var l = Qt.locale("en_US"); l.foo = 1; return l.foo })()
+=> THROW TypeError: Type error
+(function(){ var l = Qt.locale("en_US"); return delete l.name })()
+=> boolean:true
+"name" in Qt.locale("en_US")
+=> boolean:true
+"toString" in Qt.locale("en_US")
+=> boolean:true
+Qt.locale("en_US") + ""
+=> string:QLocale(English, Latin, United States)
+Qt.locale("en_US").weekDays + "|" + Qt.locale("en_US").uiLanguages + "|" + Qt.locale("ar_EG").weekDays + "|" + Qt.locale("en_US").weekDays.length
+=> string:1,2,3,4,5|en-Latn-US,en-US,en-Latn,en|1,2,3,4,0|5
+Qt.locale("en_US").weekDays.map(d => d * 2).join("") + Qt.locale("en_US").uiLanguages.indexOf("en")
+=> string:2468103

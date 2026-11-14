@@ -1,0 +1,99 @@
+# Runs steps of tools/testenv/ri-gate --workspace in the ri-testenv image on GitHub-hosted
+# runners, one job per entry of `jobs`: checks.yml, gpu-precision.yml and ri-gate.yml choose
+# the steps. A standard hosted runner of a private repository has 2 vCPU, 7 GB RAM and 14 GB
+# SSD (GitHub docs "GitHub-hosted runners") and a job may run 6 hours, so the gate runs as
+# several jobs; tools/ci/gate runs the same script on one machine (docs/ci.md).
+name: gate-jobs
+
+on:
+  workflow_call:
+    inputs:
+      jobs:
+        description: >-
+          JSON list of {"name": job name, "args": arguments of ri-gate --workspace}
+        required: true
+        type: string
+      save-cache:
+        description: Save the job's Cargo registry and target dir for the next run
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  image:
+    uses: ./.github/workflows/testenv-image.yml
+    permissions:
+      contents: read
+      packages: write
+
+  gate:
+    needs: image
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.jobs) }}
+    name: ${{ matrix.name }}
+    steps:
+      # The image and the target dir don't fit the ~14 GB a standard runner has free: remove
+      # preinstalled SDKs these jobs never use (actions/runner-images, "Installed software").
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup \
+              /opt/hostedtoolcache
+          df -h /
+      # Ubuntu >= 23.10 lets only AppArmor-profiled programs create unprivileged user
+      # namespaces (Ubuntu docs, "Unprivileged user namespace restrictions"); the reference
+      # tests make them inside the container (see the Containerfile header).
+      - name: Allow unprivileged user namespaces
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Cargo's registry (Cargo Book, "Caching the Cargo home in CI") and the target dir, per
+      # job. Saved only when the caller asks: the repository cache holds 10 GB (GitHub docs
+      # "Dependency caching → Usage limits").
+      - id: cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ${{ runner.temp }}/cargo/registry/index
+            ${{ runner.temp }}/cargo/registry/cache
+            ${{ runner.temp }}/cargo/git/db
+            ${{ runner.temp }}/target
+          key: ${{ matrix.name }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ matrix.name }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-
+            ${{ matrix.name }}-
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: ri-gate --workspace ${{ matrix.args }}
+        env:
+          IMAGE: ${{ needs.image.outputs.image }}
+          ARGS: ${{ matrix.args }}
+        # $ARGS unquoted: it is a list of arguments.
+        run: tools/ci/in-testenv "$IMAGE" ri-gate --workspace $ARGS
+      - name: Disk usage
+        if: always()
+        run: |
+          df -h /
+          du -sh "$RUNNER_TEMP/target" "$RUNNER_TEMP/cargo" 2>/dev/null || true
+          docker image ls --format '{{.Repository}}:{{.Tag}} {{.Size}}'
+      - if: inputs.save-cache
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ${{ runner.temp }}/cargo/registry/index
+            ${{ runner.temp }}/cargo/registry/cache
+            ${{ runner.temp }}/cargo/git/db
+            ${{ runner.temp }}/target
+          key: ${{ steps.cache.outputs.cache-primary-key }}

@@ -1,0 +1,13 @@
+{
+  "id": "KAGGLE_USER/rusty-impulse-gpu-render-check",
+  "title": "rusty-impulse GPU render check",
+  "code_file": "run.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": ["KAGGLE_USER/ri-gpushot-bundle"],
+  "competition_sources": [],
+  "kernel_sources": []
+}

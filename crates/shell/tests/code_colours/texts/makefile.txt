@@ -1,0 +1,26 @@
+CC ?= gcc
+CFLAGS := -O2 -Wall $(shell pkg-config --cflags gtk4)
+SRC = $(wildcard src/*.c)
+OBJ = $(SRC:.c=.o)
+
+.PHONY: all clean install
+
+all: demo
+
+# link
+demo: $(OBJ)
+	$(CC) $(LDFLAGS) -o $@ $^
+
+%.o: %.c include/demo.h
+	@echo "CC $<"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+ifeq ($(DEBUG),1)
+CFLAGS += -g
+endif
+
+clean:
+	rm -f $(OBJ) demo
+
+install: demo
+	install -Dm755 demo $(DESTDIR)$(PREFIX)/bin/demo

@@ -1,0 +1,24 @@
+[package]
+name = "imgtools"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+# In-process replacements for the original's image scripts (scripts/thumbnails/*,
+# scripts/images/{least_busy_region,find_regions,text_color}.py). The image results must equal
+# the original script's output; tests/ holds the equivalence cases against the originals.
+
+[dependencies]
+heif = { path = "../heif" }
+image = { workspace = true, features = ["png", "webp", "bmp", "tiff", "gif"] }
+turbojpeg.workspace = true
+png.workspace = true
+md-5.workspace = true
+rayon = "1"
+
+[dev-dependencies]
+testenv = { path = "../testenv" }
+
+[lints]
+workspace = true

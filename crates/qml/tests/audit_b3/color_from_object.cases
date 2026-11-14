@@ -1,0 +1,81 @@
+@property color c: "red"
+w(function(){ c = "red"; c = {r: 0, g: 1}; return c + " " + c.valid })
+=> string:#00ff00 true
+w(function(){ c = "red"; c = {r: 0, g: 1, b: 0}; return c + " " + c.valid })
+=> string:#00ff00 true
+w(function(){ c = "red"; c = {r: 2, g: 1, b: 0, a: 0.5}; return c + " " + c.r })
+=> string:#80ffff00 2
+w(function(){ c = "red"; c = {r: "0.5", g: true, b: null, a: undefined}; return c + " " + c.valid })
+=> string:#80ff00 true
+w(function(){ c = "red"; c = {r: "x", g: 1, b: 0, a: 1}; return c + " " + c.valid })
+=> string:#00ff00 true
+w(function(){ c = "red"; c = {hsvHue: 0.5, hsvSaturation: 1, hsvValue: 1, a: 1}; return c + " " + c.valid })
+=> string:#00ffff true
+w(function(){ c = "red"; c = {hslHue: 0.5, hslSaturation: 1, hslLightness: 0.5}; return c + " " + c.valid })
+=> string:#00ffff true
+w(function(){ c = "red"; c = {a: 0.5}; return c + " " + c.valid })
+=> string:#80000000 false
+w(function(){ c = "red"; c = {r: 1, g: 1, b: 1, a: 1, hsvHue: 0.5}; return c + " " + c.valid })
+=> string:#ffffff true
+w(function(){ c = "red"; c = {hsvHue: 0.5, r: 1, g: 1, b: 1, a: 1}; return c + " " + c.valid })
+=> string:#ffffff true
+w(function(){ c = "red"; c = {rgba: 0xff00ff00 | 0}; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = {valid: false, r: 0, g: 0, b: 1, a: 1}; return c + " " + c.valid })
+=> string:#0000ff true
+w(function(){ c = "red"; c = {foo: 1}; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = {get r() { throw new Error("boom") }}; return c + " " + c.valid })
+=> string:THROW Error: boom
+w(function(){ c = "red"; var o = Object.create({r: 0, g: 0, b: 1, a: 1}); c = o; return c + " " + c.valid })
+=> string:#0000ff true
+w(function(){ c = "red"; c = JSON.parse(JSON.stringify(Qt.rgba(0, 0.5, 1, 0.5))); return c + " " + c.valid })
+=> string:#800080ff true
+w(function(){ c = "red"; c = new Map(); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = new Error("blue"); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = new Boolean(true); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = new ArrayBuffer(4); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Promise.resolve(1); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt.locale("en_US"); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt.size(1, 2); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt.font({family: "blue"}); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt.matrix4x4(); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt.quaternion(1, 0, 0, 1); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt.vector2d(0, 1); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt.rect(0, 0, 1, 1); return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = 0x100000000; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = 255; return c + " " + c.valid + " " + c.a })
+=> string:#000000 false 1
+w(function(){ c = "red"; c = -0xff0100; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Infinity; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = 2.5e9; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = false; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = arguments; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Easing; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Qt; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = Math; return c + " " + c.valid })
+=> string:#000000 false
+w(function(){ c = "red"; c = class A {}; return c + " " + c.valid })
+=> string:THROW Error: Cannot assign JavaScript function to QColor
+w(function(){ c = "red"; c = () => 1; return c + " " + c.valid })
+=> string:THROW Error: Cannot assign JavaScript function to QColor

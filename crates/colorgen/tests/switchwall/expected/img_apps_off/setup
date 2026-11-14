@@ -1,0 +1,1 @@
+jq ".appearance.wallpaperTheming.enableAppsAndShell = false" $CFG > c && mv c $CFG

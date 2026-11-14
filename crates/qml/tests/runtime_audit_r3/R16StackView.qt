@@ -1,0 +1,46 @@
+empty 0 true    
+depth 3
+push-many THROW Cannot read property 'visible' of null
+depth 5
+push-args e __c_e 7
+get _ e  
+find c e4c2
+find-none 
+depth 3
+pop-item e __c c
+pop-foreign null __c
+pop-top null __c
+depth 4
+push-item o __co 4 true true
+replace-top f __cf false
+depth 1
+replace-target g g
+depth 2
+replace-null i _i
+depth 1
+pop i h
+pop@1 null h
+depth 2
+pushItem j hj
+depth 3
+pushItem-item q hjq 6
+depth 5
+pushItems c hjq_c
+depth 3
+popToIndex c hjq
+popToIndex-bad null hjq
+depth 2
+popToItem q hj
+replaceCurrentItem k hk
+depth 1
+popCurrentItem k h
+depth 0
+popCurrentItem@1 h  0
+depth 1
+push-url page1 8 1
+push-none 
+depth 0
+clear 0 null true
+destroyed c
+destroyed c
+destroyed c

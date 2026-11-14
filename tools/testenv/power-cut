@@ -1,0 +1,290 @@
+#!/bin/bash
+# tools/testenv/power-cut [--fs ext4|xfs|btrfs] [--script FILE] [--keep]
+#
+# What a power cut leaves of an install or a rollback when $PREFIX and the rusty-impulse config are on
+# two file systems. tools/install.sh says it leaves a shell that starts; a file system's own
+# journal keeps the order of the steps made on it, and nothing keeps the order between two.
+#
+# Each case puts $PREFIX and $XDG_CONFIG_HOME on two file systems on loop devices behind
+# dm-flakey, installs release A (for a rollback: A, then B) and has all of it written. Then
+# the script installs B (or rolls back), and the power cut is modelled like this:
+#   - one file system, X, stops writing to its disk right after its K-th `sync -f` from the
+#     script (K = 0: from the start). That is what its disk holds if it has flushed nothing
+#     on its own since: the least it can hold.
+#   - the other one keeps every change: the most it can hold.
+#   - the script is killed at a step T of the switch, or runs to its end. A case ends before
+#     that if the script syncs X once more: from there on X's disk holds more.
+# Both are then unmounted (what X did not write is dropped), mounted again (the journal is
+# replayed), and `$PREFIX/bin/rusty-impulse -c rusty-impulse --check-tree` must succeed: the shell starts. After
+# that the next `tools/install.sh` must install B and leave nothing of the cut run beside the
+# config, and the shell must start again.
+#
+#   --fs      the file system of both (default ext4)
+#   --script  the install.sh to try (default: this checkout's)
+#   --keep    leave the work directory of a broken case mounted, and stop
+# It prints a line per case and exits with status 1 if a case left no shell that starts.
+# Needs root, losetup, dmsetup with the flakey target (`modprobe dm-flakey`) and mkfs for the
+# file system. It is not a gate step: the ri-testenv container has no rights to make devices.
+set -euo pipefail
+here=$(cd "$(dirname "$0")" && pwd)
+script=$here/../install.sh
+fs=ext4
+keep=
+while [ $# -gt 0 ]; do
+    case $1 in
+    --fs) fs=$2 && shift ;;
+    --script) script=$(realpath "$2") && shift ;;
+    --keep) keep=1 ;;
+    *) echo "power-cut: unknown argument '$1'" >&2 && exit 2 ;;
+    esac
+    shift
+done
+[ "$(id -u)" = 0 ] || { echo "power-cut: run it as root (it makes loop and dm devices)" >&2 && exit 2; }
+for tool in losetup dmsetup "mkfs.$fs" findmnt flock; do
+    command -v "$tool" >/dev/null || { echo "power-cut: $tool is needed" >&2 && exit 2; }
+done
+dmsetup targets | grep -q '^flakey' || modprobe dm-flakey ||
+    { echo "power-cut: no dm-flakey target" >&2 && exit 2; }
+# The script refuses to run through sudo: here root is the user whose shell it is.
+unset SUDO_USER NOBUILD XDG_CONFIG_DIRS
+
+W=$(mktemp -d /tmp/ri-power-cut.XXXXXX)
+real_path=$PATH
+sides=(prefix config)
+declare -A loop sectors
+dm() { echo "ri-power-cut-$$-$1"; }
+mounted() { findmnt -n "$W/$1" >/dev/null; }
+cleanup() {
+    local s
+    for s in "${sides[@]}"; do
+        ! mounted "$s" || umount "$W/$s" || true
+        dmsetup remove "$(dm "$s")" 2>/dev/null || true
+        [ -z "${loop[$s]:-}" ] || losetup -d "${loop[$s]}" || true
+    done
+    rm -rf "$W"
+}
+trap cleanup EXIT
+# The device of side `$1` passes writes through (`allow`) or reports them written and drops
+# them (`drop`). Loaded without freezing the file system, which would flush it first.
+table() {
+    local how="0 180 0"
+    [ "$2" = allow ] || how="0 0 180 1 drop_writes"
+    dmsetup suspend --nolockfs "$(dm "$1")"
+    dmsetup load "$(dm "$1")" --table "0 ${sectors[$1]} flakey ${loop[$1]} $how"
+    dmsetup resume "$(dm "$1")"
+}
+for s in "${sides[@]}"; do
+    truncate -s 400M "$W/$s.img"
+    loop[$s]=$(losetup --find --show "$W/$s.img")
+    sectors[$s]=$(blockdev --getsz "${loop[$s]}")
+    dmsetup create "$(dm "$s")" --table "0 ${sectors[$s]} flakey ${loop[$s]} 0 180 0"
+    mkdir "$W/$s"
+done
+mkdir "$W/home" "$W/hooks" "$W/ctl"
+export PREFIX=$W/prefix/usr HOME=$W/home XDG_CONFIG_HOME=$W/config/xdg XDG_STATE_HOME=$W/home/state
+export RI_ROOT=$W/source PC_DIR=$W PC_PATH=$real_path
+lib=$PREFIX/lib/rusty-impulse
+cfg=$XDG_CONFIG_HOME/rustshell/rusty-impulse
+
+# A stand-in rusty-impulse compiled from the tree `$2`: --version, --check-tree -p DIR and
+# -c rusty-impulse --check-tree as the real one answers them.
+fake() {
+    cat >"$W/$1" <<EOS
+#!/bin/sh
+# $1
+if [ "\$1" = --version ]; then echo 'rusty-impulse $1'; echo 'JavaScript interpreter: none'; exit 0; fi
+if [ "\$1 \$2 \$3" = '-c rusty-impulse --check-tree' ]; then
+    case \${XDG_CONFIG_HOME-} in /*) base=\$XDG_CONFIG_HOME ;; *) base=\$HOME/.config ;; esac
+    if [ -f "\$base/rustshell/shell.qml" ] || [ ! -f "\$base/rustshell/rusty-impulse/shell.qml" ]; then
+        echo 'Could not find "rusty-impulse" config directory in any valid config path.' >&2
+        exit 255
+    fi
+    set -- --check-tree -p "\$(realpath "\$base/rustshell/rusty-impulse")"
+fi
+[ "\$1" = --check-tree ] && [ "\$2" = -p ] || exit 2
+if [ "\$(cat "\$3/shell.qml")" = '// tree $2' ]; then
+    echo "rusty-impulse: \$3 has the scripts this binary was compiled from"
+    exit 0
+fi
+echo "rusty-impulse: \$3 differs from the tree this binary was compiled from" >&2
+exit 1
+EOS
+    chmod 755 "$W/$1"
+}
+tree() {
+    rm -rf "$RI_ROOT"
+    mkdir -p "$RI_ROOT/modules"
+    echo "// tree $1" >"$RI_ROOT/shell.qml"
+    echo "// bar of $1" >"$RI_ROOT/modules/Bar.qml"
+}
+fake a a
+fake b b
+
+# The stand-in for ln, mv and sync on the script's PATH. ctl/kill_at: the glob of the command
+# line at which the script is killed. ctl/freeze: the side that stops writing and after which
+# of its syncs. ctl/pid: the script.
+cat >"$W/hooks/ln" <<'EOS'
+#!/bin/bash
+name=${0##*/}
+ctl=$PC_DIR/ctl
+end() {
+    echo "$1" >"$ctl/ended"
+    kill -KILL "$(cat "$ctl/pid")"
+    exit 1
+}
+if [ -e "$ctl/kill_at" ] && [ ! -e "$ctl/ended" ]; then
+    # shellcheck disable=SC2254
+    case "$name $*" in
+    $(cat "$ctl/kill_at")) end "killed at: $name $*" ;;
+    esac
+fi
+if [ "$name" = sync ] && [ -e "$ctl/freeze" ] && [ ! -e "$ctl/ended" ]; then
+    read -r side after <"$ctl/freeze"
+    mine=
+    for arg in "$@"; do
+        case $arg in
+        -*) ;;
+        "$PC_DIR/$side"/*) mine=1 ;;
+        esac
+    done
+    # A sync of every file system (the script's fallback) is one of this side too.
+    [ "$*" != "" ] || mine=1
+    if [ -n "$mine" ]; then
+        [ ! -e "$ctl/frozen" ] || end "killed at the next sync of $side"
+        PATH=$PC_PATH sync "$@" || exit 1
+        n=$(($(cat "$ctl/syncs") + 1))
+        echo "$n" >"$ctl/syncs"
+        if [ "$n" = "$after" ]; then
+            "$ctl/drop" "$side"
+            : >"$ctl/frozen"
+        fi
+        exit 0
+    fi
+fi
+PATH=$PC_PATH exec "$name" "$@"
+EOS
+chmod 755 "$W/hooks/ln"
+cp "$W/hooks/ln" "$W/hooks/mv"
+cp "$W/hooks/ln" "$W/hooks/sync"
+# ctl/drop SIDE: that side's device drops writes from now on (the stand-in sync runs it).
+cat >"$W/ctl/drop" <<EOS
+#!/bin/bash
+dmsetup suspend --nolockfs "ri-power-cut-$$-\$1"
+dmsetup load "ri-power-cut-$$-\$1" --table "\$(cat "$W/ctl/drop-table.\$1")"
+dmsetup resume "ri-power-cut-$$-\$1"
+EOS
+chmod 755 "$W/ctl/drop"
+for s in "${sides[@]}"; do
+    echo "0 ${sectors[$s]} flakey ${loop[$s]} 0 0 180 1 drop_writes" >"$W/ctl/drop-table.$s"
+done
+
+# tools/install.sh ARGS with the stand-ins, to its end or its kill: every process of it has
+# ended when this returns (they all hold the pipe). In a subshell without stderr: bash reports
+# the kill there.
+run_hooked() {
+    (
+        (
+            cd /
+            PATH=$W/hooks:$real_path exec bash -c 'echo $$ > "$PC_DIR/ctl/pid"; exec bash "$@"' bash "$script" "$@"
+        ) 2>&1 | cat >"$W/log"
+    ) 2>/dev/null || true
+}
+plain() { PATH=$real_path bash "$script" "$@" >"$W/log" 2>&1; }
+starts() {
+    env -i PATH="$real_path" HOME="$HOME" XDG_CONFIG_HOME="$XDG_CONFIG_HOME" \
+        "$PREFIX/bin/rusty-impulse" -c rusty-impulse --check-tree >"$W/starts" 2>&1
+}
+state() {
+    local cur tree
+    cur=$(readlink "$lib/current" 2>/dev/null) || cur=none
+    case $cur in releases/.switch) cur=switch ;; releases/*) cur=$(sed -n '2s/^# //p' "$lib/$cur/rusty-impulse") ;; esac
+    tree=$(sed 's,^// tree ,,' "$cfg/shell.qml" 2>/dev/null) || tree=none
+    echo "current=$cur config=$tree"
+}
+
+steps=(
+    'ln * releases/.switch */.current.new'
+    'mv -T */rustshell/rusty-impulse */.ri-restore.??????.replaced'
+    'mv -T */.ri-restore.?????? */rustshell/rusty-impulse'
+    'ln */.previous.new'
+    'ln * releases/[!.]* */.current.new'
+    end
+)
+broken=0
+cases=0
+declare -A seen
+# One case: `$1` install or rollback, `$2` the side that stops writing, `$3` after which of
+# its syncs, `$4` the step the script is killed at.
+one() {
+    local op=$1 side=$2 after=$3 step=$4 s other verdict ended
+    for s in "${sides[@]}"; do
+        ! mounted "$s" || umount "$W/$s"
+        table "$s" allow
+        case $fs in
+        ext4) mkfs.ext4 -q -F "/dev/mapper/$(dm "$s")" ;;
+        *) "mkfs.$fs" -q -f "/dev/mapper/$(dm "$s")" ;;
+        esac
+        mount "/dev/mapper/$(dm "$s")" "$W/$s"
+    done
+    rm -rf "$W/home/state" "$W/ctl/kill_at" "$W/ctl/freeze" "$W/ctl/frozen" "$W/ctl/ended"
+    tree a
+    BIN=$W/a plain || { cat "$W/log" && exit 2; }
+    tree b
+    [ "$op" = install ] || BIN=$W/b plain || { cat "$W/log" && exit 2; }
+    sync -f "$W/prefix" "$W/config"
+
+    echo 0 >"$W/ctl/syncs"
+    echo "$side $after" >"$W/ctl/freeze"
+    [ "$step" = end ] || echo "$step" >"$W/ctl/kill_at"
+    if [ "$after" = 0 ]; then
+        "$W/ctl/drop" "$side"
+        : >"$W/ctl/frozen"
+    fi
+    if [ "$op" = install ]; then BIN=$W/b run_hooked; else run_hooked --rollback; fi
+    ended=$(cat "$W/ctl/ended" 2>/dev/null) || ended="ran to its end"
+    if [ ! -e "$W/ctl/frozen" ]; then
+        # The script never made that sync: no such moment.
+        return 0
+    fi
+    # The same moment as a case before it: the script got to X's next sync before the step.
+    [ -z "${seen[$op $side $after $ended]:-}" ] || return 0
+    seen[$op $side $after $ended]=1
+    cases=$((cases + 1))
+    [ "$side" = prefix ] && other=config || other=prefix
+    sync -f "$W/$other"
+    # The power is cut.
+    for s in "${sides[@]}"; do umount "$W/$s"; done
+    table "$side" allow
+    for s in "${sides[@]}"; do mount "/dev/mapper/$(dm "$s")" "$W/$s"; done
+    verdict="starts"
+    if ! starts; then
+        verdict="DOES NOT START ($(tr '\n' ' ' <"$W/starts"))"
+        broken=$((broken + 1))
+    fi
+    printf '%-8s %-6s stops after its sync %s, %s -> %s: %s\n' \
+        "$op" "$side" "$after" "${ended//$W\//}" "$(state)" "$verdict"
+    if [ "$verdict" != starts ] && [ -n "$keep" ]; then
+        trap - EXIT
+        echo "kept: $W"
+        exit 1
+    fi
+    [ "$verdict" = starts ] || return 0
+    # The next run finishes or undoes what was cut, and installs.
+    rm -f "$W/ctl/kill_at" "$W/ctl/freeze"
+    if ! BIN=$W/b plain || ! starts || [ "$(state)" != "current=b config=b" ] ||
+        [ "$(ls -A "$(dirname "$cfg")")" != rusty-impulse ]; then
+        echo "  the next install: $(state), beside the config: $(ls -A "$(dirname "$cfg")" | tr '\n' ' '): $(tail -n 3 "$W/log" | tr '\n' ' ')"
+        broken=$((broken + 1))
+    fi
+}
+for op in install rollback; do
+    for side in "${sides[@]}"; do
+        for after in 0 1 2 3; do
+            for step in "${steps[@]}"; do
+                one "$op" "$side" "$after" "$step"
+            done
+        done
+    done
+done
+echo "$cases cases, $broken left no shell that starts or were not installed over cleanly"
+[ "$broken" = 0 ]

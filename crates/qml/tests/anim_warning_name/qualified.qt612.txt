@@ -1,0 +1,5 @@
+warning: qualified.qml:6:5: QML Idle: setPaused() cannot be used when animation isn't running.
+warning: qualified.qml:9:9: QML Idle: setRunning() cannot be used on non-root animation nodes.
+warning: qualified.qml:9:9: QML Idle: setPaused() cannot be used when animation isn't running.
+warning: qualified.qml:12:9: QML Idle: setPaused() cannot be used on non-root animation nodes.
+warning: qualified.qml:12:9: QML Idle: setRunning() cannot be used on non-root animation nodes.

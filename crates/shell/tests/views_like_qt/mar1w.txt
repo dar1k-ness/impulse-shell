@@ -1,0 +1,56 @@
+start lt -10 0 1200 true false true true 0@0,10
+start lh -5 0 1200 true true true false 0@5,0
+start le -26 -16 106 true true true true 0@0,26
+start gt -10 0 400 true false true true 0@0,10
+start fl -10 0 400 true false true true r@0,10
+margin 30 lt -10 0 1200 false false true true 0@0,10
+margin 30 lh -5 0 1200 true true false false 0@5,0
+margin 30 le -46 -16 106 true true true true 0@0,46
+margin 30 gt -10 0 400 false false true true 0@0,10
+margin 30 fl -10 0 400 false false true true r@0,10
+margin 30 later lt -10 0 1200 false false true true 0@0,10
+margin 30 later lh -5 0 1200 true true false false 0@5,0
+margin 30 later le -46 -16 106 true true true true 0@0,46
+margin 30 later gt -10 0 400 false false true true 0@0,10
+margin 30 later fl -10 0 400 false false true true r@0,10
+at 100 lt 100 0 1200 false false true true 
+at 100 lh 100 0 1200 true true false false 
+at 100 le 100 -16 106 false true true true 
+at 100 gt 100 0 400 false false true true 
+at 100 fl 100 0 400 false false true true 
+at 100 later lt 100 0 1200 false false true true 3@0,-10
+at 100 later lh 100 0 1200 true true false false 3@-10,0
+at 100 later le 100 -16 106 false true true true -
+at 100 later gt 100 0 400 false false true true 8@0,-20
+at 100 later fl 100 0 400 false false true true r@0,-100
+margin 0 lt 100 0 1200 false false true true 3@0,-10
+margin 0 lh 100 0 1200 true true false false 3@-10,0
+margin 0 le -16 -16 106 true true true true 0@0,16
+margin 0 gt 100 0 400 false false true true 8@0,-20
+margin 0 fl 100 0 400 false false true true r@0,-100
+beginning lt 0 0 1200 true false true true 0@0,0
+beginning lh 0 0 1200 true true true false 0@0,0
+beginning le -16 -16 106 true true true true 0@0,16
+beginning gt 0 0 400 true false true true 0@0,0
+beginning fl 100 0 400 false false true true r@0,-100
+margin 10 lt 0 0 1200 false false true true 0@0,0
+margin 10 lh 0 0 1200 true true false false 0@0,0
+margin 10 le -26 -16 106 true true true true 0@0,26
+margin 10 gt 0 0 400 false false true true 0@0,0
+margin 10 fl 100 0 400 false false true true r@0,-100
+beginning 10 lt 0 0 1200 false false true true 0@0,0
+beginning 10 lh 0 0 1200 true true false false 0@0,0
+beginning 10 le -26 -16 106 true true true true 0@0,26
+beginning 10 gt 0 0 400 false false true true 0@0,0
+beginning 10 fl 100 0 400 false false true true r@0,-100
+end lt 1000 0 1200 false false true true 
+end lh 1000 0 1200 true true false false 
+end le -26 -16 106 true true true true 
+end gt 300 0 400 false false true true 
+end fl 100 0 400 false false true true 
+end later lt 1000 0 1200 false false true true 33@0,-10
+end later lh 1000 0 1200 true true false false 33@-10,0
+end later le -26 -16 106 true true true true 0@0,26
+end later gt 300 0 400 false false true true 28@0,-20
+end later fl 100 0 400 false false true true r@0,-100
+done

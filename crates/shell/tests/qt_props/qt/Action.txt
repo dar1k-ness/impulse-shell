@@ -1,0 +1,21 @@
+a.icon.name [str]: "" | set "x" | reset "" | bind "x" -> "" -> "x" | reset ""
+b.icon.name [str]: "" | set "x" | reset "" | bind "x" -> "" -> "x" | reset ""
+c.icon.name: ""
+a.icon.source [url]:  | set x.png | reset  | bind x.png ->  -> x.png | reset 
+b.icon.source [url]:  | set x.png | reset  | bind x.png ->  -> x.png | reset 
+c.icon.source: 
+a.icon.width [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.icon.width [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.icon.width: 0
+a.icon.height [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.icon.height [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.icon.height: 0
+a.icon.color [color]: #00000000 | set #123456 | reset #00000000 | bind #123456 -> #00000000 -> #123456 | reset #00000000
+b.icon.color [color]: #00000000 | set #123456 | reset #00000000 | bind #123456 -> #00000000 -> #123456 | reset #00000000
+c.icon.color: #00000000
+a.icon.cache [bool]: true | set false | reset true | bind false -> true -> false | reset true
+b.icon.cache [bool]: true | set false | reset true | bind false -> true -> false | reset true
+c.icon.cache: true
+a.enabled [bool]: true | set false | reset true | bind false -> true -> false | reset true
+b.enabled [bool]: false | set true | reset true | bind false -> true -> false | reset true
+c.enabled: true

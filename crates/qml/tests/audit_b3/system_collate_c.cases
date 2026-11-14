@@ -1,0 +1,33 @@
+# Qt 6.12 under: LANG=ru_RU.UTF-8 LC_COLLATE=C
+"я".localeCompare("z")
+=> number:981
+"z".localeCompare("я")
+=> number:-981
+"a".localeCompare("b")
+=> number:-1
+"b".localeCompare("a")
+=> number:1
+"abc".localeCompare("ab")
+=> number:1
+"ab".localeCompare("abc")
+=> number:-1
+"abc".localeCompare("abc")
+=> number:0
+"".localeCompare("a")
+=> number:-1
+"a".localeCompare("")
+=> number:1
+"a".localeCompare("B")
+=> number:31
+"B".localeCompare("a")
+=> number:-31
+"\ud83d\ude00".localeCompare("\uffff")
+=> number:-10178
+"abc".localeCompare("abd")
+=> number:-1
+"a\u0000b".localeCompare("a\u0000c")
+=> number:-1
+["b", "a", "B", "я", "Z", "ё"].sort(function(x, y) { return x.localeCompare(y) }).join("")
+=> string:BZabяё
+"a".localeCompare()
+=> number:-20

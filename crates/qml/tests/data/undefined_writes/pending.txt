@@ -1,0 +1,2 @@
+root.seen	string:number number number;
+root.seenWidth	number:38

@@ -1,0 +1,16 @@
+.config/konsolerc	seed-000000-dark
+.local/share/color-schemes/MaterialYouDark.colors	seed-ffffff-dark
+.local/share/color-schemes/MaterialYouDark2.colors	seed-ffffff-dark
+.local/share/color-schemes/MaterialYouDark_darker_titlebar.colors	seed-ffffff-dark
+.local/share/color-schemes/MaterialYouDark_darker_titlebar2.colors	seed-ffffff-dark
+.local/share/color-schemes/MaterialYouLight.colors	seed-ffffff-dark
+.local/share/color-schemes/MaterialYouLight2.colors	seed-ffffff-dark
+.local/share/color-schemes/MaterialYouLight_darker_titlebar.colors	seed-ffffff-dark
+.local/share/color-schemes/MaterialYouLight_darker_titlebar2.colors	seed-ffffff-dark
+.local/share/konsole/Profile 1.profile	seed-000000-dark
+.local/share/konsole/TempMyou.profile	seed-000000-dark
+.local/share/org.kde.syntax-highlighting/themes/material-you-dark.theme	seed-ffffff-dark
+.local/share/org.kde.syntax-highlighting/themes/material-you-light.theme	seed-ffffff-dark
+dbus.log	seed-000000-dark
+export.json	seed-ffffff-dark
+outcome.txt	seed-000000-dark

@@ -1,0 +1,5 @@
+qml: quit
+qml: child destroyed
+qml: root destroyed
+qml: loaded obj destroyed
+status 0

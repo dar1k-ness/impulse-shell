@@ -1,0 +1,4 @@
+gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark
+notify-send Upscale? Image resolution (100x60) is lower than screen resolution (1920x1080) -A open_upscayl=Open Upscayl -a Wallpaper switcher
+pkill -9 -x mpvpaper; pidwait -x mpvpaper

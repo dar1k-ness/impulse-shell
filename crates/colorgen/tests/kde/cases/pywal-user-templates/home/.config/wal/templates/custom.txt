@@ -1,0 +1,5 @@
+{{literal}} {wallpaper} {alpha}
+{background} {backgroundIntense} {backgroundFaint} {foreground} {foregroundIntense} {foregroundFaint} {cursor}
+{color0} {color8} {color15} {color16} {color23}
+{color1.rgb} {color2.xrgba} {color3.rgba} {color4.alpha} {color5.octal} {color6.octal_strip} {color7.strip}
+{background.hex_color} {background.alpha_num}

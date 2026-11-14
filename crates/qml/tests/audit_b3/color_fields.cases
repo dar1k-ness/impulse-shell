@@ -1,0 +1,81 @@
+@property color c
+@property color c2: "blue"
+@property var vc: Qt.rgba(1, 0, 0, 1)
+@property int nc: 0
+@onCChanged: nc += 1
+@Rectangle { id: rect; color: "red" }
+# B3-32 color field writes
+w(function(){ c = "red"; c.r = 0.5; return c })
+=> object:#800000
+w(function(){ c = "red"; c.a = 0.5; return c })
+=> object:#80ff0000
+w(function(){ c = "red"; c.hsvHue = 0.5; return c })
+=> object:#00ffff
+w(function(){ c = "red"; c.hslLightness = 0.25; return c })
+=> object:#800000
+w(function(){ c = "red"; c.g = 1; return c })
+=> object:#ffff00
+w(function(){ c = "red"; c.b = 0.2; return c })
+=> object:#ff0033
+w(function(){ c = "red"; c.hsvSaturation = 0.5; return c })
+=> object:#ff7f7f
+w(function(){ c = "red"; c.hsvValue = 0.5; return c })
+=> object:#800000
+w(function(){ c = "red"; c.hslHue = 0.25; return c })
+=> object:#80ff00
+w(function(){ c = "red"; c.hslSaturation = 0.5; return c })
+=> object:#bf4040
+w(function(){ c = "red"; c.r = 2; return c })
+=> object:#ff0000
+w(function(){ c = "red"; c.r = -1; return c })
+=> object:#000000
+w(function(){ c = "red"; c.r = "0.5"; return c })
+=> object:#800000
+w(function(){ c = "red"; c.r = null; return c })
+=> object:#000000
+w(function(){ c = "red"; c.r = undefined; return c })
+=> object:#000000
+w(function(){ c = "red"; c.r = NaN; return c })
+=> object:#000000
+w(function(){ c = "red"; c.r = true; return c })
+=> object:#ff0000
+w(function(){ c = "red"; c.r = {}; return c })
+=> object:#000000
+w(function(){ c = "red"; c.nosuch = 1; return c + " " + c.nosuch })
+=> string:#ff0000 undefined
+w(function(){ c = "red"; c.valid = false; return c + " " + c.valid })
+=> string:THROW Error: Cannot assign bool to bool
+w(function(){ c = "red"; c.r += 0; c.g += 0.5; return c })
+=> object:#ff8000
+w(function(){ c = "red"; c.b++; return c })
+=> object:#ff00ff
+w(function(){ c = "red"; var a = nc; c.r = 0.5; return a + ">" + nc })
+=> string:39>40
+w(function(){ c = "red"; var a = nc; c.r = 1; return a + ">" + nc })
+=> string:41>41
+w(function(){ c = "red"; root.c.r = 0.5; return c })
+=> object:#800000
+w(function(){ c = "red"; root["c"].r = 0.5; return c })
+=> object:#800000
+w(function(){ c = "red"; root.c["r"] = 0.5; return c })
+=> object:#800000
+w(function(){ var x = Qt.rgba(1, 0, 0, 1); x.r = 0.5; return x })
+=> object:#800000
+w(function(){ var o = {k: Qt.rgba(1, 0, 0, 1)}; o.k.r = 0.5; return o.k })
+=> object:#800000
+w(function(){ var a = [Qt.rgba(1, 0, 0, 1)]; a[0].r = 0.5; return a[0] })
+=> object:#800000
+w(function(){ vc.r = 0.5; return vc })
+=> object:#800000
+w(function(){ c2.a = 0.5; return c2 })
+=> object:#800000ff
+w(function(){ Qt.rgba(1, 0, 0, 1).r = 0.5; return "ok" })
+=> string:ok
+w(function(){ c = "red"; return c.r + " " + c.g + " " + c.hsvHue + " " + c.hslLightness + " " + c.a + " " + c.valid })
+=> string:1 0 0 0.5000076293945312 1 true
+w(function(){ c = "transparent"; c.a = 1; return c })
+=> object:#000000
+w(function(){ c = "#80102030"; c.hsvHue = 0.5; return c })
+=> object:#80103030
+w(function(){ c = "#80102030"; c.hslSaturation = 1; return c })
+=> object:#80002040

@@ -1,0 +1,34 @@
+import QtQuick.tooling 1.2
+
+// Impulse/FileMimeType: a Process that prints the MIME type of the file `path`
+// (crates/qml/src/jobs_lists.rs `file_mime_type`). Exits 1 when the file cannot be read.
+// A symbolic link is read as the file it points to; with `followSymlinks: false` it is
+// `inode/symlink`.
+Module {
+    Component {
+        file: "jobs_lists.rs"
+        name: "ImpulseFileMimeType"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/FileMimeType 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "path"
+            type: "QString"
+            read: "path"
+            write: "setPath"
+            notify: "pathChanged"
+            index: 0
+        }
+        Signal { name: "pathChanged" }
+        Property {
+            name: "followSymlinks"
+            type: "bool"
+            read: "followSymlinks"
+            write: "setFollowSymlinks"
+            notify: "followSymlinksChanged"
+            index: 1
+        }
+        Signal { name: "followSymlinksChanged" }
+    }
+}

@@ -1,0 +1,42 @@
+import QtQuick.tooling 1.2
+
+// Impulse/ImageDownload: a Process that fetches the image at `url` into the file `path`
+// unless an image is already there, and prints `path: W x H, <description>`
+// (crates/qml/src/jobs.rs `image_download`).
+Module {
+    Component {
+        file: "jobs.rs"
+        name: "ImpulseImageDownload"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/ImageDownload 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "url"
+            type: "QString"
+            read: "url"
+            write: "setUrl"
+            notify: "urlChanged"
+            index: 0
+        }
+        Property {
+            name: "path"
+            type: "QString"
+            read: "path"
+            write: "setPath"
+            notify: "pathChanged"
+            index: 1
+        }
+        Property {
+            name: "userAgent"
+            type: "QString"
+            read: "userAgent"
+            write: "setUserAgent"
+            notify: "userAgentChanged"
+            index: 2
+        }
+        Signal { name: "urlChanged" }
+        Signal { name: "pathChanged" }
+        Signal { name: "userAgentChanged" }
+    }
+}

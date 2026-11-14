@@ -1,0 +1,171 @@
+fresh absolute link
+link /usr/share/zoneinfo/Europe/Moscow
+show
+fresh relative link
+link ../usr/share/zoneinfo/Asia/Tokyo
+show
+fresh dot-dot after zoneinfo
+link /usr/share/zoneinfo/../zoneinfo/Europe/Paris
+show
+fresh dot-dot before zoneinfo
+link /usr/share/../share/zoneinfo/Europe/Paris
+show
+fresh dot
+link /usr/share/zoneinfo/./Asia/Kolkata
+show
+fresh double slashes
+link /usr/share//zoneinfo//America/New_York
+show
+fresh slash at the end
+link /usr/share/zoneinfo/Asia/Tokyo/
+show
+fresh chain of two links
+link2 /usr/share/zoneinfo/Asia/Tokyo
+show
+fresh chain through a relative link
+link2rel ../usr/share/zoneinfo/Asia/Tokyo
+show
+fresh names of one file
+link /usr/share/zoneinfo/Europe/Oslo
+show Oslo
+link /usr/share/zoneinfo/Europe/Berlin
+show Berlin
+link /usr/share/zoneinfo/Arctic/Longyearbyen
+show Longyearbyen
+link /usr/share/zoneinfo/Europe/Moscow
+show Moscow
+link /usr/share/zoneinfo/Europe/Berlin
+show Berlin again
+fresh alias with another long name
+link /usr/share/zoneinfo/Asia/Calcutta
+show Calcutta
+link /usr/share/zoneinfo/Asia/Kolkata
+show Kolkata
+fresh TZ values
+link /usr/share/zoneinfo/Europe/Moscow
+tz :Asia/Tokyo
+show :Asia/Tokyo
+tz :/etc/localtime
+show :/etc/localtime
+tz Europe/Paris
+show Europe/Paris
+tz No/Such
+show No/Such
+tz EST5EDT
+show EST5EDT
+untz
+show unset
+fresh TZ offsets from UTC
+link /usr/share/zoneinfo/Europe/Moscow
+tz UTC
+show UTC
+tz UTC+3
+show UTC+3
+tz UTC+03:00
+show UTC+03:00
+tz UTC-05:00
+show UTC-05:00
+tz UTC+03:00:30
+show UTC+03:00:30
+tz Etc/GMT+5
+show Etc/GMT+5
+fresh TZ empty
+link /usr/share/zoneinfo/Europe/Moscow
+tz 
+show
+fresh link into a copy, no TZDIR
+link /etc/tzcopy/Asia/Tokyo
+show
+fresh link into TZDIR
+tzdir /etc/tzcopy
+link /etc/tzcopy/Asia/Tokyo
+show
+fresh TZDIR with a slash at the end
+tzdir /etc/tzcopy/
+link /etc/tzcopy/Asia/Tokyo
+show
+fresh TZDIR set, link under /usr/share/zoneinfo
+tzdir /etc/tzcopy
+link /usr/share/zoneinfo/Asia/Tokyo
+show
+fresh regular file
+copy /usr/share/zoneinfo/Asia/Tokyo
+show
+fresh regular file and /etc/timezone of the same zone
+copy /usr/share/zoneinfo/Asia/Tokyo
+timezone Asia/Tokyo
+show
+fresh regular file and /etc/TZ of the same zone
+copy /usr/share/zoneinfo/Asia/Tokyo
+etctz Asia/Tokyo
+show
+fresh regular file and /etc/timezone of another zone
+copy /usr/share/zoneinfo/Asia/Tokyo
+timezone Asia/Kolkata
+show
+fresh only /etc/timezone
+timezone Asia/Kolkata
+show
+fresh /etc/TZ before /etc/timezone
+copy /usr/share/zoneinfo/Asia/Tokyo
+etctz Asia/Tokyo
+timezone Asia/Kolkata
+show
+fresh /etc/timezone rewritten in place, then replaced
+copy /usr/share/zoneinfo/Asia/Tokyo
+timezone Asia/Tokyo
+show Tokyo
+timezone Asia/Kolkata
+show Kolkata, written in place
+retimezone Europe/Paris
+show Paris, a new file
+fresh /etc/timezone, then a link
+copy /usr/share/zoneinfo/Asia/Tokyo
+timezone Asia/Tokyo
+show file
+link /usr/share/zoneinfo/Europe/Paris
+show link to Paris
+fresh link, then a regular file
+link /usr/share/zoneinfo/Europe/Paris
+show link
+copy /usr/share/zoneinfo/Asia/Tokyo
+show file
+fresh nothing
+show
+fresh chain of 8 links
+chain 8 /usr/share/zoneinfo/Asia/Tokyo
+show
+fresh chain of 9 links
+chain 9 /usr/share/zoneinfo/Asia/Tokyo
+show
+fresh chain of 20 links
+chain 20 /usr/share/zoneinfo/Asia/Tokyo
+show
+fresh chain of 21 links
+chain 21 /usr/share/zoneinfo/Asia/Tokyo
+show
+fresh chain of 40 links
+chain 40 /usr/share/zoneinfo/Asia/Tokyo
+show
+fresh chain of 41 links
+chain 41 /usr/share/zoneinfo/Asia/Tokyo
+show
+fresh regular file and /etc/timezone naming no zone
+copy /usr/share/zoneinfo/Asia/Tokyo
+timezone No/Such
+show
+fresh link to a zone of TZDIR that CLDR does not know
+tzdir /etc/tzcopy
+link /etc/tzcopy/Test/Zone
+show
+fresh link to posix/ under zoneinfo
+link /usr/share/zoneinfo/posix/Asia/Tokyo
+show
+fresh link under two zoneinfo directories
+link /etc/zoneinfo/usr/share/zoneinfo/Asia/Tokyo
+show
+fresh empty /etc/TZ before /etc/timezone
+copy /usr/share/zoneinfo/Asia/Tokyo
+etctz 
+timezone Asia/Tokyo
+show

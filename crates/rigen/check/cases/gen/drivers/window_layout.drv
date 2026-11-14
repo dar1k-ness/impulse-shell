@@ -1,0 +1,7 @@
+// @js modules/waffle/taskView/window-layout.js
+// v4: [[["0x0","0x1","0x2","0x3"],["0x4","0x5","0x6"]],100,300,[],7]
+var W = M_modules_waffle_taskView_window_layout;
+var clients = [[1920, 1080], [800, 600], [300, 900], [1280, 720], [2560, 1440], [640, 480], [1000, 1000]].map((s, i) => ({ address: "0x" + i, size: s }));
+var rows = W.arrangedClients(clients, 1600, 500, 300);
+var sz = W.scaleWindow(clients[2], 500, 300);
+var result = JSON.stringify([rows.map(r => r.map(c => c.address)), sz.width, sz.height, W.arrangedClients([], 10, 1, 1), W.arrangedClients(clients, 0, 100, 100).length]);

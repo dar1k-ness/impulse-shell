@@ -1,0 +1,661 @@
+[package]
+name = "shell"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "rusty-impulse"
+path = "src/main.rs"
+
+# Developer tools (offscreen bar render, headless flood benchmark): each is another full
+# thin-LTO link of the compiled tree, so the shipped build skips them.
+[[bin]]
+name = "barshot"
+required-features = ["tools"]
+
+[[bin]]
+name = "sceneflood"
+required-features = ["tools"]
+
+# Headless EGL renders of the original windows compared across GL drivers (tools/reference/kaggle-gpu).
+[[bin]]
+name = "gpushot"
+required-features = ["tools"]
+
+
+# Integration tests that drive QML through the interpreter: without `interp` cargo skips them
+# (and says so) instead of building an empty test binary that passes with 0 tests.
+[[test]]
+name = "qt_props"
+required-features = ["interp"]
+
+[[test]]
+name = "anchor_animation"
+required-features = ["interp"]
+
+[[test]]
+name = "anchors_baseline"
+required-features = ["interp"]
+
+[[test]]
+name = "anchors_chain"
+required-features = ["interp"]
+
+[[test]]
+name = "animated_image_memory"
+required-features = ["interp"]
+
+[[test]]
+name = "assistant_agent_name"
+required-features = ["interp"]
+
+[[test]]
+name = "assistant_ending_line"
+required-features = ["interp"]
+
+[[test]]
+name = "assistant_status_icon"
+required-features = ["interp"]
+
+[[test]]
+name = "bar_panel_content"
+required-features = ["interp"]
+
+[[test]]
+name = "bar_toggle_shortcut"
+required-features = ["interp"]
+
+[[test]]
+name = "behavior_first_layout"
+required-features = ["interp"]
+
+[[test]]
+name = "blend_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "button_space"
+required-features = ["interp"]
+
+[[test]]
+name = "canvas2d_qt_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "child_guard"
+required-features = ["interp"]
+
+[[test]]
+name = "column_late_visible"
+required-features = ["interp"]
+
+[[test]]
+name = "delegator_scans"
+required-features = ["interp"]
+
+[[test]]
+name = "desktop_layout_content"
+required-features = ["interp"]
+
+[[test]]
+name = "effects_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "flow_valid_size"
+required-features = ["interp"]
+
+[[test]]
+name = "drop_shadow_colour_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "turned_rect_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "effect_colour_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "effects_dpr_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "progress_bar_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "font_inherit"
+required-features = ["interp"]
+
+[[test]]
+name = "rect_dpr_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "text_dpr_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "quarter_turn_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "rect_antialiasing_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "plain_layer_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "styled_text_dpr_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "effects_like_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "font_weight_face_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "grid_columns_binding"
+required-features = ["interp"]
+
+[[test]]
+name = "positioner_arrangement"
+required-features = ["interp"]
+
+[[test]]
+name = "group_button_fill"
+required-features = ["interp"]
+
+[[test]]
+name = "fluent_text_field"
+required-features = ["interp"]
+
+[[test]]
+name = "focus_chain"
+required-features = ["interp"]
+
+[[test]]
+name = "focus_grab_bar"
+required-features = ["interp"]
+
+[[test]]
+name = "frame_callback_wait"
+required-features = ["interp"]
+
+[[test]]
+name = "icon_theme_dirs"
+required-features = ["interp"]
+
+[[test]]
+name = "idle_wakeups"
+required-features = ["interp"]
+
+[[test]]
+name = "input_audit"
+required-features = ["interp"]
+
+[[test]]
+name = "key_before_activation_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "keyboard_enter_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "item_transform"
+required-features = ["interp"]
+
+[[test]]
+name = "transform_live"
+required-features = ["interp"]
+
+[[test]]
+name = "keys_attached"
+required-features = ["interp"]
+
+[[test]]
+name = "keyboard_focus"
+required-features = ["interp"]
+
+[[test]]
+name = "kde_settings_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "kirigami_icon_size"
+required-features = ["interp"]
+
+[[test]]
+name = "icon_request_scale_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "notification_clear_all_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "list_view_highlight_range"
+required-features = ["interp"]
+
+[[test]]
+name = "views_like_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "list_view_position"
+required-features = ["interp"]
+
+[[test]]
+name = "list_view_position_at_end"
+required-features = ["interp"]
+
+[[test]]
+name = "list_view_sections"
+required-features = ["interp"]
+
+[[test]]
+name = "list_view_snap"
+required-features = ["interp"]
+
+[[test]]
+name = "mouse_primary"
+required-features = ["interp"]
+
+[[test]]
+name = "page_placeholder_wrap"
+required-features = ["interp"]
+
+[[test]]
+name = "panel_zone"
+required-features = ["interp"]
+
+[[test]]
+name = "preedit_caret"
+required-features = ["interp"]
+
+[[test]]
+name = "primary_device"
+required-features = ["interp"]
+
+[[test]]
+name = "kirigami_icon_fade_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "kirigami_icon_repaint_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "qt_items"
+required-features = ["interp"]
+
+[[test]]
+name = "qt_view_content"
+required-features = ["interp"]
+
+[[test]]
+name = "render_limits"
+required-features = ["interp"]
+
+[[test]]
+name = "shape_curve_fill_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "remote_image_hidden"
+required-features = ["interp"]
+
+[[test]]
+name = "remote_image_limits"
+required-features = ["interp"]
+
+[[test]]
+name = "remote_image_retry"
+required-features = ["interp"]
+
+[[test]]
+name = "remote_image_ua"
+required-features = ["interp"]
+
+[[test]]
+name = "reload_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "reload_flush"
+required-features = ["interp"]
+
+[[test]]
+name = "wayland_lost_flush"
+required-features = ["interp"]
+
+[[test]]
+name = "scroll_view_pixels_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "segmented_width"
+required-features = ["interp"]
+
+[[test]]
+name = "text_area_caret_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "session_lock_finished"
+required-features = ["interp"]
+
+[[test]]
+name = "session_lock_reload"
+required-features = ["interp"]
+
+[[test]]
+name = "shell_scenes_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "shutdown_signal"
+required-features = ["interp"]
+
+[[test]]
+name = "sidebar_layout_content"
+required-features = ["interp"]
+
+[[test]]
+name = "sidebar_right_reset"
+required-features = ["interp"]
+
+[[test]]
+name = "sidebar_toggle_dialog"
+required-features = ["interp"]
+
+[[test]]
+name = "sidebar_volume_writes"
+required-features = ["interp"]
+
+[[test]]
+name = "settings_pages"
+required-features = ["interp"]
+
+[[test]]
+name = "log_lines"
+required-features = ["interp"]
+
+[[test]]
+name = "settings_window_state"
+required-features = ["interp"]
+
+[[test]]
+name = "stretched_textures_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "sync_passes"
+required-features = ["interp"]
+
+[[test]]
+name = "tabbar_keys"
+required-features = ["interp"]
+
+[[test]]
+name = "style_palette_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "text_field_return"
+required-features = ["interp"]
+
+[[test]]
+name = "text_wrap_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "line_break_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "edit_bidi_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "text_line_order_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "editor_selection_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "text_input_scroll_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "text_edit_content_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "masked_canvas_wave"
+required-features = ["interp"]
+
+[[test]]
+name = "missing_family_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "notes_wrap_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "text_methods_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "text_qt_parity"
+required-features = ["interp"]
+
+[[test]]
+name = "text_qt_rendering"
+required-features = ["interp"]
+
+[[test]]
+name = "text_qt_view"
+required-features = ["interp"]
+
+[[test]]
+name = "text_native_colour_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "text_align_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "font_metrics_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "text_press"
+required-features = ["interp"]
+
+[[test]]
+name = "text_native_large_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "textarea_focus"
+required-features = ["interp"]
+
+[[test]]
+name = "textarea_insert_grow"
+required-features = ["interp"]
+
+[[test]]
+name = "thumbnail_cached_restart"
+required-features = ["interp"]
+
+[[test]]
+name = "thumbnail_cyrillic_dir"
+required-features = ["interp"]
+
+[[test]]
+name = "toolbar_single_tab"
+required-features = ["interp"]
+
+[[test]]
+name = "tray_menu_esc"
+required-features = ["interp"]
+
+[[test]]
+name = "tray_pixels_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "view_current_row"
+required-features = ["interp"]
+
+[[test]]
+name = "view_displaced_layout"
+required-features = ["interp"]
+
+[[test]]
+name = "view_remove_layout"
+required-features = ["interp"]
+
+[[test]]
+name = "view_scroll_cost"
+required-features = ["interp"]
+
+[[test]]
+name = "volume_mixer_placeholder"
+required-features = ["interp"]
+
+[[test]]
+name = "wayland_input"
+required-features = ["interp"]
+
+[[test]]
+name = "wallpaper_scale_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "pointer_focus"
+required-features = ["interp"]
+
+[[test]]
+name = "anim_first_step"
+required-features = ["interp"]
+
+[[test]]
+name = "cursor_without_shape_protocol"
+required-features = ["interp"]
+
+[[test]]
+name = "curve_fill_dpr_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "window_units_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "unset_window"
+required-features = ["interp"]
+
+[[test]]
+name = "notes_filled_before_layout_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "visualizer_off_screen"
+required-features = ["interp"]
+
+[[test]]
+name = "windows_outputs"
+required-features = ["interp"]
+
+[dependencies]
+bits = { path = "../bits" }
+elog = { path = "../elog" }
+mul255 = { path = "../mul255" }
+tracing.workspace = true
+rustc-hash.workspace = true
+lru.workspace = true
+libc.workspace = true
+inotify.workspace = true
+tikv-jemallocator = { version = "0.6.1", features = ["unprefixed_malloc_on_supported_platforms"] }
+tikv-jemalloc-ctl = { version = "0.6.1", features = ["stats"] }
+serde.workspace = true
+serde_json.workspace = true
+qml = { path = "../qml", default-features = false, features = ["pipewire"] }
+qsg = { path = "../qsg" }
+icu_segmenter = { version = "~2.3", default-features = false, features = ["compiled_data"] }
+# line_break: libthai, opened when a text has Thai in it, as Qt does.
+libloading.workspace = true
+image = { workspace = true, features = ["gif", "webp"] }
+# The readers `image` decodes GIF and WebP with: movie.rs reads an animation's frames one at
+# a time with them.
+gif = "0.14"
+image-webp = "0.2"
+workpool = { path = "../workpool" }
+ricompiled = { path = "../ricompiled", default-features = false }
+smithay-client-toolkit = { version = "0.21", default-features = false, features = ["calloop"] }
+xkbcommon = { workspace = true, features = ["wayland"] }
+wayland-client.workspace = true
+wayland-protocols = { workspace = true, features = ["staging", "unstable"] }
+wayland-protocols-hyprland = { version = "1.2", features = ["client"] }
+wayland-protocols-wlr.workspace = true
+calloop = "0.14"
+glow = "0.18"
+gbm = { version = "0.18", default-features = false }
+wayland-egl = "0.32"
+khronos-egl = { version = "6", features = ["dynamic"] }
+wayland-backend = { version = "0.3", features = ["client_system"] }
+
+[[test]]
+name = "assistant_session"
+# The test binary is also the fake ACP agent it runs (see the file).
+harness = false
+
+[[test]]
+name = "panic_ends"
+# The test binary is also the process that panics in its main thread (see the file).
+harness = false
+
+[features]
+# No JavaScript interpreter in the shipped shell (`cargo build --release -p shell`,
+# tools/install.sh): it runs the code compiled from the QML tree at RI_ROOT and refuses to
+# start on a tree that differs from it. `interp` is for tests and parity tooling only
+# (with RI_INTERP=1 it interprets every script).
+default = []
+interp = ["qml/interp"]
+tools = []
+
+[dev-dependencies]
+flate2 = "1"
+testenv = { path = "../testenv" }
+# The scenes of tests/scenes, compiled: they run without the interpreter too.
+testscenes = { path = "../testscenes" }
+# qml/tests/support/route_device.rs, the Route-backed sink of sidebar_volume_writes.
+pipewire = "0.10.1"
+turbojpeg.workspace = true
+imgtools = { path = "../imgtools" }
+tempfile.workspace = true
+# The tray items and the notification tray_pixels_qt serves to Quickshell and to us, and
+# icon_request_scale_equiv's StatusNotifierItems, and notification_clear_all_equiv's sender.
+zbus.workspace = true
+wayland-protocols-misc.workspace = true
+# The harness of assistant_session and panic_ends: libtest's command line and output.
+libtest-mimic = "0.8"
+
+[lints]
+workspace = true

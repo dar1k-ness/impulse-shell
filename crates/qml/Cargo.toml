@@ -1,0 +1,237 @@
+[package]
+name = "qml"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+bits = { path = "../bits" }
+elog = { path = "../elog" }
+mul255 = { path = "../mul255" }
+imgtools = { path = "../imgtools" }
+heif = { path = "../heif" }
+rustc-hash.workspace = true
+libc.workspace = true
+stacker = "0.1.21"
+workpool = { path = "../workpool" }
+oxc_allocator = { version = "0.157", optional = true }
+oxc_ast = { version = "0.157", optional = true }
+fancy-regex = "0.16"
+regress = { version = "0.12", default-features = false, features = ["std", "utf16"] }
+
+regex = "1"
+regex-automata = "0.4"
+url = "2.5"
+tempfile.workspace = true
+unicode-id-start = "1.5"
+icu_casemap = "~2.3"
+icu_collator = "~2.3"
+icu_locale_core = "~2.3"
+icu_normalizer = "~2.3"
+icu_properties = "~2.3"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+oxc_parser = { version = "0.157", optional = true }
+oxc_span = { version = "0.157", optional = true }
+pipewire = { version = "0.10.1", optional = true }
+async-channel = "2"
+imagesize = "0.15"
+gif = "0.14"
+libwebp-sys = "0.14"
+tiff = "0.11"
+ico = "0.6"
+roxmltree.workspace = true
+svgtypes.workspace = true
+usvg = { version = "0.49", default-features = false }
+tracing.workspace = true
+tracing-subscriber = { version = "0.3", default-features = false, features = ["std", "fmt", "env-filter"] }
+rust-ini = { version = "0.21", features = ["brackets-in-section-names"] }
+async-io.workspace = true
+futures-lite.workspace = true
+inotify.workspace = true
+realfft = "3.4"
+zbus.workspace = true
+notify = { version = "8.2.1", default-features = false }
+wayland-client.workspace = true
+wayland-protocols = { workspace = true, features = ["staging"] }
+wayland-protocols-wlr.workspace = true
+wayland-protocols-misc.workspace = true
+tree_magic_mini = "3.2"
+rustix = { version = "1", features = ["event", "fs", "pipe"] }
+xkbcommon.workspace = true
+ureq = { version = "3", features = ["json", "socks-proxy"] }
+# XMLHttpRequest as Qt: the charsets and content encodings QNetworkAccessManager decodes.
+encoding_rs = "0.8"
+flate2 = "1"
+brotli-decompressor = "5"
+zstd = { version = "0.13", default-features = false, features = ["legacy"] }
+magic = "0.16"
+# RS256 for service-account assertions: the ring rustls (ureq) already links, so one crypto backend.
+ring = "0.17"
+rustls-pki-types = { version = "1", features = ["std"] }
+base64 = "0.22"
+yeslogic-fontconfig-sys = "6.0.1"
+# Secret Service `dh-ietf1024-sha256-aes128-cbc-pkcs7` sessions.
+num-bigint = "0.4"
+aes = "0.9"
+cbc = { version = "0.2", features = ["alloc"] }
+hkdf = "0.13"
+sha2 = "0.11"
+getrandom = "0.4"
+image = { workspace = true, features = ["jpeg", "png", "webp", "gif", "bmp", "tiff", "pnm"] }
+ddc-i2c = { version = "0.2.2", features = ["with-linux"] }
+ddc = "0.2.2"
+udev = "0.2.0"
+colorgen = { path = "../colorgen" }
+bus = { path = "../bus" }
+hypripc = { path = "../hypripc" }
+md-5.workspace = true
+# NTLM hashes the password with MD4 (QAuthenticator, qCreatev2Hash).
+md4 = "0.10"
+percent-encoding = "2"
+strsim = "0.11"
+# CommonMark + GFM parser for TextEdit's Markdown -> plain conversion (markdown.rs).
+pulldown-cmark = { version = "0.13", default-features = false }
+serde = { workspace = true, features = ["derive"] }
+toml.workspace = true
+ryu-js = "1"
+serde_json = { workspace = true, features = ["preserve_order", "arbitrary_precision", "unbounded_depth", "raw_value"] }
+lru.workspace = true
+
+[features]
+default = ["interp"]
+pipewire = ["dep:pipewire"]
+# Tree-walking JS interpreter and the oxc-based JS IR (also used by crates/aotcheck). Off in
+# the release shell (everything runs as AOT-compiled Rust); on for tests, aotcheck, rigen.
+interp = ["dep:oxc_allocator", "dep:oxc_ast", "dep:oxc_parser", "dep:oxc_span"]
+# Live measurements and checks against the host (original vs native timings, the real
+# NetworkManager, PySide6 QJSEngine, ...), off in the gate: docs/benchmarks.md.
+live = []
+
+
+[[bin]]
+name = "datecheck"
+required-features = ["interp"]
+
+[[bin]]
+name = "qmlcheck"
+required-features = ["interp"]
+
+[[test]]
+name = "impulse_libs"
+required-features = ["interp"]
+
+[[test]]
+name = "notifications"
+required-features = ["interp"]
+
+[[test]]
+name = "notifications_lifetime"
+required-features = ["interp"]
+
+[[test]]
+name = "notifications_reconnect"
+required-features = ["interp"]
+
+[[test]]
+name = "mpris_reconnect"
+required-features = ["interp"]
+
+[[test]]
+name = "services_lifetime"
+required-features = ["interp"]
+
+[[test]]
+name = "bus_events"
+required-features = ["interp"]
+
+[[test]]
+name = "fswatch"
+required-features = ["interp"]
+
+[[test]]
+name = "desktopwatch"
+required-features = ["interp"]
+
+[[test]]
+name = "fprint"
+required-features = ["interp"]
+
+[[test]]
+name = "keyring"
+required-features = ["interp"]
+
+[[test]]
+name = "lockctx"
+required-features = ["interp"]
+
+[[test]]
+name = "hyprland_qml"
+required-features = ["interp"]
+
+[[test]]
+name = "osd_gamma"
+required-features = ["interp"]
+
+[[test]]
+name = "attached_cliphist_translation_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "brightness_ddc"
+required-features = ["interp"]
+
+[[test]]
+name = "download_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "ee_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "files_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "gcloud_multiturn_ab"
+required-features = ["interp"]
+
+[[test]]
+name = "imgjobs_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "sound_qalc_gcloud_booru_pin_equiv"
+required-features = ["interp"]
+
+[[test]]
+name = "script_ports_equiv"
+required-features = ["interp", "pipewire"]
+
+[[test]]
+name = "pipewire_route"
+required-features = ["interp", "pipewire"]
+
+[dev-dependencies]
+# An independent Secret Service client for the keyring tests' snapshots.
+secret-service = { version = "5.2", default-features = false, features = ["rt-async-io-crypto-rust"] }
+criterion = "0.8.2"
+# Missing-reference rule for the tests only (crates/testenv); not linked into the shell.
+testenv = { path = "../testenv" }
+# The I2C traits ddc-i2c is generic over: brightness tests put a simulated DDC/CI monitor behind them.
+i2c = "0.1"
+# A fake compositor for the clipboard watcher tests (ports/wl.rs).
+wayland-server = "0.31"
+wayland-protocols = { workspace = true, features = ["server", "staging"] }
+wayland-protocols-wlr = { workspace = true, features = ["server"] }
+
+[[bench]]
+name = "json"
+harness = false
+
+[lints]
+workspace = true
+
+[build-dependencies]
+flate2 = "1"

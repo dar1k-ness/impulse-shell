@@ -1,0 +1,8 @@
+now 3 3 3
+destroyed z
+50ms 3 3 true
+destroyed b
+250ms 3 true
+destroyed a
+350ms true true
+450ms true true

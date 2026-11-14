@@ -1,0 +1,26 @@
+#!/bin/bash
+set -euo pipefail
+# FIXME: check args
+NAME=${1:-world}
+count=$(( 2 + 3 * 4 ))
+files=( *.txt "$HOME/a b" )
+function greet() {
+    local who="$1"
+    echo "Hello, ${who^^}! You have $count files" >&2
+    return 0
+}
+if [[ -f /etc/os-release && "$NAME" != 'root' ]]; then
+    . /etc/os-release
+    greet "$NAME" | tee -a /tmp/log.txt
+elif [ $# -gt 2 ]; then
+    for f in "${files[@]}"; do
+        grep -E '^[a-z]+=' "$f" || true
+    done
+fi
+cat <<EOF2
+  user: $USER `date +%s`
+EOF2
+case "$count" in
+    1|2) sudo pacman -S --noconfirm git ;;
+    *) curl -fsSL https://example.com/x.sh | sh ;;
+esac

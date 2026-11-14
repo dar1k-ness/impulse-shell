@@ -1,0 +1,32 @@
+// @js modules/common/widgets/shapes/shapes/rounded-polygon.js
+// @js modules/common/widgets/shapes/shapes/polygon-measure.js
+// @js modules/common/widgets/shapes/shapes/float-mapping.js
+// @js modules/common/widgets/shapes/graphics/matrix.js
+// v4: [[73,36,0.4959207477611756,0.5000000000000001,[0,0.24350882621166137,1,0.7564911737883387],[-0.00815850447764882,-0.004079252238824327,1,1.0040792522388244],[0.013895968242228883,0.25073703334885833,1,0.7492629666511418]],[11,8,0,0,[-1,-0.5,1,0.5],[-1.118033988749895,-1.118033988749895,1.118033988749895,1.118033988749895],[-1,-0.5,1,0.5]],[6,10,1,1,[-0.9999999999999998,-1.1698615871052764,3.0000000000000004,3.1698615871052764],[-1.0001353721639612,-1.0001353721639612,3.000135372163961,3.000135372163961],[-0.9999999999999994,-1.0001364186969526,3,3.0001364186969526]],{"x":1.5520000000000003,"y":1.4400000000000002},[0,0,0.3,0.6,0.69,1.02,1.1159999999999999,1.2599999999999998],[1.1159999999999999,1.2599999999999998,2.11,1.8199999999999998,3.3,1.4,4,0],null,null,[4,0,3,2,1,2,0,0],"ReferenceError: convex is not defined",false,[0,0,1,-1,2,-2,3,-3],[true,1.5,{"x":0.6,"y":0.8},5,{"x":1.0000000000000002,"y":1.7320508075688772},2,1.5],[[0.19999999999999996,0.6666666666666665],[0.3400000000000001,0.8333333333333333],[0.8999999999999999,0.2142857142857144],[0.050000000000000044,0.3928571428571428],[0.19399999999999995,0.6499999999999997]],{"x":2.2622393319103566,"y":1.2902609058472567},"1.677341135890848 1.0892780700300542 0 0\n-0.27231951750751354 0.419335283972712 0 0\n0 0 1 0\n1.9496606533983616 0.6699427860573421 0 1",[5,"Offset(2.0, 3.0)","Offset(0.0, 0.7)",53.13010235415598,"Offset(-4.0, 3.0)","Offset(2.3, 3.0)",true,"Offset(-3.0, -4.0)"],[{"x":0.8944271909999159,"y":-0.4472135954999579},true,3,{"x":1,"y":2},{"x":1.2,"y":-0.6},{"x":2,"y":5},{"x":1,"y":3}],[1,0,1,0.5522847498307935,0.5522847498307935,1,0,1],[0,0,0.6666666666666666,0.6666666666666666,1.3333333333333333,1.3333333333333333,2,2]]
+var RP = M_modules_common_widgets_shapes_shapes_rounded_polygon.RoundedPolygon;
+var CR = M_modules_common_widgets_shapes_shapes_corner_rounding.CornerRounding;
+var Pt = M_modules_common_widgets_shapes_shapes_point.Point;
+var U = M_modules_common_widgets_shapes_shapes_utils;
+var Cu = M_modules_common_widgets_shapes_shapes_cubic;
+var FM = M_modules_common_widgets_shapes_shapes_float_mapping;
+var Mx = M_modules_common_widgets_shapes_graphics_matrix.Matrix;
+var Off = M_modules_common_widgets_shapes_geometry_offset.Offset;
+var star = RP.star(9, 1, 0.8, new CR(0.25, 0.1)).transformed((x, y) => new Pt(x * 2 + 1, y - 3)).normalized();
+var rect = RP.rectangle(2, 1, new CR(0.3), [new CR(0.1), new CR(0.2, 1), new CR(), new CR(0.5, 0.5)]);
+var circ = RP.circle(5, 2, 1, 1);
+var desc = p => [p.cubics.length, p.features.length, p.centerX, p.centerY, p.calculateBounds(), p.calculateMaxBounds(), p.calculateBounds([], false)];
+var c = Cu.Cubic.create(new Pt(0, 0), new Pt(1, 2), new Pt(3, 2), new Pt(4, 0));
+var { a: c1, b: c2 } = c.split(0.3);
+var mc = new Cu.MutableCubic([0, 0, 1, 1, 2, 2, 3, 3]);
+mc.transform((x, y) => new Pt(y, -x));
+var pts = [U.convex(new Pt(0, 0), new Pt(1, 0), new Pt(1, 1)), U.interpolate(1, 3, 0.25), U.directionVector(3, 4), U.distance(3, 4), U.radialToCartesian(2, Math.PI / 3), U.coerceIn(5, 0, 2), U.positiveModulo(-7.5, 3)];
+var dm = new FM.DoubleMapper({ a: 0, b: 0.2 }, { a: 0.5, b: 0.9 });
+var maps = [0, 0.1, 0.5, 0.75, 0.99].map(x => [dm.map(x), dm.mapBack(x)]);
+var mx = new Mx();
+mx.rotateZ(33); mx.scale(2, 0.5); mx.translate(1, -1);
+var mp = mx.map(new Off(0.3, 0.7));
+var o = new Off(3, 4);
+var offs = [o.getDistance(), o.minus(new Off(1, 1)).toString(), o.times(2).div(3).rem(1).toString(), o.angleDegrees(), o.rotateDegrees(90).toString(), Off.lerp(o, Off.Zero, 0.25).toString(), o.isValid(), o.negate().toString()];
+var p = new Pt(2, -1);
+var ptops = [p.getDirection(), p.clockwise(new Pt(1, 1)), p.dotProduct(new Pt(3, 3)), p.rotate90(), Pt.interpolate(p, new Pt(0, 0), 0.4), p.copy(undefined, 5), p.transformed((x, y) => new Pt(x + y, x - y))];
+var result = JSON.stringify([desc(star), desc(rect), desc(circ), c.pointOnCurve(0.4), c1.points, c2.points, c.calculateBounds([], false), c.calculateBounds([], true), c.reverse().points, (() => { try { return c.convexTo(c2) } catch (e) { return e.name + ": " + e.message } })(), c.zeroLength(), mc.points, pts, maps, mp, mx.toString(), offs, ptops, Cu.Cubic.circularArc(0, 0, 1, 0, 0, 1).points, Cu.Cubic.straightLine(0, 0, 2, 2).points]);

@@ -1,0 +1,10 @@
+# Tests run on threads of one process under `cargo test`, where `std::env::set_var` races with
+# every other thread's getenv(3): a test hands its environment to a process of its own
+# (`testenv::run_in_own_process`) or to the child it spawns (`Command::env`). A program may
+# set its own environment only before the threads that read it start, where it says so.
+disallowed-methods = [
+    { path = "std::env::set_var", reason = "pass the variable with Command::env or testenv::run_in_own_process" },
+    { path = "std::env::remove_var", reason = "pass the environment with Command::env_remove or testenv::run_in_own_process" },
+]
+# Unit tests keep std's eprintln! (`print_stderr`, warned in the crate roots that use `elog`).
+allow-print-in-tests = true

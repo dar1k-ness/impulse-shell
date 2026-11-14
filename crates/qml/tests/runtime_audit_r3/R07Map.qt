@@ -1,0 +1,37 @@
+to-pt QPointF(14, 26)
+to-xy QPointF(14, 26)
+to-rect QRectF(11, 22, 5, 6)
+to-xywh QRectF(11, 22, 5, 6)
+to-other QPointF(-89, -28)
+to-null-pt QPointF(12, 23)
+to-null-rect QRectF(12, 23, 2, 2)
+from-pt QPointF(0, 0)
+from-xy QPointF(0, 0)
+from-rect QRectF(0, 0, 3, 4)
+from-xywh QRectF(0, 0, 3, 4)
+from-null QPointF(-11, -22)
+glob-xy QPointF(12, 23)
+glob-pt QPointF(12, 23)
+fromglob-xy QPointF(1, 1)
+fromglob-pt QPointF(1, 1)
+fields object 14 26 11 22 5 6 11 28
+eq true
+to-3 QPointF(12, 24)
+to-0 THROW Unable to determine callable overload.  Candidates are:
+    mapToItem(const QQuickItem*,double,double,double,double)
+    mapToItem(const QQuickItem*,QRectF)
+    mapToItem(const QQuickItem*,double,double)
+    mapToItem(const QQuickItem*,QPointF)
+to-none THROW Unable to determine callable overload.  Candidates are:
+    mapToItem(const QQuickItem*,double,double,double,double)
+    mapToItem(const QQuickItem*,QRectF)
+    mapToItem(const QQuickItem*,double,double)
+    mapToItem(const QQuickItem*,QPointF)
+to-5extra QRectF(12, 24, 3, 4)
+to-str QPointF(14, 26)
+glob-0 THROW Unable to determine callable overload.  Candidates are:
+    mapToGlobal(QPointF)
+    mapToGlobal(double,double)
+glob-rect QPointF(12, 24)
+to-undef QPointF(12, 24)
+to-nonitem THROW Passing incompatible arguments to C++ functions from JavaScript is not allowed.

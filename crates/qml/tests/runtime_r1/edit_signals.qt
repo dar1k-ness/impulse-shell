@@ -1,0 +1,400 @@
+TI 0 select(20,30) ->
+TI 0 select(-5,3) ->
+TI 0 select(3,99) ->
+TI 0 select(3,-1) ->
+TI 0 select(12,0) ->
+TI 0 select(6,1) -> st(hello world|1|2|4|ello |11) ss(hello world|1|1|4|ello |11) se(hello world|1|1|6|ello |11) cp(hello world|1|1|6|ello |11)
+TI 0 select(1,6) -> st(hello world|6|2|4|ello |11) ss(hello world|6|1|4|ello |11) se(hello world|6|1|6|ello |11) cp(hello world|6|1|6|ello |11)
+TI 0 select(2,4) ->
+TI 0 select(4,2) -> st(hello world|2|2|4|ll|11) cp(hello world|2|2|4|ll|11)
+TI 0 select(0,11) -> st(hello world|11|2|4|hello world|11) ss(hello world|11|0|4|hello world|11) se(hello world|11|0|11|hello world|11) cp(hello world|11|0|11|hello world|11)
+TI 0 select(11,0) -> st(hello world|0|2|4|hello world|11) ss(hello world|0|0|4|hello world|11) se(hello world|0|0|11|hello world|11) cp(hello world|0|0|11|hello world|11)
+TI 0 select(11,11) -> st(hello world|11|2|4||11) ss(hello world|11|11|4||11) se(hello world|11|11|11||11) cp(hello world|11|11|11||11)
+TI 0 select(3,3) -> st(hello world|3|2|4||11) ss(hello world|3|3|4||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)
+TI 0 select(1.7,3.2) -> st(hello world|3|2|4|el|11) ss(hello world|3|1|4|el|11) se(hello world|3|1|3|el|11) cp(hello world|3|1|3|el|11)
+TI 0 insert(-1,Y) ->
+TI 0 insert(99,X) ->
+TI 0 insert(12,X) ->
+TI 0 insert(0,5) -> edited(5hello world|5|2|4|ll|12) text(5hello world|5|2|4|ll|12) len(5hello world|5|2|4|ll|12) cp(5hello world|5|2|4|ll|12) ss(5hello world|5|3|4|ll|12) se(5hello world|5|3|5|ll|12)
+TI 0 insert(0,ab) -> edited(abhello world|6|2|4|ll|13) text(abhello world|6|2|4|ll|13) len(abhello world|6|2|4|ll|13) cp(abhello world|6|2|4|ll|13) ss(abhello world|6|4|4|ll|13) se(abhello world|6|4|6|ll|13)
+TI 0 insert(2,A) -> edited(heAllo world|5|2|4|ll|12) text(heAllo world|5|2|4|ll|12) len(heAllo world|5|2|4|ll|12) cp(heAllo world|5|2|4|ll|12) ss(heAllo world|5|3|4|ll|12) se(heAllo world|5|3|5|ll|12)
+TI 0 insert(3,ZZ) -> edited(helZZlo world|6|2|4|lZZl|13) text(helZZlo world|6|2|4|lZZl|13) len(helZZlo world|6|2|4|lZZl|13) st(helZZlo world|6|2|4|lZZl|13) se(helZZlo world|6|2|6|lZZl|13) cp(helZZlo world|6|2|6|lZZl|13)
+TI 0 insert(4,B) -> edited(hellBo world|5|2|4|llB|12) text(hellBo world|5|2|4|llB|12) len(hellBo world|5|2|4|llB|12) st(hellBo world|5|2|4|llB|12) se(hellBo world|5|2|5|llB|12) cp(hellBo world|5|2|5|llB|12)
+TI 0 insert(5,Z) -> edited(helloZ world|4|2|4|ll|12) text(helloZ world|4|2|4|ll|12) len(helloZ world|4|2|4|ll|12)
+TI 0 insert(8,Q) -> edited(hello woQrld|4|2|4|ll|12) text(hello woQrld|4|2|4|ll|12) len(hello woQrld|4|2|4|ll|12)
+TI 0 insert(11,!) -> edited(hello world!|4|2|4|ll|12) text(hello world!|4|2|4|ll|12) len(hello world!|4|2|4|ll|12)
+TI 0 insert(3,) -> edited(hello world|4|2|4|ll|11) text(hello world|4|2|4|ll|11) len(hello world|4|2|4|ll|11) st(hello world|4|2|4|ll|11)
+TI 0 insert(length,!) -> edited(hello world!|4|2|4|ll|12) text(hello world!|4|2|4|ll|12) len(hello world!|4|2|4|ll|12)
+TI 0 remove(6,9) -> edited(hello ld|4|2|4|ll|8) text(hello ld|4|2|4|ll|8) len(hello ld|4|2|4|ll|8)
+TI 0 remove(5,99) -> edited(hello|4|2|4|ll|5) text(hello|4|2|4|ll|5) len(hello|4|2|4|ll|5)
+TI 0 remove(8,3) -> edited(helrld|3|2|4|lr|6) text(helrld|3|2|4|lr|6) len(helrld|3|2|4|lr|6) st(helrld|3|2|4|lr|6) cp(helrld|3|2|4|lr|6)
+TI 0 remove(50,60) ->
+TI 0 remove(-3,3) -> edited(lo world|1|2|4|l|8) text(lo world|1|2|4|l|8) len(lo world|1|2|4|l|8) st(lo world|1|2|4|l|8) ss(lo world|1|0|4|l|8) se(lo world|1|0|1|l|8) cp(lo world|1|0|1|l|8)
+TI 0 remove(0,1) -> edited(ello world|3|2|4|ll|10) text(ello world|3|2|4|ll|10) len(ello world|3|2|4|ll|10) cp(ello world|3|2|4|ll|10) ss(ello world|3|1|4|ll|10) se(ello world|3|1|3|ll|10)
+TI 0 remove(0,2) -> edited(llo world|2|2|4|ll|9) text(llo world|2|2|4|ll|9) len(llo world|2|2|4|ll|9) cp(llo world|2|2|4|ll|9) ss(llo world|2|0|4|ll|9) se(llo world|2|0|2|ll|9)
+TI 0 remove(1,5) -> edited(h world|1|2|4| wo|7) text(h world|1|2|4| wo|7) len(h world|1|2|4| wo|7) st(h world|1|2|4| wo|7) ss(h world|1|1|4| wo|7) cp(h world|1|1|4| wo|7)
+TI 0 remove(2,4) -> edited(heo world|2|2|4||9) text(heo world|2|2|4||9) len(heo world|2|2|4||9) st(heo world|2|2|4||9) ss(heo world|2|2|4||9) se(heo world|2|2|2||9) cp(heo world|2|2|2||9)
+TI 0 remove(3,4) -> edited(helo world|3|2|4|l|10) text(helo world|3|2|4|l|10) len(helo world|3|2|4|l|10) st(helo world|3|2|4|l|10) se(helo world|3|2|3|l|10) cp(helo world|3|2|3|l|10)
+TI 0 remove(4,7) -> edited(hellorld|4|2|4|ll|8) text(hellorld|4|2|4|ll|8) len(hellorld|4|2|4|ll|8)
+TI 0 remove(0,11) -> edited(|0|2|4||0) text(|0|2|4||0) len(|0|2|4||0) st(|0|2|4||0) ss(|0|0|4||0) se(|0|0|0||0) cp(|0|0|0||0)
+TI 0 remove(4,4) ->
+TI 0 remove(9,11) -> edited(hello wor|4|2|4|ll|9) text(hello wor|4|2|4|ll|9) len(hello wor|4|2|4|ll|9)
+TI 0 getText(3,1) ->
+TI 0 getText(2,5) ->
+TI 0 getText(-2,99) ->
+TI 0 selectAll -> st(hello world|11|2|4|hello world|11) ss(hello world|11|0|4|hello world|11) se(hello world|11|0|11|hello world|11) cp(hello world|11|0|11|hello world|11)
+TI 0 deselect -> st(hello world|4|2|4||11) ss(hello world|4|4|4||11) se(hello world|4|4|4||11)
+TI 0 clear -> text(|0|2|4||0) len(|0|2|4||0) st(|0|2|4||0) ss(|0|0|4||0) se(|0|0|0||0) cp(|0|0|0||0)
+TI 0 cursorPosition=7 -> st(hello world|7|2|4||11) ss(hello world|7|7|4||11) se(hello world|7|7|7||11) cp(hello world|7|7|7||11)
+TI 0 cursorPosition=3 -> st(hello world|3|2|4||11) ss(hello world|3|3|4||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)
+TI 0 text=xy -> text(xy|2|2|4||2) len(xy|2|2|4||2) st(xy|2|2|4||2) ss(xy|2|2|4||2) se(xy|2|2|2||2) cp(xy|2|2|2||2)
+TI 0 text=same ->
+TI 1 select(20,30) ->
+TI 1 select(-5,3) ->
+TI 1 select(3,99) ->
+TI 1 select(3,-1) ->
+TI 1 select(12,0) ->
+TI 1 select(6,1) -> st(hello world|1|2|4|ello |11) ss(hello world|1|1|4|ello |11) se(hello world|1|1|6|ello |11) cp(hello world|1|1|6|ello |11)
+TI 1 select(1,6) -> st(hello world|6|2|4|ello |11) ss(hello world|6|1|4|ello |11) se(hello world|6|1|6|ello |11) cp(hello world|6|1|6|ello |11)
+TI 1 select(2,4) -> st(hello world|4|2|4|ll|11) cp(hello world|4|2|4|ll|11)
+TI 1 select(4,2) ->
+TI 1 select(0,11) -> st(hello world|11|2|4|hello world|11) ss(hello world|11|0|4|hello world|11) se(hello world|11|0|11|hello world|11) cp(hello world|11|0|11|hello world|11)
+TI 1 select(11,0) -> st(hello world|0|2|4|hello world|11) ss(hello world|0|0|4|hello world|11) se(hello world|0|0|11|hello world|11) cp(hello world|0|0|11|hello world|11)
+TI 1 select(11,11) -> st(hello world|11|2|4||11) ss(hello world|11|11|4||11) se(hello world|11|11|11||11) cp(hello world|11|11|11||11)
+TI 1 select(3,3) -> st(hello world|3|2|4||11) ss(hello world|3|3|4||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)
+TI 1 select(1.7,3.2) -> st(hello world|3|2|4|el|11) ss(hello world|3|1|4|el|11) se(hello world|3|1|3|el|11) cp(hello world|3|1|3|el|11)
+TI 1 insert(-1,Y) ->
+TI 1 insert(99,X) ->
+TI 1 insert(12,X) ->
+TI 1 insert(0,5) -> edited(5hello world|3|2|4|ll|12) text(5hello world|3|2|4|ll|12) len(5hello world|3|2|4|ll|12) cp(5hello world|3|2|4|ll|12) ss(5hello world|3|3|4|ll|12) se(5hello world|3|3|5|ll|12)
+TI 1 insert(0,ab) -> edited(abhello world|4|2|4|ll|13) text(abhello world|4|2|4|ll|13) len(abhello world|4|2|4|ll|13) cp(abhello world|4|2|4|ll|13) ss(abhello world|4|4|4|ll|13) se(abhello world|4|4|6|ll|13)
+TI 1 insert(2,A) -> edited(heAllo world|3|2|4|ll|12) text(heAllo world|3|2|4|ll|12) len(heAllo world|3|2|4|ll|12) cp(heAllo world|3|2|4|ll|12) ss(heAllo world|3|3|4|ll|12) se(heAllo world|3|3|5|ll|12)
+TI 1 insert(3,ZZ) -> edited(helZZlo world|2|2|4|lZZl|13) text(helZZlo world|2|2|4|lZZl|13) len(helZZlo world|2|2|4|lZZl|13) st(helZZlo world|2|2|4|lZZl|13) se(helZZlo world|2|2|6|lZZl|13)
+TI 1 insert(4,B) -> edited(hellBo world|2|2|4|llB|12) text(hellBo world|2|2|4|llB|12) len(hellBo world|2|2|4|llB|12) st(hellBo world|2|2|4|llB|12) se(hellBo world|2|2|5|llB|12)
+TI 1 insert(5,Z) -> edited(helloZ world|2|2|4|ll|12) text(helloZ world|2|2|4|ll|12) len(helloZ world|2|2|4|ll|12)
+TI 1 insert(8,Q) -> edited(hello woQrld|2|2|4|ll|12) text(hello woQrld|2|2|4|ll|12) len(hello woQrld|2|2|4|ll|12)
+TI 1 insert(11,!) -> edited(hello world!|2|2|4|ll|12) text(hello world!|2|2|4|ll|12) len(hello world!|2|2|4|ll|12)
+TI 1 insert(3,) -> edited(hello world|2|2|4|ll|11) text(hello world|2|2|4|ll|11) len(hello world|2|2|4|ll|11) st(hello world|2|2|4|ll|11)
+TI 1 insert(length,!) -> edited(hello world!|2|2|4|ll|12) text(hello world!|2|2|4|ll|12) len(hello world!|2|2|4|ll|12)
+TI 1 remove(6,9) -> edited(hello ld|2|2|4|ll|8) text(hello ld|2|2|4|ll|8) len(hello ld|2|2|4|ll|8)
+TI 1 remove(5,99) -> edited(hello|2|2|4|ll|5) text(hello|2|2|4|ll|5) len(hello|2|2|4|ll|5)
+TI 1 remove(8,3) -> edited(helrld|2|2|4|lr|6) text(helrld|2|2|4|lr|6) len(helrld|2|2|4|lr|6) st(helrld|2|2|4|lr|6)
+TI 1 remove(50,60) ->
+TI 1 remove(-3,3) -> edited(lo world|0|2|4|l|8) text(lo world|0|2|4|l|8) len(lo world|0|2|4|l|8) st(lo world|0|2|4|l|8) ss(lo world|0|0|4|l|8) se(lo world|0|0|1|l|8) cp(lo world|0|0|1|l|8)
+TI 1 remove(0,1) -> edited(ello world|1|2|4|ll|10) text(ello world|1|2|4|ll|10) len(ello world|1|2|4|ll|10) cp(ello world|1|2|4|ll|10) ss(ello world|1|1|4|ll|10) se(ello world|1|1|3|ll|10)
+TI 1 remove(0,2) -> edited(llo world|0|2|4|ll|9) text(llo world|0|2|4|ll|9) len(llo world|0|2|4|ll|9) cp(llo world|0|2|4|ll|9) ss(llo world|0|0|4|ll|9) se(llo world|0|0|2|ll|9)
+TI 1 remove(1,5) -> edited(h world|1|2|4| wo|7) text(h world|1|2|4| wo|7) len(h world|1|2|4| wo|7) st(h world|1|2|4| wo|7) ss(h world|1|1|4| wo|7) cp(h world|1|1|4| wo|7)
+TI 1 remove(2,4) -> edited(heo world|2|2|4||9) text(heo world|2|2|4||9) len(heo world|2|2|4||9) st(heo world|2|2|4||9) ss(heo world|2|2|4||9) se(heo world|2|2|2||9)
+TI 1 remove(3,4) -> edited(helo world|2|2|4|l|10) text(helo world|2|2|4|l|10) len(helo world|2|2|4|l|10) st(helo world|2|2|4|l|10) se(helo world|2|2|3|l|10)
+TI 1 remove(4,7) -> edited(hellorld|2|2|4|ll|8) text(hellorld|2|2|4|ll|8) len(hellorld|2|2|4|ll|8)
+TI 1 remove(0,11) -> edited(|0|2|4||0) text(|0|2|4||0) len(|0|2|4||0) st(|0|2|4||0) ss(|0|0|4||0) se(|0|0|0||0) cp(|0|0|0||0)
+TI 1 remove(4,4) ->
+TI 1 remove(9,11) -> edited(hello wor|2|2|4|ll|9) text(hello wor|2|2|4|ll|9) len(hello wor|2|2|4|ll|9)
+TI 1 getText(3,1) ->
+TI 1 getText(2,5) ->
+TI 1 getText(-2,99) ->
+TI 1 selectAll -> st(hello world|11|2|4|hello world|11) ss(hello world|11|0|4|hello world|11) se(hello world|11|0|11|hello world|11) cp(hello world|11|0|11|hello world|11)
+TI 1 deselect -> st(hello world|2|2|4||11) ss(hello world|2|2|4||11) se(hello world|2|2|2||11)
+TI 1 clear -> text(|0|2|4||0) len(|0|2|4||0) st(|0|2|4||0) ss(|0|0|4||0) se(|0|0|0||0) cp(|0|0|0||0)
+TI 1 cursorPosition=7 -> st(hello world|7|2|4||11) ss(hello world|7|7|4||11) se(hello world|7|7|7||11) cp(hello world|7|7|7||11)
+TI 1 cursorPosition=3 -> st(hello world|3|2|4||11) ss(hello world|3|3|4||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)
+TI 1 text=xy -> text(xy|2|2|4||2) len(xy|2|2|4||2) st(xy|2|2|4||2) ss(xy|2|2|4||2) se(xy|2|2|2||2)
+TI 1 text=same ->
+TI 2 select(20,30) ->
+TI 2 select(-5,3) ->
+TI 2 select(3,99) ->
+TI 2 select(3,-1) ->
+TI 2 select(12,0) ->
+TI 2 select(6,1) -> st(hello world|1|5|5|ello |11) ss(hello world|1|1|5|ello |11) se(hello world|1|1|6|ello |11) cp(hello world|1|1|6|ello |11)
+TI 2 select(1,6) -> st(hello world|6|5|5|ello |11) ss(hello world|6|1|5|ello |11) se(hello world|6|1|6|ello |11) cp(hello world|6|1|6|ello |11)
+TI 2 select(2,4) -> st(hello world|4|5|5|ll|11) ss(hello world|4|2|5|ll|11) se(hello world|4|2|4|ll|11) cp(hello world|4|2|4|ll|11)
+TI 2 select(4,2) -> st(hello world|2|5|5|ll|11) ss(hello world|2|2|5|ll|11) se(hello world|2|2|4|ll|11) cp(hello world|2|2|4|ll|11)
+TI 2 select(0,11) -> st(hello world|11|5|5|hello world|11) ss(hello world|11|0|5|hello world|11) se(hello world|11|0|11|hello world|11) cp(hello world|11|0|11|hello world|11)
+TI 2 select(11,0) -> st(hello world|0|5|5|hello world|11) ss(hello world|0|0|5|hello world|11) se(hello world|0|0|11|hello world|11) cp(hello world|0|0|11|hello world|11)
+TI 2 select(11,11) -> cp(hello world|11|5|5||11) ss(hello world|11|11|5||11) se(hello world|11|11|11||11)
+TI 2 select(3,3) -> cp(hello world|3|5|5||11) ss(hello world|3|3|5||11) se(hello world|3|3|3||11)
+TI 2 select(1.7,3.2) -> st(hello world|3|5|5|el|11) ss(hello world|3|1|5|el|11) se(hello world|3|1|3|el|11) cp(hello world|3|1|3|el|11)
+TI 2 insert(-1,Y) ->
+TI 2 insert(99,X) ->
+TI 2 insert(12,X) ->
+TI 2 insert(0,5) -> edited(5hello world|6|5|5||12) text(5hello world|6|5|5||12) len(5hello world|6|5|5||12) cp(5hello world|6|5|5||12) ss(5hello world|6|6|5||12) se(5hello world|6|6|6||12)
+TI 2 insert(0,ab) -> edited(abhello world|7|5|5||13) text(abhello world|7|5|5||13) len(abhello world|7|5|5||13) cp(abhello world|7|5|5||13) ss(abhello world|7|7|5||13) se(abhello world|7|7|7||13)
+TI 2 insert(2,A) -> edited(heAllo world|6|5|5||12) text(heAllo world|6|5|5||12) len(heAllo world|6|5|5||12) cp(heAllo world|6|5|5||12) ss(heAllo world|6|6|5||12) se(heAllo world|6|6|6||12)
+TI 2 insert(3,ZZ) -> edited(helZZlo world|7|5|5||13) text(helZZlo world|7|5|5||13) len(helZZlo world|7|5|5||13) cp(helZZlo world|7|5|5||13) ss(helZZlo world|7|7|5||13) se(helZZlo world|7|7|7||13)
+TI 2 insert(4,B) -> edited(hellBo world|6|5|5||12) text(hellBo world|6|5|5||12) len(hellBo world|6|5|5||12) cp(hellBo world|6|5|5||12) ss(hellBo world|6|6|5||12) se(hellBo world|6|6|6||12)
+TI 2 insert(5,Z) -> edited(helloZ world|6|5|5||12) text(helloZ world|6|5|5||12) len(helloZ world|6|5|5||12) cp(helloZ world|6|5|5||12) ss(helloZ world|6|6|5||12) se(helloZ world|6|6|6||12)
+TI 2 insert(8,Q) -> edited(hello woQrld|5|5|5||12) text(hello woQrld|5|5|5||12) len(hello woQrld|5|5|5||12)
+TI 2 insert(11,!) -> edited(hello world!|5|5|5||12) text(hello world!|5|5|5||12) len(hello world!|5|5|5||12)
+TI 2 insert(3,) -> edited(hello world|5|5|5||11) text(hello world|5|5|5||11) len(hello world|5|5|5||11)
+TI 2 insert(length,!) -> edited(hello world!|5|5|5||12) text(hello world!|5|5|5||12) len(hello world!|5|5|5||12)
+TI 2 remove(6,9) -> edited(hello ld|5|5|5||8) text(hello ld|5|5|5||8) len(hello ld|5|5|5||8)
+TI 2 remove(5,99) -> edited(hello|5|5|5||5) text(hello|5|5|5||5) len(hello|5|5|5||5)
+TI 2 remove(8,3) -> edited(helrld|3|5|5||6) text(helrld|3|5|5||6) len(helrld|3|5|5||6) cp(helrld|3|5|5||6) ss(helrld|3|3|5||6) se(helrld|3|3|3||6)
+TI 2 remove(50,60) ->
+TI 2 remove(-3,3) -> edited(lo world|2|5|5||8) text(lo world|2|5|5||8) len(lo world|2|5|5||8) cp(lo world|2|5|5||8) ss(lo world|2|2|5||8) se(lo world|2|2|2||8)
+TI 2 remove(0,1) -> edited(ello world|4|5|5||10) text(ello world|4|5|5||10) len(ello world|4|5|5||10) cp(ello world|4|5|5||10) ss(ello world|4|4|5||10) se(ello world|4|4|4||10)
+TI 2 remove(0,2) -> edited(llo world|3|5|5||9) text(llo world|3|5|5||9) len(llo world|3|5|5||9) cp(llo world|3|5|5||9) ss(llo world|3|3|5||9) se(llo world|3|3|3||9)
+TI 2 remove(1,5) -> edited(h world|1|5|5||7) text(h world|1|5|5||7) len(h world|1|5|5||7) cp(h world|1|5|5||7) ss(h world|1|1|5||7) se(h world|1|1|1||7)
+TI 2 remove(2,4) -> edited(heo world|3|5|5||9) text(heo world|3|5|5||9) len(heo world|3|5|5||9) cp(heo world|3|5|5||9) ss(heo world|3|3|5||9) se(heo world|3|3|3||9)
+TI 2 remove(3,4) -> edited(helo world|4|5|5||10) text(helo world|4|5|5||10) len(helo world|4|5|5||10) cp(helo world|4|5|5||10) ss(helo world|4|4|5||10) se(helo world|4|4|4||10)
+TI 2 remove(4,7) -> edited(hellorld|4|5|5||8) text(hellorld|4|5|5||8) len(hellorld|4|5|5||8) cp(hellorld|4|5|5||8) ss(hellorld|4|4|5||8) se(hellorld|4|4|4||8)
+TI 2 remove(0,11) -> edited(|0|5|5||0) text(|0|5|5||0) len(|0|5|5||0) cp(|0|5|5||0) ss(|0|0|5||0) se(|0|0|0||0)
+TI 2 remove(4,4) ->
+TI 2 remove(9,11) -> edited(hello wor|5|5|5||9) text(hello wor|5|5|5||9) len(hello wor|5|5|5||9)
+TI 2 getText(3,1) ->
+TI 2 getText(2,5) ->
+TI 2 getText(-2,99) ->
+TI 2 selectAll -> st(hello world|11|5|5|hello world|11) ss(hello world|11|0|5|hello world|11) se(hello world|11|0|11|hello world|11) cp(hello world|11|0|11|hello world|11)
+TI 2 deselect ->
+TI 2 clear -> text(|0|5|5||0) len(|0|5|5||0) st(|0|5|5||0) ss(|0|0|5||0) se(|0|0|0||0) cp(|0|0|0||0)
+TI 2 cursorPosition=7 -> cp(hello world|7|5|5||11) ss(hello world|7|7|5||11) se(hello world|7|7|7||11)
+TI 2 cursorPosition=3 -> cp(hello world|3|5|5||11) ss(hello world|3|3|5||11) se(hello world|3|3|3||11)
+TI 2 text=xy -> text(xy|2|5|5||2) len(xy|2|5|5||2) cp(xy|2|5|5||2) ss(xy|2|2|5||2) se(xy|2|2|2||2)
+TI 2 text=same ->
+TI 3 select(20,30) ->
+TI 3 select(-5,3) ->
+TI 3 select(3,99) ->
+TI 3 select(3,-1) ->
+TI 3 select(12,0) ->
+TI 3 select(6,1) -> st(hello world|1|11|11|ello |11) ss(hello world|1|1|11|ello |11) se(hello world|1|1|6|ello |11) cp(hello world|1|1|6|ello |11)
+TI 3 select(1,6) -> st(hello world|6|11|11|ello |11) ss(hello world|6|1|11|ello |11) se(hello world|6|1|6|ello |11) cp(hello world|6|1|6|ello |11)
+TI 3 select(2,4) -> st(hello world|4|11|11|ll|11) ss(hello world|4|2|11|ll|11) se(hello world|4|2|4|ll|11) cp(hello world|4|2|4|ll|11)
+TI 3 select(4,2) -> st(hello world|2|11|11|ll|11) ss(hello world|2|2|11|ll|11) se(hello world|2|2|4|ll|11) cp(hello world|2|2|4|ll|11)
+TI 3 select(0,11) -> st(hello world|11|11|11|hello world|11) ss(hello world|11|0|11|hello world|11)
+TI 3 select(11,0) -> st(hello world|0|11|11|hello world|11) ss(hello world|0|0|11|hello world|11) cp(hello world|0|0|11|hello world|11)
+TI 3 select(11,11) ->
+TI 3 select(3,3) -> cp(hello world|3|11|11||11) ss(hello world|3|3|11||11) se(hello world|3|3|3||11)
+TI 3 select(1.7,3.2) -> st(hello world|3|11|11|el|11) ss(hello world|3|1|11|el|11) se(hello world|3|1|3|el|11) cp(hello world|3|1|3|el|11)
+TI 3 insert(-1,Y) ->
+TI 3 insert(99,X) ->
+TI 3 insert(12,X) ->
+TI 3 insert(0,5) -> edited(5hello world|12|11|11||12) text(5hello world|12|11|11||12) len(5hello world|12|11|11||12) cp(5hello world|12|11|11||12) ss(5hello world|12|12|11||12) se(5hello world|12|12|12||12)
+TI 3 insert(0,ab) -> edited(abhello world|13|11|11||13) text(abhello world|13|11|11||13) len(abhello world|13|11|11||13) cp(abhello world|13|11|11||13) ss(abhello world|13|13|11||13) se(abhello world|13|13|13||13)
+TI 3 insert(2,A) -> edited(heAllo world|12|11|11||12) text(heAllo world|12|11|11||12) len(heAllo world|12|11|11||12) cp(heAllo world|12|11|11||12) ss(heAllo world|12|12|11||12) se(heAllo world|12|12|12||12)
+TI 3 insert(3,ZZ) -> edited(helZZlo world|13|11|11||13) text(helZZlo world|13|11|11||13) len(helZZlo world|13|11|11||13) cp(helZZlo world|13|11|11||13) ss(helZZlo world|13|13|11||13) se(helZZlo world|13|13|13||13)
+TI 3 insert(4,B) -> edited(hellBo world|12|11|11||12) text(hellBo world|12|11|11||12) len(hellBo world|12|11|11||12) cp(hellBo world|12|11|11||12) ss(hellBo world|12|12|11||12) se(hellBo world|12|12|12||12)
+TI 3 insert(5,Z) -> edited(helloZ world|12|11|11||12) text(helloZ world|12|11|11||12) len(helloZ world|12|11|11||12) cp(helloZ world|12|11|11||12) ss(helloZ world|12|12|11||12) se(helloZ world|12|12|12||12)
+TI 3 insert(8,Q) -> edited(hello woQrld|12|11|11||12) text(hello woQrld|12|11|11||12) len(hello woQrld|12|11|11||12) cp(hello woQrld|12|11|11||12) ss(hello woQrld|12|12|11||12) se(hello woQrld|12|12|12||12)
+TI 3 insert(11,!) -> edited(hello world!|12|11|11||12) text(hello world!|12|11|11||12) len(hello world!|12|11|11||12) cp(hello world!|12|11|11||12) ss(hello world!|12|12|11||12) se(hello world!|12|12|12||12)
+TI 3 insert(3,) -> edited(hello world|11|11|11||11) text(hello world|11|11|11||11) len(hello world|11|11|11||11)
+TI 3 insert(length,!) -> edited(hello world!|12|11|11||12) text(hello world!|12|11|11||12) len(hello world!|12|11|11||12) cp(hello world!|12|11|11||12) ss(hello world!|12|12|11||12) se(hello world!|12|12|12||12)
+TI 3 remove(6,9) -> edited(hello ld|8|11|11||8) text(hello ld|8|11|11||8) len(hello ld|8|11|11||8) cp(hello ld|8|11|11||8) ss(hello ld|8|8|11||8) se(hello ld|8|8|8||8)
+TI 3 remove(5,99) -> edited(hello|5|11|11||5) text(hello|5|11|11||5) len(hello|5|11|11||5) cp(hello|5|11|11||5) ss(hello|5|5|11||5) se(hello|5|5|5||5)
+TI 3 remove(8,3) -> edited(helrld|6|11|11||6) text(helrld|6|11|11||6) len(helrld|6|11|11||6) cp(helrld|6|11|11||6) ss(helrld|6|6|11||6) se(helrld|6|6|6||6)
+TI 3 remove(50,60) ->
+TI 3 remove(-3,3) -> edited(lo world|8|11|11||8) text(lo world|8|11|11||8) len(lo world|8|11|11||8) cp(lo world|8|11|11||8) ss(lo world|8|8|11||8) se(lo world|8|8|8||8)
+TI 3 remove(0,1) -> edited(ello world|10|11|11||10) text(ello world|10|11|11||10) len(ello world|10|11|11||10) cp(ello world|10|11|11||10) ss(ello world|10|10|11||10) se(ello world|10|10|10||10)
+TI 3 remove(0,2) -> edited(llo world|9|11|11||9) text(llo world|9|11|11||9) len(llo world|9|11|11||9) cp(llo world|9|11|11||9) ss(llo world|9|9|11||9) se(llo world|9|9|9||9)
+TI 3 remove(1,5) -> edited(h world|7|11|11||7) text(h world|7|11|11||7) len(h world|7|11|11||7) cp(h world|7|11|11||7) ss(h world|7|7|11||7) se(h world|7|7|7||7)
+TI 3 remove(2,4) -> edited(heo world|9|11|11||9) text(heo world|9|11|11||9) len(heo world|9|11|11||9) cp(heo world|9|11|11||9) ss(heo world|9|9|11||9) se(heo world|9|9|9||9)
+TI 3 remove(3,4) -> edited(helo world|10|11|11||10) text(helo world|10|11|11||10) len(helo world|10|11|11||10) cp(helo world|10|11|11||10) ss(helo world|10|10|11||10) se(helo world|10|10|10||10)
+TI 3 remove(4,7) -> edited(hellorld|8|11|11||8) text(hellorld|8|11|11||8) len(hellorld|8|11|11||8) cp(hellorld|8|11|11||8) ss(hellorld|8|8|11||8) se(hellorld|8|8|8||8)
+TI 3 remove(0,11) -> edited(|0|11|11||0) text(|0|11|11||0) len(|0|11|11||0) cp(|0|11|11||0) ss(|0|0|11||0) se(|0|0|0||0)
+TI 3 remove(4,4) ->
+TI 3 remove(9,11) -> edited(hello wor|9|11|11||9) text(hello wor|9|11|11||9) len(hello wor|9|11|11||9) cp(hello wor|9|11|11||9) ss(hello wor|9|9|11||9) se(hello wor|9|9|9||9)
+TI 3 getText(3,1) ->
+TI 3 getText(2,5) ->
+TI 3 getText(-2,99) ->
+TI 3 selectAll -> st(hello world|11|11|11|hello world|11) ss(hello world|11|0|11|hello world|11)
+TI 3 deselect ->
+TI 3 clear -> text(|0|11|11||0) len(|0|11|11||0) st(|0|11|11||0) ss(|0|0|11||0) se(|0|0|0||0) cp(|0|0|0||0)
+TI 3 cursorPosition=7 -> cp(hello world|7|11|11||11) ss(hello world|7|7|11||11) se(hello world|7|7|7||11)
+TI 3 cursorPosition=3 -> cp(hello world|3|11|11||11) ss(hello world|3|3|11||11) se(hello world|3|3|3||11)
+TI 3 text=xy -> text(xy|2|11|11||2) len(xy|2|11|11||2) cp(xy|2|11|11||2) ss(xy|2|2|11||2) se(xy|2|2|2||2)
+TI 3 text=same ->
+TE 0 select(20,30) ->
+TE 0 select(-5,3) ->
+TE 0 select(3,99) ->
+TE 0 select(3,-1) ->
+TE 0 select(12,0) ->
+TE 0 select(6,1) -> st(hello world|1|1|6|ello |11) ss(hello world|1|1|6|ello |11) se(hello world|1|1|6|ello |11) cp(hello world|1|1|6|ello |11)
+TE 0 select(1,6) -> st(hello world|6|1|6|ello |11) ss(hello world|6|1|6|ello |11) se(hello world|6|1|6|ello |11) cp(hello world|6|1|6|ello |11)
+TE 0 select(2,4) ->
+TE 0 select(4,2) -> cp(hello world|2|2|4|ll|11)
+TE 0 select(0,11) -> st(hello world|11|0|11|hello world|11) ss(hello world|11|0|11|hello world|11) se(hello world|11|0|11|hello world|11) cp(hello world|11|0|11|hello world|11)
+TE 0 select(11,0) -> st(hello world|0|0|11|hello world|11) ss(hello world|0|0|11|hello world|11) se(hello world|0|0|11|hello world|11) cp(hello world|0|0|11|hello world|11)
+TE 0 select(11,11) -> st(hello world|11|11|11||11) ss(hello world|11|11|11||11) se(hello world|11|11|11||11) cp(hello world|11|11|11||11)
+TE 0 select(3,3) -> st(hello world|3|3|3||11) ss(hello world|3|3|3||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)
+TE 0 select(1.7,3.2) -> st(hello world|3|1|3|el|11) ss(hello world|3|1|3|el|11) se(hello world|3|1|3|el|11) cp(hello world|3|1|3|el|11)
+TE 0 insert(-1,Y) ->
+TE 0 insert(99,X) ->
+TE 0 insert(12,X) ->
+TE 0 insert(0,5) -> ss(5hello world|5|3|5|ll|12) se(5hello world|5|3|5|ll|12) cp(5hello world|5|3|5|ll|12) st(5hello world|5|3|5|ll|12) text(5hello world|5|3|5|ll|12) len(5hello world|5|3|5|ll|12)
+TE 0 insert(0,ab) -> ss(abhello world|6|4|6|ll|13) se(abhello world|6|4|6|ll|13) cp(abhello world|6|4|6|ll|13) st(abhello world|6|4|6|ll|13) text(abhello world|6|4|6|ll|13) len(abhello world|6|4|6|ll|13)
+TE 0 insert(2,A) -> ss(heAllo world|5|3|5|ll|12) se(heAllo world|5|3|5|ll|12) cp(heAllo world|5|3|5|ll|12) st(heAllo world|5|3|5|ll|12) text(heAllo world|5|3|5|ll|12) len(heAllo world|5|3|5|ll|12)
+TE 0 insert(3,ZZ) -> se(helZZlo world|6|2|6|lZZl|13) cp(helZZlo world|6|2|6|lZZl|13) st(helZZlo world|6|2|6|lZZl|13) text(helZZlo world|6|2|6|lZZl|13) len(helZZlo world|6|2|6|lZZl|13)
+TE 0 insert(4,B) -> se(hellBo world|5|2|5|llB|12) cp(hellBo world|5|2|5|llB|12) st(hellBo world|5|2|5|llB|12) text(hellBo world|5|2|5|llB|12) len(hellBo world|5|2|5|llB|12)
+TE 0 insert(5,Z) -> text(helloZ world|4|2|4|ll|12) len(helloZ world|4|2|4|ll|12)
+TE 0 insert(8,Q) -> text(hello woQrld|4|2|4|ll|12) len(hello woQrld|4|2|4|ll|12)
+TE 0 insert(11,!) -> text(hello world!|4|2|4|ll|12) len(hello world!|4|2|4|ll|12)
+TE 0 insert(3,) ->
+TE 0 insert(length,!) -> text(hello world!|4|2|4|ll|12) len(hello world!|4|2|4|ll|12)
+TE 0 remove(6,9) -> text(hello ld|4|2|4|ll|8) len(hello ld|4|2|4|ll|8)
+TE 0 remove(5,99) -> text(hello|4|2|4|ll|5) len(hello|4|2|4|ll|5)
+TE 0 remove(8,3) -> se(helrld|3|2|3|l|6) cp(helrld|3|2|3|l|6) st(helrld|3|2|3|l|6) text(helrld|3|2|3|l|6) len(helrld|3|2|3|l|6)
+TE 0 remove(50,60) ->
+TE 0 remove(-3,3) -> ss(lo world|1|0|1|l|8) se(lo world|1|0|1|l|8) cp(lo world|1|0|1|l|8) st(lo world|1|0|1|l|8) text(lo world|1|0|1|l|8) len(lo world|1|0|1|l|8)
+TE 0 remove(0,1) -> ss(ello world|3|1|3|ll|10) se(ello world|3|1|3|ll|10) cp(ello world|3|1|3|ll|10) st(ello world|3|1|3|ll|10) text(ello world|3|1|3|ll|10) len(ello world|3|1|3|ll|10)
+TE 0 remove(0,2) -> ss(llo world|2|0|2|ll|9) se(llo world|2|0|2|ll|9) cp(llo world|2|0|2|ll|9) st(llo world|2|0|2|ll|9) text(llo world|2|0|2|ll|9) len(llo world|2|0|2|ll|9)
+TE 0 remove(1,5) -> ss(h world|1|1|1||7) se(h world|1|1|1||7) cp(h world|1|1|1||7) st(h world|1|1|1||7) text(h world|1|1|1||7) len(h world|1|1|1||7)
+TE 0 remove(2,4) -> se(heo world|2|2|2||9) cp(heo world|2|2|2||9) st(heo world|2|2|2||9) text(heo world|2|2|2||9) len(heo world|2|2|2||9)
+TE 0 remove(3,4) -> se(helo world|3|2|3|l|10) cp(helo world|3|2|3|l|10) st(helo world|3|2|3|l|10) text(helo world|3|2|3|l|10) len(helo world|3|2|3|l|10)
+TE 0 remove(4,7) -> cp(hellorld|4|2|4|ll|8) text(hellorld|4|2|4|ll|8) len(hellorld|4|2|4|ll|8)
+TE 0 remove(0,11) -> ss(|0|0|0||0) se(|0|0|0||0) cp(|0|0|0||0) st(|0|0|0||0) text(|0|0|0||0) len(|0|0|0||0)
+TE 0 remove(4,4) ->
+TE 0 remove(9,11) -> text(hello wor|4|2|4|ll|9) len(hello wor|4|2|4|ll|9)
+TE 0 getText(3,1) ->
+TE 0 getText(2,5) ->
+TE 0 getText(-2,99) ->
+TE 0 selectAll -> st(hello world|11|0|11|hello world|11) ss(hello world|11|0|11|hello world|11) se(hello world|11|0|11|hello world|11)
+TE 0 deselect -> st(hello world|4|4|4||11) ss(hello world|4|4|4||11)
+TE 0 clear -> ss(|0|0|0||0) se(|0|0|0||0) cp(|0|0|0||0) st(|0|0|0||0) text(|0|0|0||0) len(|0|0|0||0)
+TE 0 cursorPosition=7 -> st(hello world|7|7|7||11) ss(hello world|7|7|7||11) se(hello world|7|7|7||11) cp(hello world|7|7|7||11)
+TE 0 cursorPosition=3 -> st(hello world|3|3|3||11) ss(hello world|3|3|3||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)
+TE 1 select(20,30) ->
+TE 1 select(-5,3) ->
+TE 1 select(3,99) ->
+TE 1 select(3,-1) ->
+TE 1 select(12,0) ->
+TE 1 select(6,1) -> st(hello world|1|1|6|ello |11) ss(hello world|1|1|6|ello |11) se(hello world|1|1|6|ello |11) cp(hello world|1|1|6|ello |11)
+TE 1 select(1,6) -> st(hello world|6|1|6|ello |11) ss(hello world|6|1|6|ello |11) se(hello world|6|1|6|ello |11) cp(hello world|6|1|6|ello |11)
+TE 1 select(2,4) -> cp(hello world|4|2|4|ll|11)
+TE 1 select(4,2) ->
+TE 1 select(0,11) -> st(hello world|11|0|11|hello world|11) ss(hello world|11|0|11|hello world|11) se(hello world|11|0|11|hello world|11) cp(hello world|11|0|11|hello world|11)
+TE 1 select(11,0) -> st(hello world|0|0|11|hello world|11) ss(hello world|0|0|11|hello world|11) se(hello world|0|0|11|hello world|11) cp(hello world|0|0|11|hello world|11)
+TE 1 select(11,11) -> st(hello world|11|11|11||11) ss(hello world|11|11|11||11) se(hello world|11|11|11||11) cp(hello world|11|11|11||11)
+TE 1 select(3,3) -> st(hello world|3|3|3||11) ss(hello world|3|3|3||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)
+TE 1 select(1.7,3.2) -> st(hello world|3|1|3|el|11) ss(hello world|3|1|3|el|11) se(hello world|3|1|3|el|11) cp(hello world|3|1|3|el|11)
+TE 1 insert(-1,Y) ->
+TE 1 insert(99,X) ->
+TE 1 insert(12,X) ->
+TE 1 insert(0,5) -> ss(5hello world|3|3|5|ll|12) se(5hello world|3|3|5|ll|12) cp(5hello world|3|3|5|ll|12) st(5hello world|3|3|5|ll|12) text(5hello world|3|3|5|ll|12) len(5hello world|3|3|5|ll|12)
+TE 1 insert(0,ab) -> ss(abhello world|4|4|6|ll|13) se(abhello world|4|4|6|ll|13) cp(abhello world|4|4|6|ll|13) st(abhello world|4|4|6|ll|13) text(abhello world|4|4|6|ll|13) len(abhello world|4|4|6|ll|13)
+TE 1 insert(2,A) -> ss(heAllo world|3|3|5|ll|12) se(heAllo world|3|3|5|ll|12) cp(heAllo world|3|3|5|ll|12) st(heAllo world|3|3|5|ll|12) text(heAllo world|3|3|5|ll|12) len(heAllo world|3|3|5|ll|12)
+TE 1 insert(3,ZZ) -> st(helZZlo world|2|2|6|lZZl|13) se(helZZlo world|2|2|6|lZZl|13) text(helZZlo world|2|2|6|lZZl|13) len(helZZlo world|2|2|6|lZZl|13)
+TE 1 insert(4,B) -> st(hellBo world|2|2|5|llB|12) se(hellBo world|2|2|5|llB|12) text(hellBo world|2|2|5|llB|12) len(hellBo world|2|2|5|llB|12)
+TE 1 insert(5,Z) -> text(helloZ world|2|2|4|ll|12) len(helloZ world|2|2|4|ll|12)
+TE 1 insert(8,Q) -> text(hello woQrld|2|2|4|ll|12) len(hello woQrld|2|2|4|ll|12)
+TE 1 insert(11,!) -> text(hello world!|2|2|4|ll|12) len(hello world!|2|2|4|ll|12)
+TE 1 insert(3,) ->
+TE 1 insert(length,!) -> text(hello world!|2|2|4|ll|12) len(hello world!|2|2|4|ll|12)
+TE 1 remove(6,9) -> text(hello ld|2|2|4|ll|8) len(hello ld|2|2|4|ll|8)
+TE 1 remove(5,99) -> text(hello|2|2|4|ll|5) len(hello|2|2|4|ll|5)
+TE 1 remove(8,3) -> st(helrld|2|2|3|l|6) se(helrld|2|2|3|l|6) text(helrld|2|2|3|l|6) len(helrld|2|2|3|l|6)
+TE 1 remove(50,60) ->
+TE 1 remove(-3,3) -> ss(lo world|0|0|1|l|8) se(lo world|0|0|1|l|8) cp(lo world|0|0|1|l|8) st(lo world|0|0|1|l|8) text(lo world|0|0|1|l|8) len(lo world|0|0|1|l|8)
+TE 1 remove(0,1) -> ss(ello world|1|1|3|ll|10) se(ello world|1|1|3|ll|10) cp(ello world|1|1|3|ll|10) st(ello world|1|1|3|ll|10) text(ello world|1|1|3|ll|10) len(ello world|1|1|3|ll|10)
+TE 1 remove(0,2) -> ss(llo world|0|0|2|ll|9) se(llo world|0|0|2|ll|9) cp(llo world|0|0|2|ll|9) st(llo world|0|0|2|ll|9) text(llo world|0|0|2|ll|9) len(llo world|0|0|2|ll|9)
+TE 1 remove(1,5) -> ss(h world|1|1|1||7) se(h world|1|1|1||7) cp(h world|1|1|1||7) st(h world|1|1|1||7) text(h world|1|1|1||7) len(h world|1|1|1||7)
+TE 1 remove(2,4) -> se(heo world|2|2|2||9) cp(heo world|2|2|2||9) st(heo world|2|2|2||9) text(heo world|2|2|2||9) len(heo world|2|2|2||9)
+TE 1 remove(3,4) -> st(helo world|2|2|3|l|10) se(helo world|2|2|3|l|10) text(helo world|2|2|3|l|10) len(helo world|2|2|3|l|10)
+TE 1 remove(4,7) -> text(hellorld|2|2|4|ll|8) len(hellorld|2|2|4|ll|8)
+TE 1 remove(0,11) -> ss(|0|0|0||0) se(|0|0|0||0) cp(|0|0|0||0) st(|0|0|0||0) text(|0|0|0||0) len(|0|0|0||0)
+TE 1 remove(4,4) ->
+TE 1 remove(9,11) -> text(hello wor|2|2|4|ll|9) len(hello wor|2|2|4|ll|9)
+TE 1 getText(3,1) ->
+TE 1 getText(2,5) ->
+TE 1 getText(-2,99) ->
+TE 1 selectAll -> st(hello world|11|0|11|hello world|11) ss(hello world|11|0|11|hello world|11) se(hello world|11|0|11|hello world|11)
+TE 1 deselect -> st(hello world|2|2|2||11) se(hello world|2|2|2||11)
+TE 1 clear -> ss(|0|0|0||0) se(|0|0|0||0) cp(|0|0|0||0) st(|0|0|0||0) text(|0|0|0||0) len(|0|0|0||0)
+TE 1 cursorPosition=7 -> st(hello world|7|7|7||11) ss(hello world|7|7|7||11) se(hello world|7|7|7||11) cp(hello world|7|7|7||11)
+TE 1 cursorPosition=3 -> st(hello world|3|3|3||11) ss(hello world|3|3|3||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)
+TE 2 select(20,30) ->
+TE 2 select(-5,3) ->
+TE 2 select(3,99) ->
+TE 2 select(3,-1) ->
+TE 2 select(12,0) ->
+TE 2 select(6,1) -> st(hello world|1|1|6|ello |11) ss(hello world|1|1|6|ello |11) se(hello world|1|1|6|ello |11) cp(hello world|1|1|6|ello |11)
+TE 2 select(1,6) -> st(hello world|6|1|6|ello |11) ss(hello world|6|1|6|ello |11) se(hello world|6|1|6|ello |11) cp(hello world|6|1|6|ello |11)
+TE 2 select(2,4) -> st(hello world|4|2|4|ll|11) ss(hello world|4|2|4|ll|11) se(hello world|4|2|4|ll|11) cp(hello world|4|2|4|ll|11)
+TE 2 select(4,2) -> st(hello world|2|2|4|ll|11) ss(hello world|2|2|4|ll|11) se(hello world|2|2|4|ll|11) cp(hello world|2|2|4|ll|11)
+TE 2 select(0,11) -> st(hello world|11|0|11|hello world|11) ss(hello world|11|0|11|hello world|11) se(hello world|11|0|11|hello world|11) cp(hello world|11|0|11|hello world|11)
+TE 2 select(11,0) -> st(hello world|0|0|11|hello world|11) ss(hello world|0|0|11|hello world|11) se(hello world|0|0|11|hello world|11) cp(hello world|0|0|11|hello world|11)
+TE 2 select(11,11) -> ss(hello world|11|11|11||11) se(hello world|11|11|11||11) cp(hello world|11|11|11||11)
+TE 2 select(3,3) -> ss(hello world|3|3|3||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)
+TE 2 select(1.7,3.2) -> st(hello world|3|1|3|el|11) ss(hello world|3|1|3|el|11) se(hello world|3|1|3|el|11) cp(hello world|3|1|3|el|11)
+TE 2 insert(-1,Y) ->
+TE 2 insert(99,X) ->
+TE 2 insert(12,X) ->
+TE 2 insert(0,5) -> ss(5hello world|6|6|6||12) se(5hello world|6|6|6||12) cp(5hello world|6|6|6||12) text(5hello world|6|6|6||12) len(5hello world|6|6|6||12)
+TE 2 insert(0,ab) -> ss(abhello world|7|7|7||13) se(abhello world|7|7|7||13) cp(abhello world|7|7|7||13) text(abhello world|7|7|7||13) len(abhello world|7|7|7||13)
+TE 2 insert(2,A) -> ss(heAllo world|6|6|6||12) se(heAllo world|6|6|6||12) cp(heAllo world|6|6|6||12) text(heAllo world|6|6|6||12) len(heAllo world|6|6|6||12)
+TE 2 insert(3,ZZ) -> ss(helZZlo world|7|7|7||13) se(helZZlo world|7|7|7||13) cp(helZZlo world|7|7|7||13) text(helZZlo world|7|7|7||13) len(helZZlo world|7|7|7||13)
+TE 2 insert(4,B) -> ss(hellBo world|6|6|6||12) se(hellBo world|6|6|6||12) cp(hellBo world|6|6|6||12) text(hellBo world|6|6|6||12) len(hellBo world|6|6|6||12)
+TE 2 insert(5,Z) -> ss(helloZ world|6|6|6||12) se(helloZ world|6|6|6||12) cp(helloZ world|6|6|6||12) text(helloZ world|6|6|6||12) len(helloZ world|6|6|6||12)
+TE 2 insert(8,Q) -> text(hello woQrld|5|5|5||12) len(hello woQrld|5|5|5||12)
+TE 2 insert(11,!) -> text(hello world!|5|5|5||12) len(hello world!|5|5|5||12)
+TE 2 insert(3,) ->
+TE 2 insert(length,!) -> text(hello world!|5|5|5||12) len(hello world!|5|5|5||12)
+TE 2 remove(6,9) -> text(hello ld|5|5|5||8) len(hello ld|5|5|5||8)
+TE 2 remove(5,99) -> cp(hello|5|5|5||5) text(hello|5|5|5||5) len(hello|5|5|5||5)
+TE 2 remove(8,3) -> ss(helrld|3|3|3||6) se(helrld|3|3|3||6) cp(helrld|3|3|3||6) text(helrld|3|3|3||6) len(helrld|3|3|3||6)
+TE 2 remove(50,60) ->
+TE 2 remove(-3,3) -> ss(lo world|2|2|2||8) se(lo world|2|2|2||8) cp(lo world|2|2|2||8) text(lo world|2|2|2||8) len(lo world|2|2|2||8)
+TE 2 remove(0,1) -> ss(ello world|4|4|4||10) se(ello world|4|4|4||10) cp(ello world|4|4|4||10) text(ello world|4|4|4||10) len(ello world|4|4|4||10)
+TE 2 remove(0,2) -> ss(llo world|3|3|3||9) se(llo world|3|3|3||9) cp(llo world|3|3|3||9) text(llo world|3|3|3||9) len(llo world|3|3|3||9)
+TE 2 remove(1,5) -> ss(h world|1|1|1||7) se(h world|1|1|1||7) cp(h world|1|1|1||7) text(h world|1|1|1||7) len(h world|1|1|1||7)
+TE 2 remove(2,4) -> ss(heo world|3|3|3||9) se(heo world|3|3|3||9) cp(heo world|3|3|3||9) text(heo world|3|3|3||9) len(heo world|3|3|3||9)
+TE 2 remove(3,4) -> ss(helo world|4|4|4||10) se(helo world|4|4|4||10) cp(helo world|4|4|4||10) text(helo world|4|4|4||10) len(helo world|4|4|4||10)
+TE 2 remove(4,7) -> ss(hellorld|4|4|4||8) se(hellorld|4|4|4||8) cp(hellorld|4|4|4||8) text(hellorld|4|4|4||8) len(hellorld|4|4|4||8)
+TE 2 remove(0,11) -> ss(|0|0|0||0) se(|0|0|0||0) cp(|0|0|0||0) text(|0|0|0||0) len(|0|0|0||0)
+TE 2 remove(4,4) ->
+TE 2 remove(9,11) -> text(hello wor|5|5|5||9) len(hello wor|5|5|5||9)
+TE 2 getText(3,1) ->
+TE 2 getText(2,5) ->
+TE 2 getText(-2,99) ->
+TE 2 selectAll -> st(hello world|11|0|11|hello world|11) ss(hello world|11|0|11|hello world|11) se(hello world|11|0|11|hello world|11)
+TE 2 deselect ->
+TE 2 clear -> ss(|0|0|0||0) se(|0|0|0||0) cp(|0|0|0||0) text(|0|0|0||0) len(|0|0|0||0)
+TE 2 cursorPosition=7 -> ss(hello world|7|7|7||11) se(hello world|7|7|7||11) cp(hello world|7|7|7||11)
+TE 2 cursorPosition=3 -> ss(hello world|3|3|3||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)
+TE 3 select(20,30) ->
+TE 3 select(-5,3) ->
+TE 3 select(3,99) ->
+TE 3 select(3,-1) ->
+TE 3 select(12,0) ->
+TE 3 select(6,1) -> st(hello world|1|1|6|ello |11) ss(hello world|1|1|6|ello |11) se(hello world|1|1|6|ello |11) cp(hello world|1|1|6|ello |11)
+TE 3 select(1,6) -> st(hello world|6|1|6|ello |11) ss(hello world|6|1|6|ello |11) se(hello world|6|1|6|ello |11) cp(hello world|6|1|6|ello |11)
+TE 3 select(2,4) -> st(hello world|4|2|4|ll|11) ss(hello world|4|2|4|ll|11) se(hello world|4|2|4|ll|11) cp(hello world|4|2|4|ll|11)
+TE 3 select(4,2) -> st(hello world|2|2|4|ll|11) ss(hello world|2|2|4|ll|11) se(hello world|2|2|4|ll|11) cp(hello world|2|2|4|ll|11)
+TE 3 select(0,11) -> st(hello world|11|0|11|hello world|11) ss(hello world|11|0|11|hello world|11)
+TE 3 select(11,0) -> st(hello world|0|0|11|hello world|11) ss(hello world|0|0|11|hello world|11) cp(hello world|0|0|11|hello world|11)
+TE 3 select(11,11) ->
+TE 3 select(3,3) -> ss(hello world|3|3|3||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)
+TE 3 select(1.7,3.2) -> st(hello world|3|1|3|el|11) ss(hello world|3|1|3|el|11) se(hello world|3|1|3|el|11) cp(hello world|3|1|3|el|11)
+TE 3 insert(-1,Y) ->
+TE 3 insert(99,X) ->
+TE 3 insert(12,X) ->
+TE 3 insert(0,5) -> ss(5hello world|12|12|12||12) se(5hello world|12|12|12||12) cp(5hello world|12|12|12||12) text(5hello world|12|12|12||12) len(5hello world|12|12|12||12)
+TE 3 insert(0,ab) -> ss(abhello world|13|13|13||13) se(abhello world|13|13|13||13) cp(abhello world|13|13|13||13) text(abhello world|13|13|13||13) len(abhello world|13|13|13||13)
+TE 3 insert(2,A) -> ss(heAllo world|12|12|12||12) se(heAllo world|12|12|12||12) cp(heAllo world|12|12|12||12) text(heAllo world|12|12|12||12) len(heAllo world|12|12|12||12)
+TE 3 insert(3,ZZ) -> ss(helZZlo world|13|13|13||13) se(helZZlo world|13|13|13||13) cp(helZZlo world|13|13|13||13) text(helZZlo world|13|13|13||13) len(helZZlo world|13|13|13||13)
+TE 3 insert(4,B) -> ss(hellBo world|12|12|12||12) se(hellBo world|12|12|12||12) cp(hellBo world|12|12|12||12) text(hellBo world|12|12|12||12) len(hellBo world|12|12|12||12)
+TE 3 insert(5,Z) -> ss(helloZ world|12|12|12||12) se(helloZ world|12|12|12||12) cp(helloZ world|12|12|12||12) text(helloZ world|12|12|12||12) len(helloZ world|12|12|12||12)
+TE 3 insert(8,Q) -> ss(hello woQrld|12|12|12||12) se(hello woQrld|12|12|12||12) cp(hello woQrld|12|12|12||12) text(hello woQrld|12|12|12||12) len(hello woQrld|12|12|12||12)
+TE 3 insert(11,!) -> ss(hello world!|12|12|12||12) se(hello world!|12|12|12||12) cp(hello world!|12|12|12||12) text(hello world!|12|12|12||12) len(hello world!|12|12|12||12)
+TE 3 insert(3,) ->
+TE 3 insert(length,!) -> ss(hello world!|12|12|12||12) se(hello world!|12|12|12||12) cp(hello world!|12|12|12||12) text(hello world!|12|12|12||12) len(hello world!|12|12|12||12)
+TE 3 remove(6,9) -> ss(hello ld|8|8|8||8) se(hello ld|8|8|8||8) cp(hello ld|8|8|8||8) text(hello ld|8|8|8||8) len(hello ld|8|8|8||8)
+TE 3 remove(5,99) -> ss(hello|5|5|5||5) se(hello|5|5|5||5) cp(hello|5|5|5||5) text(hello|5|5|5||5) len(hello|5|5|5||5)
+TE 3 remove(8,3) -> ss(helrld|6|6|6||6) se(helrld|6|6|6||6) cp(helrld|6|6|6||6) text(helrld|6|6|6||6) len(helrld|6|6|6||6)
+TE 3 remove(50,60) ->
+TE 3 remove(-3,3) -> ss(lo world|8|8|8||8) se(lo world|8|8|8||8) cp(lo world|8|8|8||8) text(lo world|8|8|8||8) len(lo world|8|8|8||8)
+TE 3 remove(0,1) -> ss(ello world|10|10|10||10) se(ello world|10|10|10||10) cp(ello world|10|10|10||10) text(ello world|10|10|10||10) len(ello world|10|10|10||10)
+TE 3 remove(0,2) -> ss(llo world|9|9|9||9) se(llo world|9|9|9||9) cp(llo world|9|9|9||9) text(llo world|9|9|9||9) len(llo world|9|9|9||9)
+TE 3 remove(1,5) -> ss(h world|7|7|7||7) se(h world|7|7|7||7) cp(h world|7|7|7||7) text(h world|7|7|7||7) len(h world|7|7|7||7)
+TE 3 remove(2,4) -> ss(heo world|9|9|9||9) se(heo world|9|9|9||9) cp(heo world|9|9|9||9) text(heo world|9|9|9||9) len(heo world|9|9|9||9)
+TE 3 remove(3,4) -> ss(helo world|10|10|10||10) se(helo world|10|10|10||10) cp(helo world|10|10|10||10) text(helo world|10|10|10||10) len(helo world|10|10|10||10)
+TE 3 remove(4,7) -> ss(hellorld|8|8|8||8) se(hellorld|8|8|8||8) cp(hellorld|8|8|8||8) text(hellorld|8|8|8||8) len(hellorld|8|8|8||8)
+TE 3 remove(0,11) -> ss(|0|0|0||0) se(|0|0|0||0) cp(|0|0|0||0) text(|0|0|0||0) len(|0|0|0||0)
+TE 3 remove(4,4) ->
+TE 3 remove(9,11) -> ss(hello wor|9|9|9||9) se(hello wor|9|9|9||9) cp(hello wor|9|9|9||9) text(hello wor|9|9|9||9) len(hello wor|9|9|9||9)
+TE 3 getText(3,1) ->
+TE 3 getText(2,5) ->
+TE 3 getText(-2,99) ->
+TE 3 selectAll -> st(hello world|11|0|11|hello world|11) ss(hello world|11|0|11|hello world|11)
+TE 3 deselect ->
+TE 3 clear -> ss(|0|0|0||0) se(|0|0|0||0) cp(|0|0|0||0) text(|0|0|0||0) len(|0|0|0||0)
+TE 3 cursorPosition=7 -> ss(hello world|7|7|7||11) se(hello world|7|7|7||11) cp(hello world|7|7|7||11)
+TE 3 cursorPosition=3 -> ss(hello world|3|3|3||11) se(hello world|3|3|3||11) cp(hello world|3|3|3||11)

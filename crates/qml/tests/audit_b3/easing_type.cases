@@ -1,0 +1,48 @@
+[typeof Easing.objectName, typeof Easing.objectNameChanged, typeof Easing.valueForProgress, String(Easing.objectName)].join("|")
+=> string:string|function|function|
+[Easing.hasOwnProperty("Linear"), "Linear" in Easing, Easing.hasOwnProperty("objectName"), "objectName" in Easing, Object.getOwnPropertyNames(Easing).join(",")].join("|")
+=> string:true|true|true|true|objectName,objectNameChanged,valueForProgress
+(function(){ var n = 0; for (var k in Easing) n++; return n })()
+=> number:3
+String(Easing).replace(/0x[0-9a-f]+/, "PTR")
+=> string:QQmlEasing(PTR)
+JSON.stringify(Easing)
+=> string:{"objectName":""}
+(function(){ Easing.Linear = 5; return Easing.Linear })()
+=> number:0
+(function(){ Easing.foo = 5; return Easing.foo })()
+=> undefined
+[Easing.valueForProgress(0.25), Easing.valueForProgress(2), Easing.valueForProgress(), Easing.valueForProgress("0.5"), Easing.valueForProgress.length, Easing.valueForProgress.name].join("|")
+=> THROW Error: Insufficient arguments
+(function(){ "use strict"; try { Easing.Linear = 5; return "ok" + Easing.Linear } catch (e) { return String(e) } })()
+=> string:TypeError: Type error
+(function(){ "use strict"; try { Easing.foo = 5; return "ok" + Easing.foo } catch (e) { return String(e) } })()
+=> string:TypeError: Type error
+(function(){ try { Easing.objectName = "x"; return "ok" + Easing.objectName } catch (e) { return String(e) } })()
+=> string:okx
+(function(){ var r = delete Easing.Linear; return r + "|" + Easing.Linear })()
+=> string:true|0
+typeof Easing.objectNameChanged.connect + "|" + String(Easing.objectNameChanged).replace(/0x[0-9a-f]+/, "PTR")
+=> string:function|function() { [native code] }
+[Easing.valueForProgress(0.25), Easing.valueForProgress(2), Easing.valueForProgress(-1), Easing.valueForProgress("0.5"), Easing.valueForProgress.length, Easing.valueForProgress.name].join("|")
+=> THROW Error: Insufficient arguments
+(function(){ try { return Easing.valueForProgress() } catch (e) { return String(e) } })()
+=> string:Error: Insufficient arguments
+Object.keys(Easing).join(",")
+=> string:objectName,objectNameChanged,valueForProgress
+Object.getOwnPropertyNames(Easing).length
+=> number:3
+Object.prototype.toString.call(Easing)
+=> string:[object QMLTypeWrapper]
+[typeof Easing.toString, Easing.hasOwnProperty("toString"), Easing.toString === Object.prototype.toString, typeof Easing.valueOf, Object.getPrototypeOf(Easing) === Object.prototype, Object.isExtensible(Easing), Object.isFrozen(Easing), Object.keys(Easing).join(","), JSON.stringify(Easing), Easing instanceof Object, typeof Easing].join("|")
+=> string:function|true|false|function|false|true|false|objectName,objectNameChanged,valueForProgress|{"objectName":"x"}|true|object
+(function(){ "use strict"; try { delete Easing.Linear; return "ok" } catch (e) { return String(e) } })()
+=> string:ok
+(function(){ "use strict"; try { Easing.objectName = "x"; return "ok" + Easing.objectName } catch (e) { return String(e) } })()
+=> string:okx
+(function(){ try { Easing.objectName = "x"; Easing.foo = 1; Easing.Linear = 3; return "ok" + Easing.objectName + Easing.foo + Easing.Linear } catch (e) { return String(e) } })()
+=> string:okxundefined0
+(function(){ try { Object.defineProperty(Easing, "foo", {value: 1}); return "ok" + Easing.foo } catch (e) { return String(e) } })()
+=> string:okundefined
+[delete Easing.foo, delete Easing.objectName, Easing.objectName, (Easing + "").replace(/0x[0-9a-f]+/, "PTR"), Easing.toString().replace(/0x[0-9a-f]+/, "PTR"), Easing == Easing, Object.getOwnPropertyDescriptor(Easing, "Linear") === undefined, JSON.stringify(Object.getOwnPropertyDescriptor(Easing, "objectName"))].join("|")
+=> string:true|true|x|QQmlEasing(PTR, "x")|QQmlEasing(PTR, "x")|true|false|{"writable":true,"enumerable":true,"configurable":true}

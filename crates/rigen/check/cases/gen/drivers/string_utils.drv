@@ -1,0 +1,12 @@
+// @qml modules/common/functions/StringUtils.qml
+// v4: ["1 + two = 3, {3}","example.com","nope.org","http://x.y",null,"it'\\''s '\\''q'\\''","a\\\\b\\\\\\\\c","the quick\nbrown fox\njumps over\nthe lazy\ndog","","Song Title","Name",["0:00","0:59","1:01","59:59","1:01:01","0:00","0:00"],"&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;",5,"copied text",true,false,"/tmp","x","tok","Hello World Foo Bar"]
+var S = StringUtils;
+var md = "Hi\n<think>plan</think>\n```js\nlet x = 1\n```\ntail ```py\nprint(1)";
+var md2 = "intro <think>unfinished thought";
+var result = JSON.stringify([
+    S.format("{0} + {1} = {2}, {3}", 1, "two", 3), S.getDomain("https://www.example.com/a/b"), S.getDomain("nope.org"), S.getBaseUrl("http://x.y/z?q"), S.getBaseUrl("ftp://x"),
+    S.shellSingleQuoteEscape("it's 'q'"), S.escapeBackslashes("a\\b\\\\c"),
+    S.wordWrap("the quick brown fox jumps over the lazy dog", 10), S.wordWrap(null, 3), S.cleanMusicTitle("(Official) 【MV】 Song Title  "), S.cleanMusicTitle("[HD] {x} 「OP」Name"),
+    [0, 59.9, 61, 3599, 3661, -1, NaN].map(S.friendlyTimeForSeconds), S.escapeHtml(`<a href="x">'&'</a>`), S.escapeHtml(5), S.cleanCliphistEntry("123\tcopied text"),
+    S.stringListContainsSubstring("hello world", ["xx", "wor"]), S.stringListContainsSubstring("a", []), S.cleanPrefix("file:///tmp", "file://"), S.cleanPrefix("x", "y"),
+    S.cleanOnePrefix("Bearer tok", ["Basic ", "Bearer "]), S.toTitleCase("hello-world_foo bAR")]);

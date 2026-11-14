@@ -1,0 +1,335 @@
+# Widget types of the widget layout (Impulse widget registry): one section per container
+# kind, in the order panel / desktop / sidebar. Sizes are logical pixels [width, height], except
+# in the sidebar section, where width is cells of the sidebar grid's `columns`.
+
+# --- panel -----------------------------------------------------------------------------------
+
+[[widget]]
+type = "left-sidebar-button"
+name = "Left sidebar button"
+icon = "side_navigation"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/LeftSidebarButtonWidget.qml"
+size = { min = [24, 24], default = [24, 24] }
+
+[[widget]]
+type = "active-window"
+name = "Active window"
+icon = "web_asset"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/ActiveWindowWidget.qml"
+size = { min = [80, 24], default = [80, 24] }
+
+[[widget]]
+type = "resources"
+name = "Resources"
+icon = "memory"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/ResourcesWidget.qml"
+size = { min = [24, 24], default = [24, 24] }
+pill = true
+
+[[widget]]
+type = "media"
+name = "Media"
+icon = "music_note"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/MediaWidget.qml"
+size = { min = [24, 24], default = [24, 24] }
+pill = true
+
+[[widget]]
+type = "workspaces"
+name = "Workspaces"
+icon = "workspaces"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/WorkspacesWidget.qml"
+size = { min = [24, 24], default = [24, 24] }
+pill = true
+
+[[widget]]
+type = "clock"
+name = "Clock"
+icon = "schedule"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/ClockWidget.qml"
+size = { min = [24, 24], default = [24, 24] }
+pill = true
+
+[[widget.setting]]
+key = "showDate"
+label = "Show date"
+kind = "bool"
+default = true
+
+[[widget]]
+type = "util-buttons"
+name = "Utility buttons"
+icon = "build"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/UtilButtonsWidget.qml"
+size = { min = [24, 24], default = [24, 24] }
+pill = true
+
+[[widget]]
+type = "battery"
+name = "Battery"
+icon = "battery_full"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/BatteryWidget.qml"
+size = { min = [24, 24], default = [24, 24] }
+pill = true
+
+[[widget]]
+type = "indicators"
+name = "Status indicators"
+icon = "notifications"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/IndicatorsWidget.qml"
+size = { min = [24, 24], default = [24, 24] }
+
+[[widget]]
+type = "systray"
+name = "System tray"
+icon = "apps"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/SysTrayWidget.qml"
+size = { min = [24, 24], default = [24, 24] }
+
+[[widget]]
+type = "weather"
+name = "Weather"
+icon = "partly_cloudy_day"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/WeatherWidget.qml"
+size = { min = [24, 24], default = [24, 24] }
+
+[[widget]]
+type = "spacer"
+name = "Spacer"
+icon = "space_bar"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/SpacerWidget.qml"
+size = { min = [0, 0], default = [24, 24] }
+
+[[widget]]
+type = "separator"
+name = "Separator"
+icon = "more_vert"
+placements = ["panel"]
+component = "modules/rusty/bar/panel/SeparatorWidget.qml"
+size = { min = [1, 1], default = [24, 24] }
+
+# --- desktop ---------------------------------------------------------------------------------
+
+[[widget]]
+type = "desktop-clock"
+name = "Clock"
+icon = "schedule"
+placements = ["desktop"]
+component = "modules/rusty/background/widgets/clock/DesktopClock.qml"
+enabledBy = "background.widgets.clock.enable"
+size = { min = [120, 80], max = [1600, 1000], default = [320, 200] }
+
+[[widget]]
+type = "desktop-weather"
+name = "Weather"
+icon = "partly_cloudy_day"
+placements = ["desktop"]
+component = "modules/rusty/background/widgets/weather/DesktopWeather.qml"
+enabledBy = "background.widgets.weather.enable"
+size = { min = [100, 100], max = [800, 800], default = [200, 200] }
+
+# --- sidebar ---------------------------------------------------------------------------------
+
+[[widget]]
+type = "antiFlashbang"
+name = "Anti-flashbang"
+icon = "flash_off"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/AntiFlashbangToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "audio"
+name = "Audio"
+icon = "volume_up"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/AudioToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "bluetooth"
+name = "Bluetooth"
+icon = "bluetooth"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/BluetoothToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "cloudflareWarp"
+name = "Cloudflare WARP"
+icon = "cloud_lock"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/CloudflareWarpToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "colorPicker"
+name = "Color picker"
+icon = "colorize"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/ColorPickerToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "darkMode"
+name = "Dark mode"
+icon = "contrast"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/DarkModeToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "easyEffects"
+name = "EasyEffects"
+icon = "graphic_eq"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/EasyEffectsToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "gameMode"
+name = "Game mode"
+icon = "gamepad"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/GameModeToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "idleInhibitor"
+name = "Keep awake"
+icon = "coffee"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/IdleInhibitorToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "mic"
+name = "Microphone"
+icon = "mic"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/MicToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "musicRecognition"
+name = "Identify music"
+icon = "music_cast"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/MusicRecognitionToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "network"
+name = "Internet"
+icon = "wifi"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/NetworkToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "nightLight"
+name = "Night light"
+icon = "nightlight"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/NightLightToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "notifications"
+name = "Do not disturb"
+icon = "notifications_paused"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/NotificationsToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "onScreenKeyboard"
+name = "On-screen keyboard"
+icon = "keyboard"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/OnScreenKeyboardToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "powerProfile"
+name = "Power profile"
+icon = "energy_savings_leaf"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/PowerProfileToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "screenSnip"
+name = "Screen snip"
+icon = "screenshot_region"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/ScreenSnipToggleWidget.qml"
+size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+
+[[widget]]
+type = "sliders"
+name = "Sliders"
+icon = "tune"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/SlidersWidget.qml"
+size = { min = [1, 1], default = [5, 1] }
+
+[[widget]]
+type = "quickToggles"
+name = "Quick toggles"
+icon = "toggle_on"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/QuickTogglesWidget.qml"
+size = { min = [1, 1], default = [5, 1] }
+
+[[widget]]
+type = "notificationCenter"
+name = "Notifications"
+icon = "notifications"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/NotificationCenterWidget.qml"
+size = { min = [1, 1], default = [5, 1] }
+
+[[widget]]
+type = "calendarTasks"
+name = "Calendar & tasks"
+icon = "calendar_month"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/CalendarTasksWidget.qml"
+size = { min = [1, 1], default = [5, 1] }
+
+[[widget]]
+type = "calendar"
+name = "Calendar"
+icon = "calendar_month"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/CalendarWidget.qml"
+size = { min = [1, 1], default = [5, 1] }
+
+[[widget]]
+type = "notes"
+name = "To do"
+icon = "done_outline"
+placements = ["sidebar"]
+component = "modules/rusty/sidebarRight/widgets/NotesWidget.qml"
+size = { min = [1, 1], default = [5, 1] }
+
+[[widget.setting]]
+key = "cardHeight"
+label = "Height"
+kind = "int"
+default = 350
+min = 120
+max = 900

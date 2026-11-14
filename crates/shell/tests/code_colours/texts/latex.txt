@@ -1,0 +1,16 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+% preamble
+\newcommand{\R}{\mathbb{R}}
+\begin{document}
+\section{Intro}
+Let $x \in \R$ and \textbf{bold} text with 50\% of \emph{emphasis}.
+\begin{equation}
+  \int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2} \label{eq:gauss}
+\end{equation}
+See \eqref{eq:gauss} and \cite{knuth84}.
+\[ a^2 + b^2 = c^2 \]
+\begin{itemize}
+  \item first
+\end{itemize}
+\end{document}

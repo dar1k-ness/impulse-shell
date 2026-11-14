@@ -1,0 +1,37 @@
+// Constructs that appear in ii QML handler/function bodies (switch on enums, labeled loops, getters, spread, template literals, optional chains, ??=, Date, toFixed, sort comparators).
+var Shape = { Circle: 0, Square: 1, Pill: 2 };
+function pick(s) {
+    switch (s) {
+    case Shape.Circle: return "circle";
+    case Shape.Square:
+    case Shape.Pill: { const k = "rect"; return k + s; }
+    default: return "?";
+    }
+}
+var acc = [];
+outer: for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+        if (j === 2) continue outer;
+        if (i === 3) break outer;
+        acc.push(`${i}${j}`);
+    }
+}
+var cfg = { options: { bar: { vertical: false, workspaces: { shown: 10 } } } };
+var shown = cfg?.options?.bar?.workspaces?.shown ?? 5, missing = cfg?.options?.dock?.height ?? 60;
+class O { constructor() { this._v = 1 } get v() { return this._v * 2 } set v(x) { this._v = x + 1 } }
+var o = new O();
+o.v = 4;
+var counter = (() => { let c = 0; return { inc: () => ++c, get: () => c } })();
+counter.inc(); counter.inc();
+var arr = [5, 3, 9, 1].sort((a, b) => b - a), copy = [...arr, ...[0]], { 0: first, length } = copy;
+var objs = [{ n: "b", t: 2 }, { n: "a", t: 2 }, { n: "c", t: 1 }].sort((a, b) => b.t - a.t || a.n.localeCompare(b.n)).map(x => x.n).join("");
+var cache = {}; cache.k ??= []; cache.k.push(1); cache.k ??= "no";
+var t = typeof undefined + typeof null + typeof (() => 1);
+var nums = [0.1 + 0.2, (1234.5678).toFixed(2), (0.000001234).toString(), 1e21, -0, 255..toString(16), parseInt("08"), parseFloat("3.14abc"), Number(""), Math.round(-2.5), 7 % -3, -7 % 3, 2 ** 10];
+var d = new Date(2026, 0, 31); d.setMonth(1);
+var dates = [d.getMonth(), d.getDate(), new Date(2026, 9, 27, 13, 5).toISOString().length, Math.floor(new Date(0).getTime())];
+var s = "Hello, World"; var strs = [s.split(", "), s.substring(7), s.slice(-5, -1), s.indexOf("o", 5), s.at(-1), s.padEnd(14, "."), s.toUpperCase(), s.charCodeAt(0), s.split("").reverse().join(""), "a-b-c".replaceAll("-", "+"), "  x ".trimStart() + "|"];
+var ent = Object.entries({ a: 1, b: 2 }).map(([k, v]) => k + v), keys = Object.keys([7, 8]), assigned = Object.assign({}, { a: 1 }, { b: 2 });
+var r = []; for (const k in { x: 1, y: 2 }) r.push(k); for (const [i, v] of ["p", "q"].entries()) r.push(i + v);
+var thrown; try { null.x } catch (e) { thrown = e != null } finally { r.push("fin") }
+var result = JSON.stringify([[0, 1, 2, 3].map(pick), acc, shown, missing, o.v, counter.get(), arr, copy, first, length, objs, cache, t, nums, dates, strs, ent, keys, assigned, r, thrown]);

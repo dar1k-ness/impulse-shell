@@ -1,0 +1,138 @@
+a5 started true 0
+a5 running true 0
+completed true 0
+a1 started true 0
+a1 running true 0
+a2 started true 0
+a2 running true 0
+a3 started true false
+a3 running true false
+a4 started true
+a4 running true
+a6 running true 0
+end completed
+s 1 2.00 2.00 10.00 5.00 3.33 3.33
+a4 script true 10
+s 2 4.00 4.00 20.00 10.00 6.67 6.67
+-- complete a1
+after true 0.00
+-- stop a2
+a2 running false 4
+after false 4.00
+a5 stopped false 10
+a5 running false 10
+a5 finished false 10
+a4 stopped false 10
+a4 running false
+a4 finished false
+a6 running false 10
+s 3 2.00 6.00 30.00 10.00 10.00 10.00
+-- pause a3
+a3 paused true true 30
+after true true 30.00
+-- pause a3 again
+s 4 4.00 8.00 30.00 10.00 10.00 10.00
+-- start a2 while finishing
+a2 running true 8
+after true
+s 5 6.00 0.00 30.00 10.00 10.00 10.00
+s 6 8.00 2.00 30.00 10.00 10.00 10.00
+-- resume a3
+a3 paused false true 30
+after true false
+s 7 0.00 4.00 40.00 10.00 10.00 10.00
+s 8 2.00 6.00 50.00 10.00 10.00 10.00
+-- paused = true
+a3 paused true true 50
+after true
+s 9 4.00 8.00 50.00 10.00 10.00 10.00
+-- complete paused a3
+a3 paused false false 100
+a3 stopped false false 100
+a3 running false false
+a3 finished false false
+after false false 100.00
+s 10 6.00 0.00 100.00 10.00 10.00 10.00
+-- pause stopped a3
+after false false
+after2 false
+s 11 8.00 2.00 100.00 10.00 10.00 10.00
+-- zero duration
+a7 started true 7
+a7 stopped false 10
+a7 running false 10
+a7 finished false 10
+after false 10
+a1 stopped false 10
+a1 running false 10
+a1 finished false 10
+s 12 10.00 4.00 100.00 10.00 10.00 10.00
+-- x6 again
+a6 running true 10
+s 13 10.00 6.00 100.00 10.00 10.00 6.67
+s 14 10.00 8.00 100.00 10.00 10.00 3.33
+-- child start
+after false
+a2 running false 10
+a2 stopped false 10
+a2 finished false 10
+a6 running false 0
+s 15 10.00 10.00 100.00 10.00 10.00 0.00
+s 16 10.00 10.00 100.00 10.00 10.00 0.00
+-- restart seq, stop
+a4 started true
+a4 running true
+a4 stopped false 0
+a4 running false
+after false 0
+s 17 10.00 10.00 100.00 0.00 10.00 0.00
+s 18 10.00 10.00 100.00 0.00 10.00 0.00
+-- a2 stop, restart
+a2 started true 10
+a2 running true 0
+after true 0.00
+s 19 10.00 2.00 100.00 0.00 10.00 0.00
+s 20 10.00 4.00 100.00 0.00 10.00 0.00
+s 21 10.00 6.00 100.00 0.00 10.00 0.00
+s 22 10.00 8.00 100.00 0.00 10.00 0.00
+s 23 10.00 0.00 100.00 0.00 10.00 0.00
+s 24 10.00 2.00 100.00 0.00 10.00 0.00
+s 25 10.00 4.00 100.00 0.00 10.00 0.00
+s 26 10.00 6.00 100.00 0.00 10.00 0.00
+s 27 10.00 8.00 100.00 0.00 10.00 0.00
+s 28 10.00 0.00 100.00 0.00 10.00 0.00
+s 29 10.00 2.00 100.00 0.00 10.00 0.00
+s 30 10.00 4.00 100.00 0.00 10.00 0.00
+s 31 10.00 6.00 100.00 0.00 10.00 0.00
+s 32 10.00 8.00 100.00 0.00 10.00 0.00
+a2 running false 10
+a2 stopped false 10
+a2 finished false 10
+s 33 10.00 10.00 100.00 0.00 10.00 0.00
+s 34 10.00 10.00 100.00 0.00 10.00 0.00
+s 35 10.00 10.00 100.00 0.00 10.00 0.00
+s 36 10.00 10.00 100.00 0.00 10.00 0.00
+s 37 10.00 10.00 100.00 0.00 10.00 0.00
+s 38 10.00 10.00 100.00 0.00 10.00 0.00
+s 39 10.00 10.00 100.00 0.00 10.00 0.00
+s 40 10.00 10.00 100.00 0.00 10.00 0.00
+s 41 10.00 10.00 100.00 0.00 10.00 0.00
+s 42 10.00 10.00 100.00 0.00 10.00 0.00
+s 43 10.00 10.00 100.00 0.00 10.00 0.00
+s 44 10.00 10.00 100.00 0.00 10.00 0.00
+s 45 10.00 10.00 100.00 0.00 10.00 0.00
+s 46 10.00 10.00 100.00 0.00 10.00 0.00
+s 47 10.00 10.00 100.00 0.00 10.00 0.00
+s 48 10.00 10.00 100.00 0.00 10.00 0.00
+s 49 10.00 10.00 100.00 0.00 10.00 0.00
+s 50 10.00 10.00 100.00 0.00 10.00 0.00
+s 51 10.00 10.00 100.00 0.00 10.00 0.00
+s 52 10.00 10.00 100.00 0.00 10.00 0.00
+s 53 10.00 10.00 100.00 0.00 10.00 0.00
+s 54 10.00 10.00 100.00 0.00 10.00 0.00
+s 55 10.00 10.00 100.00 0.00 10.00 0.00
+s 56 10.00 10.00 100.00 0.00 10.00 0.00
+s 57 10.00 10.00 100.00 0.00 10.00 0.00
+s 58 10.00 10.00 100.00 0.00 10.00 0.00
+s 59 10.00 10.00 100.00 0.00 10.00 0.00
+s 60 10.00 10.00 100.00 0.00 10.00 0.00

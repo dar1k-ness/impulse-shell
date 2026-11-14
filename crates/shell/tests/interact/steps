@@ -1,0 +1,106 @@
+# label: op args => IACT line... Coordinates are window pixels of tests/interact/shell.qml as laid
+# out by Qt. A step ends once the shell printed its `=>` lines in order (each the whole line or its
+# leading words), so name the last line the step makes Qt print.
+# A drag's lines before `=> release` are waited for with the button still down.
+btn: move 100 40 => btn hovered true
+btn: click 100 40 => btn clicked
+# RippleButton handles pressAndHold of its own MouseArea by not reacting: the hold still clicks.
+btn: hold 100 40 900 => btn down true => btn clicked
+btn: move 100 150 => btn hovered false
+toggleBtn: click 100 90 => toggleBtn clicked
+toggleBtn: click 100 90 right => toggleBtn altAction
+toggleBtn: click 100 90 middle => toggleBtn middleClick
+combo: click 300 40 => geom comboPopup
+combo: click 300 134 => combo closed
+combo: click 300 40 => geom comboPopup
+combo: key Escape => combo closed
+combo: key Down => combo activated 2
+combo: key Up => combo activated 1
+slider: click 245 256 => slider pressed false
+slider: drag 245 256 95 256 => slider pressed false
+sw: click 469 32 => sw clicked
+sw: click 469 32 => sw clicked
+radio: click 525 134 => radio2 clicked
+radio: click 525 94 => radio1 clicked
+spin: click 542 187 => spin valueModified 6
+spin: click 542 187 => spin valueModified 7
+spin: click 467 187 => spin valueModified 6
+tf: click 170 333 => tf activeFocus true
+tf: type hi => tf text hi
+tf: key BackSpace => tf text h
+tf: key Return => tf accepted
+ta: click 170 410 => ta activeFocus true
+ta: type a => ta text a
+ta: key Return => ta text a\n
+ta: type b => ta text a\nb
+tabs: click 900 41 => tabs currentIndex 1
+tabs: click 1033 41 => tabs currentIndex 2
+tabs: click 766 41 => tabs currentIndex 0
+# A wheel burst's movement ends after the view came to rest and the pointer moved on.
+list: wheel 800 200 down 1 => list moving true
+list: move 800 210 => list moving false
+list: click 800 130 => list delegateClicked 2
+list: wheel 800 200 down 3 => list moving true
+list: move 800 210 => list moving false
+list: wheel 800 200 up 8 => list moving true
+list: move 800 210 => list moving false
+list: drag 800 280 800 200 => list moving false
+list: click 800 130 => list delegateClicked 2
+flick: wheel 1050 200 down 2 => flick moving true
+flick: move 1050 210 => flick moving false
+flick: wheel 1050 200 up 8 => flick moving true
+flick: move 1050 210 => flick moving false
+flick: drag 1050 280 1050 200 => flick moving false
+flick: drag 1146 120 1146 170 => flick barPressed false
+ma: move 120 530 => ma entered
+ma: click 120 530 => ma clicked 1
+ma: click 120 530 right => ma clicked 2
+ma: click 120 530 middle => ma clicked 4
+ma: dclick 120 530 => ma doubleClicked 1 => ma released 1
+ma: hold 120 530 900 => ma pressAndHold 1 => ma released 1
+ma: wheel 120 530 up 1 => ma wheel 120
+ma: wheel 120 530 down 2 => ma wheel -120 => ma wheel -120
+ma: move 120 600 => ma exited
+drg: drag 290 520 340 520 => drg active false
+wh: wheel 410 530 down 2 => wh wheel -120 => wh wheel -120
+# Touchpad frames: `swipe x y dx dy` sends the finger's wl_pointer.axis values. Each step waits
+# for the line's leading words only, so a wrong sign is a difference from Qt, not a wait.
+pad: swipe 810 670 2.5 0 => pad wheel
+pad: swipe 810 670 -5 0 => pad wheel
+pad: swipe 810 670 0 2.5 => pad wheel
+pad: swipe 810 670 -2.5 5 => pad wheel
+keys: click 530 530 => keys activeFocus true
+keys: key a => keys released 65
+keys: key Escape => keys released 16777216
+keys: key Return => keys released 16777220
+dragTarget: drag 630 510 730 510 => dragTarget dragActive false
+dragTarget: click 730 510 => dragTarget clicked
+# The press is 5 px inside the widget's resize edge; the first moves cross it before the
+# DragHandler takes the grab and pulls the widget back under the pointer. Where the pointer then
+# is in the widget, its MouseArea learns from frame-synchronous hover, which both shells deliver
+# at most once in 100 ms of wall time (QT_QUICK_FRAME_SYNCHRONOUS_HOVER_INTERVAL), whatever
+# frames the script counted: the button stays down until that hover came.
+ovw: drag 847 607 883 631 => ovw active true => ovw edge false => release => ovw active false => ovw pointer
+menu: click 100 640 => geom menuContent
+menu: click 100 680 => menu closed
+menu: click 100 640 => geom menuContent
+menu: key Escape => menu closed
+wmenu: click 600 640 => wmenu opened
+wmenu: key Escape => wmenu closed
+wmenu: click 600 640 => wmenu opened
+wmenu: click 650 700 => wmenu closed
+wmenu: click 600 640 => wmenu opened
+wmenu: click 900 720 => wmenu closed
+tip: move 280 640 => tip visible true
+tip: move 280 700 => tip visible false
+popup: click 460 640 => geom popup
+popup: click 460 560 => popup innerClicked
+popup: click 1100 700 => popup closed
+swipe: drag 1120 400 990 400 => swipe rest
+swipe: drag 990 400 1120 400 => swipe rest
+swipeCode: click 997 485 => swipeCode rest
+swipeCode: click 1102 485 => swipeCode rest
+dblBtn: click 1050 535 => dblBtn clicked
+dblBtn: dclick 1050 535 => dblBtn doubleClicked => dblBtn released
+grp: hold 1050 600 900 => grp altAction => grp release
+grp: click 1050 600 => grp clicked

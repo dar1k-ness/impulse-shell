@@ -1,0 +1,8 @@
+state A
+b on in onStateChanged: A
+after a: A b true
+tick 3: A b true
+state B
+a off: B
+end: B 50 b true
+warning: QML StateGroup: Can't apply a state change as part of a state definition.

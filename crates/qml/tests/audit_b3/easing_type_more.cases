@@ -1,0 +1,29 @@
+# Easing as a type wrapper; value type prototypes
+[typeof Easing.objectName, typeof Easing.objectNameChanged, typeof Easing.valueForProgress, String(Easing.objectName)].join("|")
+=> string:string|function|function|
+[Easing.hasOwnProperty("Linear"), "Linear" in Easing, Easing.hasOwnProperty("objectName"), "objectName" in Easing, Object.getOwnPropertyNames(Easing).join(",")].join("|")
+=> string:true|true|true|true|objectName,objectNameChanged,valueForProgress
+(function(){ var n = 0; for (var k in Easing) n++; return n })()
+=> number:3
+String(Easing).replace(/0x[0-9a-f]+/, "PTR")
+=> string:QQmlEasing(PTR)
+JSON.stringify(Easing)
+=> string:{"objectName":""}
+(function(){ Easing.Linear = 5; return Easing.Linear })()
+=> number:0
+(function(){ Easing.foo = 5; return Easing.foo })()
+=> undefined
+[Object.getPrototypeOf(Qt.vector2d(1, 2)) === Object.getPrototypeOf(Qt.rect(1, 2, 3, 4)), Object.getPrototypeOf(Qt.vector2d(1, 2)) === Object.getPrototypeOf(Qt.locale()), Object.getPrototypeOf(Qt.rgba(1, 0, 0, 1)) === Object.getPrototypeOf(Qt.size(1, 2)), Object.getPrototypeOf(Qt.font({family: "A"})) === Object.getPrototypeOf(Qt.quaternion(1, 2, 3, 4)), Object.getPrototypeOf(Qt.matrix4x4()) === Object.getPrototypeOf(Qt.vector4d(1, 2, 3, 4))].join("|")
+=> string:true|true|true|true|true
+(function(){ var p = Object.getPrototypeOf(Qt.vector2d(1, 2)); return Object.getOwnPropertyNames(p).join(",") + "|" + (Object.getPrototypeOf(p) === Object.prototype) + "|" + Object.prototype.toString.call(p) })()
+=> string:toString|true|[object Object]
+(function(){ var l = Qt.locale("en_US"); try { l.dayName = 5 } catch (e) { return String(e) } })()
+=> string:Error: Cannot assign int to QString
+(function(){ var l = Qt.locale("en_US"); try { l.formattedDataSize = 5 } catch (e) { return String(e) } })()
+=> string:Error: Cannot assign int to 
+(function(){ var l = Qt.locale("en_US"); try { l.monthName = "x" } catch (e) { return String(e) } })()
+=> string:Error: Cannot assign QString to QString
+(function(){ var v = Qt.vector3d(1, 2, 3); try { v.dotProduct = "x" } catch (e) { return String(e) } })()
+=> undefined
+(function(){ var v = Qt.rect(1, 2, 3, 4); try { v.toString = "x"; v.zzz = 1; return typeof v.toString + typeof v.zzz } catch (e) { return String(e) } })()
+=> string:functionundefined

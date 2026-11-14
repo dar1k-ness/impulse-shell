@@ -1,0 +1,9 @@
+# monitors
+monitor = eDP-1, 1920x1080@60, 0x0, 1
+$mod = SUPER
+general {
+    gaps_in = 5
+    col.active_border = rgba(33ccffee) rgba(00ff99ee) 45deg
+}
+bind = $mod, Return, exec, kitty
+exec-once = waybar & hyprpaper

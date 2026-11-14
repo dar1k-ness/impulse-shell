@@ -1,0 +1,21 @@
+set $wallpaper #B3261E
+
+set $background #180f0e
+set $foreground #f9d5d0
+
+set $color0 #180f0e
+set $color1 #f4acb6
+set $color2 #c1e3b7
+set $color3 #f2dfbe
+set $color4 #adc5f7
+set $color5 #f7cfec
+set $color6 #b1e0d9
+set $color7 #f8c2a8
+set $color8 #caaba7
+set $color9 #f6b7c0
+set $color10 #cae7c1
+set $color11 #f4e3c7
+set $color12 #b8ccf8
+set $color13 #f8d5ef
+set $color14 #bce3de
+set $color15 #f9cab4

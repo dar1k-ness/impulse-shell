@@ -1,0 +1,37 @@
+# `<QML type>.<property>`, a tab and why table.py writes the line though its rules leave it out.
+ApplicationWindow.visible	false until the document shows the window; the engine shows every window
+ComboBox.rightPadding	Basic's ComboBox.qml makes room for the indicator
+DayOfWeekRow.padding	Basic's DayOfWeekRow.qml sets topPadding and bottomPadding, not padding
+DayOfWeekRow.verticalPadding	Basic's DayOfWeekRow.qml sets topPadding and bottomPadding, not padding
+DayOfWeekRow.font.bold	Basic's DayOfWeekRow.qml sets it
+DayOfWeekRow.font.weight	Basic's DayOfWeekRow.qml sets font.bold
+Synchronizer.objectName	the engine has no such object, the lines are all it reads
+Synchronizer.sourceObject	the engine has no such object, the lines are all it reads
+Synchronizer.sourceProperty	the engine has no such object, the lines are all it reads
+Synchronizer.targetObject	the engine has no such object, the lines are all it reads
+Synchronizer.targetProperty	the engine has no such object, the lines are all it reads
+TextField.color	Basic's TextField.qml binds it to the palette
+TextField.selectionColor	Basic's TextField.qml binds it to the palette
+TextField.selectedTextColor	Basic's TextField.qml binds it to the palette
+TextField.placeholderTextColor	Basic's TextField.qml binds it to the palette
+TextArea.color	Basic's TextArea.qml binds it to the palette
+TextArea.selectionColor	Basic's TextArea.qml binds it to the palette
+TextArea.selectedTextColor	Basic's TextArea.qml binds it to the palette
+TextArea.placeholderTextColor	Basic's TextArea.qml binds it to the palette
+ColorOverlay.color	the effect is a QML file that sets it; the engine has no such file
+ColorOverlay.cached	the effect is a QML file that sets it; the engine has no such file
+Desaturate.desaturation	the effect is a QML file that sets it; the engine has no such file
+Desaturate.cached	the effect is a QML file that sets it; the engine has no such file
+DropShadow.fast	the effect is a QML file that sets it; the engine has no such file
+DropShadow.samples	the effect is a QML file that sets it; the engine has no such file
+DropShadow.color	the effect is a QML file that sets it; the engine has no such file
+DropShadow.horizontalOffset	the effect is a QML file that sets it; the engine has no such file
+DropShadow.verticalOffset	the effect is a QML file that sets it; the engine has no such file
+DropShadow.spread	the effect is a QML file that sets it; the engine has no such file
+DropShadow.cached	the effect is a QML file that sets it; the engine has no such file
+DropShadow.transparentBorder	the effect is a QML file that sets it; the engine has no such file
+GaussianBlur.samples	the effect is a QML file that sets it; the engine has no such file
+GaussianBlur.transparentBorder	the effect is a QML file that sets it; the engine has no such file
+GaussianBlur.cached	the effect is a QML file that sets it; the engine has no such file
+OpacityMask.cached	the effect is a QML file that sets it; the engine has no such file
+OpacityMask.invert	the effect is a QML file that sets it; the engine has no such file

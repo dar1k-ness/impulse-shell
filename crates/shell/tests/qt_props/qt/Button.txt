@@ -1,0 +1,129 @@
+a.text [str]: "" | set "x" | reset "" | bind "x" -> "" -> "x" | reset ""
+b.text [str]: "preset" | set "presetx" | reset "" | bind "x" -> "" -> "x" | reset ""
+c.text: ""
+a.down [bool]: false | set true | reset false | bind true -> false -> true | reset false
+b.down [bool]: false | set true | reset false | bind true -> false -> true | reset false
+c.down: false
+a.icon.name [str]: "" | set "x" | reset "" | bind "x" -> "" -> "x" | reset ""
+b.icon.name [str]: "" | set "x" | reset "" | bind "x" -> "" -> "x" | reset ""
+c.icon.name: ""
+a.icon.source [url]:  | set x.png | reset  | bind x.png ->  -> x.png | reset 
+b.icon.source [url]:  | set x.png | reset  | bind x.png ->  -> x.png | reset 
+c.icon.source: 
+a.icon.width [num]: 24 | set 27 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.icon.width [num]: 24 | set 27 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.icon.width: 0
+a.icon.height [num]: 24 | set 27 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.icon.height [num]: 24 | set 27 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.icon.height: 0
+a.icon.color [color]: #00000000 | set #123456 | reset #00000000 | bind #123456 -> #00000000 -> #123456 | reset #00000000
+b.icon.color [color]: #00000000 | set #123456 | reset #00000000 | bind #123456 -> #00000000 -> #123456 | reset #00000000
+c.icon.color: #00000000
+a.icon.cache [bool]: true | set false | reset true | bind false -> true -> false | reset true
+b.icon.cache [bool]: true | set false | reset true | bind false -> true -> false | reset true
+c.icon.cache: true
+a.font [skip]: QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0) | reset QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+b.font [skip]: QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0) | reset QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+c.font: QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+a.padding [num]: 6 | set 9 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.padding [num]: 5 | set 8 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.padding: 0
+a.topPadding [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.topPadding [num]: 9 | set 12 | reset 9 | bind 12 -> 9 -> 12 | reset 9
+c.topPadding: 0
+a.leftPadding [num]: 8 | set 11 | reset 8 | bind 11 -> 8 -> 11 | reset 8
+b.leftPadding [num]: 8 | set 11 | reset 8 | bind 11 -> 8 -> 11 | reset 8
+c.leftPadding: 0
+a.rightPadding [num]: 8 | set 11 | reset 8 | bind 11 -> 8 -> 11 | reset 8
+b.rightPadding [num]: 8 | set 11 | reset 8 | bind 11 -> 8 -> 11 | reset 8
+c.rightPadding: 0
+a.bottomPadding [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.bottomPadding [num]: 9 | set 12 | reset 9 | bind 12 -> 9 -> 12 | reset 9
+c.bottomPadding: 0
+a.spacing [num]: 6 | set 9 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.spacing [num]: 4 | set 7 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.spacing: 0
+a.locale [skip]: QLocale::system()/* C, Default, Default */ | reset QLocale::system()/* C, Default, Default */
+b.locale [skip]: QLocale::system()/* C, Default, Default */ | reset QLocale::system()/* C, Default, Default */
+c.locale: QLocale::system()/* C, Default, Default */
+a.hoverEnabled [bool]: false | set true | reset false | bind true -> false -> true | reset false
+b.hoverEnabled [bool]: false | set true | reset false | bind true -> false -> true | reset false
+c.hoverEnabled: false
+a.baselineOffset [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.baselineOffset [num]: 20.313 | set 23.313 | reset 20.313 | bind 23.313 -> 20.313 -> 23.313 | reset 20.313
+c.baselineOffset: 0
+a.horizontalPadding [num]: 8 | set 11 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.horizontalPadding [num]: 8 | set 11 | reset 5 | bind 8 -> 5 -> 8 | reset 5
+c.horizontalPadding: 0
+a.verticalPadding [num]: 6 | set 9 | reset 6 | bind 9 -> 6 -> 9 | reset 6
+b.verticalPadding [num]: 9 | set 12 | reset 5 | bind 8 -> 5 -> 8 | reset 5
+c.verticalPadding: 0
+a.topInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.topInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.topInset: 0
+a.leftInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.leftInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.leftInset: 0
+a.rightInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.rightInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.rightInset: 0
+a.bottomInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.bottomInset [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.bottomInset: 0
+a.width [num]: 100 | set 103 | reset 100 | bind 103 -> 100 -> 103 | reset 100
+b.width [num]: 31 | set 34 | reset 31 | bind 34 -> 31 -> 34 | reset 31
+c.width: 100
+a.height [num]: 40 | set 43 | reset 40 | bind 43 -> 40 -> 43 | reset 40
+b.height [num]: 32 | set 35 | reset 32 | bind 35 -> 32 -> 35 | reset 32
+c.height: 40
+a.palette [skip]: QQuickPalette(PTR) | reset QQuickPalette(PTR)
+b.palette [skip]: QQuickPalette(PTR) | reset QQuickPalette(PTR)
+c.palette: QQuickPalette(PTR)
+a.anchors.left [line]: QQuickAnchorLine()@0,0,100,40 | set QQuickAnchorLine()@0,0,100,40 | reset QQuickAnchorLine()@0,0,100,40 | bind QQuickAnchorLine()@0,0,100,40 -> QQuickAnchorLine()@0,0,100,40 -> QQuickAnchorLine()@0,0,100,40 | reset QQuickAnchorLine()@0,0,100,40
+b.anchors.left [line]: QQuickAnchorLine()@0,0,31,32 | set QQuickAnchorLine()@11,0,31,32 | reset QQuickAnchorLine()@11,0,31,32 | bind QQuickAnchorLine()@11,0,31,32 -> QQuickAnchorLine()@11,0,31,32 -> QQuickAnchorLine()@11,0,31,32 | reset QQuickAnchorLine()@11,0,31,32
+c.anchors.left: QQuickAnchorLine()
+a.anchors.right [line]: QQuickAnchorLine()@0,0,100,40 | set QQuickAnchorLine()@-89,0,100,40 | reset QQuickAnchorLine()@-89,0,100,40 | bind QQuickAnchorLine()@-89,0,100,40 -> QQuickAnchorLine()@-89,0,100,40 -> QQuickAnchorLine()@-89,0,100,40 | reset QQuickAnchorLine()@-89,0,100,40
+b.anchors.right [line]: QQuickAnchorLine()@0,0,31,32 | set QQuickAnchorLine()@-31,0,31,32 | reset QQuickAnchorLine()@-31,0,31,32 | bind QQuickAnchorLine()@-31,0,31,32 -> QQuickAnchorLine()@-31,0,31,32 -> QQuickAnchorLine()@-31,0,31,32 | reset QQuickAnchorLine()@-31,0,31,32
+c.anchors.right: QQuickAnchorLine()
+a.anchors.horizontalCenter [line]: QQuickAnchorLine()@0,0,100,40 | set QQuickAnchorLine()@-44,0,100,40 | reset QQuickAnchorLine()@-44,0,100,40 | bind QQuickAnchorLine()@-44,0,100,40 -> QQuickAnchorLine()@-44,0,100,40 -> QQuickAnchorLine()@-44,0,100,40 | reset QQuickAnchorLine()@-44,0,100,40
+b.anchors.horizontalCenter [line]: QQuickAnchorLine()@0,0,31,32 | set QQuickAnchorLine()@-10,0,31,32 | reset QQuickAnchorLine()@-10,0,31,32 | bind QQuickAnchorLine()@-10,0,31,32 -> QQuickAnchorLine()@-10,0,31,32 -> QQuickAnchorLine()@-10,0,31,32 | reset QQuickAnchorLine()@-10,0,31,32
+c.anchors.horizontalCenter: QQuickAnchorLine()
+a.anchors.top [line]: QQuickAnchorLine()@0,0,100,40 | set QQuickAnchorLine()@0,0,100,40 | reset QQuickAnchorLine()@0,0,100,40 | bind QQuickAnchorLine()@0,0,100,40 -> QQuickAnchorLine()@0,0,100,40 -> QQuickAnchorLine()@0,0,100,40 | reset QQuickAnchorLine()@0,0,100,40
+b.anchors.top [line]: QQuickAnchorLine()@0,0,31,32 | set QQuickAnchorLine()@0,11,31,32 | reset QQuickAnchorLine()@0,11,31,32 | bind QQuickAnchorLine()@0,11,31,32 -> QQuickAnchorLine()@0,11,31,32 -> QQuickAnchorLine()@0,11,31,32 | reset QQuickAnchorLine()@0,11,31,32
+c.anchors.top: QQuickAnchorLine()
+a.anchors.bottom [line]: QQuickAnchorLine()@0,0,100,40 | set QQuickAnchorLine()@0,-27,100,40 | reset QQuickAnchorLine()@0,-27,100,40 | bind QQuickAnchorLine()@0,-27,100,40 -> QQuickAnchorLine()@0,-27,100,40 -> QQuickAnchorLine()@0,-27,100,40 | reset QQuickAnchorLine()@0,-27,100,40
+b.anchors.bottom [line]: QQuickAnchorLine()@0,0,31,32 | set QQuickAnchorLine()@0,-30,31,32 | reset QQuickAnchorLine()@0,-30,31,32 | bind QQuickAnchorLine()@0,-30,31,32 -> QQuickAnchorLine()@0,-30,31,32 -> QQuickAnchorLine()@0,-30,31,32 | reset QQuickAnchorLine()@0,-30,31,32
+c.anchors.bottom: QQuickAnchorLine()
+a.anchors.verticalCenter [line]: QQuickAnchorLine()@0,0,100,40 | set QQuickAnchorLine()@0,-13,100,40 | reset QQuickAnchorLine()@0,-13,100,40 | bind QQuickAnchorLine()@0,-13,100,40 -> QQuickAnchorLine()@0,-13,100,40 -> QQuickAnchorLine()@0,-13,100,40 | reset QQuickAnchorLine()@0,-13,100,40
+b.anchors.verticalCenter [line]: QQuickAnchorLine()@0,0,31,32 | set QQuickAnchorLine()@0,-9,31,32 | reset QQuickAnchorLine()@0,-9,31,32 | bind QQuickAnchorLine()@0,-9,31,32 -> QQuickAnchorLine()@0,-9,31,32 -> QQuickAnchorLine()@0,-9,31,32 | reset QQuickAnchorLine()@0,-9,31,32
+c.anchors.verticalCenter: QQuickAnchorLine()
+a.anchors.baseline [line]: QQuickAnchorLine()@0,0,100,40 | set QQuickAnchorLine()@0,-6,100,40 | reset QQuickAnchorLine()@0,-6,100,40 | bind QQuickAnchorLine()@0,-6,100,40 -> QQuickAnchorLine()@0,-6,100,40 -> QQuickAnchorLine()@0,-6,100,40 | reset QQuickAnchorLine()@0,-6,100,40
+b.anchors.baseline [line]: QQuickAnchorLine()@0,0,31,32 | set QQuickAnchorLine()@0,-20.3125,31,32 | reset QQuickAnchorLine()@0,-20.3125,31,32 | bind QQuickAnchorLine()@0,-20.3125,31,32 -> QQuickAnchorLine()@0,-20.3125,31,32 -> QQuickAnchorLine()@0,-20.3125,31,32 | reset QQuickAnchorLine()@0,-20.3125,31,32
+c.anchors.baseline: QQuickAnchorLine()
+a.anchors.leftMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.anchors.leftMargin [num]: 11 | set 14 | reset 11 | bind 14 -> 11 -> 14 | reset 11
+c.anchors.leftMargin: 0
+a.anchors.rightMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.anchors.rightMargin [num]: 11 | set 14 | reset 11 | bind 14 -> 11 -> 14 | reset 11
+c.anchors.rightMargin: 0
+a.anchors.topMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.anchors.topMargin [num]: 11 | set 14 | reset 11 | bind 14 -> 11 -> 14 | reset 11
+c.anchors.topMargin: 0
+a.anchors.bottomMargin [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.anchors.bottomMargin [num]: 11 | set 14 | reset 11 | bind 14 -> 11 -> 14 | reset 11
+c.anchors.bottomMargin: 0
+a.anchors.fill [item]: null@0,0,100,40 | set <other>@0,0,11,13 | reset null@0,0,11,13 | bind <other>@0,0,11,13 -> null@0,0,11,13 -> <other>@0,0,11,13 | reset null@0,0,11,13
+b.anchors.fill [item]: null@0,0,31,32 | set <other>@11,11,-11,-9 | reset null@11,11,-11,-9 | bind <other>@11,11,-11,-9 -> null@11,11,-11,-9 -> <other>@11,11,-11,-9 | reset null@11,11,-11,-9
+c.anchors.fill: null
+a.anchors.centerIn [item]: null@0,0,100,40 | set <other>@-44,-13,100,40 | reset null@-44,-13,100,40 | bind <other>@-44,-13,100,40 -> null@-44,-13,100,40 -> <other>@-44,-13,100,40 | reset null@-44,-13,100,40
+b.anchors.centerIn [item]: null@0,0,31,32 | set <other>@-10,-9,31,32 | reset null@-10,-9,31,32 | bind <other>@-10,-9,31,32 -> null@-10,-9,31,32 -> <other>@-10,-9,31,32 | reset null@-10,-9,31,32
+c.anchors.centerIn: null
+a.antialiasing [bool]: false | set true | reset false | bind true -> false -> true | reset false
+b.antialiasing [bool]: false | set true | reset false | bind true -> false -> true | reset false
+c.antialiasing: false
+  W qrc:/qt-project.org/imports/QtQuick/Controls/Basic/Button.qml: QML IconImage: Cannot open: file:///x.png
+  W qrc:/qt-project.org/imports/QtQuick/Controls/Basic/Button.qml: QML IconImage: Cannot open: file:///x.png
+  W qrc:/qt-project.org/imports/QtQuick/Controls/Basic/Button.qml: QML IconImage: Cannot open: file:///x.png
+  W qrc:/qt-project.org/imports/QtQuick/Controls/Basic/Button.qml: QML IconImage: Cannot open: file:///x.png
+  W qrc:/qt-project.org/imports/QtQuick/Controls/Basic/Button.qml: QML IconImage: Cannot open: file:///x.png
+  W qrc:/qt-project.org/imports/QtQuick/Controls/Basic/Button.qml: QML IconImage: Cannot open: file:///x.png

@@ -1,0 +1,180 @@
+# Component.createObject: the initial properties are written in the order of their names
+# (a QVariantMap), before the object's bindings and Component.onCompleted; an object one of
+# them refused is deleted after it completed.
+@property var log: []
+@property Component oc: Component { QtObject { property int a: 1; property int b: a + 10; property string s: "d"; property var v; onAChanged: root.log.push("a=" + a); onBChanged: root.log.push("b=" + b); onSChanged: root.log.push("s=" + s); Component.onCompleted: root.log.push("done a=" + a + " b=" + b + " s=" + s); Component.onDestruction: root.log.push("gone") } }
+@property Component ac: Component { QtObject { id: q; property int n: 1; property alias an: q.n; property QtObject inner: QtObject { id: inn; property int z: 3 }; property alias az: inn.z; onNChanged: root.log.push("n=" + n) } }
+@property Component rc: Component { QtObject { required property int need; property int opt: 2 } }
+@property Component fc: Component { QtObject { readonly property int ro: 4; property int rw: 5 } }
+@property Component ic: Component { Item { property int own: 1; Component.onCompleted: root.log.push("item " + width + " " + anchors.margins) } }
+@property Component tc: Component { Text { } }
+@property Component rec: Component { Rectangle { } }
+@property Component tmc: Component { Timer { } }
+@property int base: 7
+@function nn(o) { return o === null ? "null" : "object" }
+w(function() { root.log = []; var o = root.oc.createObject(root, {a: 5, s: "x"}); return [o.a, o.b, o.s, root.log.join(",")].join("|") })
+=> string:5|15|x|a=5,s=x,b=15,done a=5 b=15 s=x
+w(function() { root.log = []; var o = root.oc.createObject(root, {b: 3}); o.a = 9; return [o.a, o.b, root.log.join(",")].join("|") })
+=> string:9|3|b=3,done a=1 b=3 s=d,a=9
+w(function() { root.log = []; var o = root.oc.createObject(root, {a: 1, s: "d"}); return [o.a, o.s, root.log.join(",")].join("|") })
+=> string:1|d|b=11,done a=1 b=11 s=d
+w(function() { root.log = []; var o = root.oc.createObject(root, {a: 5, s: {}, v: 3}); return [nn(o), root.log.join(",")].join("|") })
+=> string:null|a=5,b=15,done a=5 b=15 s=d,gone
+w(function() { root.log = []; var o = root.oc.createObject(root, {s: {}, a: 5, v: 3}); return [nn(o), root.log.join(",")].join("|") })
+=> string:null|a=5,b=15,done a=5 b=15 s=d,gone
+w(function() { root.log = []; var o = root.oc.createObject(root, {a: 5, v: 3, s: {}}); return [nn(o), root.log.join(",")].join("|") })
+=> string:null|a=5,b=15,done a=5 b=15 s=d,gone
+w(function() { root.log = []; var n = root.children.length + root.resources.length; var o = root.oc.createObject(root, {a: "x"}); return [nn(o), root.children.length + root.resources.length - n, root.log.join(",")].join("|") })
+=> string:null|0|b=11,done a=1 b=11 s=d,gone
+w(function() { root.log = []; var o = root.oc.createObject(root, {a: Qt.binding(function() { return root.base + 1 })}); var r = [o.a, o.b]; root.base = 20; r.push(o.a, o.b, root.log.join(",")); root.base = 7; return r.join("|") })
+=> string:8|18|21|31|a=8,b=18,done a=8 b=18 s=d,a=21,b=31
+w(function() { root.log = []; var o = root.oc.createObject(root, {s: Qt.binding(function() { return "b" + root.base })}); var r = [o.s]; root.base = 21; r.push(o.s); root.base = 7; return r.join("|") })
+=> string:b7|b21
+w(function() { root.log = []; var o = root.oc.createObject(root, {v: Qt.binding(function() { return root.base * 2 })}); var r = [o.v]; root.base = 9; r.push(o.v); root.base = 7; return r.join("|") })
+=> string:14|18
+w(function() { root.log = []; var o = root.oc.createObject(root, {a: Qt.binding(function() { return this.b })}); return [nn(o) !== "null", o.a, o.b].join("|") })
+=> string:true|11|21
+w(function() { root.log = []; var o = root.ac.createObject(root, {an: 8}); return [o.n, o.an, root.log.join(",")].join("|") })
+=> string:8|8|n=8
+w(function() { root.log = []; var o = root.ac.createObject(root, {an: "x"}); return [nn(o), root.log.join(",")].join("|") })
+=> string:null|
+w(function() { root.log = []; var o = root.ac.createObject(root, {az: 6}); return [o.az, o.inner.z].join("|") })
+=> string:6|6
+w(function() { root.log = []; var o = root.ac.createObject(root, {"inner.z": 6}); return [nn(o) !== "null", o ? o.inner.z : "-"].join("|") })
+=> string:true|6
+w(function() { root.log = []; var o = root.ic.createObject(root, {"anchors.margins": 4, width: 30}); return [o.anchors.margins, o.width, root.log.join(",")].join("|") })
+=> string:4|30|item 30 4
+w(function() { root.log = []; var o = root.ic.createObject(root, {"anchors.margins": "x"}); return [nn(o), root.log.join(",")].join("|") })
+=> string:null|item 0 0
+w(function() { root.log = []; var o = root.ic.createObject(root, {"anchors.nope": 4}); return [nn(o) !== "null", root.log.join(",")].join("|") })
+=> string:true|item 0 0
+w(function() { root.log = []; var o = root.ic.createObject(root, {"anchors": 4}); return [nn(o), root.log.join(",")].join("|") })
+=> string:null|item 0 0
+w(function() { root.log = []; var o = root.ic.createObject(root, {width: "x"}); return [nn(o), root.log.join(",")].join("|") })
+=> string:null|item 0 0
+w(function() { root.log = []; var o = root.ic.createObject(root, {width: "12"}); return [o ? o.width : nn(o), root.log.join(",")].join("|") })
+=> string:12|item 12 0
+w(function() { root.log = []; var o = root.ic.createObject(root, {width: null}); return [o ? o.width : nn(o), root.log.join(",")].join("|") })
+=> string:null|item 0 0
+w(function() { root.log = []; var o = root.ic.createObject(root, {width: undefined}); return [o ? o.width : nn(o), root.log.join(",")].join("|") })
+=> string:0|item 0 0
+w(function() { root.log = []; var o = root.ic.createObject(root, {visible: "x", opacity: "0.5", z: true}); return [o ? [o.visible, o.opacity, o.z].join(",") : nn(o), root.log.join(",")].join("|") })
+=> string:true,0.5,1|item 0 0
+w(function() { root.log = []; var o = root.ic.createObject(root, {parent: null}); return [o ? String(o.parent) : nn(o)].join("|") })
+=> string:null
+w(function() { root.log = []; var o = root.ic.createObject(null, {parent: root}); return [o ? o.parent === root : nn(o)].join("|") })
+=> string:true
+w(function() { root.log = []; var o = root.ic.createObject(root, {parent: 5}); return [o ? o.parent === root : nn(o)].join("|") })
+=> string:null
+w(function() { root.log = []; var o = root.ic.createObject(root, {objectName: 5}); return [o ? typeof o.objectName + o.objectName : nn(o)].join("|") })
+=> string:string5
+w(function() { root.log = []; var o = root.ic.createObject(root, {own: 3, nope: 1}); return [o.own, o.nope, "nope" in o].join("|") })
+=> string:3||false
+w(function() { root.log = []; var o = root.ic.createObject(root, {nope: 1, own: "x"}); return [nn(o)].join("|") })
+=> string:null
+w(function() { root.log = []; var o = root.ic.createObject(root, {children: []}); return [nn(o) !== "null"].join("|") })
+=> string:true
+w(function() { root.log = []; var o = root.ic.createObject(root, {childrenRect: Qt.rect(0, 0, 1, 1)}); return [nn(o) !== "null"].join("|") })
+=> string:true
+w(function() { root.log = []; var o = root.ic.createObject(root, {onWidthChanged: function() {}}); return [nn(o) !== "null"].join("|") })
+=> string:false
+w(function() { root.log = []; var o = root.ic.createObject(root, {x: 1, y: 2, width: 3, height: 4, x: "bad"}); return [nn(o)].join("|") })
+=> string:null
+w(function() { var o = root.rc.createObject(root, {need: 3}); return [o.need, o.opt].join("|") })
+=> string:3|2
+w(function() { var o = root.rc.createObject(root, {}); return nn(o) })
+=> string:null
+w(function() { var o = root.rc.createObject(root); return nn(o) })
+=> string:null
+w(function() { var o = root.rc.createObject(root, {opt: 5}); return nn(o) })
+=> string:null
+w(function() { var o = root.rc.createObject(root, {need: "x"}); return nn(o) })
+=> string:null
+w(function() { var o = root.rc.createObject(root, {need: Qt.binding(function() { return root.base })}); return o ? o.need : nn(o) })
+=> number:7
+w(function() { var o = root.fc.createObject(root, {ro: 9}); return o ? [o.ro, o.rw].join("|") : nn(o) })
+=> string:9|5
+w(function() { var o = root.fc.createObject(root, {rw: 9, ro: 9}); return o ? [o.ro, o.rw].join("|") : nn(o) })
+=> string:9|9
+w(function() { var o = root.fc.createObject(root, {ro: Qt.binding(function() { return 1 })}); return o ? [o.ro, o.rw].join("|") : nn(o) })
+=> string:THROW TypeError: Cannot assign to read-only property "ro"
+w(function() { var o = root.tc.createObject(root, {text: 5}); return o ? typeof o.text + o.text : nn(o) })
+=> string:string5
+w(function() { var o = root.tc.createObject(root, {text: null}); return o ? typeof o.text + o.text : nn(o) })
+=> string:string
+w(function() { var o = root.tc.createObject(root, {text: undefined}); return o ? typeof o.text + o.text : nn(o) })
+=> string:null
+w(function() { var o = root.tc.createObject(root, {text: ["a", "b"]}); return o ? typeof o.text + o.text : nn(o) })
+=> string:string
+w(function() { var o = root.tc.createObject(root, {color: "nope"}); return o ? "" + o.color : nn(o) })
+=> string:#000000
+w(function() { var o = root.tc.createObject(root, {color: "#123"}); return o ? "" + o.color : nn(o) })
+=> string:#112233
+w(function() { var o = root.tc.createObject(root, {"font.pixelSize": 9, "font.bold": true}); return o ? [o.font.pixelSize, o.font.bold].join("|") : nn(o) })
+=> string:9|true
+w(function() { var o = root.tc.createObject(root, {"font.pixelSize": "x"}); return o ? [o.font.pixelSize].join("|") : nn(o) })
+=> string:null
+w(function() { var o = root.tc.createObject(root, {font: Qt.font({pixelSize: 11})}); return o ? [o.font.pixelSize].join("|") : nn(o) })
+=> string:11
+w(function() { var o = root.tc.createObject(root, {font: {pixelSize: 11}}); return o ? [o.font.pixelSize].join("|") : nn(o) })
+=> string:11
+w(function() { var o = root.tc.createObject(root, {horizontalAlignment: Text.AlignRight}); return o ? o.horizontalAlignment : nn(o) })
+=> number:2
+w(function() { var o = root.tc.createObject(root, {horizontalAlignment: "AlignRight"}); return o ? o.horizontalAlignment : nn(o) })
+=> number:2
+w(function() { var o = root.tc.createObject(root, {horizontalAlignment: "nope"}); return o ? o.horizontalAlignment : nn(o) })
+=> string:null
+w(function() { var o = root.rec.createObject(root, {color: 5}); return o ? "" + o.color : nn(o) })
+=> string:#000000
+w(function() { var o = root.rec.createObject(root, {color: Qt.rgba(0, 1, 0, 1), radius: "3"}); return o ? ["" + o.color, o.radius].join("|") : nn(o) })
+=> string:#00ff00|3
+w(function() { var o = root.rec.createObject(root, {"border.width": 2, "border.color": "blue"}); return o ? [o.border.width, "" + o.border.color].join("|") : nn(o) })
+=> string:2|#0000ff
+w(function() { var o = root.rec.createObject(root, {"border.color": "nope"}); return o ? ["" + o.border.color].join("|") : nn(o) })
+=> string:#000000
+w(function() { var o = root.rec.createObject(root, {gradient: 5}); return o ? String(o.gradient) : nn(o) })
+=> string:5
+w(function() { var o = root.tmc.createObject(root, {interval: "100", repeat: 1}); return o ? [o.interval, o.repeat].join("|") : nn(o) })
+=> string:100|true
+w(function() { var o = root.tmc.createObject(root, {interval: "x"}); return o ? [o.interval].join("|") : nn(o) })
+=> string:null
+w(function() { var o = root.tmc.createObject(root, {interval: 1.5}); return o ? [o.interval].join("|") : nn(o) })
+=> string:2
+w(function() { var o = root.tmc.createObject(root, {running: "yes"}); return o ? [o.running].join("|") : nn(o) })
+=> string:true
+w(function() { return nn(root.oc.createObject(5, {a: 1})) })
+=> string:object
+w(function() { return nn(root.oc.createObject("x")) })
+=> string:object
+w(function() { return String(root.oc.createObject(undefined, {a: 2}).a) })
+=> string:2
+w(function() { return nn(root.oc.createObject({}, {a: 2})) })
+=> string:object
+w(function() { return String(root.oc.createObject(root, undefined).a) })
+=> string:1
+w(function() { return nn(root.oc.createObject(root, [])) })
+=> string:null
+w(function() { return nn(root.oc.createObject(root, function() {})) })
+=> string:object
+w(function() { return nn(root.oc.createObject(root, new Date(0))) })
+=> string:object
+w(function() { return String(root.oc.createObject(root, {a: 2}, 5).a) })
+=> string:2
+w(function() { var p = {}; Object.defineProperty(p, "a", {get: function() { root.log.push("get"); return 4 }, enumerable: true}); root.log = []; var o = root.oc.createObject(root, p); return [o.a, root.log.join(",")].join("|") })
+=> string:4|get,a=4,b=14,done a=4 b=14 s=d
+w(function() { var p = Object.create({a: 4}); p.s = "own"; var o = root.oc.createObject(root, p); return [o.a, o.s].join("|") })
+=> string:1|own
+w(function() { var p = {}; Object.defineProperty(p, "a", {value: 4, enumerable: false}); var o = root.oc.createObject(root, p); return [o.a].join("|") })
+=> string:1
+w(function() { root.log = []; var o = root.oc.createObject(root, {s: "x", a: 5}); return root.log.join(",") })
+=> string:a=5,s=x,b=15,done a=5 b=15 s=x
+w(function() { root.log = []; var o = root.oc.createObject(root, {v: 1, s: "x", b: 3, a: 9}); return [o.a, o.b, root.log.join(",")].join("|") })
+=> string:9|3|a=9,b=3,s=x,done a=9 b=3 s=x
+w(function() { root.log = []; var p = {}; ["s", "a"].forEach(function(k) { Object.defineProperty(p, k, {get: function() { root.log.push("get " + k); return k === "a" ? 4 : "y" }, enumerable: true}) }); var o = root.oc.createObject(root, p); return root.log.join(",") })
+=> string:get s,get a,a=4,s=y,b=14,done a=4 b=14 s=y
+w(function() { root.log = []; var o = root.oc.createObject(root, {s: {}, a: "x"}); return [nn(o), root.log.join(",")].join("|") })
+=> string:null|b=11,done a=1 b=11 s=d,gone
+w(function() { root.log = []; var o = root.oc.createObject(null, {a: 5, s: {}}); return [nn(o), root.log.join(",")].join("|") })
+=> string:null|a=5,b=15,done a=5 b=15 s=d,gone
+w(function() { root.log = []; var o = root.oc.createObject(root, {a: 5}); o.destroy(); return [nn(o), root.log.join(",")].join("|") })
+=> string:object|a=5,b=15,done a=5 b=15 s=d

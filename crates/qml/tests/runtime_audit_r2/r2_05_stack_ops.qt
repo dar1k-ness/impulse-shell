@@ -1,0 +1,74 @@
+step 1
+  depth 1
+  a activating 1 null false true
+  a activated 1 null false true
+  current a
+push a -> a 1 false
+step 2
+  depth 4
+  d activating 4 a false true
+  a deactivating 4 a false true
+  busy true
+  current d
+push b c d -> d 4 true
+  d activated 4 d true true
+  a deactivated 4 d true true
+  busy false
+step 3
+  d deactivating 4 d false true
+  e activating 4 d false true
+  busy true
+  current e
+replace e -> e 4 true
+  d deactivated 4 e true true
+  e activated 4 e true true
+  busy false
+step 4
+  c removed 2 false
+  b removed 1 false
+  depth 1
+  e deactivating 1 e false true
+  a activating 1 e false false
+  busy true
+  current a
+pop null -> e 1 true
+  d removed 1 true
+  e deactivated 1 a true true
+  a activated 1 a true true
+  busy false
+step 5
+  a deactivating 1 a false true
+  a deactivated 1 a false true
+  e removed 1 false
+  a removed 1 false
+  g activating 1 a false true
+  g activated 1 a false true
+  current g
+replace all imm -> g 1 false
+step 6
+  depth 2
+  h activating 2 g false true
+  h activated 2 g false true
+  g deactivating 2 g false true
+  g deactivated 2 g false true
+  current h
+  depth 3
+  i activating 3 h false true
+  i activated 3 h false true
+  h deactivating 3 h false true
+  h deactivated 3 h false true
+  current i
+  h removed 1 false
+  depth 1
+  i deactivating 1 i false true
+  i deactivated 1 i false true
+  i removed 1 false
+  g activating 1 i false false
+  g activated 1 i false false
+  current g
+pop to item imm -> i 1 false
+step 7
+  current null
+  g removed 1 false
+  depth 0
+clear 0 false null

@@ -1,0 +1,6 @@
+state A
+b on in onPChanged: A 100
+after a: A b true
+tick 3: A b false
+end: A 100 b false
+warning: QML StateGroup: Can't apply a state change as part of a state definition.

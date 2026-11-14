@@ -1,0 +1,11 @@
+ApplicationWindow.color	window
+Label.color	windowText
+Label.linkColor	link
+TextArea.color	text
+TextArea.placeholderTextColor	placeholderText
+TextArea.selectionColor	highlight
+TextArea.selectedTextColor	highlightedText
+TextField.color	text
+TextField.selectionColor	highlight
+TextField.selectedTextColor	highlightedText
+TextField.placeholderTextColor	placeholderText

@@ -1,0 +1,18 @@
+# step apps
+start a:A,b:B,m:M,sub-c:C
+new a:A,b:B,m:M,n:N,sub-c:C
+inplace a:A,b:B,m:M,n:N,sub-c:C
+atomic a:A,b:B,m:M,n:N3,sub-c:C
+sub_new a:A,b:B,m:M,n:N3,sub-c:C,sub-d:D
+deep_new a:A,b:B,m:M,n:N3,sub-c:C,sub-d:D
+sys_delete a:A,m:M,n:N3,sub-c:C,sub-d:D,sub-deep-e:E
+mask a:A,n:N3,sub-c:C,sub-d:D,sub-deep-e:E
+deep_new2 a:A,n:N3,sub-c:C,sub-d:D,sub-deep-e:E
+parent_touch a:A,n:N3,sub-c:C,sub-d:D,sub-deep-e:E,sub-deep-f:F
+nodisplay a:A,n:N3,sub-c:C,sub-d:D,sub-deep-e:E,sub-deep-f:F
+new_subdir a:A,n:N3,sub-c:C,sub-d:D,sub-deep-e:E,sub-deep-f:F
+sub2_new a:A,n:N3,sub-c:C,sub-d:D,sub-deep-e:E,sub-deep-f:F
+late_mkdir a:A,n:N3,sub-c:C,sub-d:D,sub-deep-e:E,sub-deep-f:F,sub2-g:G
+late_new a:A,n:N3,sub-c:C,sub-d:D,sub-deep-e:E,sub-deep-f:F,sub2-g:G
+sub_touch a:A,l:L,n:N3,sub-c:C,sub-d:D,sub-deep-e:E,sub-deep-f:F,sub2-g:G
+rm_dir a:A,l:L,n:N3,sub2-g:G

@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""tools/ci/tree-times TREE LIST: what cargo built from another tree is built again.
+
+Cargo decides by modification times alone whether what it built from a file is still good
+(Cargo Book: Build Scripts, `rerun-if-changed`; Unstable Features, `checksum-freshness`), and
+the gate builds every checkout into one target dir. A tree whose files are older than that
+build (a second worktree mounted at the same /src, an unpacked archive) is taken for the tree
+that was built, and the tests run the other tree's code.
+
+LIST records what TREE was when this last ran: every file and directory in it (not `.git`,
+not `target`) with a hash of its content (of a directory: the names in it) and the time it
+was given when its content was last found changed. On each run:
+
+- content other than in LIST (a new entry too, and every entry when there is no LIST): the
+  modification time is set to now, unless it is later already, so cargo builds again what
+  reads it. A removed file is a
+  change of its directory: a build script that lists the directory runs again.
+- content as in LIST, but a time before the one given then (the same tree put in place once
+  more): that time is set again.
+
+An entry that is as LIST has it has the time it was given, which is before anything was
+built from it: cargo builds again only what reads a changed file. "Now" is later than every time given before, also on a clock that stands still
+or was set back. tools/ci/in-testenv runs this on /src before a command; LIST is kept in the
+target dir, the builds it speaks of.
+
+LIST is written last, in one rename: a run killed before that leaves the old LIST, and the
+next run finds the same differences and gives them a time again. Two runs at once on one
+LIST would each record a tree the other did not see: the second one is refused (exit 1, a
+lock on LIST.lock held for the run).
+"""
+import fcntl
+import hashlib
+import json
+import os
+import stat
+import sys
+import time
+
+SKIP = {".git", "target"}
+
+
+def content(path, mode, names):
+    """The hash of what `path` holds, or None for what is no file, link or directory."""
+    h = hashlib.blake2b(digest_size=16)
+    if stat.S_ISDIR(mode):
+        h.update(b"dir\0" + "\0".join(sorted(names)).encode("utf-8", "surrogateescape"))
+    elif stat.S_ISLNK(mode):
+        h.update(b"link\0" + os.fsencode(os.readlink(path)))
+    elif stat.S_ISREG(mode):
+        h.update(b"file\0")
+        with open(path, "rb") as f:
+            while chunk := f.read(1 << 20):
+                h.update(chunk)
+    else:
+        return None
+    return h.hexdigest()
+
+
+def main():
+    if len(sys.argv) != 3:
+        sys.exit(__doc__.split("\n")[0])
+    tree, record = sys.argv[1], sys.argv[2]
+    lock = open(record + ".lock", "w")
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        sys.exit(f"tree-times: another run is using {record}: two trees cannot be recorded "
+                 f"in one target dir at once; wait for it, or give this run its own")
+    try:
+        with open(record) as f:
+            old = json.load(f)
+    except FileNotFoundError:
+        old = None
+    seen = old["entries"] if old else {}
+    clock = max(int(time.time()), old["clock"] if old else 0) + 1
+    now = clock * 10**9
+    entries, changed = {}, 0
+    for parent, dirs, files in os.walk(tree):
+        # os.walk lists a link to a directory with the directories, and does not enter it.
+        links = [d for d in dirs if os.path.islink(os.path.join(parent, d))]
+        dirs[:] = sorted(d for d in dirs if d not in SKIP and d not in links)
+        files = [f for f in files + links if f not in SKIP]
+        todo = [(parent, dirs + files)] + [(os.path.join(parent, f), None) for f in files]
+        for path, names in todo:
+            st = os.lstat(path)
+            digest = content(path, st.st_mode, names)
+            if digest is None:
+                continue
+            key = os.path.relpath(path, tree)
+            was = seen.get(key)
+            if was and was[0] == digest:
+                given = was[1]
+            else:
+                changed += 1
+                # A time later than now was given by a run for another target dir, and is
+                # later than every build here too: no time is ever set back.
+                given = max(now, st.st_mtime_ns)
+            if st.st_mtime_ns < given:
+                os.utime(path, ns=(given, given), follow_symlinks=False)
+            entries[key] = [digest, given]
+    tmp = record + ".new"
+    with open(tmp, "w") as f:
+        json.dump({"clock": clock, "entries": entries}, f)
+    os.replace(tmp, record)
+    if old is None:
+        print(f"tree-times: no record of the tree built last in {record}: "
+              f"cargo builds everything of this tree again", file=sys.stderr)
+    elif changed:
+        print(f"tree-times: {changed} of {len(entries)} files and directories are not those "
+              f"of the tree built last: cargo builds what reads them again", file=sys.stderr)
+
+
+main()

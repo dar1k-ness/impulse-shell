@@ -1,0 +1,23 @@
+import QtQuick.tooling 1.2
+
+// Impulse/RandomWallpaper: a Process that downloads a random wallpaper from `source`
+// ("konachan" or "osu") and switches to it (crates/qml/src/jobs_wall_gcloud_trans/wall.rs `random`).
+Module {
+    Component {
+        file: "jobs_wall_gcloud_trans/wall.rs"
+        name: "ImpulseRandomWallpaper"
+        accessSemantics: "reference"
+        prototype: "Process"
+        exports: ["Impulse/RandomWallpaper 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "source"
+            type: "QString"
+            read: "source"
+            write: "setSource"
+            notify: "sourceChanged"
+            index: 0
+        }
+        Signal { name: "sourceChanged" }
+    }
+}

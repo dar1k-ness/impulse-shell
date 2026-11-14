@@ -1,0 +1,5 @@
+# Hash-pinned (pip docs "Secure installs"); regenerate the hashes from PyPI when bumping a pin.
+# What materialyoucolor's setup.py (no pyproject.toml) builds with; installed first so its
+# sdist builds without build isolation, from hash-checked packages only.
+setuptools==84.2.1 \
+    --hash=sha256:ca140b45d5325a9478f880e351484f62fef15f336462e449ca0c03c873d589c2

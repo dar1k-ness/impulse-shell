@@ -1,0 +1,21 @@
+a.font [skip]: QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0) | reset QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+b.font [skip]: QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0) | reset QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+c.font: QFont(Sans Serif,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0)
+a.locale [skip]: QLocale::system()/* C, Default, Default */ | reset QLocale::system()/* C, Default, Default */
+b.locale [skip]: QLocale::system()/* C, Default, Default */ | reset QLocale::system()/* C, Default, Default */
+c.locale: QLocale::system()/* C, Default, Default */
+a.palette [skip]: QQuickPalette(PTR) | reset QQuickPalette(PTR)
+b.palette [skip]: QQuickPalette(PTR) | reset QQuickPalette(PTR)
+c.palette: QQuickPalette(PTR)
+a.topPadding [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.topPadding [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.topPadding: 0
+a.leftPadding [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.leftPadding [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.leftPadding: 0
+a.rightPadding [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.rightPadding [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.rightPadding: 0
+a.bottomPadding [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+b.bottomPadding [num]: 0 | set 3 | reset 0 | bind 3 -> 0 -> 3 | reset 0
+c.bottomPadding: 0

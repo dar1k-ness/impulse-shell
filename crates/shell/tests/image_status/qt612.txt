@@ -1,0 +1,70 @@
+qml: synchronous: status 1 progress 1 implicitWidth 20 opacity 0
+qml: synchronous: opaque at once
+qml: synchronous: completed with status 1 opacity 1
+qml: cached: status 1 progress 1 implicitWidth 20 opacity 0
+qml: cached: opaque at once
+qml: cached: completed with status 1 opacity 1
+qml: cache off: status 2 progress 0 implicitWidth 0 opacity 0
+qml: cache off: completed with status 2 opacity 0
+qml: cache off: status 1 progress 1 implicitWidth 20 opacity 0
+qml: cache off: opaque after a fade
+qml: not cached: status 2 progress 0 implicitWidth 0 opacity 0
+qml: not cached: completed with status 2 opacity 0
+qml: not cached: status 1 progress 1 implicitWidth 20 opacity 0
+qml: not cached: opaque after a fade
+qml: cached by an asynchronous one: status 1 progress 1 implicitWidth 20 opacity 0
+qml: cached by an asynchronous one: opaque at once
+qml: cached by an asynchronous one: completed with status 1 opacity 1
+qml: cached at another size: status 2 progress 0 implicitWidth 0 opacity 0
+qml: cached at another size: completed with status 2 opacity 0
+qml: cached at another size: status 1 progress 1 implicitWidth 10 opacity 0
+qml: cached at another size: opaque after a fade
+qml: first with cache off: status 2 progress 0 implicitWidth 0 opacity 0
+qml: first with cache off: completed with status 2 opacity 0
+qml: first with cache off: status 1 progress 1 implicitWidth 20 opacity 0
+qml: first with cache off: opaque after a fade
+qml: after one with cache off: status 2 progress 0 implicitWidth 0 opacity 0
+qml: after one with cache off: completed with status 2 opacity 0
+qml: after one with cache off: status 1 progress 1 implicitWidth 20 opacity 0
+qml: after one with cache off: opaque after a fade
+qml: synchronous with a bound size: status 1 progress 1 implicitWidth 12 opacity 0
+qml: synchronous with a bound size: opaque at once
+qml: synchronous with a bound size: completed with status 1 opacity 1
+qml: synchronous with the size of the item: status 1 progress 1 implicitWidth 8 opacity 0
+qml: synchronous with the size of the item: opaque at once
+qml: synchronous with the size of the item: completed with status 1 opacity 1
+qml: bound size, not cached: status 2 progress 0 implicitWidth 0 opacity 0
+qml: bound size, not cached: completed with status 2 opacity 0
+qml: bound size, not cached: status 1 progress 1 implicitWidth 6 opacity 0
+qml: bound size, not cached: opaque after a fade
+qml: bound size, cached: status 1 progress 1 implicitWidth 6 opacity 0
+qml: bound size, cached: opaque at once
+qml: bound size, cached: completed with status 1 opacity 1
+qml: synchronous, declared with a size: status 1 progress 1 implicitWidth 7 opacity 0
+qml: synchronous, declared with a size: opaque at once
+qml: synchronous, declared with a size: completed with status 1 opacity 1
+qml: declared after its synchronous twin: status 2 progress 0 implicitWidth 0 opacity 0
+qml: synchronous twin: status 2 progress 0 implicitWidth 0 opacity 0
+qml: declared before its synchronous twin: status 2 progress 0 implicitWidth 0 opacity 0
+qml: declared after its synchronous twin: completed with status 2 opacity 0
+qml: synchronous twin: completed with status 2 opacity 0
+qml: declared before its synchronous twin: completed with status 2 opacity 0
+qml: declared after its synchronous twin: status 1 progress 1 implicitWidth 20 opacity 0
+qml: synchronous twin: status 1 progress 1 implicitWidth 20 opacity 0
+qml: declared before its synchronous twin: status 1 progress 1 implicitWidth 20 opacity 0
+qml: declared after its synchronous twin: opaque after a fade
+qml: synchronous twin: opaque after a fade
+qml: declared before its synchronous twin: opaque after a fade
+qml: asked at a size: sourceSize 10
+qml: asked at a size, cache off: sourceSize 10
+qml: asked at a size, cache off: status 2
+qml: asked at a size: status 1
+qml: asked at a size: sourceSize 10
+qml: asked at the size of the file: status 1
+qml: asked at the size of the file: sourceSize 20
+qml: asked at a size, cache off: completed
+qml: asked at a size: completed
+qml: asked at the size of the file: completed
+qml: asked at a size, cache off: status 1
+qml: asked at a size, cache off: sourceSize 10
+status 0

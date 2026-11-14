@@ -1,0 +1,16 @@
+[package]
+name = "ricompiled-gen"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+build = "build.rs"
+
+[build-dependencies]
+rigen = { path = "../rigen" }
+qml = { path = "../qml" }
+# The checksum of the QML tree (`rusty-impulse --version`), as sha256sum computes it.
+sha2 = "0.11"
+
+[lints]
+workspace = true

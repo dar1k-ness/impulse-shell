@@ -1,0 +1,17 @@
+// @qml services/Notifications.qml notifToJSON,notifToString,stringifyList,appNameListForGroups,groupsForList
+// @qml services/AppSearch.qml getReverseDomainNameAppName,getKebabNormalizedAppName,getUndescoreToKebabAppName
+// @qml services/HyprlandData.qml hyprlandClientsForWorkspace,clientForToplevel,biggestWindowForWorkspace
+// @qml services/ResourceUsage.qml kbToGbString
+var latestTimeForApp = { kitty: 900 };
+var apps = ["kitty", "Firefox", "discord", "kitty", "Firefox", "Spotify"];
+var list = apps.map((a, i) => ({ notificationId: i + 1, actions: i % 2 ? [{ identifier: "x", text: "Open" }] : [], appIcon: a.toLowerCase(), appName: a, body: "b" + i, image: "", summary: "s\"" + i, time: 100 * i, urgency: i % 3, popup: i > 2 }));
+var groups = Notifications.groupsForList(list);
+var order = Notifications.appNameListForGroups(groups);
+var popupOrder = Notifications.appNameListForGroups(Notifications.groupsForList(list.filter(n => n.popup)));
+var windows = [{ address: "0xa", workspace: { id: 1 }, size: [100, 200] }, { address: "0xb", workspace: { id: 1 }, size: [300, 50] }, { address: "0xc", workspace: { id: 2 }, size: [10, 10] }, { address: "0xd", workspace: { id: 1 } }];
+HyprlandData.windowList = windows;
+HyprlandData.windowByAddress = Object.fromEntries(windows.map(w => [w.address, w]));
+var hd = [HyprlandData.hyprlandClientsForWorkspace(1).map(w => w.address), HyprlandData.clientForToplevel({ HyprlandToplevel: { address: "c" } }), HyprlandData.clientForToplevel(null), HyprlandData.clientForToplevel({}),
+    HyprlandData.biggestWindowForWorkspace(1).address, HyprlandData.biggestWindowForWorkspace(9)];
+var names = ["org.gnome.Nautilus", "Visual Studio  Code", "steam_app_123", "plain"].map(s => [AppSearch.getReverseDomainNameAppName(s), AppSearch.getKebabNormalizedAppName(s), AppSearch.getUndescoreToKebabAppName(s)]);
+var result = JSON.stringify([Notifications.stringifyList(list), Notifications.notifToString(list[1]), groups, order, popupOrder, hd, names, [0, 1048576, 16384000, 123456789].map(ResourceUsage.kbToGbString)]);

@@ -1,0 +1,17 @@
+S1 => false|false|false|false|false
+S2 => 0|2
+S3 => 1|1|1,2|1
+S4 => 1|1|1,2|1
+S5 => 1
+S6 => function|symbol|function|function|function|function
+S7 => undefined|nbll|bndefined
+S8 => THROW TypeError: Type error
+S9 => THROW TypeError: Type error
+S10 => THROW TypeError: Type error
+S11 => THROW TypeError: Type error
+S12 => THROW TypeError: Type error
+S13 => TypeError|Type error|true
+S14 => ReferenceError|this is not defined
+S15 => ReferenceError|super() already called.
+S16 => ReferenceError|this is not defined
+S17 => ReferenceError|Missing call to super().

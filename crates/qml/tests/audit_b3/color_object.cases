@@ -1,0 +1,54 @@
+@property color c: "red"
+@property var vc: Qt.rgba(0, 1, 0, 1)
+JSON.stringify(Qt.rgba(1, 0, 0, 1))
+=> string:{"r":1,"g":0,"b":0,"a":1,"hsvHue":0,"hsvSaturation":1,"hsvValue":1,"hslHue":0,"hslSaturation":1,"hslLightness":0.5000076293945312,"valid":true,"rgba":-65536}
+JSON.stringify(c)
+=> string:{"r":1,"g":0,"b":0,"a":1,"hsvHue":0,"hsvSaturation":1,"hsvValue":1,"hslHue":0,"hslSaturation":1,"hslLightness":0.5000076293945312,"valid":true,"rgba":-65536}
+JSON.stringify(vc)
+=> string:{"r":0,"g":1,"b":0,"a":1,"hsvHue":0.3333333432674408,"hsvSaturation":1,"hsvValue":1,"hslHue":0.3333333432674408,"hslSaturation":1,"hslLightness":0.5000076293945312,"valid":true,"rgba":-16711936}
+JSON.stringify({k: c, l: [Qt.rgba(0, 0, 1, 0.5)]})
+=> string:{"k":{"r":1,"g":0,"b":0,"a":1,"hsvHue":0,"hsvSaturation":1,"hsvValue":1,"hslHue":0,"hslSaturation":1,"hslLightness":0.5000076293945312,"valid":true,"rgba":-65536},"l":[{"r":0,"g":0,"b":1,"a":0.5000076293945312,"hsvHue":0.6666666865348816,"hsvSaturation":1,"hsvValue":1,"hslHue":0.6666666865348816,"hslSaturation":1,"hslLightness":0.5000076293945312,"valid":true,"rgba":-2147483393}]}
+JSON.stringify(Qt.hsva(0.5, 1, 1, 1))
+=> string:{"r":0,"g":1,"b":1,"a":1,"hsvHue":0.5,"hsvSaturation":1,"hsvValue":1,"hslHue":0.5,"hslSaturation":1,"hslLightness":0.5000076293945312,"valid":true,"rgba":-16711681}
+JSON.stringify(Qt.rgba(1, 0, 0, 1), null, 1).length
+=> number:194
+Object.keys(c).join(",")
+=> string:r,g,b,a,hsvHue,hsvSaturation,hsvValue,hslHue,hslSaturation,hslLightness,valid,rgba
+Object.getOwnPropertyNames(c).join(",")
+=> string:r,g,b,a,hsvHue,hsvSaturation,hsvValue,hslHue,hslSaturation,hslLightness,valid,rgba
+(function(){ var r = []; for (var k in c) r.push(k); return r.join(",") })()
+=> string:r,g,b,a,hsvHue,hsvSaturation,hsvValue,hslHue,hslSaturation,hslLightness,valid,rgba
+Object.entries(Qt.rgba(1, 0, 0, 0.5)).join("|")
+=> string:r,1|g,0|b,0|a,0.5000076293945312|hsvHue,0|hsvSaturation,1|hsvValue,1|hslHue,0|hslSaturation,1|hslLightness,0.5000076293945312|valid,true|rgba,-2130771968
+Object.values(Qt.rgba(1, 0, 0, 0.5)).join("|")
+=> string:1|0|0|0.5000076293945312|0|1|1|0|1|0.5000076293945312|true|-2130771968
+JSON.stringify(Object.assign({}, Qt.rgba(1, 0, 0, 1)))
+=> string:{"r":1,"g":0,"b":0,"a":1,"hsvHue":0,"hsvSaturation":1,"hsvValue":1,"hslHue":0,"hslSaturation":1,"hslLightness":0.5000076293945312,"valid":true,"rgba":-65536}
+["r", "g", "valid", "rgba", "lighter", "darker", "alpha", "tint", "toString", "hasOwnProperty", "foo", "constructor", "valueOf"].map(function(k){ return k + ":" + (k in c) + ":" + c.hasOwnProperty(k) + ":" + Object.prototype.hasOwnProperty.call(c, k) + ":" + typeof c[k] }).join("|")
+=> string:r:true:true:true:number|g:true:true:true:number|valid:true:true:true:boolean|rgba:true:true:true:number|lighter:false:true:true:function|darker:false:true:true:function|alpha:false:true:true:function|tint:false:true:true:function|toString:true:true:true:function|hasOwnProperty:true:false:false:function|foo:false:false:false:undefined|constructor:true:false:false:function|valueOf:true:false:false:function
+[c instanceof Object, typeof c.constructor, c.constructor === Object, Object.prototype.toString.call(c), Object.getPrototypeOf(c) === Object.getPrototypeOf(Qt.point(1, 2)), Object.getPrototypeOf(Object.getPrototypeOf(c)) === Object.prototype, Object.getOwnPropertyNames(Object.getPrototypeOf(c)).join(",")].join("|")
+=> string:true|function|true|[object QMLValueTypeWrapper]|true|true|toString
+[c.propertyIsEnumerable("r"), c.propertyIsEnumerable("lighter"), c.propertyIsEnumerable("toString"), Object.isExtensible(c), Object.isFrozen(c), Object.isSealed(c)].join("|")
+=> string:true|true|true|true|false|false
+JSON.stringify([Object.getOwnPropertyDescriptor(c, "r"), Object.getOwnPropertyDescriptor(c, "lighter") === undefined, Object.getOwnPropertyDescriptor(c, "valid"), Object.getOwnPropertyDescriptor(c, "foo")])
+=> string:[{"value":1,"writable":true,"enumerable":true,"configurable":true},false,{"value":true,"writable":true,"enumerable":true,"configurable":true},null]
+[c.valueOf() === c, c.valueOf() == c, typeof c.valueOf(), String(c.valueOf()), c.toString(), c.toLocaleString(), c + "", c + 1, `${c}`, [c] + ""].join("|")
+=> string:true|true|object|#ff0000|#ff0000|#ff0000|#ff0000|#ff00001|#ff0000|#ff0000
+[c == "#ff0000", c == "red", c === "#ff0000", "#ff0000" == c, c == c, c === c, c != Qt.rgba(1, 0, 0, 1), c == Qt.rgba(1, 0, 0, 1), c === Qt.rgba(1, 0, 0, 1), vc == "#00ff00", c == null, c == 0xff0000, !c, !!c].join("|")
+=> string:true|false|false|true|true|true|false|true|true|true|false|false|false|true
+(function(){ var o = {}; o[c] = 1; return Object.keys(o).join(",") })()
+=> string:#ff0000
+(function(){ try { delete c.r; return "ok " + c.r } catch (e) { return String(e) } })()
+=> string:ok 1
+(function(){ "use strict"; try { c.foo = 1; return "ok " + c.foo } catch (e) { return String(e) } })()
+=> string:TypeError: Type error
+(function(){ try { Object.defineProperty(c, "foo", {value: 1}); return "ok " + c.foo } catch (e) { return String(e) } })()
+=> string:ok undefined
+(function(){ try { Object.freeze(c); return "ok " + Object.isFrozen(c) } catch (e) { return String(e) } })()
+=> string:ok false
+(function(){ try { Object.setPrototypeOf(c, null); return "ok" } catch (e) { return String(e) } })()
+=> string:ok
+[Array.isArray(c), typeof c, typeof vc, c.length, c[0], Number(c), isNaN(c), parseInt(c), JSON.stringify([c])].join("|")
+=> string:false|object|object|||NaN|true|NaN|[{"r":1,"g":0,"b":0,"a":1,"hsvHue":0,"hsvSaturation":1,"hsvValue":1,"hslHue":0,"hslSaturation":1,"hslLightness":0.5000076293945312,"valid":true,"rgba":-65536}]
+(function(){ var m = new Map(); m.set(c, 1); return m.has(c) + "|" + m.has(Qt.rgba(1, 0, 0, 1)) + "|" + new Set([c, c, Qt.rgba(1, 0, 0, 1)]).size + "|" + [c, c].indexOf(c) + "|" + [Qt.rgba(1, 0, 0, 1)].includes(c) })()
+=> string:true|true|1|0|true

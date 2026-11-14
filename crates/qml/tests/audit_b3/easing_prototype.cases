@@ -1,0 +1,36 @@
+(function(){ var p = Object.getPrototypeOf(Easing); return [Object.getOwnPropertyNames(p).join(","), Object.prototype.toString.call(p), p === Object.prototype, p === Function.prototype, Object.getPrototypeOf(p) === Function.prototype, Object.getPrototypeOf(Object.getPrototypeOf(p)) === Object.prototype, Object.prototype.isPrototypeOf(Easing), Function.prototype.isPrototypeOf(Easing), typeof Easing, Easing instanceof Function, Easing instanceof Object].join("|") })()
+=> string:toString|[object Object]|false|false|true|true|true|true|object|true|true
+(function(){ var p = Object.getPrototypeOf(Easing); return [p === Object.getPrototypeOf(Qt.application), typeof p.toString, p.toString === Easing.toString, String(p.toString).slice(0, 30), p.toString.name, p.toString.length, Easing.toString === Easing.toString, p.toString === p.toString, Easing.toString.name, Easing.toString.length, p.hasOwnProperty("toString"), Easing.hasOwnProperty("toString")].join("|") })()
+=> string:false|function|false|function toString() { [native |toString|0|false|true||0|true|true
+(function(){ var r = []; var p = Qt.locale("en_US").weekDays; for (var i = 0; i < 6 && p; i++) { p = Object.getPrototypeOf(p); r.push(p === null ? "null" : (p === Object.prototype ? "ObjectProto" : p === Array.prototype ? "ArrayProto" : Object.getOwnPropertyNames(p).join(","))) } return r.join(" > ") })()
+=> string:valueOf,length,shift,unshift,push,pop > ArrayProto > ObjectProto > null
+(function(){ var w = Qt.locale("en_US").weekDays; return [1 in w, "1" in w, 7 in w, "foo" in w, "push" in w, "map" in w, Reflect.has(w, 0), Reflect.ownKeys(w).join(","), Object.keys(w).join(","), w.hasOwnProperty("push")].join("|") })()
+=> string:false|false|false|false|true|true|false|0,1,2,3,4,length|0,1,2,3,4|false
+(function(){ var r = []; var p = Qt.point(1, 2); for (var i = 0; i < 6 && p; i++) { p = Object.getPrototypeOf(p); r.push(p === null ? "null" : (p === Object.prototype ? "ObjectProto" : Object.getOwnPropertyNames(p).join(","))) } return r.join(" > ") })()
+=> string:toString > ObjectProto > null
+[typeof Easing.call, typeof Easing.apply, typeof Easing.bind, typeof Easing.connect, "call" in Easing, "toString" in Easing, Easing.hasOwnProperty("call"), Easing.length, Easing.name, typeof Easing.constructor].join("|")
+=> string:undefined|undefined|undefined|undefined|true|true|false|||function
+(function(){ try { return String(Easing.call) } catch (e) { return "T " + e } })()
+=> string:undefined
+(function(){ try { Object.getPrototypeOf(Easing).foo = 1; return [Easing.foo, Object.getPrototypeOf(Easing).foo, delete Object.getPrototypeOf(Easing).foo, Easing.foo].join("|") } catch (e) { return "T " + e } })()
+=> string:|1|true|
+(function(){ try { Object.setPrototypeOf(Easing, null); return [Object.getPrototypeOf(Easing) === null, typeof Easing.toString, Easing.Linear] .join("|") } catch (e) { return "T " + e } })()
+=> string:false|function|0
+(function(){ try { return Object.getPrototypeOf(Easing).toString.call({}) } catch (e) { return "T " + e } })()
+=> undefined
+(function(){ try { return Object.getPrototypeOf(Easing).toString.call(Easing).replace(/0x[0-9a-f]+/, "PTR") } catch (e) { return "T " + e } })()
+=> string:QML/Easing
+(function(){ try { var f = Easing.toString; return [f().replace(/0x[0-9a-f]+/, "PTR"), f.call({}).replace(/0x[0-9a-f]+/, "PTR")].join("|") } catch (e) { return "T " + e } })()
+=> string:QQmlEasing(PTR)|QQmlEasing(PTR)
+[Easing.constructor === Object, Easing.valueOf === Object.prototype.valueOf, Easing.hasOwnProperty === Object.prototype.hasOwnProperty, Easing.valueOf() === Easing, typeof Easing.isPrototypeOf, Easing.__proto__ === Object.getPrototypeOf(Easing), typeof Easing.__proto__].join("|")
+=> string:true|true|true|true|function|false|object
+(function(){ Object.prototype.b3foo = 4; var r = [Easing.b3foo, "b3foo" in Easing]; delete Object.prototype.b3foo; Function.prototype.b3bar = 5; r.push(Easing.b3bar, "b3bar" in Easing); delete Function.prototype.b3bar; return r.join("|") })()
+=> string:4|true||true
+(function(){ var f = Easing.toString; var g = Easing.valueForProgress; return [typeof g, f.name, f.length, String(f).slice(0, 24), Object.prototype.toString.call(f), f.hasOwnProperty("prototype")].join("|") })()
+=> string:function||0|function() { [native cod|[object Function]|false
+(function(){ var q = Easing.__proto__; var p = Object.getPrototypeOf(Easing); return [q === Object.prototype, q === Function.prototype, q === null, q === Easing.__proto__, Object.getPrototypeOf(q) === Function.prototype, Object.getPrototypeOf(q) === Object.getPrototypeOf(p), p === Object.getPrototypeOf(Easing), Reflect.getPrototypeOf(Easing) === p, Reflect.getPrototypeOf(Easing) === q, typeof q.toString, q.toString === p.toString].join("|") })()
+=> string:true|false|false|true|false|false|true|true|false|function|false
+(function(){ var x = Qt.point(1, 2); return [x.__proto__ === Object.getPrototypeOf(x), x.__proto__ === x.__proto__, Object.getPrototypeOf(x) === Object.getPrototypeOf(x)].join("|") })()
+=> string:true|true|true
+(function(){ var w = Qt.locale("en_US").weekDays; return [w.__proto__ === Object.getPrototypeOf(w), w.__proto__ === w.__proto__].join("|") })()
+=> string:true|true

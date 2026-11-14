@@ -1,0 +1,97 @@
+[package]
+name = "qsg"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+base64 = "0.22"
+bits = { path = "../bits" }
+elog = { path = "../elog" }
+mul255 = { path = "../mul255" }
+freetype-sys = "0.23.0"
+heif = { path = "../heif" }
+harfbuzz-sys = { version = "0.8.0", default-features = false }
+memmap2 = "0.9"
+flate2 = "1"
+# Every format image.rs decodes through `image` is named here: another crate's features are
+# not this crate's.
+image = { workspace = true, features = ["webp", "bmp", "tiff", "gif", "ico", "pnm"] }
+icu_normalizer = "~2.3"
+icu_properties = "~2.3"
+image-extras = { version = "0.1", default-features = false, features = ["xpm"] }
+lru.workspace = true
+png.workspace = true
+roxmltree.workspace = true
+svgtypes.workspace = true
+tiff = "0.11"
+turbojpeg.workspace = true
+# Without `hardcoded-data`: its tables are of Unicode 16, the data comes from icu_properties.
+unicode-bidi = { version = "0.3.18", default-features = false, features = ["std"] }
+unicode-segmentation = "1.13"
+yeslogic-fontconfig-sys = "6.0.1"
+
+[[bin]]
+name = "rectscene"
+path = "src/bin/rectscene.rs"
+
+[[bin]]
+name = "textscene"
+path = "src/bin/textscene.rs"
+
+[[bin]]
+name = "shadowscene"
+path = "src/bin/shadowscene.rs"
+
+[[bin]]
+name = "maskscene"
+path = "src/bin/maskscene.rs"
+
+[[bin]]
+name = "shapescene"
+path = "src/bin/shapescene.rs"
+
+[[bin]]
+name = "canvasscene"
+path = "src/bin/canvasscene.rs"
+
+[[bin]]
+name = "imagescene"
+path = "src/bin/imagescene.rs"
+
+[[bin]]
+name = "effectscene"
+path = "src/bin/effectscene.rs"
+
+[[bin]]
+name = "blurscene"
+path = "src/bin/blurscene.rs"
+
+[[bin]]
+name = "mescene"
+path = "src/bin/mescene.rs"
+
+[[bin]]
+name = "radscene"
+path = "src/bin/radscene.rs"
+
+[[bin]]
+name = "scaletest"
+path = "src/bin/scaletest.rs"
+
+[features]
+# Checks against every SVG under /usr/share/icons, off in the gate: docs/benchmarks.md.
+live = []
+
+[[bench]]
+name = "raster"
+harness = false
+
+[dev-dependencies]
+criterion = "0.8.2"
+tempfile.workspace = true
+testenv = { path = "../testenv" }
+
+[lints]
+workspace = true

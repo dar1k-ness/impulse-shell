@@ -1,0 +1,6 @@
+gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark
+kde-material-you-colors-wrapper.sh --scheme-variant scheme-neutral
+notify-send Upscale? Image resolution (300x200) is lower than screen resolution (1920x1080) -A open_upscayl=Open Upscayl -a Wallpaper switcher
+pgrep -f kitty
+pkill -9 -x mpvpaper; pidwait -x mpvpaper

@@ -1,0 +1,31 @@
+a3 1 a 0 a2 0
+a 16 a2 0 a3 1
+a2 32 a 16 a3 1
+a3 33 a 16 a2 32
+a 32 a2 32 a3 33
+a2 64 a 32 a3 33
+a3 65 a 32 a2 64
+a 48 a2 64 a3 65
+a2 96 a 48 a3 65
+a3 97 a 48 a2 96
+a 64 a2 96 a3 97
+a2 128 a 64 a3 97
+a3 129 a 64 a2 128
+write
+src true ready false w 0 h 0
+ready true automatic false other false early false
+early true automatic false other false
+automatic true other false early true
+other true automatic true early true
+w 10 h 0
+h 20 w 10
+written true 10 20
+back
+src false ready true w 10 h 20
+ready false automatic true other true early true
+early false automatic true other true
+automatic false other true early false
+other false automatic false early false
+w 0 h 20
+h 0 w 0
+written false 0 0

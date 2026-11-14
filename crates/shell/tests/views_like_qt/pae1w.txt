@@ -1,0 +1,20 @@
+start 2 -30 110 0 true true
+3 3 -30 110 0 true true
+3 later 3 -30 170 0 true false
+4 4 -30 170 0 true false
+4 later 4 -30 230 0 true false
+5 5 -30 230 0 true false
+5 later 5 -30 290 0 true false
+6 6 -30 290 0 true false
+6 later 6 -30 350 0 true false
+grown 6 -30 350 0 true false
+grown later 6 -30 390 0 true false
+to 100 6 -30 390 0 true false
+at 100 6 100 390 0 false false
+grown more 6 100 390 0 false false
+grown more later 6 100 430 0 false false
+end 6 230 430 0 false false
+end later 6 230 430 0 false false
+beginning 6 0 430 0 false false
+beginning later 6 0 430 0 false false
+done

@@ -1,0 +1,94 @@
+@property point p0
+@property size s0
+@property rect r0
+@property vector2d v20
+@property vector3d v30
+@property vector4d v40
+@property quaternion q0
+@property matrix4x4 m0
+@property font f0
+@property vector3d w0
+@property matrix4x4 k0
+@property font g0
+@property quaternion u0
+@property matrix4x4 m1: Qt.matrix4x4()
+@property vector3d v31: Qt.vector3d(0, 0, 0)
+@property int n: 0
+@onP0Changed: n += 1
+@onS0Changed: n += 1
+@onR0Changed: n += 1
+@onV20Changed: n += 1
+@onV30Changed: n += 1
+@onV40Changed: n += 1
+@onQ0Changed: n += 1
+@onM0Changed: n += 1
+@onF0Changed: n += 1
+@onW0Changed: n += 1
+@onK0Changed: n += 1
+@onG0Changed: n += 1
+@onU0Changed: n += 1
+@onM1Changed: n += 1
+@onV31Changed: n += 1
+# a property declared with a value has notified once by now
+n
+=> number:2
+# point, size and rect without a value: a write of the same number is no change
+(function(){ var a = n; p0.x = 0; return a + ">" + n })()
+=> string:2>2
+(function(){ var a = n; s0.width = s0.width; return a + ">" + n })()
+=> string:2>2
+(function(){ var a = n; r0.x = 0; return a + ">" + n })()
+=> string:2>2
+# the other value types without a value: the first write notifies, the next does not
+(function(){ var a = n; v20.x = 0; return a + ">" + n })()
+=> string:2>3
+(function(){ var a = n; v20.x = 0; return a + ">" + n })()
+=> string:3>3
+(function(){ var a = n; v30.x = 0; return a + ">" + n })()
+=> string:3>4
+(function(){ var a = n; v30.x = 0; return a + ">" + n })()
+=> string:4>4
+(function(){ var a = n; v40.x = 0; return a + ">" + n })()
+=> string:4>5
+(function(){ var a = n; v40.x = 0; return a + ">" + n })()
+=> string:5>5
+(function(){ var a = n; q0.scalar = q0.scalar; return a + ">" + n })()
+=> string:5>6
+(function(){ var a = n; q0.scalar = q0.scalar; return a + ">" + n })()
+=> string:6>6
+(function(){ var a = n; m0.m11 = 1; return a + ">" + n })()
+=> string:6>7
+(function(){ var a = n; m0.m11 = 1; return a + ">" + n })()
+=> string:7>7
+(function(){ var a = n; f0.family = f0.family; return a + ">" + n })()
+=> string:7>8
+(function(){ var a = n; f0.family = f0.family; return a + ">" + n })()
+=> string:8>8
+# so does a first write of the whole value, and a write through a second variable
+(function(){ var a = n; w0 = Qt.vector3d(0, 0, 0); return a + ">" + n })()
+=> string:8>9
+(function(){ var a = n; w0.x = 0; return a + ">" + n })()
+=> string:9>9
+(function(){ var a = n; k0 = k0; return a + ">" + n })()
+=> string:9>10
+(function(){ var a = n; k0.m11 = 1; return a + ">" + n })()
+=> string:10>10
+(function(){ var a = n; g0 = g0; return a + ">" + n })()
+=> string:10>11
+(function(){ var a = n; g0.bold = g0.bold; return a + ">" + n })()
+=> string:11>11
+(function(){ var a = n; var t = u0; t.x = 0; return a + ">" + n })()
+=> string:11>12
+(function(){ var a = n; u0.x = 0; return a + ">" + n })()
+=> string:12>12
+# declared with a value: the same number is no change
+(function(){ var a = n; m1.m11 = 1; return a + ">" + n })()
+=> string:12>12
+(function(){ var a = n; m1.m12 = 0; return a + ">" + n })()
+=> string:12>12
+(function(){ var a = n; v31.x = 0; return a + ">" + n })()
+=> string:12>12
+(function(){ var a = n; v30 = v30; return a + ">" + n })()
+=> string:12>12
+(function(){ var a = n; m0 = m0; return a + ">" + n })()
+=> string:12>12

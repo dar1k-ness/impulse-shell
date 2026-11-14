@@ -1,0 +1,70 @@
+1	1
+-3	-3
+2.7	2.7
+NaN	NaN
+1e20	1e20
+'abc'	'abc'
+'12'	'12'
+''	''
+'red'	'red'
+true	true
+false	false
+undefined	undefined
+null	null
+{}	({})
+{x:1,y:2}	({x: 1, y: 2})
+[]	[]
+[1,2]	[1, 2]
+['a']	['a']
+function	(function() {})
+item	other
+object	plain
+component	comp
+Date	new Date(0)
+point	Qt.point(1, 2)
+rect	Qt.rect(1, 2, 3, 4)
+size	Qt.size(1, 2)
+color	Qt.rgba(1, 0, 0, 1)
+url	Qt.url('u2')
+font	Qt.font({family: 'Arial'})
+regexp	/a/
+' 12 '	' 12 '
+'2.7'	'2.7'
+'0x10'	'0x10'
+'1e2'	'1e2'
+'-5'	'-5'
+'true'	'true'
+'false'	'false'
+'#f00'	'#f00'
+'transparent'	'transparent'
+'AlignRight'	'AlignRight'
+'1,2'	'1,2'
+'1,2,3,4'	'1,2,3,4'
+'1x2'	'1x2'
+[1]	[1]
+['a','b']	['a', 'b']
+[null]	[null]
+[item]	[other]
+[[1]]	[[1]]
+-0	-0
+0	0
+2147483648	2147483648
+0.5	0.5
+-2.5	-2.5
+Infinity	Infinity
+rectangle	rc
+text	tx
+vector2d	Qt.vector2d(1, 2)
+vector3d	Qt.vector3d(1, 2, 3)
+{width:5,height:6}	({width: 5, height: 6})
+{family:'F'}	({family: 'F'})
+Symbol	Symbol('s')
+String obj	new String('so')
+Number obj	new Number(7)
+anchorline	other.left
+enum	Text.AlignRight
+type	Item
+arrow	(() => 1)
+Qt.binding	Qt.binding(() => 5)
+date1	new Date(1000)
+error	new Error('e')

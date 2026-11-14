@@ -1,0 +1,24 @@
+import Foundation
+
+/// A shape.
+protocol Shape { var area: Double { get } }
+
+struct Circle: Shape, Codable {
+    let radius: Double
+    var area: Double { .pi * radius * radius }
+    static let unit = Circle(radius: 1.0)
+}
+
+enum LoadError: Error { case notFound(String), timeout(after: Int = 30) }
+
+@MainActor
+final class Loader<T: Decodable> {
+    private var cache: [String: T] = [:]
+    func load(_ url: URL) async throws -> T? {
+        guard let (data, _) = try? await URLSession.shared.data(from: url) else { throw LoadError.notFound("\(url)") }
+        let n = 0x1F + 1_000 // count
+        return try JSONDecoder().decode(T.self, from: data)
+    }
+}
+let xs = [1, 2, 3].map { $0 * 2 }.filter { $0 > 2 }
+print("sum: \(xs.reduce(0, +))\n", terminator: "")

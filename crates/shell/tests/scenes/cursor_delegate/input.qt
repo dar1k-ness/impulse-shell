@@ -1,0 +1,32 @@
+0: pos=11 cursorVisible=false activeFocus=false delegate=own rect=83.75 0.00 1.00 22.00 items=[]
+1: pos=11 cursorVisible=false activeFocus=false delegate=own rect=83.75 0.00 1.00 22.00 items=[]
+  created curA in the editor at 83.75 0.00 height 22.00
+2: pos=11 cursorVisible=true activeFocus=true delegate=own rect=83.75 0.00 1.00 22.00 items=[curA 83.75 0.00 3.00 22.00 shown]
+3: pos=3 cursorVisible=true activeFocus=true delegate=own rect=23.02 0.00 1.00 22.00 items=[curA 23.02 0.00 3.00 22.00 shown]
+4: pos=2 cursorVisible=true activeFocus=true delegate=own rect=14.00 0.00 1.00 22.00 items=[curA 14.00 0.00 3.00 22.00 shown]
+5: pos=8 cursorVisible=true activeFocus=true delegate=own rect=58.11 0.00 1.00 22.00 items=[curA 58.11 0.00 3.00 22.00 shown]
+6: pos=4 cursorVisible=true activeFocus=true delegate=own rect=23.92 0.00 1.00 22.00 items=[curA 23.92 0.00 3.00 22.00 shown]
+7: pos=4 cursorVisible=false activeFocus=false delegate=own rect=23.92 0.00 1.00 22.00 items=[curA 23.92 0.00 3.00 22.00 shown]
+8: pos=1 cursorVisible=false activeFocus=false delegate=own rect=9.88 0.00 1.00 22.00 items=[curA 9.88 0.00 3.00 22.00 shown]
+9: pos=1 cursorVisible=true activeFocus=false delegate=own rect=9.88 0.00 1.00 22.00 items=[curA 9.88 0.00 3.00 22.00 shown]
+10: pos=1 cursorVisible=false activeFocus=false delegate=own rect=9.88 0.00 1.00 22.00 items=[curA 9.88 0.00 3.00 22.00 shown]
+  destroyed curA
+11: pos=1 cursorVisible=false activeFocus=false delegate=alt rect=9.88 0.00 1.00 22.00 items=[]
+  created curB
+12: pos=1 cursorVisible=true activeFocus=true delegate=alt rect=9.88 0.00 1.00 22.00 items=[curB 9.88 0.00 5.00 22.00 shown]
+  destroyed curB
+13: pos=1 cursorVisible=true activeFocus=true delegate=null rect=9.88 0.00 1.00 22.00 items=[]
+  created curB
+14: pos=1 cursorVisible=true activeFocus=true delegate=alt rect=9.88 0.00 1.00 22.00 items=[curB 9.88 0.00 5.00 22.00 shown]
+15: pos=8 cursorVisible=false activeFocus=true delegate=alt rect=58.11 0.00 1.00 22.00 items=[curB 58.11 0.00 5.00 22.00 shown]
+16: pos=8 cursorVisible=true activeFocus=true delegate=alt rect=58.11 0.00 1.00 22.00 items=[curB 58.11 0.00 5.00 22.00 shown]
+17: pos=8 cursorVisible=true activeFocus=true delegate=alt rect=200.00 0.00 1.00 22.00 items=[curB 200.00 0.00 5.00 22.00 shown]
+18: pos=8 cursorVisible=true activeFocus=true delegate=alt rect=200.00 0.00 1.00 33.00 items=[curB 200.00 0.00 5.00 33.00 shown]
+19: pos=8 cursorVisible=false activeFocus=false delegate=alt rect=200.00 0.00 1.00 33.00 items=[curB 200.00 0.00 5.00 33.00 shown]
+20: pos=8 cursorVisible=true activeFocus=false delegate=alt rect=200.00 0.00 1.00 33.00 items=[curB 200.00 0.00 5.00 33.00 shown]
+21: pos=8 cursorVisible=false activeFocus=false delegate=alt rect=200.00 0.00 1.00 33.00 items=[curB 200.00 0.00 5.00 33.00 shown]
+22: pos=8 cursorVisible=true activeFocus=false delegate=alt rect=200.00 0.00 1.00 33.00 items=[curB 200.00 0.00 5.00 33.00 shown]
+23: pos=8 cursorVisible=true activeFocus=false delegate=alt rect=200.00 0.00 1.00 33.00 items=[curB 200.00 0.00 5.00 33.00 shown]
+24: pos=8 cursorVisible=false activeFocus=false delegate=alt rect=200.00 0.00 1.00 33.00 items=[curB 200.00 0.00 5.00 33.00 shown]
+25: pos=8 cursorVisible=false activeFocus=true delegate=alt rect=200.00 0.00 1.00 33.00 items=[curB 200.00 0.00 5.00 33.00 shown]
+26: pos=8 cursorVisible=true activeFocus=true delegate=alt rect=200.00 0.00 1.00 33.00 items=[curB 200.00 0.00 5.00 33.00 shown]

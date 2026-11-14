@@ -1,0 +1,7 @@
+Z0 => false,false,true a=2 Error: Cannot assign to non-existent property "b1n"
+Z1 => true true,true,false Error: Cannot assign to property "a" of read-only object Error: Cannot assign to property "b1n" of read-only object
+Z2 => true true,true,false a=2 Error: Cannot assign to non-existent property "b1n"
+Z3 => true true,false,false a=2 Error: Cannot assign to non-existent property "b1n"
+Z4 => true true,false,false a=3 Error: Cannot assign to non-existent property "b1n"
+Z5 => true true,true,false
+Z6 => THROW Error: Cannot assign to property "width" of read-only object

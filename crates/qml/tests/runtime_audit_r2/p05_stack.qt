@@ -1,0 +1,66 @@
+step 1
+  depth 1
+  a activating 1 null false true
+  a activated 1 null false true
+  current a
+push a -> a 1 false
+step 2
+  depth 2
+  b activating 2 a false true
+  a deactivating 2 a false true
+  busy true
+  current b
+push b -> b 2 true
+  b activated 2 b true true
+  a deactivated 2 b true true
+  busy false
+step 3
+  depth 3
+  c activating 3 b false true
+  c activated 3 b false true
+  b deactivating 3 b false true
+  b deactivated 3 b false true
+  current c
+push c imm -> c 3 false
+step 4
+  depth 2
+  c deactivating 2 c false true
+  b activating 2 c false false
+  busy true
+  current b
+pop -> c 2 true
+  c deactivated 2 b true true
+  b activated 2 b true true
+  busy false
+step 5
+  depth 1
+  b deactivating 1 b false true
+  b deactivated 1 b false true
+  c removed 1 false
+  b removed 1 false
+  a activating 1 b false false
+  a activated 1 b false false
+  current a
+pop imm -> b 1 false
+step 6
+  depth 2
+  d activating 2 a false true
+  a deactivating 2 a false true
+  busy true
+  current d
+  depth 3
+  e activating 3 d true true
+  d deactivating 3 d true true
+  current e
+two pushes 3 true
+  a deactivated 3 e true true
+  e activated 3 e true true
+  d deactivated 3 e true true
+  busy false
+step 7
+  current null
+  a removed 3 false
+  d removed 3 false
+  e removed 3 false
+  depth 0
+clear 0 false null

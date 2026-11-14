@@ -1,0 +1,146 @@
+# Test environment for `cargo test -p qml -p shell --features shell/interp`: every reference
+# tool the equivalence tests compare against (a missing one fails the test, see
+# crates/testenv/src/lib.rs), the build dependencies, and a headless sway for the Wayland ports.
+#   docker build -t ri-testenv -f tools/testenv/Containerfile .
+# (from the repo root: the image installs the toolchain rust-toolchain.toml pins; the build
+# context is limited to that file and tools/testenv by Containerfile.dockerignore)
+# seccomp/systempaths/apparmor=unconfined let the tests make user/mount/PID namespaces with
+# their own /proc (a fake /sys/class for the real brightnessctl, a private PID space for
+# `pkill -i Hyprland`); on an AppArmor host (Ubuntu) docker-default otherwise blocks the
+# bind mounts of `unshare -Urm`. Nothing leaves the container. --shm-size: the default 64 MiB
+# /dev/shm is filled by a few headless sways' wl_shm buffers, and a write past it is a SIGBUS.
+#   docker run --rm --sysctl net.ipv4.ip_unprivileged_port_start=0 --shm-size=1g \
+#     --security-opt seccomp=unconfined --security-opt systempaths=unconfined \
+#     --security-opt apparmor=unconfined \
+#     -v "$PWD":/src -v ri-target:/target ri-testenv
+# runs tools/testenv/ri-gate; any other command runs as root, `as-tester CMD` as a normal user.
+# tools/ci/gate does both from a checkout (docs/ci.md).
+# The base image and every package are pinned, so the gate's verdict depends on the code, not on
+# the day the image was built: the base by digest, pacman's repositories to one Arch Linux
+# Archive snapshot (ArchWiki "Arch Linux Archive"; -Syyuu also downgrades what the base has
+# newer). Bump both together in a commit of their own: the digest of `docker pull
+# archlinux:latest`, a snapshot date not older than that image.
+FROM archlinux@sha256:b1c2fe6e717bfd5673af8fc217e1e1c3ce0dcbb1d53c3414c8425e7ce79fc6d9
+
+RUN echo 'Server = https://archive.archlinux.org/repos/2026/11/06/$repo/os/$arch' \
+        >/etc/pacman.d/mirrorlist \
+    && pacman -Syyuu --noconfirm --needed \
+        base-devel rustup pkgconf clang cmake nasm git \
+        wayland wayland-protocols libxkbcommon mesa libglvnd libdrm libinput \
+        freetype2 harfbuzz fontconfig noto-fonts noto-fonts-emoji ttf-dejavu libjpeg-turbo \
+        pam systemd-libs file bc \
+        dbus python python-dbus python-gobject python-dbusmock python-google-auth python-requests \
+        networkmanager fprintd gnome-keyring libsecret libnotify \
+        curl jq gawk openssl util-linux procps-ng psmisc imagemagick libheif xdg-user-dirs xdg-utils \
+        translate-shell fribidi pipewire pipewire-audio pipewire-pulse libpulse wireplumber nodejs \
+        libqalculate sound-theme-freedesktop \
+        brightnessctl ddcutil cava quickshell \
+        sway swaybg grim wl-clipboard cliphist pacman-contrib fakeroot hyprland tesseract tesseract-data-eng \
+        kirigami qt6-positioning qt6-5compat qt6-svg qt6-wayland \
+        # qt6-multimedia: PySide6's QtQuick/VirtualKeyboard/Components plugin links it; qt6-multimedia-ffmpeg, qt6-speech, qt6-virtualkeyboard depend on it.
+        qt6-multimedia qt6-virtualkeyboard qt6-tools qt6-shadertools qt6-imageformats \
+        syntax-highlighting kdialog wtype ydotool \
+    && pacman -Scc --noconfirm
+
+# MicroTeX at the commit of dots-hyprland's illogical-impulse-microtex-git package, at
+# LatexRenderer's default /opt/MicroTeX, for latex_render_matches_real_microtex. Current
+# fontconfig no longer pulls in fcfreetype.h, which graphic_cairo.cpp needs.
+RUN pacman -S --noconfirm --needed tinyxml2 gtkmm3 gtksourceviewmm cairomm \
+    && pacman -Scc --noconfirm \
+    && git clone https://github.com/end-4/MicroTeX /tmp/MicroTeX && cd /tmp/MicroTeX \
+    && git checkout 0e3707f \
+    && sed -i 's/gtksourceviewmm-3.0/gtksourceviewmm-4.0/; s/tinyxml2.so.10/tinyxml2.so.11/' CMakeLists.txt \
+    && sed -i '1i #include <fontconfig/fontconfig.h>\n#include <fontconfig/fcfreetype.h>' src/platform/cairo/graphic_cairo.cpp \
+    && CXXFLAGS='-I/usr/include/freetype2' cmake -B build -S . -DCMAKE_BUILD_TYPE=None \
+    && cmake --build build -j"$(nproc)" \
+    && install -Dm0755 -t /opt/MicroTeX build/LaTeX && cp -r build/res /opt/MicroTeX/ \
+    && cd / && rm -rf /tmp/MicroTeX
+
+# google-auth venv for gcloud's token-from-key-venv.sh (RUSTY_IMPULSE_VIRTUAL_ENV).
+RUN python -m venv --system-site-packages /opt/ri-venv
+# the original's venv for scripts/images, switchwall and imgtools' goldens (see requirements.txt): wheels
+# only, hash-checked; materialyoucolor's sdist builds without build isolation so its build
+# dependencies are hash-checked too.
+COPY tools/testenv/requirements.txt tools/testenv/build-requirements.txt /tmp/ri-venv/
+RUN cd /tmp/ri-venv \
+    && /opt/ri-venv/bin/pip install --no-cache-dir --require-hashes --only-binary=:all: \
+        -r build-requirements.txt \
+    && /opt/ri-venv/bin/pip install --no-cache-dir --require-hashes --only-binary=:all: \
+        --no-binary=materialyoucolor --no-build-isolation -r requirements.txt \
+    && rm -rf /tmp/ri-venv
+# sway carries file capabilities a container may not grant: a plain copy drops them.
+RUN cp /usr/bin/sway /usr/local/bin/sway
+
+# systemctl/loginctl refuse the system bus (even a private one) unless sd_booted() sees this.
+RUN mkdir -p /run/systemd/system
+# gnome-keyring-daemon misbehaves as root, so cargo runs as `tester` (see ri-gate).
+# the original's icon font (Appearance.font.family.iconMaterial), as the PC has it from
+# ttf-material-symbols-variable (AUR); without it every icon lays out as its name in text, in
+# the shell and in Qt alike, so no picture would show a wrong icon. Pinned by commit and hash.
+RUN curl -fsSL -o "/usr/share/fonts/MaterialSymbolsRounded.ttf" \
+        "https://raw.githubusercontent.com/google/material-design-icons/10ecc14790612ca8fd164e3f4ffe9c16fc50d5b7/variablefont/MaterialSymbolsRounded%5BFILL,GRAD,opsz,wght%5D.ttf" \
+    && echo "7e74e36533ccee12c2b81e75bfcf3ccf123d3bb7e7e46d65d94445f23db0c97c  /usr/share/fonts/MaterialSymbolsRounded.ttf" | sha256sum -c - \
+    && fc-cache -f \
+    && fc-list | grep -q "Material Symbols Rounded"
+RUN useradd -m tester && mkdir /src /target && chown tester /src /target
+USER tester
+COPY --chown=tester rust-toolchain.toml /home/tester/toolchain/
+RUN cd /home/tester/toolchain && rustup toolchain install \
+    && rustup default "$(rustup show active-toolchain | cut -d' ' -f1)"
+# The test runner ri-gate uses (.config/nextest.toml).
+RUN cargo install --locked --root /home/tester/.local cargo-nextest@0.9.151 && rm -rf /home/tester/.cargo/registry
+# The matugen switchwall.sh drives (switchwall_live.rs runs the original script).
+RUN cargo install --locked --root /home/tester/.local matugen@4.2.0 && rm -rf /home/tester/.cargo/registry
+# The dependency audit ri-gate runs (deny.toml).
+RUN cargo install --locked --root /home/tester/.local cargo-deny@0.20.2 && rm -rf /home/tester/.cargo/registry
+# Coverage (tools/coverage.sh): rustc's llvm-tools and cargo-llvm-cov.
+RUN rustup component add llvm-tools \
+    && cargo install --locked --root /home/tester/.local cargo-llvm-cov@0.9.1 \
+    && rm -rf /home/tester/.cargo/registry
+ENV RUSTY_IMPULSE_VIRTUAL_ENV=/opt/ri-venv \
+    PATH=/home/tester/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin \
+    CARGO_TARGET_DIR=/target \
+    XDG_RUNTIME_DIR=/tmp/xdg \
+    WAYLAND_DISPLAY=wayland-1 \
+    RI_PORTS_WAYLAND=1 \
+    WLR_BACKENDS=headless \
+    WLR_LIBINPUT_NO_DEVICES=1 \
+    WLR_RENDERER=pixman
+COPY --chown=tester tools/testenv/sway.conf /home/tester/sway.conf
+USER root
+# Qt 6.12's own QML engine (the Qt that runs `qs -c rusty-impulse`): riaotcheck's QV4 oracle (--v4) and
+# crates/rigen/check/v4.py. Arch's qt6 may differ in version, so it is pinned through PySide6:
+# wheels only, hash-checked (see qv4-requirements.txt).
+COPY tools/testenv/qv4-requirements.txt /tmp/qv4-venv/
+RUN python -m venv /opt/qv4-venv \
+    && /opt/qv4-venv/bin/pip install --no-cache-dir --require-hashes --only-binary=:all: \
+        -r /tmp/qv4-venv/qv4-requirements.txt \
+    && rm -rf /tmp/qv4-venv
+# libavif, the decoder the Pillow and OpenCV wheels bundle: crates/heif opens the system one
+# (libavif.so.16) to read AVIF with their pixels. A layer of its own so that nothing above is
+# rebuilt for it.
+RUN pacman -S --noconfirm --needed libavif && pacman -Scc --noconfirm
+# plasma-integration's platform theme plugin (KDEPlasmaPlatformTheme6.so): a KDE desktop has
+# it, and Qt then loads it instead of its own QKdeTheme. Without its dependencies (-dd): they
+# are 120 packages (kwin, plasma-workspace, the Breeze Qt Quick style, a font) that change
+# what Qt and fontconfig find for every other test; kstatusnotifieritem is the one library
+# the plugin links that the image lacks. Moved out of Qt's plugin directory, so that only a
+# test that sets QT_PLUGIN_PATH=/opt/plasma-integration/plugins gets the plugin and `kde` in
+# QT_QPA_PLATFORMTHEME alone stays QKdeTheme. ldd fails the build when a later snapshot's
+# plugin needs a library or a symbol the image does not have.
+RUN pacman -S --noconfirm --needed -dd plasma-integration kstatusnotifieritem \
+    && pacman -Scc --noconfirm \
+    && mkdir -p /opt/plasma-integration/plugins/platformthemes \
+    && mv /usr/lib/qt6/plugins/platformthemes/KDEPlasmaPlatformTheme6.so \
+        /opt/plasma-integration/plugins/platformthemes/ \
+    && ldd -r /opt/plasma-integration/plugins/platformthemes/KDEPlasmaPlatformTheme6.so \
+        >/tmp/plugin.ldd 2>&1 \
+    && if grep -E 'not found|undefined symbol' /tmp/plugin.ldd; then exit 1; fi \
+    && rm /tmp/plugin.ldd
+# Last, so that a change to the gate's steps rebuilds only this layer.
+COPY tools/testenv/entrypoint /usr/local/bin/ri-testenv
+COPY tools/testenv/as-tester tools/testenv/ri-gate /usr/local/bin/
+ENV HOME=/home/tester
+WORKDIR /src
+ENTRYPOINT ["/usr/local/bin/ri-testenv"]
+CMD ["ri-gate"]

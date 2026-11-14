@@ -1,0 +1,17 @@
+# Component.createObject, a number as the initial value of an enumeration property: Qt
+# converts it to int and the property reads it back as the enumeration's unsigned type.
+@property Component tc: Component { Text { } }
+w(function() { var o = root.tc.createObject(root, {horizontalAlignment: -1}); return o ? o.horizontalAlignment : "refused" })
+=> number:4294967295
+w(function() { var o = root.tc.createObject(root, {horizontalAlignment: 4294967295}); return o ? o.horizontalAlignment : "refused" })
+=> number:4294967295
+w(function() { var o = root.tc.createObject(root, {horizontalAlignment: 4294967296}); return o ? o.horizontalAlignment : "refused" })
+=> number:0
+w(function() { var o = root.tc.createObject(root, {horizontalAlignment: -2147483648}); return o ? o.horizontalAlignment : "refused" })
+=> number:2147483648
+w(function() { var o = root.tc.createObject(root, {verticalAlignment: -1}); return o ? o.verticalAlignment : "refused" })
+=> number:4294967295
+w(function() { var o = root.tc.createObject(root, {elide: -1}); return o ? o.elide : "refused" })
+=> number:4294967295
+w(function() { var o = root.tc.createObject(root, {wrapMode: -3}); return o ? o.wrapMode : "refused" })
+=> number:4294967293

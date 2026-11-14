@@ -1,0 +1,8 @@
+k7 => THROW TypeError: Cannot call method 'replace' of undefined
+k8 => stack:true/false/true/undefined/string fileName:true/false/true/undefined/undefined lineNumber:true/false/true/undefined/undefined message:true/false/true/undefined/string
+k9 => THROW TypeError: Cannot call method 'replace' of undefined
+k10 => stack,fileName,lineNumber,message|undefined|undefined
+k16 => 
+k20 => constructor,then,catch,finally|constructor,byteLength,slice,toString|constructor,buffer,byteLength,byteOffset,getInt8,getUint8
+k21 => constructor,toString,valueOf,description|constructor,flags,global,ignoreCase,exec,multiline,source,sticky,test,toString,unicode,compile,dotAll
+k22 => buffer,byteLength,byteOffset,length,copyWithin,entries,every,fill,filter,find,findIndex,forEach,includes,indexOf,join,keys,lastIndexOf,map,reduce,reduceRight,reverse,some,set,slice,subarray,toLocaleString,toString,values,at,constructor,findLast,findLastIndex,sort
