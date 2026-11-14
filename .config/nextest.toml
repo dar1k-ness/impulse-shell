@@ -89,7 +89,7 @@ filter = """
     | binary_id(/^shell::(rect_antialiasing_qt|style_shots)$/)
     | (binary_id(shell::destruction_equiv) & test(a_root_quickshell_wraps_in_a_window_runs_no_handler))
     | (binary_id(shell::lazy_loader_equiv) & test(a_binding_loop_ends_as_in_qt))
-    | binary_id(/^shell::(color_picker_off_screen|cursor_without_shape_protocol|frame_animation_equiv|frame_callback_wait|keyboard_focus|kirigami_icon_size|mouse_primary|pointer_focus|primary_device|screen_copy_order|session_lock_finished|shell_control|swipe_start_equiv|timer_clock_equiv|wayland_input|windows_outputs)$/)
+    | binary_id(/^shell::(color_picker_off_screen|cursor_without_shape_protocol|frame_animation_equiv|frame_callback_wait|keyboard_focus|kirigami_icon_size|mouse_primary|pointer_focus|primary_device|screen_copy_order|session_lock_finished|shell_control|swipe_start_equiv|timer_clock_equiv|timer_steps_equiv|wayland_input|windows_outputs)$/)
 """
 test-group = "sway"
 # The group runs one test at a time for about as long as all the other tests together take on

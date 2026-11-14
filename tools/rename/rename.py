@@ -106,6 +106,7 @@ SKIP2 = SKIP + (
     "crates/shell/tests/swipe_start_equiv.rs",
     "crates/shell/tests/sync_load.rs",
     "crates/shell/tests/timer_clock_equiv.rs",
+    "crates/shell/tests/timer_steps_equiv.rs",
     "crates/shell/tests/tray_pixels_qt.rs",
     "crates/shell/tests/wallpaper_change_equiv.rs",
     "crates/shell/tests/wallpaper_scale_equiv.rs",
