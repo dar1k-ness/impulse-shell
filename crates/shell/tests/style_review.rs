@@ -51,11 +51,14 @@ h = 100
 const BACKGROUND: &str = r#"import QtQuick
 import Impulse
 import ri.services
+import ri.modules.common
 Item {
     id: root
     width: 1280
     height: 720
     property var ctl: controller
+    // As every panel of the shell does from its start: the shell's Config is loaded.
+    readonly property bool configReady: Config.ready
     EditController {
         id: controller
         connector: "DP-1"
@@ -216,6 +219,13 @@ impl Review {
         }
         self.overlay = Some(overlay);
         self.frames(5);
+        // A running shell has polled its services long before a key or a click arrives: the
+        // picker's job sends its config edits to the shell's Config (qml::shell_config),
+        // none of them to the file under it.
+        self.rt.poll_native();
+        while self.rt.world.borrow().config_edits.is_none() {
+            self.turn();
+        }
     }
 
     /// Lets animations run and lays both surfaces out, as frames do.
