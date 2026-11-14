@@ -17,7 +17,8 @@ Needs:
   libthai's dictionary. Without it Thai is broken at spaces only, which is what Qt does
   without the library. `rusty-impulse --version` tells which of the two this machine gets
   (`Thai line breaking: ...`).
-- `tools/install.sh` installs no packages. Of the libraries above it checks `libthai` alone:
+- `install.sh` at the top of the repository installs the Arch packages of this list
+  (docs/install.md). `tools/install.sh` installs no packages. Of the libraries above it checks `libthai` alone:
   it asks the installed binary and prints a note when the library is missing; the install
   goes on.
 

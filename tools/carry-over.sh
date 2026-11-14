@@ -71,12 +71,20 @@ pairs() {
 # PATH), else by name. An alias for "qs -c ii" (fish: alias q 'qs -c ii', used as "q ipc call
 # ...") becomes the new build's too. Any other "qs -c ii" starts a shell and stays as it is:
 # that is the original.
+#
+# "qs -c \$qsConfig" without "ipc" starts the shell the variable names (end-4's execs.lua at
+# login, and what Ctrl+Super+R runs after its killall). The variable is rewritten to the new
+# build's tree, which qs cannot start, so that command becomes the new build's binary too. A
+# killall or pidof that lists "qs quickshell" (the restart binding, hypridle's "is a shell
+# there to lock the screen") gets the new build's name after them: its process is neither.
 rewrite() {
     local client=$NEW_BIN ours="($OLD_TREE|\\\$\\{?qsConfig\\}?)"
     [ ! -x "$HOME/.local/bin/$NEW_BIN" ] || client="\$HOME/.local/bin/$NEW_BIN"
     sed -E \
         -e "s#(^|[^[:alnum:]_./-])qs( +-c +[\"']?$ours[\"']? +ipc([^[:alnum:]_-]|\$))#\\1$client\\2#g" \
         -e "s#(^|[^[:alnum:]_./-])qs( +(-p|--path) +[^ \"']*$OLD_WORD/$ours/)#\\1$client\\2#g" \
+        -e "s#(^|[^[:alnum:]_./-])qs( +-c +[\"']?\\\$\\{?qsConfig\\}?[\"']?([^[:alnum:]_\"'-]|\$))#\\1$client\\2#g" \
+        -e "s#((^|[^[:alnum:]_./-])(pidof|killall)( +[^;&|]*)? +qs +quickshell)( +$NEW_BIN)?([^[:alnum:]_.-]|\$)#\\1 $NEW_BIN\\6#g" \
         -e "/(^|[^[:alnum:]_-])alias[ =]/s#(^|[^[:alnum:]_./-])qs( +-c +[\"']?$OLD_TREE[\"']?([^[:alnum:]_-]|\$))#\\1$client\\2#g" \
         -e "s#(^|[^[:alnum:]_./-])(qs +-c +[\"']?)$OLD_TREE([\"']?)([^[:alnum:]_\"'-]|\$)#\\1\\2\\x01\\3\\4#g" \
         -e "s#$OLD_WORD:#$NEW_WORD:#g" \
@@ -487,7 +495,7 @@ layout_old() {
 }
 
 dots_new() {
-    local f n=0 keep
+    local f n=0 keep from
     layout_new
     while IFS= read -r f; do
         n=$((n + 1))
@@ -499,14 +507,17 @@ dots_new() {
         keep=$own/dots
         mkdir -p -- "$keep/old${f%/*}" "$keep/new${f%/*}"
         # The text made for the new build last time goes back when the old text is the one that
-        # was put back then: what the user edited while on the new build is not lost.
+        # was put back then: what the user edited while on the new build is not lost. A file
+        # that still is what the last run made (this script rewrites more than the one that
+        # ran then) keeps the old text of that run: that is still what --dots old puts back.
+        from=$f
         if [ -f "$keep/new$f" ] && cmp -s -- "$f" "$keep/old$f"; then
-            put_text "$keep/new$f" "$f" || die "cannot write $f"
-        else
+            from=$keep/new$f
+        elif [ ! -f "$keep/old$f" ] || ! cmp -s -- "$f" "$keep/new$f"; then
             cp -p -- "$f" "$keep/old$f"
-            rewrite <"$f" >"$keep/new$f"
-            put_text "$keep/new$f" "$f" || die "cannot write $f"
         fi
+        rewrite <"$from" >"$keep/new$f.tmp" && mv -f -- "$keep/new$f.tmp" "$keep/new$f" || die "cannot write $keep/new$f"
+        put_text "$keep/new$f" "$f" || die "cannot write $f"
         note "dots new $f"
         did "rewritten for $NEW_BIN: $f"
     done < <(dot_files)

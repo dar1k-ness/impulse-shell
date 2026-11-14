@@ -4,8 +4,15 @@
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
-/// Trees whose files are scanned for variable names.
-const TREES: &[&str] = &["crates", "tools", "bench", ".github", ".config"];
+/// Trees and files that are scanned for variable names.
+const TREES: &[&str] = &[
+    "crates",
+    "tools",
+    "bench",
+    ".github",
+    ".config",
+    "install.sh",
+];
 
 /// `II_*` names in those trees that are not environment variables.
 const NOT_VARIABLES: &[&str] = &[

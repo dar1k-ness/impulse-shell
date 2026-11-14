@@ -1,5 +1,40 @@
 # Install
 
+## By one command
+
+On Arch Linux with end-4's dots-hyprland in place:
+
+```sh
+git clone https://github.com/dar1k-ness/rusty-impulse.git && rusty-impulse/install.sh
+```
+
+`install.sh` goes through the steps below by itself and says each one before it makes it:
+
+1. The packages the build needs and pacman does not have yet (`sudo pacman -S`, the list of
+   [build.md](build.md) with `libheif`, `libavif` and `libthai`). The Rust toolchain comes from
+   `rustup`; an installed package `rust` is replaced by `rustup`, which provides it.
+2. `PREFIX=~/.local tools/install.sh`: build and install, as described under
+   [The steps one by one](#the-steps-one-by-one).
+3. `tools/carry-over.sh`, then `tools/carry-over.sh --dots new`: the settings come over from
+   the original and the Hyprland files call and start `rusty-impulse` (the header of `tools/carry-over.sh` says what exactly).
+4. Inside a Hyprland session: Hyprland reloads its config, the shell that runs is stopped and
+   `rusty-impulse -c rusty-impulse` is started. If its panels are not on screen in 30 seconds
+   (`RI_START_WAIT`), the files of step 3 are put back and the shell that ran is started
+   again; the script then ends with status 2. Outside a session nothing is started: the next
+   login starts the shell.
+
+- `install.sh --no-start` leaves the running shell alone; `install.sh --no-packages` installs
+  no packages.
+- The file alone, run from outside a checkout (`bash install.sh`), clones the repository to
+  `~/.local/src/rusty-impulse` (`RI_SRC`; `RI_REPO` names another repository) or updates the
+  clone that is there, and installs that.
+- Running it again updates: it builds what the checkout has now and installs it as a new
+  release. A shell that already runs the installed build is left running.
+- Back to the original: `tools/carry-over.sh --dots old`, then log in again.
+  `tools/install.sh --uninstall` removes the build.
+
+## The steps one by one
+
 ```sh
 tools/install.sh              # build, then install to /usr/local/bin/rusty-impulse
 PREFIX=~/.local tools/install.sh

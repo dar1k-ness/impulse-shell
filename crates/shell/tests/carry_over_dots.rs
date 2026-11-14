@@ -246,14 +246,14 @@ fn an_alias_for_the_old_client_calls_the_new_build() {
 fn what_is_quickshells_own_stays() {
     let home = Home::new();
     home.install_new();
-    // The original started by its config, a tree that is not this shell's, the processes a
-    // restart binding ends, and a program whose name only ends in qs.
+    // The original started by its config, a tree that is not this shell's, a killall that
+    // does not list the two names of Quickshell, and a program whose name only ends in qs.
     let stays = "qs -c ii\n\
                  hl.exec_cmd(\"qs -c ii\")\n\
                  qs -p ~/src/other/shell.qml\n\
                  qs -c caelestia ipc call drawers toggle\n\
-                 killall ydotool qs quickshell\n\
-                 pidof qs quickshell hyprlock\n\
+                 killall ydotool qs\n\
+                 pidof hyprlock || hyprlock\n\
                  /usr/bin/qs --version\n";
     home.write(
         "keybinds.lua",
@@ -264,6 +264,73 @@ fn what_is_quickshells_own_stays() {
         home.read("keybinds.lua"),
         format!("{stays}$HOME/.local/bin/rusty-impulse -c rusty-impulse ipc call bar toggle\n")
     );
+}
+
+/// What end-4's stock files start and look for the shell with: `execs.lua` at login, the
+/// restart binding of `keybinds.lua`, and `hypridle.conf`, which starts hyprlock when it finds
+/// no shell to lock the screen. `qsConfig` names the new build's tree after the rewrite, which
+/// `qs` cannot start (it left the session without a shell at the next login), and the new
+/// build's process is neither `qs` nor `quickshell`.
+const STOCK_START: &str = "\
+hl.exec_cmd(\"qs -c $qsConfig\")
+hl.bind(\"CTRL + SUPER + R\", hl.dsp.exec_cmd(\"killall ydotool qs quickshell; qs -c $qsConfig &\"),
+$lock_cmd = hyprctl dispatch 'hl.dsp.global(\"quickshell:lock\")' & pidof qs quickshell hyprlock || hyprlock
+";
+
+#[test]
+fn the_stock_start_restart_and_lock_lines_name_the_new_build() {
+    let home = Home::new();
+    home.install_new();
+    home.write("variables.lua", VARIABLES);
+    home.write("execs.lua", STOCK_START);
+    home.write("calls.sh", "qs -c $qsConfig\n");
+    assert_eq!(home.asked(), ["qs -c ii"]);
+
+    home.carry_over("new");
+    assert_eq!(
+        home.read("execs.lua"),
+        "hl.exec_cmd(\"$HOME/.local/bin/rusty-impulse -c $qsConfig\")\n\
+         hl.bind(\"CTRL + SUPER + R\", hl.dsp.exec_cmd(\"killall ydotool qs quickshell rusty-impulse; $HOME/.local/bin/rusty-impulse -c $qsConfig &\"),\n\
+         $lock_cmd = hyprctl dispatch 'hl.dsp.global(\"rustshell:lock\")' & pidof qs quickshell rusty-impulse hyprlock || hyprlock\n"
+    );
+    assert_eq!(home.asked(), ["rusty-impulse -c rusty-impulse"]);
+    // A second run finds nothing more to rewrite.
+    let rewritten = home.read("execs.lua");
+    home.carry_over("new");
+    assert_eq!(home.read("execs.lua"), rewritten);
+
+    home.carry_over("old");
+    assert_eq!(home.read("execs.lua"), STOCK_START);
+    assert_eq!(home.asked(), ["qs -c ii"]);
+}
+
+/// A home that an earlier carry-over.sh rewrote (it left the start line and the process lists
+/// alone) and that still is on the new build: this one rewrites those lines, and going back
+/// still gives the text from before the first rewrite, not the half-rewritten one.
+#[test]
+fn a_second_rewrite_keeps_the_old_text_of_the_first() {
+    let home = Home::new();
+    home.install_new();
+    home.write("variables.lua", VARIABLES);
+    home.write("execs.lua", STOCK_START);
+    home.carry_over("new");
+    // What the earlier script made of the file, in the file and in the copy it kept.
+    let earlier = "hl.exec_cmd(\"qs -c $qsConfig\")\n\
+                   hl.bind(\"CTRL + SUPER + R\", hl.dsp.exec_cmd(\"killall ydotool qs quickshell; qs -c $qsConfig &\"),\n\
+                   $lock_cmd = hyprctl dispatch 'hl.dsp.global(\"rustshell:lock\")' & pidof qs quickshell hyprlock || hyprlock\n";
+    let kept = home
+        .path()
+        .join(".local/state/rusty-impulse/carry-over/dots/new")
+        .join(home.hypr().strip_prefix("/").unwrap())
+        .join("execs.lua");
+    let now = home.read("execs.lua");
+    std::fs::write(&kept, earlier).unwrap();
+    home.write("execs.lua", earlier);
+
+    home.carry_over("new");
+    assert_eq!(home.read("execs.lua"), now);
+    home.carry_over("old");
+    assert_eq!(home.read("execs.lua"), STOCK_START);
 }
 
 /// The desktop widgets' layout is one file for both builds; the old one cannot read what the

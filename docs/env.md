@@ -1,6 +1,6 @@
 # Environment variables (`II_*`, `RI_*`)
 
-Every `II_*` / `RI_*` name in `crates/`, `tools/`, `bench/`, `.github/` and `.config/`, and
+Every `II_*` / `RI_*` name in `crates/`, `tools/`, `bench/`, `.github/`, `.config/` and `install.sh`, and
 what it does. `crates/qml/tests/env_registry.rs` fails when a name, an `RI_DEBUG` switch or
 an `RI_LOG` target is in the code but not here, or here but not in the code.
 
@@ -40,6 +40,9 @@ shell starts get the values of the session, not the pragmas'.
 | `RI_ROOT` | `crates/ricompiled-gen/build.rs`, `tools/install.sh`, `tools/parity/build.sh` | The QML tree compiled into the binary. Default: `qml` of the checkout, for `tools/install.sh` too, which then makes the rusty-impulse config `~/.config/rustshell/rusty-impulse` a copy of it. The build fails without a tree. |
 | `RI_ROOT_SUM` | `crates/ricompiled-gen/build.rs`, `tools/build.sh` | A checksum of the content of the `RI_ROOT` tree, set by `tools/build.sh` (`tools/build.sh --sum <tree>` prints it). Cargo compiles the tree again when this value differs from the one of the last build; without it Cargo goes by file times alone and keeps its build of a tree whose files are older than that build. The build computes the checksum of the files it compiles itself, and `rusty-impulse --version` prints that (`sum`); a value that is not that checksum fails the build. |
 | `RI_WORD` | `tools/carry-over.sh`, `tools/pc/rollback-watch` | The word that stands in place of `quickshell` in the project's own names (default `rustshell`). `tools/carry-over.sh` names with it the directories it carries a user's data over to, and stops if it is `quickshell` or not a name; `tools/pc/rollback-watch` takes it as the prefix of the new build's layers and the name of its runtime directory. Set it only to the word the installed build was renamed with. |
+| `RI_REPO` | `install.sh` | The repository `install.sh` clones when it is run from outside a checkout (default `https://github.com/dar1k-ness/rusty-impulse.git`). |
+| `RI_SRC` | `install.sh` | Where that clone goes, and the clone it updates when one is there (default `~/.local/src/rusty-impulse`). |
+| `RI_START_WAIT` | `install.sh` | Seconds `install.sh` waits for the started shell's panels before it puts back the Hyprland files and the shell that ran (default 30). |
 | `RI_COMMIT` | `crates/shell/src/ricli.rs`, `crates/shell/src/main.rs`, `tools/build.sh` | The commit `rusty-impulse --version` names. `tools/build.sh` sets it from the checkout (`+changes` when a file differs from the commit or is not in it); for a copy of the sources without `.git` the caller sets it to what `tools/build.sh --commit` prints in the checkout the copy was made from (or the copy's file `.build-commit` holds it, which `bench/vm.sh` writes), and the script fails without it. A release build of the shell without the interpreter does not compile without it; other builds (tests, `--features shell/interp`) say `unknown`. |
 | `RI_DIR` | `crates/rigen/check/build.rs`, `tools/testenv/ri-gate` | The QML tree whose scripts the `rigen/check` workspace also compiles. Unset: only its own cases. |
 

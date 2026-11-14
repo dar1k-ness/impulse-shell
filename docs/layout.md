@@ -14,6 +14,7 @@
 | `crates/testenv` | Test support: what a test does when its reference tool is missing. |
 | `crates/testscenes` | Test support: compiles the QML scenes of the shell's tests (`crates/shell/tests/scenes`) with `rigen`, so they run without the interpreter too. Tests only. |
 | `qml` | The shell's QML: what it is built from and tested against, and what an install copies to `~/.config/rustshell/rusty-impulse`. |
+| `install.sh` | The whole install by one command on Arch Linux: packages, build, install, the user's settings and Hyprland files, the start (docs/install.md). |
 | `tools/install.sh` | Build and install. |
 | `tools/testenv` | The test image (`Containerfile`) and the gate script (`ri-gate`). |
 | `tools/build.sh`, `tools/carry-over.sh` | The build alone; a user's data and own files from the names of the original to this project's. |

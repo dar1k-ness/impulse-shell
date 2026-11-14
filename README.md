@@ -15,7 +15,7 @@
   - One Rust binary, `rusty-impulse`, that reads the shell's QML (`qml`) and draws it itself. It links no Qt, no KDE and no Quickshell
   - Meant to look and behave as the original does. Where it does not: [docs/original-differences.md](docs/original-differences.md), [docs/quickshell-differences.md](docs/quickshell-differences.md), [docs/qt-differences.md](docs/qt-differences.md)
   - NOT the dotfiles: Hyprland's configuration, fonts and the other programs stay those of the original's setup
-  - NOT a system setup script: no packages are installed, no graphic drivers, no zram setup, etc.
+  - NOT a system setup script: `install.sh` installs the packages the build needs and nothing else. No graphic drivers, no zram setup, etc.
   - NOT a mirror: the QML is this project's own source now, nothing is taken from the original's updates
 
 </details>
@@ -36,12 +36,11 @@
   <summary>Installation</summary>
 
    - Have the original's dotfiles installed first: see [its wiki](https://ii.clsty.link/en/ii-qs/01setup/)
-   - Install what the build needs ([docs/build.md](docs/build.md)), clone this repo and run `tools/install.sh`
-     - `PREFIX=~/.local tools/install.sh` installs without `sudo`
-     - `tools/install.sh --rollback` goes back to the release the last install replaced
-     - See [docs/install.md](docs/install.md) for more details
-   - Bring your settings over from the original and make Hyprland start this shell: `tools/carry-over.sh`, then `tools/carry-over.sh --dots new`
+   - On Arch Linux, clone this repo and run `./install.sh`. That one command installs the packages the build needs, builds, installs to `~/.local`, brings your settings over from the original, makes Hyprland start this shell and starts it in the session you are in
+     - If the shell does not come up, your files are put back and the shell that ran is started again
      - Nothing under the original's names is changed or removed. `tools/carry-over.sh --dots old` puts your files back
+     - `tools/install.sh --rollback` goes back to the release the last install replaced
+     - The same steps one by one, and other systems: [docs/install.md](docs/install.md), [docs/build.md](docs/build.md)
    - Hyprland starts the shell as `rusty-impulse -c rusty-impulse`
    - A binary runs only the QML tree it was built from. After the tree changes, install again
    - **Keybinds**: Those of the original. Important ones:

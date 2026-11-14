@@ -17,6 +17,10 @@
 //! as Hyprland compiles them, and its `active_layout_index`), checked against the layout name
 //! Hyprland reports for it (`active_keymap`). A keyboard whose keymap Hyprland did not compile
 //! from those names (`kb_file`) uses the seat's keymap when that one names the same layout.
+//! A new keyboard takes them with its first message, keys or none: Hyprland keeps a layout
+//! per keyboard and starts a new one on the first, and `hyprctl switchxkblayout all next`
+//! moves each from where it is, so a keyboard left there while the real one is on the second
+//! stays a step apart, and the window gets the layout of whichever was moved last.
 //! The seat's `wl_keyboard` stays bound, so its keymap is the current one whenever it changes
 //! (wl_keyboard.keymap may come at any time). `j/devices` is read again only when Hyprland's
 //! event socket reported a layout or configuration change (`activelayout>>`,
@@ -655,9 +659,10 @@ impl Kb {
     }
 
     /// Sends one batch of keys: on the real keyboard's keymap and layout, with its current lock
-    /// state taken (from `layout`) only for a `modifiers` event.
+    /// state taken (from `layout`) only for a `modifiers` event. A keyboard with no keymap yet
+    /// takes both also for a batch without keys.
     fn batch(&mut self, keys: &[(u32, bool)], hypr: &mut Hyprland, layout: Layout) -> bool {
-        if !keys.is_empty() {
+        if !keys.is_empty() || self.keymap.is_none() {
             let real = layout(hypr, false);
             let mut locks = || layout(hypr, true).and_then(|r| r.locks);
             if !self.prepare(real, &mut locks) {
