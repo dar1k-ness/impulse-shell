@@ -24,4 +24,5 @@ pub mod shape;
 mod sine_table;
 pub mod svg;
 pub mod text;
+pub mod tri;
 pub mod triangulate;

@@ -1430,7 +1430,7 @@ fn blur_kernel_is_the_one_in_qts_generated_shader() {
             .unwrap_or_else(|e| panic!("Qt's generated shaders under {}: {e}", cache.display()));
         // The blur's two shaders hold as many literals as taps: the vertex shader every offset
         // but the centre's (not multiplied), the fragment shader every weight.
-        let (taps, _) = qsg::blur::kernel(radius as f64, samples, deviation);
+        let (taps, _, _) = qsg::blur::kernel(radius as f64, samples, deviation);
         let mut found = Vec::new();
         for f in shaders {
             let l = literals(&f.expect("shader file").path());

@@ -322,17 +322,17 @@ pub(crate) fn cover_uv(
 
 /// A plane a0 + dadx * x + dady * y of one value over a triangle.
 #[derive(Clone, Copy)]
-struct Plane {
-    a0: f32,
-    dadx: f32,
-    dady: f32,
+pub(crate) struct Plane {
+    pub(crate) a0: f32,
+    pub(crate) dadx: f32,
+    pub(crate) dady: f32,
 }
 
 impl Plane {
     /// llvmpipe's plane (Mesa 26.2.6, calc_coef4 in src/gallium/drivers/llvmpipe/
     /// lp_state_setup.c) of the value `a` at the three corners `p` of a triangle, the first
     /// corner the one it starts from: f32, each product rounded before it is added.
-    fn new(p: [[f32; 2]; 3], a: [f32; 3]) -> Plane {
+    pub(crate) fn new(p: [[f32; 2]; 3], a: [f32; 3]) -> Plane {
         let [[x0, y0], [x1, y1], [x2, y2]] = p;
         let (dx01, dy01, dx20, dy20) = (x0 - x1, y0 - y1, x2 - x0, y2 - y0);
         let ooa = 1.0 / (dx01 * dy20 - dx20 * dy01);
@@ -348,7 +348,7 @@ impl Plane {
 
     /// The value at the pixel (x, y): a0, then each product added without rounding it
     /// first (interp_attrib_linear in lp_bld_interp.c: lp_build_fmuladd).
-    fn at(self, x: usize, y: usize) -> f32 {
+    pub(crate) fn at(self, x: usize, y: usize) -> f32 {
         self.dady
             .mul_add(y as f32, self.dadx.mul_add(x as f32, self.a0))
     }

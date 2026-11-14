@@ -124,6 +124,10 @@ name = "effects_dpr_qt"
 required-features = ["interp"]
 
 [[test]]
+name = "lock_blur_qt"
+required-features = ["interp"]
+
+[[test]]
 name = "progress_bar_qt"
 required-features = ["interp"]
 

@@ -634,28 +634,32 @@ const SCENES: [&str; 11] = [
 
 /// More taps than BAKED_TAPS: the shader with the loop.
 fn looped_kernel() -> Gauss {
-    let (taps, spread) = qsg::blur::kernel(120.0, 241, None);
+    let (taps, spread, sum) = qsg::blur::kernel(120.0, 241, None);
     assert!(taps.len() > BAKED_TAPS);
     Gauss {
         taps,
         spread,
+        sum,
         per: [W as f32, 8.0],
         band: [0.0, 1.0],
         shadow: None,
+        first: None,
     }
 }
 
 /// The lock screen's wallpaper blur (Background.qml: radius 100, 201 samples), also drawn by
 /// the loop.
 fn lock_kernel() -> Gauss {
-    let (taps, spread) = qsg::blur::kernel(100.0, 201, None);
+    let (taps, spread, sum) = qsg::blur::kernel(100.0, 201, None);
     assert!(taps.len() > BAKED_TAPS);
     Gauss {
         taps,
         spread,
+        sum,
         per: [W as f32, 8.0],
         band: [0.0, 1.0],
         shadow: None,
+        first: None,
     }
 }
 
@@ -676,13 +680,15 @@ fn scene(name: &str) -> Frame {
         f
     };
     let gauss = |radius, samples, shadow| {
-        let (taps, spread) = qsg::blur::kernel(radius, samples, None);
+        let (taps, spread, sum) = qsg::blur::kernel(radius, samples, None);
         Gauss {
             taps,
             spread,
+            sum,
             per: [w as f32, h as f32],
             band: [0.0, 1.0],
             shadow,
+            first: None,
         }
     };
     let size = (w as usize, h as usize);
@@ -741,13 +747,13 @@ fn scene(name: &str) -> Frame {
                 shadow,
             )
         }
-        "blur" => fr.gauss(layer(&pic), gauss(8.0, 17, None), size, rect, 1.0),
+        "blur" => fr.gauss(layer(&pic), gauss(8.0, 17, None), size, rect, None, 1.0),
         "drop shadow" => {
             let shadow = Some(([0.1, 0.2, 0.3, 0.5], 1.0));
-            fr.gauss(layer(&veil), gauss(8.0, 17, shadow), size, rect, 1.0)
+            fr.gauss(layer(&veil), gauss(8.0, 17, shadow), size, rect, None, 1.0)
         }
-        "looped blur" => fr.gauss(layer(&pic), looped_kernel(), size, rect, 1.0),
-        "lock screen blur" => fr.gauss(layer(&pic), lock_kernel(), size, rect, 1.0),
+        "looped blur" => fr.gauss(layer(&pic), looped_kernel(), size, rect, None, 1.0),
+        "lock screen blur" => fr.gauss(layer(&pic), lock_kernel(), size, rect, None, 1.0),
         "rectangular shadow" => {
             // Item size, reduced half size, blur and the corner radii
             // (`qsg::shadow::shader`): edges at 20.5 and 2539.5 px.

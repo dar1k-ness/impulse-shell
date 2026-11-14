@@ -10191,6 +10191,27 @@ fn canvas_texture(w: &mut World, i: usize, cw: usize, ch: usize, wd: f64, ht: f6
     c
 }
 
+/// The combined matrix of the item `i`'s node in its window: the product of its ancestors'
+/// transform nodes' and its own (QSGNodeUpdater::enterTransformNode), each as
+/// QQuickWindowPrivate::updateDirtyNode builds it, an identity one left out.
+fn node_matrix(w: &mut World, i: usize) -> Mat4 {
+    let mut chain = vec![i];
+    while let Some(p) = w.items.get(*chain.last().unwrap()).and_then(|it| it.parent) {
+        chain.push(p);
+    }
+    // The window itself has no node of its own.
+    chain.pop();
+    let mut mat = Mat4::identity();
+    for &c in chain.iter().rev() {
+        let (x, y) = (num(w, c, "x"), num(w, c, "y"));
+        let m = w.item_node_matrix(c, x, y);
+        if m.flags != qml::valuetypes::IDENTITY {
+            mat = mat.mul(&m);
+        }
+    }
+    mat
+}
+
 /// A GaussianBlur.qml on the GPU: what `Frame::gauss` draws.
 struct GpuGauss {
     /// The SourceProxy texture.
@@ -10223,6 +10244,7 @@ fn gpu_gauss(
     tb: bool,
     dpr: f64,
     shadow: Option<([f32; 4], f32)>,
+    direct: Option<Rc<Canvas>>,
 ) -> Option<GpuGauss> {
     let r = if tb { qsg::blur::border(radius) } else { 0.0 };
     // `_paddedTexWidth` and `_paddedTexHeight`: int properties, truncated.
@@ -10237,17 +10259,31 @@ fn gpu_gauss(
         let rect = [x - r, y - r, pwf, phf];
         (proxy, rect, [x - r, y, pwf, ht], band)
     } else {
-        let proxy = gpu_layer_dpr(w, fonts, src, dpr);
+        let proxy = match direct {
+            // The picture's texture: its texels one to one.
+            Some(t) => {
+                let mut f = crate::gpu::Frame::scaled(t.w, t.h, 1.0);
+                let whole = [0.0, 0.0, t.w as f64, t.h as f64];
+                f.image_unblended(t, whole, [0.0, 0.0, 1.0, 1.0], false);
+                f
+            }
+            None => gpu_layer_dpr(w, fonts, src, dpr),
+        };
         (proxy, [x, y, wd, ht], [x, y, wd, ht], [0.0, 1.0])
     };
     let layer = crate::gpu::Frame::sized(rect[2], rect[3], dpr);
-    let (taps, spread) = qsg::blur::kernel(radius, samples, deviation);
+    let (taps, spread, sum) = qsg::blur::kernel(radius, samples, deviation);
     let kernel = crate::gpu::Gauss {
         taps,
         spread,
+        sum,
         per: [(pwf * dpr) as f32, (phf * dpr) as f32],
         band,
         shadow,
+        first: Some(match tb {
+            true => [pwf as f32, ht as f32, -r as f32, phf as f32],
+            false => [wd as f32, ht as f32, 0.0, ht as f32],
+        }),
     };
     Some(GpuGauss {
         proxy,
@@ -10263,6 +10299,32 @@ fn gpu_dpr(cv: &Target) -> Option<f64> {
     match cv {
         Target::Gpu(fr) => Some(fr.dpr),
         Target::Cpu(_) => None,
+    }
+}
+
+/// The picture GaussianBlur `e` reads itself instead of a layer of its source `src`, as
+/// `QGfxSourceProxy::updatePolish` has it for GaussianBlur.qml's proxy (linear, a sourceRect
+/// only with transparentBorder): an Image with no children and no layer of its own, smooth
+/// and of `fillMode: Stretch`, is the effect's source, a texture of the picture's own size.
+fn gauss_direct(w: &mut World, e: usize, src: usize, tb: bool, cpu: bool) -> Option<Rc<Canvas>> {
+    let own_layer = LAYER_SRC.with(|s| s.get()).is_some_and(|(le, _)| le == e);
+    if tb || own_layer || !is(w, src, "Image") || truthy(w, src, "layer.enabled", false) {
+        return None;
+    }
+    let smooth = !explicit(w, src, "smooth") || truthy(w, src, "smooth", true);
+    if !smooth || truthy(w, src, "mipmap", false) || !visual_kids(w, src).is_empty() {
+        return None;
+    }
+    let (wd, ht) = (num(w, src, "width"), num(w, src, "height"));
+    let (file, ss, fk, _) = image_src(w, src, wd, ht, 1.0);
+    if fk != 0 {
+        return None;
+    }
+    let asynchronous = truthy(w, src, "asynchronous", false);
+    let t = image_texture(image_loads(w), &file, ss, fk, asynchronous);
+    match cpu {
+        true => cpu_pixels(image_loads(w), &file, ss, fk, t),
+        false => t,
     }
 }
 
@@ -10282,6 +10344,43 @@ fn cpu_gauss_proxy(
     }
     let pw = qsg::blur::padded(wd, r) as f64;
     Rc::new(cpu_source(w, fonts, src, [-r, 0.0, pw, ht]))
+}
+
+thread_local! {
+    /// The size in pixels of the window the CPU raster is painting, outside its layers.
+    static CPU_WINDOW: std::cell::Cell<Option<(usize, usize)>> = const { std::cell::Cell::new(None) };
+}
+
+/// `CPU_WINDOW` as it was, put back when dropped.
+struct CpuWindow(Option<(usize, usize)>);
+
+impl CpuWindow {
+    fn set(size: Option<(usize, usize)>) -> Self {
+        CpuWindow(CPU_WINDOW.with(|c| c.replace(size)))
+    }
+}
+
+impl Drop for CpuWindow {
+    fn drop(&mut self) {
+        CPU_WINDOW.with(|c| c.set(self.0));
+    }
+}
+
+/// Where Qt draws the last pass of the effect `i` with the border `r`, in the window the CPU
+/// raster is painting: QSGRenderer's projection of the window times the node's matrix.
+fn cpu_placed(w: &mut World, i: usize, r: f64) -> Option<qsg::blur::Placed> {
+    let (tw, th) = CPU_WINDOW.with(|c| c.get())?;
+    let mut mv = node_matrix(w, i);
+    if r != 0.0 {
+        let mut at = Mat4::identity();
+        at.translate(-r as f32, -r as f32, 0.0);
+        mv = mv.mul(&at);
+    }
+    let m = Mat4::ortho(0.0, tw as f32, th as f32, 0.0, 1.0, -1.0).mul(&mv);
+    Some(qsg::blur::Placed {
+        m: std::array::from_fn(|i| m.m[i / 4][i % 4]),
+        target: (tw, th),
+    })
 }
 
 /// Draws an effect of the size `b` on the CPU target through `f`, unless a texture of that size
@@ -10308,6 +10407,11 @@ pub fn paint_window(rt: &mut Runtime, fonts: &mut Fonts, win: usize, cv: &mut Ta
         Target::Cpu(c) => Some(qsg::raster::Window::new(c)),
         Target::Gpu(_) => None,
     };
+    let size = match cv {
+        Target::Cpu(c) => Some((c.w, c.h)),
+        Target::Gpu(_) => None,
+    };
+    let _size = CpuWindow::set(size);
     // QsWindow.color: the window's clear color under its content.
     let bg = color(&mut w, win, "color", [0, 0, 0, 0]);
     if bg[3] > 0 {
@@ -13085,19 +13189,36 @@ fn paint_body(
             let r = if tb { qsg::blur::border(radius) } else { 0.0 };
             if let Some(dpr) = gpu_dpr(cv) {
                 let at = [x, y, wd, ht];
-                let b = gpu_gauss(w, fonts, src, at, radius, samples, deviation, tb, dpr, None);
+                let direct = gauss_direct(w, i, src, tb, false);
+                let b = gpu_gauss(
+                    w, fonts, src, at, radius, samples, deviation, tb, dpr, None, direct,
+                );
                 if let (Some(b), Target::Gpu(fr)) = (b, &mut *cv) {
-                    fr.gauss(b.proxy, b.kernel, b.layer, b.rect, op);
+                    // GaussianBlur.qml's `verticalBlur`: a child at (-radius, -radius) with
+                    // the border, the effect's own size without.
+                    let mut mv = node_matrix(w, i);
+                    if r != 0.0 {
+                        let mut at = Mat4::identity();
+                        at.translate(-r as f32, -r as f32, 0.0);
+                        mv = mv.mul(&at);
+                    }
+                    let item = [0.0, 0.0, b.rect[2] as f32, b.rect[3] as f32];
+                    fr.gauss(b.proxy, b.kernel, b.layer, b.rect, Some((item, mv)), op);
                 }
             } else {
-                let st = cached_layer(w, fonts, src);
+                let direct = gauss_direct(w, i, src, tb, true);
                 let pad = if tb { r + 2.0 } else { 1.0 };
                 raster_cpu(cv, (wd + 2.0 * pad, ht + 2.0 * pad), |c| {
-                    let proxy = cpu_gauss_proxy(w, fonts, &st, src, wd, ht, r);
+                    let proxy = direct.unwrap_or_else(|| {
+                        let st = cached_layer(w, fonts, src);
+                        cpu_gauss_proxy(w, fonts, &st, src, wd, ht, r)
+                    });
                     let (size, at) = ((wd, ht), [x, y]);
+                    let placed = cpu_placed(w, i, r);
                     cpu_direct(c, |c, s| {
                         qsg::blur::gaussian_blur_proxy(
                             c, &proxy, size, radius, samples, deviation, tb, at[0], at[1], op, s,
+                            placed,
                         );
                     });
                 });
@@ -13122,7 +13243,9 @@ fn paint_body(
                 let shadow = Some((tint, qsg::blur::shadow_thickness(spread)));
                 let at = [x + off.0.round(), y + off.1.round(), wd, ht];
                 let (radius, samples) = (radius * dpr, (samples as f64 * dpr) as i32);
-                let b = gpu_gauss(w, fonts, src, at, radius, samples, None, tb, dpr, shadow);
+                let b = gpu_gauss(
+                    w, fonts, src, at, radius, samples, None, tb, dpr, shadow, None,
+                );
                 if let (Some(b), Target::Gpu(fr)) = (b, &mut *cv) {
                     // `Frame::layer` maps the proxy's texels over its devicePixelRatio.
                     let [ox, oy, ow, oh] = b.output;
@@ -13131,7 +13254,7 @@ fn paint_body(
                         oh * dpr / b.proxy.h.max(1) as f64,
                     );
                     let m = [sx, 0.0, 0.0, sy, ox - off.0.round(), oy - off.1.round()];
-                    fr.gauss(b.proxy.clone(), b.kernel, b.layer, b.rect, op);
+                    fr.gauss(b.proxy.clone(), b.kernel, b.layer, b.rect, None, op);
                     fr.layer(b.proxy, m, op);
                 }
                 return;
@@ -16454,6 +16577,8 @@ fn cpu_source(w: &mut World, fonts: &mut Fonts, i: usize, rect: [f64; 4]) -> Can
     let (x, y) = (num(w, i, "x"), num(w, i, "y"));
     let (ox, oy) = (-rect[0] - x, -rect[1] - y);
     let _own = Untransformed::of(i);
+    // A layer is a target of its own, with a projection of its own.
+    let _size = CpuWindow::set(None);
     // `Frame::sized`: a rect under one unit is not stretched.
     let s = [tw as f64 / rect[2], th as f64 / rect[3]];
     if !(rect[2] >= 1.0 && rect[3] >= 1.0) || s == [1.0, 1.0] {

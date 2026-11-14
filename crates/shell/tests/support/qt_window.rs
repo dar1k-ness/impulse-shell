@@ -229,6 +229,13 @@ pub fn cpu_like_qt(body: &str, size: (usize, usize)) {
     compared(shown, &[1.0], 0, 0);
 }
 
+/// `like_qt` at scale 1 for the pixels `ours` has of the scene: at most `allow` of them differ
+/// from Qt's.
+pub fn shown_like_qt(body: &str, size: (usize, usize), allow: usize, ours: impl Fn() -> Canvas) {
+    let shown = |dpr| Some((qt(body, size, dpr, Scale::Qt, Caret::Blinks)?.0, ours()));
+    compared(shown, &[1.0], 0, allow);
+}
+
 /// Our pixels of the same scene on the CPU path, at scale 1.
 fn ours_cpu(body: &str, (w, h): (usize, usize)) -> Canvas {
     let qml = format!(

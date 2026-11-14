@@ -5,6 +5,7 @@
 use crate::region::{self, Region};
 use glow::HasContext;
 use khronos_egl as egl;
+use qml::valuetypes::Mat4;
 use qsg::{
     raster::{Canvas, Place},
     rect::Geometry,
@@ -103,6 +104,7 @@ enum Cmd {
         g: Rc<Gauss>,
         size: (usize, usize),
         rect: [f32; 4],
+        qt: Option<GaussAt>,
         op: f32,
     },
     /// The fill of a CurveRenderer Shape, drawn by shapecurve.frag: `v` what the vertex shader
@@ -386,6 +388,16 @@ const BAKED_TAPS: usize = qsg::blur::MAX_BLUR_SAMPLES as usize;
 /// a vec4, a float and a sampler as one vector each).
 const LOOP_UNIFORMS: usize = 4;
 
+/// The vertical pass of a blur as Qt draws it into its target: the vertices of the effect's own
+/// rect `item` through `m`, the target's projection times the effect's node matrix (both
+/// QMatrix4x4, multiplied as one), in a viewport of `target` device pixels.
+#[derive(Clone, PartialEq)]
+pub struct GaussAt {
+    m: [f32; 16],
+    item: [f32; 4],
+    target: (i32, i32),
+}
+
 /// Qt5Compat GaussianBlur/DropShadow kernel (`qsg::blur::kernel`): one shader per tap set, its
 /// offsets and weights baked in like qgfxshaderbuilder's generated shaders.
 #[derive(Clone, PartialEq)]
@@ -393,6 +405,8 @@ pub struct Gauss {
     /// (offset in texels before `spread`, weight) per tap.
     pub taps: Vec<(f32, f32)>,
     pub spread: f32,
+    /// What the shader divides the taps' sum by: the fallback shader's `wSum`, else 1.
+    pub sum: f32,
     /// GaussianBlur.qml `_paddedTexWidth * _dpr` and `_paddedTexHeight * _dpr`: a tap is
     /// `spread` over these apart in texture coordinates, one device pixel when `spread` is 1.
     pub per: [f32; 2],
@@ -403,6 +417,10 @@ pub struct Gauss {
     /// DropShadow: both passes keep clamp(alpha / thickness), the second tinted with this
     /// premultiplied colour (`qsg::blur::drop_shadow`).
     pub shadow: Option<([f32; 4], f32)>,
+    /// The horizontal pass as QSGRhiLayer projects it, in the effect's units: the pass's
+    /// item (width, height) and its layer's rect (top, height), which is the item's own or
+    /// `layer.sourceRect`. None draws `band` of the layer's texels.
+    pub first: Option<[f32; 4]>,
 }
 
 impl Gauss {
@@ -435,20 +453,23 @@ impl Gauss {
             .fold(mix(12, self.taps.len() as u64), |h, t| {
                 mix_f(h, &[t.0, t.1])
             });
-        let h = mix_f(h, &[self.spread]);
+        let h = mix_f(h, &[self.spread, self.sum]);
         let h = mix_f(mix_f(h, &self.per), &self.band);
+        let h = self.first.map_or(h, |f| mix_f(mix(h, 2), &f));
         match self.shadow {
             Some((c, t)) => mix_f(mix(h, 1), &[c[0], c[1], c[2], c[3], t]),
             None => h,
         }
     }
 
-    /// The pass's fragment shader: `d` the tap step in texture coordinates, `k`/`t` the
-    /// shadow tint and thickness; `uniforms` as in `looped`.
+    /// The pass's fragment shader: `d` the tap step in texture coordinates, `k` the shadow
+    /// tint, `t` the shadow's thickness and `sum`; `uniforms` as in `looped`. The taps' sum
+    /// is divided as qgfx_fallbackFragmentShader divides it: `(qt_Opacity / wSum) * result`,
+    /// and `(result / wSum) / thickness` of a shadow.
     fn shader(&self, uniforms: usize) -> String {
         let mut fs = String::from(
             "varying vec2 u; uniform sampler2D x; uniform vec2 d;
-uniform vec4 k; uniform float t;
+uniform vec4 k; uniform vec2 t;
 void main() { vec4 c = vec4(0.0);\n",
         );
         if self.looped(uniforms) {
@@ -466,10 +487,10 @@ void main() { vec4 c = vec4(0.0);\n",
                 );
             }
         }
-        if self.shadow.is_some() {
-            fs += " c = k * clamp(c.a / t, 0.0, 1.0);\n";
-        }
-        fs += " gl_FragColor = c; }";
+        fs += match self.shadow {
+            Some(_) => " gl_FragColor = k * clamp((c.a / t.y) / t.x, 0.0, 1.0); }",
+            None => " gl_FragColor = (1.0 / t.y) * c; }",
+        };
         fs
     }
 }
@@ -2201,9 +2222,24 @@ impl Frame {
     /// Qt5Compat GaussianBlur/DropShadow over `rect` (x y w h): `src` (the effect's SourceProxy
     /// texture) blurred by `g`'s two passes on the GPU, as Qt's ShaderEffects: the horizontal
     /// one into a layer of `size` texels, the vertical one over `rect`.
-    pub fn gauss(&mut self, src: Frame, g: Gauss, size: (usize, usize), rect: [f64; 4], op: f32) {
+    ///
+    /// `node` is the effect's own rect and its node's matrix (QSGNode's combined one, to the
+    /// item this frame draws from) when the vertical pass is the effect itself drawn into
+    /// this frame, as in GaussianBlur.qml: its vertices then go through that matrix and Qt's
+    /// projection, in single floats, as Qt's do. It is left out when the matrix does not put
+    /// the rect where `rect` is.
+    pub fn gauss(
+        &mut self,
+        src: Frame,
+        g: Gauss,
+        size: (usize, usize),
+        rect: [f64; 4],
+        node: Option<([f32; 4], Mat4)>,
+        op: f32,
+    ) {
         self.taint();
         let rect = self.xf_rect(rect).map(|v| v as f32);
+        let qt = node.and_then(|(item, mv)| self.gauss_at(item, &mv, rect));
         let h = mix(
             mix(mix(mix(10, src.digest()), g.digest()), size.0 as u64),
             size.1 as u64,
@@ -2217,6 +2253,7 @@ impl Frame {
                 g: Rc::new(g),
                 size,
                 rect,
+                qt,
                 op,
             },
             b,
@@ -2263,6 +2300,43 @@ impl Frame {
             b,
             hash,
         );
+    }
+
+    /// Qt's matrix of an effect of the rect `item` whose node has the matrix `mv`, drawn into
+    /// this frame: QSGRenderer::setProjectionMatrixToRect's of the rect the frame is over
+    /// times `mv`. None unless it puts `item` over `rect` (device pixels).
+    fn gauss_at(&self, item: [f32; 4], mv: &Mat4, rect: [f32; 4]) -> Option<GaussAt> {
+        let [l, t, w, h] =
+            self.over
+                .unwrap_or([0.0, 0.0, self.w as f64 / self.dpr, self.h as f64 / self.dpr]);
+        let p = Mat4::ortho(
+            l as f32,
+            (l + w) as f32,
+            (t + h) as f32,
+            t as f32,
+            1.0,
+            -1.0,
+        );
+        let m = p.mul(mv);
+        let (tw, th) = (self.w as f32, self.h as f32);
+        let px = |x: f32, y: f32| {
+            let v = m.map3([x, y, 0.0]);
+            [(v[0] + 1.0) * 0.5 * tw, (1.0 - v[1]) * 0.5 * th]
+        };
+        let (a, b) = (
+            px(item[0], item[1]),
+            px(item[0] + item[2], item[1] + item[3]),
+        );
+        let near = |a: f32, b: f32| (a - b).abs() < 0.01;
+        let fits = near(a[0], rect[0])
+            && near(a[1], rect[1])
+            && near(b[0], rect[0] + rect[2])
+            && near(b[1], rect[1] + rect[3]);
+        fits.then(|| GaussAt {
+            m: std::array::from_fn(|i| m.m[i / 4][i % 4]),
+            item,
+            target: (self.w as i32, self.h as i32),
+        })
     }
 
     /// QtQuick.Effects RectangularShadow over the scene rect `rect`, computed per fragment
@@ -2749,6 +2823,24 @@ const EGL_LOSE_CONTEXT_ON_RESET_EXT: egl::Int = 0x31BF;
 
 /// glGetGraphicsResetStatusEXT (GL_EXT_robustness): 0 (GL_NO_ERROR) until the GPU was reset.
 type ResetStatus = unsafe extern "system" fn() -> u32;
+
+/// glClipControlEXT (GL_EXT_clip_control): the clip volume's origin and depth mode.
+type ClipControl = unsafe extern "system" fn(u32, u32);
+
+/// How a blur pass lays the rows of its scene in its target.
+#[derive(Clone, Copy, PartialEq)]
+enum Rows {
+    /// The scene's bottom row is the target's first: a window, as OpenGL has it.
+    BottomFirst,
+    /// The scene's top row is the target's first: a layer, which Qt mirrors.
+    TopFirst,
+    /// As Mesa keeps a window: top row first, with the clip volume's origin at the upper left
+    /// (GL_EXT_clip_control; a driver without it has `BottomFirst`). Mesa then turns the
+    /// viewport over itself and gives a pixel whose centre is on an edge to the side it gives
+    /// it in a window (`bottom_edge_rule` in st_atom_rasterizer.c, Mesa 26.2.6); a matrix that
+    /// turns the scene over gives it to the other.
+    Window,
+}
 
 /// Frames in a row that may fail on their surface before the context counts as lost.
 const SURFACE_FAILURES: u32 = 3;
@@ -3281,6 +3373,8 @@ pub struct Gpu {
     /// `render` calls that went on to draw.
     binds: u64,
     reset_status: Option<ResetStatus>,
+    /// glClipControlEXT where the context has GL_EXT_clip_control (`Rows::Window`).
+    clip_control: Option<ClipControl>,
     /// Why the last `render` showed nothing, until `take_failure`.
     failure: Option<Failure>,
     /// Frames that failed since the last one shown.
@@ -3452,10 +3546,12 @@ fn swap_damage_name(exts: &str) -> Option<&'static str> {
     .find_map(|(ext, f)| has_ext(exts, ext).then_some(f))
 }
 
-/// The config for `attrs`: exactly RGBA8888 without depth, stencil or multisampling when there
-/// is one. eglChooseConfig matches sizes as minimums and sorts deeper colour first (EGL 1.5
-/// §3.4.1.2), so its first config may carry 10-bit channels, a depth/stencil buffer or samples
-/// that every window would allocate and never use.
+/// The config for `attrs`: exactly RGBA8888 with the depth and stencil buffers of Qt's default
+/// surface format (24 and 8 bits) and no multisampling when there is one. eglChooseConfig
+/// matches sizes as minimums and sorts deeper colour first (EGL 1.5 §3.4.1.2), so its first
+/// config may carry 10-bit channels or samples that every window would allocate and never
+/// use. Nothing here tests depth; Mesa's llvmpipe clips a triangle to the viewport only when
+/// there is a depth buffer, as under Qt.
 fn choose_config(egl: &Egl, display: egl::Display, attrs: &[egl::Int]) -> Option<egl::Config> {
     let n = egl.matching_config_count(display, attrs).ok()?;
     let mut configs = Vec::with_capacity(n);
@@ -3465,8 +3561,8 @@ fn choose_config(egl: &Egl, display: egl::Display, attrs: &[egl::Int]) -> Option
         (egl::GREEN_SIZE, 8),
         (egl::BLUE_SIZE, 8),
         (egl::ALPHA_SIZE, 8),
-        (egl::DEPTH_SIZE, 0),
-        (egl::STENCIL_SIZE, 0),
+        (egl::DEPTH_SIZE, 24),
+        (egl::STENCIL_SIZE, 8),
         (egl::SAMPLES, 0),
     ];
     let exact = configs.iter().copied().find(|&c| {
@@ -3981,6 +4077,22 @@ impl Gpu {
         // `GLenum glGetGraphicsResetStatusEXT(void)` (GL_EXT_robustness), taken only where the
         // context advertises the extension: eglGetProcAddress may answer for a name the
         // context does not implement.
+        let clip_control = gl
+            .supported_extensions()
+            .contains("GL_EXT_clip_control")
+            .then(|| ext_proc!(egl, "glClipControlEXT", ClipControl))
+            .flatten();
+        if clip_control.is_none() {
+            // Once for the process: a context made again after a loss has the same driver.
+            static SAID: std::sync::Once = std::sync::Once::new();
+            SAID.call_once(|| {
+                tracing::warn!(
+                    target: "ri::gpu",
+                    "gpu: no GL_EXT_clip_control: a blur's pixels with their centre on its \
+                     edge may be a level off Qt's"
+                );
+            });
+        }
         let reset_status = (robust.is_some()
             && gl.supported_extensions().contains("GL_EXT_robustness"))
         .then(|| ext_proc!(egl, "glGetGraphicsResetStatusEXT", ResetStatus))
@@ -4172,6 +4284,7 @@ impl Gpu {
                 .filter(|_| !LOSS_INJECTED.swap(true, std::sync::atomic::Ordering::Relaxed)),
             binds: 0,
             reset_status,
+            clip_control,
             failure: None,
             failed: 0,
             shown: 0,
@@ -4949,11 +5062,12 @@ impl Gpu {
                     g,
                     size,
                     rect,
+                    qt,
                     op,
                 } => {
                     // SAFETY: the context is current, as this fn requires.
                     let Some((a, rect, flipped)) =
-                        (unsafe { self.gauss_tex(src, g, *size, *rect) })
+                        (unsafe { self.gauss_tex(src, g, *size, *rect, qt.as_ref()) })
                     else {
                         continue;
                     };
@@ -6235,10 +6349,15 @@ impl Gpu {
                     unsafe { self.layer_tex(mask) };
                 }
                 Cmd::Gauss {
-                    src, g, size, rect, ..
+                    src,
+                    g,
+                    size,
+                    rect,
+                    qt,
+                    ..
                 } if self.no_skip || !covers_no_pixel(*b) => {
                     // SAFETY: the context is current, as this fn requires.
-                    unsafe { self.gauss_tex(src, g, *size, *rect) };
+                    unsafe { self.gauss_tex(src, g, *size, *rect, qt.as_ref()) };
                 }
                 Cmd::Effect {
                     src, mask, blur, ..
@@ -6615,21 +6734,58 @@ impl Gpu {
         g: &Gauss,
         size: (usize, usize),
         rect: [f32; 4],
+        qt: Option<&GaussAt>,
     ) -> Option<(glow::Texture, [f32; 4], bool)> {
         // The whole device pixels the vertical pass covers, and where it lies among them.
         let (x0, y0) = (rect[0].floor(), rect[1].floor());
-        let (ow, oh) = (
-            ((rect[0] + rect[2]).ceil() - x0).max(1.0),
-            ((rect[1] + rect[3]).ceil() - y0).max(1.0),
-        );
+        let (x1, y1) = ((rect[0] + rect[2]).ceil(), (rect[1] + rect[3]).ceil());
+        // With Qt's own vertices and matrix the pass is drawn as into its target: only the
+        // pixels it has there.
+        let [x0, y0, x1, y1] = match qt {
+            Some(q) => {
+                let (tw, th) = (q.target.0 as f32, q.target.1 as f32);
+                [x0.max(0.0), y0.max(0.0), x1.min(tw), y1.min(th)]
+            }
+            None => [x0, y0, x1, y1],
+        };
+        if qt.is_some() && (x1 <= x0 || y1 <= y0) {
+            return None;
+        }
+        let (ow, oh) = ((x1 - x0).max(1.0), (y1 - y0).max(1.0));
         let at = [rect[0] - x0, rect[1] - y0, rect[2], rect[3]];
         let over = [x0, y0, ow, oh];
         let key = mix(
             mix(mix(src.digest(), g.digest()), size.0 as u64),
             size.1 as u64,
         );
-        let flip = self.flip;
+        // A target that stands for a window is drawn as Mesa draws into a window, whose rows
+        // it keeps top first.
+        let rows = match (self.flip, self.clip_control.is_some()) {
+            (true, _) => Rows::TopFirst,
+            (false, true) => Rows::Window,
+            (false, false) => Rows::BottomFirst,
+        };
+        let flip = rows != Rows::BottomFirst;
         let key = mix(mix_f(key, &at), flip as u64);
+        let qt = qt.filter(|_| self.fit((ow as i32, oh as i32)) == (ow as i32, oh as i32));
+        let key = match qt {
+            Some(q) => {
+                let key = mix_f(key, &q.item);
+                let (tw, th) = (q.target.0 as f32, q.target.1 as f32);
+                let key = mix_f(key, &[tw, th, q.m[0], q.m[1], q.m[4], q.m[5]]);
+                // Wholly inside the target, a blur that moved by whole pixels keeps its
+                // texture.
+                let inside = rect[0] >= 0.0
+                    && rect[1] >= 0.0
+                    && rect[0] + rect[2] <= tw
+                    && rect[1] + rect[3] <= th;
+                match inside {
+                    true => key,
+                    false => mix_f(key, &[x0, y0, ow, oh]),
+                }
+            }
+            None => key,
+        };
         if let Some(e) = self.layers.get_mut(&key) {
             e.used = self.frame_no;
             return Some((e.tex, over, flip));
@@ -6650,15 +6806,40 @@ impl Gpu {
         let (mw, mh) = (size.0 as f32, size.1 as f32);
         let band = [0.0, g.band[0] * mh, mw, g.band[1] * mh];
         let d = [g.spread / g.per[0], 0.0];
+        let (band, first) = match g.first {
+            // QSGRenderer::setProjectionMatrixToRect of the layer's rect, mirrored: its top
+            // is the texture's first row.
+            Some([iw, ih, top, tall]) => {
+                let m = qsg::tri::ortho(0.0, iw, top, top + tall);
+                ([0.0, 0.0, iw, ih], Some((m, [0, 0, size.0, size.1])))
+            }
+            None => (band, None),
+        };
         // SAFETY: the context is current, as this fn requires.
-        let mid = unsafe { self.gauss_pass(a, size, band, g, d, [1.0; 4], true) }?;
+        let mid = unsafe { self.gauss_pass(a, size, band, g, d, [1.0; 4], Rows::TopFirst, first) }?;
         let tint = g.shadow.map_or([1.0; 4], |s| s.0);
         let out_size = self.fit(out);
         let (kx, ky) = (out_size.0 as f32 / ow, out_size.1 as f32 / oh);
         let at = [at[0] * kx, at[1] * ky, at[2] * kx, at[3] * ky];
         let d = [0.0, g.spread / g.per[1]];
+        let (at, qt) = match qt {
+            Some(q) => {
+                // The target's viewport, moved to where the pass's pixels are in it.
+                let (mut m, (tw, th)) = (q.m, q.target);
+                let y = match rows {
+                    Rows::TopFirst => {
+                        (0..4).for_each(|c| m[c * 4 + 1] = -m[c * 4 + 1]);
+                        -(y0 as i32)
+                    }
+                    Rows::Window => -(y0 as i32),
+                    Rows::BottomFirst => (y0 + oh) as i32 - th,
+                };
+                (q.item, Some((m, [-(x0 as i32), y, tw, th])))
+            }
+            None => (at, None),
+        };
         // SAFETY: the context is current, as this fn requires.
-        let out = unsafe { self.gauss_pass(mid.0, out_size, at, g, d, tint, flip) };
+        let out = unsafe { self.gauss_pass(mid.0, out_size, at, g, d, tint, rows, qt) };
         // SAFETY: the context is current, as this fn requires.
         unsafe { self.release(mid, size) };
         let out = out?;
@@ -6686,12 +6867,12 @@ impl Gpu {
         }
         let fs = g.shader(self.max_frag_uniforms);
         // SAFETY: the context is current, as this fn requires.
-        let p = unsafe { program(&self.gl, TEX_VS, &fs, &["p", "t"]) };
+        let p = unsafe { program(&self.gl, GAUSS_VS, &fs, &["p", "t"]) };
         let p = p.map(|p| {
             // SAFETY: the context is current, as this fn requires.
             (
                 p,
-                ["s", "x", "d", "k", "t", "w"]
+                ["m", "x", "d", "k", "t", "w"]
                     .map(|n| unsafe { self.gl.get_uniform_location(p, n) }),
             )
         });
@@ -6703,8 +6884,8 @@ impl Gpu {
     }
 
     /// One blur pass into a fresh target of `size` texels, sampling `src` linearly over the
-    /// quad `at` (x y w h in texels) of it; the rest stays transparent. `flip` draws it top row
-    /// first, like a layer.
+    /// quad `at` (x y w h in texels) of it; the rest stays transparent, its rows laid as `rows`
+    /// says.
     ///
     /// # Safety
     /// This `Gpu`'s context must be current on the calling thread, with `vbo` its bound array
@@ -6718,14 +6899,15 @@ impl Gpu {
         g: &Gauss,
         d: [f32; 2],
         tint: [f32; 4],
-        flip: bool,
+        rows: Rows,
+        qt: Option<([f32; 16], [i32; 4])>,
     ) -> Option<(glow::Texture, glow::Framebuffer)> {
         // SAFETY: the context is current, as this fn requires.
         let (p, u) = unsafe { self.gauss_prog(g) }?;
         // SAFETY: the context is current, as this fn requires.
         let (t, f) = unsafe { self.clear_target(size.0, size.1) }?;
         let mut v = Vec::with_capacity(24);
-        quad(&mut v, at[0], at[1], at[2], at[3], [0.0, 0.0, 1.0, 1.0]);
+        grid(&mut v, at);
         let thickness = g.shadow.map_or(1.0, |s| s.1);
         let gl = &self.gl;
         // SAFETY: the context is current, as this fn requires.
@@ -6740,9 +6922,22 @@ impl Gpu {
         for _ in 0..u.len() {
             gl_count(GL_UNIFORM);
         }
-        let sy = if flip { -size.1 } else { size.1 };
+        // The matrix of `TEX_VS` over the target, or Qt's own in the viewport it is for.
+        let sgn = if rows == Rows::TopFirst { -1.0f32 } else { 1.0 };
+        let upper = self.clip_control.filter(|_| rows == Rows::Window);
+        #[rustfmt::skip]
+        let m = qt.map_or([
+            2.0 / size.0 as f32, 0.0, 0.0, 0.0,
+            0.0, -sgn * (2.0 / size.1 as f32), 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            -1.0, sgn, 0.0, 1.0,
+        ], |q| q.0);
+        if let Some((_, [x, y, w, h])) = qt {
+            // SAFETY: the context is current, as this fn requires.
+            unsafe { gl.viewport(x, y, w, h) };
+        }
         // SAFETY: the context is current, as this fn requires.
-        unsafe { gl.uniform_2_f32(u[0].as_ref(), size.0 as f32, sy as f32) };
+        unsafe { gl.uniform_matrix_4_f32_slice(u[0].as_ref(), false, &m) };
         // SAFETY: the context is current, as this fn requires.
         unsafe { gl.uniform_1_i32(u[1].as_ref(), 0) };
         // SAFETY: the context is current, as this fn requires.
@@ -6750,7 +6945,7 @@ impl Gpu {
         // SAFETY: the context is current, as this fn requires.
         unsafe { gl.uniform_4_f32(u[3].as_ref(), tint[0], tint[1], tint[2], tint[3]) };
         // SAFETY: the context is current, as this fn requires.
-        unsafe { gl.uniform_1_f32(u[4].as_ref(), thickness) };
+        unsafe { gl.uniform_2_f32(u[4].as_ref(), thickness, g.sum) };
         if g.looped(self.max_frag_uniforms) {
             let w: Vec<f32> = g.taps.iter().flat_map(|t| [t.0, t.1]).collect();
             // SAFETY: the context is current, as this fn requires.
@@ -6758,8 +6953,16 @@ impl Gpu {
         }
         // SAFETY: the context is current, as this fn requires.
         unsafe { gl.disable(glow::BLEND) };
+        if let Some(clip) = upper {
+            // SAFETY: the context is current and advertises GL_EXT_clip_control.
+            unsafe { clip(glow::UPPER_LEFT, glow::NEGATIVE_ONE_TO_ONE) };
+        }
         // SAFETY: the context is current, as this fn requires.
         unsafe { self.draw_tex_quads(&v) };
+        if let Some(clip) = upper {
+            // SAFETY: the context is current and advertises GL_EXT_clip_control.
+            unsafe { clip(glow::LOWER_LEFT, glow::NEGATIVE_ONE_TO_ONE) };
+        }
         // SAFETY: the context is current, as this fn requires.
         unsafe { gl.enable(glow::BLEND) };
         Some((t, f))
@@ -7423,6 +7626,41 @@ impl Gpu {
         changed
     }
 
+    /// Gives `f`, the bound framebuffer of w x h, a depth buffer, which lives as long as it.
+    ///
+    /// # Safety
+    /// This `Gpu`'s context must be current on the calling thread.
+    unsafe fn depth(&self, f: glow::Framebuffer, w: i32, h: i32) {
+        let gl = &self.gl;
+        // SAFETY: the context is current, as this fn requires.
+        let Ok(rb) = (unsafe { gl.create_renderbuffer() }) else {
+            return;
+        };
+        // SAFETY: the context is current, as this fn requires.
+        unsafe { gl.bind_renderbuffer(glow::RENDERBUFFER, Some(rb)) };
+        // SAFETY: the context is current, as this fn requires.
+        unsafe { gl.renderbuffer_storage(glow::RENDERBUFFER, glow::DEPTH_COMPONENT16, w, h) };
+        // SAFETY: the context is current, as this fn requires.
+        unsafe {
+            gl.framebuffer_renderbuffer(
+                glow::FRAMEBUFFER,
+                glow::DEPTH_ATTACHMENT,
+                glow::RENDERBUFFER,
+                Some(rb),
+            )
+        };
+        // SAFETY: the context is current, as this fn requires.
+        unsafe { gl.bind_renderbuffer(glow::RENDERBUFFER, None) };
+        // A deleted renderbuffer stays attached, and alive until its framebuffer goes,
+        // unless that framebuffer is the bound one (GLES 2.0 §4.4.3).
+        // SAFETY: the context is current, as this fn requires.
+        unsafe { gl.bind_framebuffer(glow::FRAMEBUFFER, None) };
+        // SAFETY: the context is current, as this fn requires.
+        unsafe { gl.delete_renderbuffer(rb) };
+        // SAFETY: the context is current, as this fn requires.
+        unsafe { gl.bind_framebuffer(glow::FRAMEBUFFER, Some(f)) };
+    }
+
     /// A new w x h RGBA target, bound; None (logged) when GL cannot make a complete one: past
     /// GL_MAX_TEXTURE_SIZE or out of memory (GLES 2.0 §4.4.5).
     ///
@@ -7495,6 +7733,9 @@ impl Gpu {
                 0,
             )
         };
+        // SAFETY: the context is current, as this fn requires.
+        unsafe { self.depth(f, w, h) };
+        let gl = &self.gl;
         // SAFETY: the context is current, as this fn requires.
         let status = unsafe { gl.check_framebuffer_status(glow::FRAMEBUFFER) };
         if status != glow::FRAMEBUFFER_COMPLETE {
@@ -7998,17 +8239,35 @@ fn strip(x: f32, y: f32, w: f32, h: f32, uv: [f32; 4]) -> [f32; 16] {
     ]
 }
 
+/// A blur pass's vertices: the effect's own, through the matrix `m` of its node, as a
+/// ShaderEffect's vertex shader has them (`qt_Matrix * qt_Vertex`).
+const GAUSS_VS: &str = "attribute vec4 p; attribute vec2 t; uniform mat4 m; varying vec2 u;
+void main() { u = t; gl_Position = m * p; }";
+
+/// A rect's two triangles in the order of Qt's four vertices (top left, bottom left, top
+/// right, bottom right) drawn as a strip.
 fn quad(v: &mut Vec<f32>, x: f32, y: f32, w: f32, h: f32, uv: [f32; 4]) {
     let (u0, v0, u1, v1) = (uv[0], uv[1], uv[0] + uv[2], uv[1] + uv[3]);
     for (px, py, u, t) in [
         (x, y, u0, v0),
-        (x + w, y, u1, v0),
         (x, y + h, u0, v1),
         (x + w, y, u1, v0),
+        (x + w, y, u1, v0),
+        (x, y + h, u0, v1),
         (x + w, y + h, u1, v1),
-        (x, y + h, u0, v1),
     ] {
         v.extend_from_slice(&[px, py, u, t]);
+    }
+}
+
+/// The one cell of a ShaderEffect's mesh over `at` (x y w h) with the whole texture
+/// (QQuickGridMesh::updateGeometry: a strip per row, bottom left first): its two triangles
+/// share the diagonal from the top left, not a rect's from the top right.
+fn grid(v: &mut Vec<f32>, [x, y, w, h]: [f32; 4]) {
+    let (tl, bl) = ([x, y, 0.0, 0.0], [x, y + h, 0.0, 1.0]);
+    let (tr, br) = ([x + w, y, 1.0, 0.0], [x + w, y + h, 1.0, 1.0]);
+    for q in [tl, bl, br, tl, br, tr] {
+        v.extend_from_slice(&q);
     }
 }
 
@@ -10608,7 +10867,7 @@ mod gl_state_tests {
         let Some((mut g, mut s)) = gpu(64, 32) else {
             return;
         };
-        let (taps, spread) = qsg::blur::kernel(8.0, 17, None);
+        let (taps, spread, sum) = qsg::blur::kernel(8.0, 17, None);
         let white = Rc::new(Canvas::new(4, 4, [255; 4]));
         let framebuffers = |g: &Gpu| {
             (1..=64)
@@ -10630,12 +10889,14 @@ mod gl_state_tests {
             let blur = Gauss {
                 taps: taps.clone(),
                 spread,
+                sum,
                 per: [16.0; 2],
                 band: [0.0, 1.0],
                 shadow: None,
+                first: None,
             };
             let mut fr = Frame::new(64, 32);
-            fr.gauss(src, blur, (16, 16), [8.0, 8.0, 16.0, 16.0], 1.0);
+            fr.gauss(src, blur, (16, 16), [8.0, 8.0, 16.0, 16.0], None, 1.0);
             g.targets_left.set(Some(made));
             let px = shot(&mut g, &mut s, fr).px[16 * 64 + 16];
             assert_eq!(
@@ -10672,7 +10933,7 @@ mod gl_state_tests {
         };
         g.cap_texture_size(0);
         let m = g.max_tex;
-        let (taps, spread) = qsg::blur::kernel(8.0, 17, None);
+        let (taps, spread, sum) = qsg::blur::kernel(8.0, 17, None);
         let log = Log::default();
         let to = log.clone();
         let sub = qml::debug::subscriber(qml::debug::filter(None), move || to.clone());
@@ -10701,9 +10962,11 @@ mod gl_state_tests {
                 let blur = Gauss {
                     taps: taps.clone(),
                     spread,
+                    sum,
                     per: [16.0; 2],
                     band: [0.0, 1.0],
                     shadow: None,
+                    first: None,
                 };
                 let mut fr = Frame::new(64, 32);
                 fr.layer(layer, [64.0 / (m + 1) as f64, 0.0, 0.0, 8.0, 0.0, 0.0], 1.0);
@@ -10712,6 +10975,7 @@ mod gl_state_tests {
                     blur,
                     (m + 2, 16),
                     [0.0, 16.0, (m + 2) as f64, 16.0],
+                    None,
                     1.0,
                 );
                 let shot = shot(&mut g, &mut s, fr);
@@ -10738,7 +11002,7 @@ mod gl_state_tests {
         let Some((mut g, mut s)) = gpu(64, 32) else {
             return;
         };
-        let (taps, spread) = qsg::blur::kernel(8.0, 17, None);
+        let (taps, spread, sum) = qsg::blur::kernel(8.0, 17, None);
         let white = Rc::new(Canvas::new(4, 4, [255; 4]));
         let mut frame = |colour: [f32; 4], thickness: f32| {
             let mut src = Frame::new(16, 16);
@@ -10753,11 +11017,13 @@ mod gl_state_tests {
             let shadow = Gauss {
                 taps: taps.clone(),
                 spread,
+                sum,
                 per: [16.0; 2],
                 band: [0.0, 1.0],
                 shadow: Some((colour, thickness)),
+                first: None,
             };
-            fr.gauss(src, shadow, (16, 16), [8.0, 8.0, 16.0, 16.0], 1.0);
+            fr.gauss(src, shadow, (16, 16), [8.0, 8.0, 16.0, 16.0], None, 1.0);
             shot(&mut g, &mut s, fr).px[16 * 64 + 16]
         };
         for k in 0..40 {
@@ -10774,15 +11040,18 @@ mod gl_state_tests {
         let blur = Gauss {
             taps,
             spread,
+            sum,
             per: [16.0; 2],
             band: [0.0, 1.0],
             shadow: None,
+            first: None,
         };
         fr.gauss(
             Frame::new(16, 16),
             blur,
             (16, 16),
             [8.0, 8.0, 16.0, 16.0],
+            None,
             1.0,
         );
         shot(&mut g, &mut s, fr);
@@ -10794,25 +11063,29 @@ mod gl_state_tests {
     #[test]
     fn fragment_shaders_leave_highp_to_the_prefix() {
         let gauss = |shadow| {
-            let (taps, spread) = qsg::blur::kernel(8.0, 17, None);
+            let (taps, spread, sum) = qsg::blur::kernel(8.0, 17, None);
             Gauss {
                 taps,
                 spread,
+                sum,
                 per: [16.0; 2],
                 band: [0.0, 1.0],
                 shadow,
+                first: None,
             }
             .shader(usize::MAX)
         };
         let (blur, shadow) = (gauss(None), gauss(Some(([0.0, 0.0, 0.0, 1.0], 1.0))));
         // More than BAKED_TAPS taps: the shader that reads them from a uniform array.
-        let (taps, spread) = qsg::blur::kernel(120.0, 241, None);
+        let (taps, spread, sum) = qsg::blur::kernel(120.0, 241, None);
         let looped = Gauss {
             taps,
             spread,
+            sum,
             per: [16.0; 2],
             band: [0.0, 1.0],
             shadow: Some(([0.0, 0.0, 0.0, 1.0], 1.0)),
+            first: None,
         }
         .shader(usize::MAX);
         assert!(looped.contains("uniform vec2 w[241];"), "{looped}");
@@ -10825,9 +11098,9 @@ mod gl_state_tests {
         assert!(FS_PRECISION.contains("GL_FRAGMENT_PRECISION_HIGH"));
     }
 
-    /// Windows get an RGBA8888 config without depth, stencil or samples on Mesa.
+    /// Windows get an RGBA8888 config with Qt's depth and stencil and no samples on Mesa.
     #[test]
-    fn config_has_no_depth_stencil_or_samples() {
+    fn config_has_qts_depth_and_stencil_and_no_samples() {
         let Some(egl) = load_egl() else {
             return skip_without("libEGL.so.1");
         };
@@ -10860,8 +11133,8 @@ mod gl_state_tests {
         for (a, v) in [
             (egl::RED_SIZE, 8),
             (egl::ALPHA_SIZE, 8),
-            (egl::DEPTH_SIZE, 0),
-            (egl::STENCIL_SIZE, 0),
+            (egl::DEPTH_SIZE, 24),
+            (egl::STENCIL_SIZE, 8),
             (egl::SAMPLES, 0),
         ] {
             assert_eq!(egl.get_config_attrib(d, c, a).unwrap(), v, "{a:#x}");
@@ -11344,14 +11617,16 @@ mod capability_tests {
     /// draws what the loop draws.
     #[test]
     fn blur_kernel_past_the_uniform_limit_is_baked() {
-        let (taps, spread) = qsg::blur::kernel(101.0, 203, None);
+        let (taps, spread, sum) = qsg::blur::kernel(101.0, 203, None);
         assert_eq!(taps.len(), 203);
         let blur = Gauss {
             taps,
             spread,
+            sum,
             per: [16.0; 2],
             band: [0.0, 1.0],
             shadow: None,
+            first: None,
         };
         assert!(blur.looped(203 + LOOP_UNIFORMS) && !blur.looped(203 + LOOP_UNIFORMS - 1));
         assert!(blur.shader(4096).contains("uniform vec2 w[203];"));
@@ -11359,14 +11634,16 @@ mod capability_tests {
         assert!(!baked.contains("uniform vec2 w["), "{baked}");
         assert_eq!(baked.matches("texture2D(").count(), 203);
         assert_ne!(blur.prog_key(16), blur.prog_key(4096));
-        let (short, spread) = qsg::blur::kernel(63.0, 127, None);
+        let (short, spread, sum) = qsg::blur::kernel(63.0, 127, None);
         assert_eq!(short.len(), BAKED_TAPS);
         let short = Gauss {
             taps: short,
             spread,
+            sum,
             per: [16.0; 2],
             band: [0.0, 1.0],
             shadow: None,
+            first: None,
         };
         assert!(!short.shader(4096).contains("uniform vec2 w["));
 
@@ -11387,7 +11664,14 @@ mod capability_tests {
                 false,
             );
             let mut fr = Frame::new(64, 32);
-            fr.gauss(src, blur.clone(), (64, 32), [0.0, 0.0, 64.0, 32.0], 1.0);
+            fr.gauss(
+                src,
+                blur.clone(),
+                (64, 32),
+                [0.0, 0.0, 64.0, 32.0],
+                None,
+                1.0,
+            );
             s.reswap();
             g.render(&mut s, &mut fr, || {});
             assert!(
@@ -11432,15 +11716,17 @@ mod capability_tests {
             .and_then(|(_, r)| r.lines().next()?.trim().parse::<i32>().ok())
             .expect("options.lock.blur.radius");
         for radius in [radius, radius + 1, qsg::blur::MAX_BLUR_RADIUS] {
-            let (taps, spread) = qsg::blur::kernel(radius as f64, radius * 2 + 1, None);
+            let (taps, spread, sum) = qsg::blur::kernel(radius as f64, radius * 2 + 1, None);
             let n = taps.len();
             assert!(n > BAKED_TAPS, "radius {radius}: {n} taps");
             let blur = Gauss {
                 taps,
                 spread,
+                sum,
                 per: [16.0; 2],
                 band: [0.0, 1.0],
                 shadow: None,
+                first: None,
             };
             let fs = blur.shader(n + LOOP_UNIFORMS);
             assert_eq!(fs.matches("texture2D(").count(), 1, "radius {radius}: {fs}");
@@ -11466,14 +11752,16 @@ mod capability_tests {
     /// tests/effects_qt.rs `lock_screen_blur` compares the loop's picture with Qt's.
     #[test]
     fn lock_screen_blur_loop_draws_what_its_baked_taps_drew() {
-        let (taps, spread) = qsg::blur::kernel(100.0, 201, None);
+        let (taps, spread, sum) = qsg::blur::kernel(100.0, 201, None);
         let (w, h) = (256usize, 96usize);
         let blur = Gauss {
             taps,
             spread,
+            sum,
             per: [w as f32, h as f32],
             band: [0.0, 1.0],
             shadow: None,
+            first: None,
         };
         let mut pic = Canvas::new(64, 24, [0, 0, 0, 255]);
         for (i, p) in pic.px.iter_mut().enumerate() {
@@ -11498,7 +11786,7 @@ mod capability_tests {
                 false,
             );
             let mut fr = Frame::new(w, h);
-            fr.gauss(src, blur.clone(), (w, h), [0.0, 0.0, wf, hf], 1.0);
+            fr.gauss(src, blur.clone(), (w, h), [0.0, 0.0, wf, hf], None, 1.0);
             s.reswap();
             g.render(&mut s, &mut fr, || {});
             assert!(

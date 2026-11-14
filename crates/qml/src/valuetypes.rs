@@ -947,6 +947,23 @@ impl Mat4 {
         std::array::from_fn(|r| v[0] * m[0][r] + v[1] * m[1][r] + v[2] * m[2][r] + v[3] * m[3][r])
     }
 
+    /// QMatrix4x4::ortho(left, right, bottom, top, nearPlane, farPlane) of an identity matrix.
+    pub fn ortho(l: f32, r: f32, b: f32, t: f32, near: f32, far: f32) -> Mat4 {
+        let mut m = Mat4::identity();
+        if l == r || b == t || near == far {
+            return m;
+        }
+        let (width, invheight, clip) = (r - l, t - b, far - near);
+        m.m[0][0] = 2.0 / width;
+        m.m[1][1] = 2.0 / invheight;
+        m.m[2][2] = -2.0 / clip;
+        m.m[3][0] = -(l + r) / width;
+        m.m[3][1] = -(t + b) / invheight;
+        m.m[3][2] = -(near + far) / clip;
+        m.flags = TRANSLATION | SCALE;
+        m
+    }
+
     /// QMatrix4x4::map(QVector3D).
     pub fn map3(&self, p: [f32; 3]) -> [f32; 3] {
         let m = &self.m;

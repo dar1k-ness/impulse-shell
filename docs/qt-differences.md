@@ -1350,6 +1350,73 @@ One more scene of that file is one level off Qt's and is not left out: its test 
 count as the most that may differ. `shadow_offset_scaled_coloured`, a `MultiEffect` with
 `shadowBlur: 0.5`, `shadowScale: 1.15` and an offset: 28 / 28. No cause is named.
 
+## A layer's depth buffer and a driver without GL_EXT_clip_control
+
+| | Qt 6.12 | Here |
+|---|---|---|
+| A window's surface | a depth and a stencil buffer (`QSurfaceFormat` of 24 and 8 bits) | the same |
+| The texture of a layer or of an effect's pass | a depth and a stencil buffer (`QSGRhiLayer`) | a depth buffer of 16 bits, no stencil |
+| The last pass of a blur into a window, on a driver without `GL_EXT_clip_control` | as on any driver | bottom row first with the clip volume's origin at the lower left: on Mesa's llvmpipe 54 of the 1 327 104 pixels of the lock screen's blur over a picture of noise are one level off Qt's |
+
+Nothing the shell draws is tested against depth or stencil. The buffers are there because
+Mesa's llvmpipe draws other pixels without one: with no depth buffer it takes its linear
+rasterizer (`check_linear_rasterizer` in `lp_state_derived.c`, Mesa 26.2.6), which does not
+clip a triangle to the viewport and draws the two triangles of a rectangle as one; with a
+depth buffer it clips each triangle, and the texture coordinates of the pixels along a
+clipped edge and on each side of the diagonal are other floats. A blur of a noise picture
+shows them as pixels one level off. Any depth buffer does that, so a layer's is the smallest
+one and has no stencil. What a graphics card draws with or without one was not compared.
+
+Mesa keeps a window's rows top first and gives a pixel whose centre is on an edge of a
+triangle to the other side than in a texture (`bottom_edge_rule` in `st_atom_rasterizer.c`).
+The last pass of a blur into a window is drawn the same way: top row first with the clip
+volume's origin at the upper left (`glClipControlEXT`, `Rows::Window`). The shell asks the
+driver for `GL_EXT_clip_control` when it makes its context. A driver without it gets one
+warning in the log (`ri::gpu`) and the pass as OpenGL has a window, bottom row first: the
+picture is upright, and those edge pixels are the ones a level off.
+
+A window needs its own depth buffer, not only its layers: a smooth Image drawn straight
+into a window and past its edges (`a_smooth_picture_past_the_edges_of_a_window_on_a_screen`)
+has Qt's pixels with it and 12 067 of 1 327 104 a level off without, in a window on a screen
+and in the tests' context alike. The blur of the shell's wallpaper alone would not need it.
+
+What the buffers cost: 4 bytes for each pixel of a window and 2 for each pixel of a layer.
+The shell at rest on a 1920 x 1080 screen at scale 1 (the bar of 1920 x 63, the wallpaper's
+window of 1920 x 1080 and the small windows of the screen's corners: 2 202 427 pixels; 24
+layers: 93 477 pixels) has 8.6 MiB of them, 7.9 of that for the wallpaper's window.
+Measured on llvmpipe, the process is 8.8 to 15.9 MiB larger (two runs of each).
+
+The CPU raster draws a blur's two passes the same way: each pass's rectangle as the two
+triangles of `QQuickGridMesh` (the diagonal from the top left), their corners through Qt's
+matrix in f32, cut at the edges of the target as `draw_pipe_clip.c` cuts them, and the
+texture coordinates of a pixel off the plane of its own triangle (`crates/qsg/src/tri.rs`).
+It does so for the last pass where the blur is drawn straight into a window; in a layer the
+last pass is still one rectangle with the other diagonal.
+
+A GaussianBlur without `transparentBorder` whose source is a smooth Image of
+`fillMode: Stretch` with no children and no layer reads the picture's own texture, of the
+picture's size, as `QGfxSourceProxy::updatePolish` has it: no layer of the item's size is
+made between (`gauss_direct`). The horizontal pass is drawn into its layer through
+`QSGRhiLayer`'s projection of the layer's rect in the item's units, in f32, not through one
+of the layer's texels: a row or column of the picture a float's last digit off is another
+byte of the filter. The other Qt5Compat effects still draw such an Image into a layer.
+
+Code: `choose_config`, `Gpu::depth` and `Rows` in `crates/shell/src/gpu.rs`; `tris_pass` in
+`crates/qsg/src/blur.rs`; `gauss_direct` in `crates/shell/src/scene.rs`.
+
+Tests: `crates/shell/tests/lock_blur_qt.rs`: the three `..._of_the_shell_wallpaper_..._on_the_gpu`,
+the three `..._on_the_cpu_raster` (2 184, 2 235 and 11 392 pixels a level off before),
+`lock_screen_blur_of_a_picture_...` on both (an Image that is the blur's source itself: 70 267
+pixels before) and `lock_screen_blur_of_the_shell_wallpaper_in_a_window_on_a_screen` (a panel of rusty-impulse under
+sway, read off the screen: Qt's pixels; with no depth buffer 134 pixels off, with the origin
+at the lower left 54, with neither 101), `lock_screen_blur_in_a_window_of_a_driver_without_clip_control`
+(Mesa told to leave the extension out: one warning, 54 pixels).
+`a_smooth_picture_past_the_edges_of_a_window_on_a_screen` and `..._on_the_gpu` (a picture
+larger than the window, at its corner and past all four edges).
+`crates/shell/tests/effects_qt.rs`, `a_blur_in_a_scaled_subtree_with_edges_on_pixel_centres::gpu`
+(with the origin at the upper left: Qt's pixels; with the scene turned over by the matrix
+instead: 264 pixels).
+
 ## A Kirigami.Icon's fade while the GUI thread is busy
 
 Compared with Qt 6.12.0 and Kirigami 6.31.0 drawing with OpenGL on Wayland under sway, with

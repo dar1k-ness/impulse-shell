@@ -187,7 +187,7 @@ full disk, a log that does not take output) the panicking thread waits with it.
 | `ri::dmgdbg` | The damage rectangles of a frame and reordered draw lists. |
 | `ri::dmgdump` | With `dmgcheck`: writes the partial and the full repaint of a mismatching frame as PPM files to the instance's run directory (first 3 frames). |
 | `ri::scdump` | Writes each finished screen copy as `sc-<item>.png` to the instance's run directory. |
-| `ri::gpu` | Layers and textures scaled down to the GL texture size limit. |
+| `ri::gpu` | Layers and textures scaled down to the GL texture size limit. As a warning, printed without `RI_LOG`: the driver has no `GL_EXT_clip_control` (once). |
 | `ri::gpuprof` | Time of each GPU command and layer render in a frame. |
 | `ri::gputime` | Per frame: buffer age, acquire, execute and finish times, command count. |
 | `ri::cmdstat` | Per frame: command, triangle, vertex and rectangle counts. |
