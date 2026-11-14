@@ -92,6 +92,7 @@ pub fn json_write(
             } else {
                 String::new()
             };
+            crate::valuetypes::show(o);
             let b = o.borrow();
             if let Some(arr) = &b.array {
                 if arr.is_empty() {
@@ -359,6 +360,10 @@ pub mod adapter {
         };
         match v {
             Value::Item(c) if json_item(w, *c) => obj(json_props(w, *c), out),
+            // A color a `var` holds is a QColor to QJsonValue::fromVariant: its name.
+            Value::Obj(_) if let Some(c) = crate::valuetypes::color_of(v) => {
+                json_string(&Value::Color(c).to_js_string(), out)
+            }
             Value::Obj(o) => {
                 let b = o.borrow();
                 if let Some(a) = &b.array {

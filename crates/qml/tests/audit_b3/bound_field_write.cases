@@ -1,0 +1,160 @@
+# A write to a field of a value type property that a binding holds: what becomes of the
+# binding and how many change signals there are (Qt 6.12).
+@property int n: 0
+@function fs(f) { return f.pixelSize + "/" + f.bold }
+@property point pta: Qt.point(n, 0)
+@property int kPta: 0
+@onPtaChanged: kPta += 1
+@property point ptb: Qt.point(n, 0)
+@property int kPtb: 0
+@onPtbChanged: kPtb += 1
+@property point ptc: Qt.point(n, 0)
+@property int kPtc: 0
+@onPtcChanged: kPtc += 1
+@property point ptd: Qt.point(n, 0)
+@property int kPtd: 0
+@onPtdChanged: kPtd += 1
+@property int trigPt: 0
+@onTrigPtChanged: ptb.y = 3
+@property size sza: Qt.size(n, 0)
+@property int kSza: 0
+@onSzaChanged: kSza += 1
+@property size szb: Qt.size(n, 0)
+@property int kSzb: 0
+@onSzbChanged: kSzb += 1
+@property size szc: Qt.size(n, 0)
+@property int kSzc: 0
+@onSzcChanged: kSzc += 1
+@property size szd: Qt.size(n, 0)
+@property int kSzd: 0
+@onSzdChanged: kSzd += 1
+@property int trigSz: 0
+@onTrigSzChanged: szb.height = 3
+@property rect rca: Qt.rect(n, 0, 1, 1)
+@property int kRca: 0
+@onRcaChanged: kRca += 1
+@property rect rcb: Qt.rect(n, 0, 1, 1)
+@property int kRcb: 0
+@onRcbChanged: kRcb += 1
+@property rect rcc: Qt.rect(n, 0, 1, 1)
+@property int kRcc: 0
+@onRccChanged: kRcc += 1
+@property rect rcd: Qt.rect(n, 0, 1, 1)
+@property int kRcd: 0
+@onRcdChanged: kRcd += 1
+@property int trigRc: 0
+@onTrigRcChanged: rcb.y = 3
+@property color cla: Qt.rgba(n / 100, 0, 0, 1)
+@property int kCla: 0
+@onClaChanged: kCla += 1
+@property color clb: Qt.rgba(n / 100, 0, 0, 1)
+@property int kClb: 0
+@onClbChanged: kClb += 1
+@property color clc: Qt.rgba(n / 100, 0, 0, 1)
+@property int kClc: 0
+@onClcChanged: kClc += 1
+@property color cld: Qt.rgba(n / 100, 0, 0, 1)
+@property int kCld: 0
+@onCldChanged: kCld += 1
+@property int trigCl: 0
+@onTrigClChanged: clb.g = 1
+@property font fna: Qt.font({pixelSize: n + 1})
+@property int kFna: 0
+@onFnaChanged: kFna += 1
+@property font fnb: Qt.font({pixelSize: n + 1})
+@property int kFnb: 0
+@onFnbChanged: kFnb += 1
+@property font fnc: Qt.font({pixelSize: n + 1})
+@property int kFnc: 0
+@onFncChanged: kFnc += 1
+@property font fnd: Qt.font({pixelSize: n + 1})
+@property int kFnd: 0
+@onFndChanged: kFnd += 1
+@property int trigFn: 0
+@onTrigFnChanged: fnb.bold = true
+@property vector3d v3a: Qt.vector3d(n, 0, 0)
+@property int kV3a: 0
+@onV3aChanged: kV3a += 1
+@property vector3d v3b: Qt.vector3d(n, 0, 0)
+@property int kV3b: 0
+@onV3bChanged: kV3b += 1
+@property vector3d v3c: Qt.vector3d(n, 0, 0)
+@property int kV3c: 0
+@onV3cChanged: kV3c += 1
+@property vector3d v3d: Qt.vector3d(n, 0, 0)
+@property int kV3d: 0
+@onV3dChanged: kV3d += 1
+@property int trigV3: 0
+@onTrigV3Changed: v3b.y = 3
+w(function(){ var k = kPta; n = 1; pta.y = 3; var a = String(pta); var k1 = kPta - k; n = 2; return [a, String(pta), k1, kPta - k].join("|") })
+=> string:QPointF(1, 3)|QPointF(1, 3)|2|2
+w(function(){ var k = kPtb; n = 3; trigPt += 1; var a = String(ptb); var k1 = kPtb - k; n = 4; return [a, String(ptb), k1, kPtb - k].join("|") })
+=> string:QPointF(3, 3)|QPointF(3, 3)|2|2
+w(function(){ var k = kPtc; n = 5; var x = ptc; x.y = 3; var a = String(ptc); var k1 = kPtc - k; n = 6; return [a, String(ptc), String(x), k1, kPtc - k].join("|") })
+=> string:QPointF(5, 3)|QPointF(5, 3)|QPointF(5, 3)|2|2
+w(function(){ var k = kPtd; n = 7; ptd.y = 0; var a = String(ptd); var k1 = kPtd - k; n = 8; return [a, String(ptd), k1, kPtd - k].join("|") })
+=> string:QPointF(7, 0)|QPointF(7, 0)|1|1
+w(function(){ pta = Qt.binding(function(){ return Qt.point(n, 0) }); var k = kPta; n = 9; pta.y = 3; var k1 = kPta - k; n = 10; return [String(pta), k1, kPta - k].join("|") })
+=> string:QPointF(9, 3)|2|2
+w(function(){ pta = Qt.binding(function(){ return Qt.point(n, 0) }); var k = kPta; n = 11; pta = pta; n = 12; return [String(pta), kPta - k].join("|") })
+=> string:QPointF(11, 0)|1
+w(function(){ var k = kSza; n = 13; sza.height = 3; var a = String(sza); var k1 = kSza - k; n = 14; return [a, String(sza), k1, kSza - k].join("|") })
+=> string:QSizeF(13, 3)|QSizeF(13, 3)|2|2
+w(function(){ var k = kSzb; n = 15; trigSz += 1; var a = String(szb); var k1 = kSzb - k; n = 16; return [a, String(szb), k1, kSzb - k].join("|") })
+=> string:QSizeF(15, 3)|QSizeF(15, 3)|2|2
+w(function(){ var k = kSzc; n = 17; var x = szc; x.height = 3; var a = String(szc); var k1 = kSzc - k; n = 18; return [a, String(szc), String(x), k1, kSzc - k].join("|") })
+=> string:QSizeF(17, 3)|QSizeF(17, 3)|QSizeF(17, 3)|2|2
+w(function(){ var k = kSzd; n = 19; szd.height = 0; var a = String(szd); var k1 = kSzd - k; n = 20; return [a, String(szd), k1, kSzd - k].join("|") })
+=> string:QSizeF(19, 0)|QSizeF(19, 0)|1|1
+w(function(){ sza = Qt.binding(function(){ return Qt.size(n, 0) }); var k = kSza; n = 21; sza.height = 3; var k1 = kSza - k; n = 22; return [String(sza), k1, kSza - k].join("|") })
+=> string:QSizeF(21, 3)|2|2
+w(function(){ sza = Qt.binding(function(){ return Qt.size(n, 0) }); var k = kSza; n = 23; sza = sza; n = 24; return [String(sza), kSza - k].join("|") })
+=> string:QSizeF(23, 0)|1
+w(function(){ var k = kRca; n = 25; rca.y = 3; var a = String(rca); var k1 = kRca - k; n = 26; return [a, String(rca), k1, kRca - k].join("|") })
+=> string:QRectF(25, 3, 1, 1)|QRectF(25, 3, 1, 1)|2|2
+w(function(){ var k = kRcb; n = 27; trigRc += 1; var a = String(rcb); var k1 = kRcb - k; n = 28; return [a, String(rcb), k1, kRcb - k].join("|") })
+=> string:QRectF(27, 3, 1, 1)|QRectF(27, 3, 1, 1)|2|2
+w(function(){ var k = kRcc; n = 29; var x = rcc; x.y = 3; var a = String(rcc); var k1 = kRcc - k; n = 30; return [a, String(rcc), String(x), k1, kRcc - k].join("|") })
+=> string:QRectF(29, 3, 1, 1)|QRectF(29, 3, 1, 1)|QRectF(29, 3, 1, 1)|2|2
+w(function(){ var k = kRcd; n = 31; rcd.y = 0; var a = String(rcd); var k1 = kRcd - k; n = 32; return [a, String(rcd), k1, kRcd - k].join("|") })
+=> string:QRectF(31, 0, 1, 1)|QRectF(31, 0, 1, 1)|1|1
+w(function(){ rca = Qt.binding(function(){ return Qt.rect(n, 0, 1, 1) }); var k = kRca; n = 33; rca.y = 3; var k1 = kRca - k; n = 34; return [String(rca), k1, kRca - k].join("|") })
+=> string:QRectF(33, 3, 1, 1)|2|2
+w(function(){ rca = Qt.binding(function(){ return Qt.rect(n, 0, 1, 1) }); var k = kRca; n = 35; rca = rca; n = 36; return [String(rca), kRca - k].join("|") })
+=> string:QRectF(35, 0, 1, 1)|1
+w(function(){ var k = kCla; n = 37; cla.g = 1; var a = String(cla); var k1 = kCla - k; n = 38; return [a, String(cla), k1, kCla - k].join("|") })
+=> string:#5eff00|#5eff00|2|2
+w(function(){ var k = kClb; n = 39; trigCl += 1; var a = String(clb); var k1 = kClb - k; n = 40; return [a, String(clb), k1, kClb - k].join("|") })
+=> string:#63ff00|#63ff00|2|2
+w(function(){ var k = kClc; n = 41; var x = clc; x.g = 1; var a = String(clc); var k1 = kClc - k; n = 42; return [a, String(clc), String(x), k1, kClc - k].join("|") })
+=> string:#69ff00|#69ff00|#69ff00|2|2
+w(function(){ var k = kCld; n = 43; cld.g = 0; var a = String(cld); var k1 = kCld - k; n = 44; return [a, String(cld), k1, kCld - k].join("|") })
+=> string:#6e0000|#6e0000|1|1
+w(function(){ cla = Qt.binding(function(){ return Qt.rgba(n / 100, 0, 0, 1) }); var k = kCla; n = 45; cla.g = 1; var k1 = kCla - k; n = 46; return [String(cla), k1, kCla - k].join("|") })
+=> string:#73ff00|2|2
+w(function(){ cla = Qt.binding(function(){ return Qt.rgba(n / 100, 0, 0, 1) }); var k = kCla; n = 47; cla = cla; n = 48; return [String(cla), kCla - k].join("|") })
+=> string:#780000|1
+w(function(){ var k = kFna; n = 49; fna.bold = true; var a = fs(fna); var k1 = kFna - k; n = 50; return [a, fs(fna), k1, kFna - k].join("|") })
+=> string:50/true|50/true|2|2
+w(function(){ var k = kFnb; n = 51; trigFn += 1; var a = fs(fnb); var k1 = kFnb - k; n = 52; return [a, fs(fnb), k1, kFnb - k].join("|") })
+=> string:52/true|52/true|2|2
+w(function(){ var k = kFnc; n = 53; var x = fnc; x.bold = true; var a = fs(fnc); var k1 = kFnc - k; n = 54; return [a, fs(fnc), fs(x), k1, kFnc - k].join("|") })
+=> string:54/true|54/true|54/true|2|2
+w(function(){ var k = kFnd; n = 55; fnd.bold = false; var a = fs(fnd); var k1 = kFnd - k; n = 56; return [a, fs(fnd), k1, kFnd - k].join("|") })
+=> string:56/false|56/false|1|1
+w(function(){ fna = Qt.binding(function(){ return Qt.font({pixelSize: n + 1}) }); var k = kFna; n = 57; fna.bold = true; var k1 = kFna - k; n = 58; return [fs(fna), k1, kFna - k].join("|") })
+=> string:58/true|2|2
+w(function(){ fna = Qt.binding(function(){ return Qt.font({pixelSize: n + 1}) }); var k = kFna; n = 59; fna = fna; n = 60; return [fs(fna), kFna - k].join("|") })
+=> string:60/false|1
+w(function(){ var k = kV3a; n = 61; v3a.y = 3; var a = String(v3a); var k1 = kV3a - k; n = 62; return [a, String(v3a), k1, kV3a - k].join("|") })
+=> string:QVector3D(61, 3, 0)|QVector3D(61, 3, 0)|2|2
+w(function(){ var k = kV3b; n = 63; trigV3 += 1; var a = String(v3b); var k1 = kV3b - k; n = 64; return [a, String(v3b), k1, kV3b - k].join("|") })
+=> string:QVector3D(63, 3, 0)|QVector3D(63, 3, 0)|2|2
+w(function(){ var k = kV3c; n = 65; var x = v3c; x.y = 3; var a = String(v3c); var k1 = kV3c - k; n = 66; return [a, String(v3c), String(x), k1, kV3c - k].join("|") })
+=> string:QVector3D(65, 3, 0)|QVector3D(65, 3, 0)|QVector3D(65, 3, 0)|2|2
+w(function(){ var k = kV3d; n = 67; v3d.y = 0; var a = String(v3d); var k1 = kV3d - k; n = 68; return [a, String(v3d), k1, kV3d - k].join("|") })
+=> string:QVector3D(67, 0, 0)|QVector3D(67, 0, 0)|1|1
+w(function(){ v3a = Qt.binding(function(){ return Qt.vector3d(n, 0, 0) }); var k = kV3a; n = 69; v3a.y = 3; var k1 = kV3a - k; n = 70; return [String(v3a), k1, kV3a - k].join("|") })
+=> string:QVector3D(69, 3, 0)|2|2
+w(function(){ v3a = Qt.binding(function(){ return Qt.vector3d(n, 0, 0) }); var k = kV3a; n = 71; v3a = v3a; n = 72; return [String(v3a), kV3a - k].join("|") })
+=> string:QVector3D(71, 0, 0)|1

@@ -259,6 +259,22 @@ fn script_defined_members_of_a_value_type_match_qt() {
     check_fixture("value_type_members");
 }
 
+/// A value type read from a property is a reference to the property, and one made by
+/// `Qt.rgba` has an identity: a write to a field of a variable, a parameter, an object's
+/// field or an array's element changes the property, and its own members stay with it.
+#[test]
+fn value_types_read_from_a_property_are_references_as_in_qt() {
+    check_fixture("property_references");
+}
+
+/// A write to a field of a value type property that a binding holds removes the binding,
+/// from a function, from a signal handler and through a variable alike; so does a write of
+/// the same value, and of the property to itself. The property changes once per write.
+#[test]
+fn a_field_write_removes_the_binding_of_a_value_type_property_as_in_qt() {
+    check_fixture("bound_field_write");
+}
+
 /// `Easing` is a type: it lists the three members of the object behind it, prints as
 /// that object, refuses a strict write with "Type error" and answers `delete` with true.
 #[test]

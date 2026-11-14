@@ -1164,6 +1164,7 @@ fn own_property(it: &mut Interp, this: &Value, k: &PropKey) -> R<Option<bool>> {
             if !has_own(o, k) {
                 return Ok(None);
             }
+            crate::valuetypes::show(o);
             let b = o.borrow();
             let index = (b.array.as_ref())
                 .is_some_and(|a| crate::eval::idx(k).is_some_and(|i| i < a.len() && !b.is_hole(i)));
@@ -1800,6 +1801,7 @@ pub fn to_color(v: &Value) -> Color {
     match v {
         Value::Color(c) => *c,
         Value::Str(s) => parse_color(s),
+        Value::Obj(_) => crate::valuetypes::color_of(v).unwrap_or(Color::INVALID),
         _ => Color::INVALID,
     }
 }

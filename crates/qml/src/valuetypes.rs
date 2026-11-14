@@ -10,6 +10,7 @@
 //! bound to the value. They are not own properties and reflection does not list them, but
 //! `in` finds them like a read does (Qt 6.12 answers `false` there).
 
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::eval::{new_obj, set_hidden};
@@ -73,6 +74,9 @@ pub enum Vt {
     /// QSize and QRect: the properties of the `F` types, held as `int`s.
     Size,
     Rect,
+    /// A color script holds (QQmlValueTypeWrapper of a QColor): the color its properties
+    /// show. One a property holds or the host takes is a [`Value::Color`].
+    Color(crate::color::Color),
 }
 
 pub const MATRIX_FIELDS: [&str; 16] = [
@@ -165,6 +169,7 @@ impl Vt {
             Vt::RectF | Vt::Rect => &[
                 "x", "y", "width", "height", "left", "right", "top", "bottom",
             ],
+            Vt::Color(_) => &COLOR_PROPERTIES,
         }
     }
 
@@ -173,6 +178,7 @@ impl Vt {
     pub fn data(self) -> &'static [&'static str] {
         match self {
             Vt::RectF | Vt::Rect => &["x", "y", "width", "height"],
+            Vt::Color(_) => &COLOR_PROPERTIES[..10],
             vt => vt.fields(),
         }
     }
@@ -199,6 +205,7 @@ impl Vt {
             Vt::RectF => "QRectF",
             Vt::Size => "QSize",
             Vt::Rect => "QRect",
+            Vt::Color(_) => "QColor",
         }
     }
 
@@ -220,7 +227,7 @@ impl Vt {
         })
     }
 
-    fn same_kind(self, o: Vt) -> bool {
+    pub(crate) fn same_kind(self, o: Vt) -> bool {
         std::mem::discriminant(&self) == std::mem::discriminant(&o)
     }
 
@@ -243,6 +250,7 @@ impl Vt {
             Vt::RectF => 8,
             Vt::Size => 9,
             Vt::Rect => 10,
+            Vt::Color(_) => 0,
         }
     }
 }
@@ -465,6 +473,7 @@ pub fn display(b: &JsObject) -> Option<String> {
         _ => return None,
     };
     let s = match vt {
+        Vt::Color(c) => crate::builtins::color_name(&c),
         Vt::Font { .. } => format!("QFont({})", font_string(b, vt)),
         // QQuickMatrix4x4ValueType has no toString: QQmlValueTypeWrapper's joins the
         // QVariant strings of its properties.
@@ -564,6 +573,9 @@ pub fn equal(a: &Obj, b: &Obj) -> Option<bool> {
                 crate::qurl::QUrl::parse(written.as_ref().unwrap_or(s))
             };
             Some(held(p, v).equals(&held(q, w)))
+        }
+        (Internal::ValueType(Vt::Color(p)), Internal::ValueType(Vt::Color(q))) => {
+            Some(p.same_qcolor(*q))
         }
         (Internal::ValueType(p), Internal::ValueType(q)) => Some(
             p.same_kind(*q)
@@ -1632,6 +1644,8 @@ fn methods(vt: Vt) -> &'static [Sig] {
         Vt::Vector3D => VECTOR3D_METHODS,
         Vt::Vector4D => VECTOR4D_METHODS,
         Vt::Font { .. } | Vt::PointF | Vt::SizeF | Vt::RectF | Vt::Size | Vt::Rect => &[],
+        // A color's are [`crate::builtins::color_prop`]'s.
+        Vt::Color(_) => &[],
     }
 }
 
@@ -1673,7 +1687,10 @@ natives!(
 
 /// Whether value type `vt` has a method `k`.
 pub fn has_method(vt: Vt, k: &str) -> bool {
-    methods(vt).iter().any(|s| s.0 == k)
+    match vt {
+        Vt::Color(_) => matches!(k, "lighter" | "darker" | "alpha" | "tint"),
+        _ => methods(vt).iter().any(|s| s.0 == k),
+    }
 }
 
 /// Method `k` of value type object `o` (QQmlValueTypeWrapper::virtualGet), bound to it:
@@ -1683,6 +1700,9 @@ pub fn method(o: &Obj, vt: Vt, k: &str) -> Option<Value> {
         let target =
             crate::eval::fn_value(crate::eval::Callable::Native("toString", to_string_method));
         return Some(bound_to(o, target));
+    }
+    if let Vt::Color(c) = vt {
+        return has_method(vt, k).then(|| crate::builtins::color_prop(&c, k));
     }
     methods(vt).iter().find(|s| s.0 == k)?;
     let (name, f) = NATIVES.iter().find(|n| n.0 == k)?;
@@ -1701,13 +1721,6 @@ pub fn members(o: &Obj) -> Option<Obj> {
         Internal::ValueType(_) => b.ext.as_ref()?.members.clone(),
         _ => None,
     }
-}
-
-/// Whether `o` is a value type read from a QML property. Qt makes a new wrapper at each
-/// read, so what script does to the wrapper itself (not to the value) does not last.
-pub fn is_property_copy(o: &Obj) -> bool {
-    let b = o.borrow();
-    matches!(b.internal, Internal::ValueType(_)) && b.owner.is_some()
 }
 
 /// [`members`] of value type object `o`, made on first use: as extensible as `o` is.
@@ -2339,6 +2352,266 @@ pub fn url_of(v: &Value) -> Option<String> {
     }
 }
 
+/// `o.k = val` on color object `o`: [`color_put`], and the property the color was read
+/// from is written, which takes its binding off. `rgba` is read-only; any other name is
+/// not written, which `false` tells.
+fn put_color(it: &mut crate::eval::Interp, o: &Obj, k: &str, val: Value) -> crate::eval::R<bool> {
+    if k == "rgba" {
+        return it.throw("Error", format!("Cannot assign {} to int", type_name(&val)));
+    }
+    if !is_color_field(k) {
+        return Ok(is_color_own(k));
+    }
+    let this = Value::Obj(o.clone());
+    if !it.reread(&this) {
+        return Ok(true);
+    }
+    let Some(c) = color_of(&this) else {
+        return Ok(true);
+    };
+    let c = color_put(it, c, k, &val)?;
+    set_color(o, c);
+    let owner = o.borrow().owner.clone();
+    if let Some((i, p)) = owner {
+        it.host.unbind(i, &p);
+        // The property's setter compares with the color it holds.
+        notify_owner(it, o);
+    }
+    Ok(true)
+}
+
+thread_local! {
+    static COLOR_KEYS: [Rc<str>; 12] = COLOR_PROPERTIES.map(Rc::from);
+}
+
+/// Color `c` as script holds it (QQmlValueTypeWrapper of a QColor): an object of its own.
+/// Its properties are read from the color it holds; the object lists them once something
+/// asks for them as an object's own ([`show`]).
+pub fn color_object(c: crate::color::Color) -> Value {
+    Value::Obj(color_wrapper(c, None, 0))
+}
+
+/// Value type objects made for a read of a property, a few of the last: the next read is
+/// given one that script let go of, as a read that is used at once does (`a.color.r`,
+/// `color: a.color`, `x: a.at.x`), and makes no object.
+#[derive(Default)]
+struct Spare {
+    objs: [Option<Obj>; 4],
+    next: usize,
+}
+
+impl Spare {
+    /// One that nothing but this and the heap's list knows.
+    fn free(&self) -> Option<&Obj> {
+        let free = |o: &&Obj| Rc::strong_count(o) == 1 && Rc::weak_count(o) == 1;
+        self.objs.iter().flatten().find(free)
+    }
+
+    /// Keeps `o` in place of the oldest, which is a read of long ago from now on.
+    fn keep(&mut self, o: &Obj) {
+        if let Some(old) = self.objs[self.next].replace(o.clone())
+            && let Ok(mut b) = old.try_borrow_mut()
+        {
+            b.read_at = 0;
+        }
+        self.next = (self.next + 1) % self.objs.len();
+    }
+}
+
+/// Whether script left on value type object `b` nothing but the type's `fields` properties.
+fn as_made(b: &JsObject, fields: usize) -> bool {
+    b.props.len() == fields
+        && b.keys.len() == fields
+        && b.ext.is_none()
+        && b.attrs.is_none()
+        && b.accessors.is_none()
+        && b.proto.is_none()
+        && !b.null_proto
+        && !b.non_extensible
+}
+
+/// `b` is read from property `owner`, if any, at `read_at`
+/// ([`crate::value::JsObject::read_at`]).
+fn set_owner(b: &mut JsObject, owner: Option<(usize, &str)>, read_at: u64) {
+    b.read_at = read_at;
+    b.owner = match (b.owner.take(), owner) {
+        (Some((_, old)), Some((item, name))) if &*old == name => Some((item, old)),
+        (_, Some((item, name))) => Some((item, Rc::from(name))),
+        (_, None) => None,
+    };
+}
+
+thread_local! {
+    static SPARE_COLORS: RefCell<Spare> = RefCell::default();
+    static SPARE_VALUES: RefCell<Spare> = RefCell::default();
+}
+
+/// A color object that holds `c`, read from property `owner` if any, at `read_at`
+/// ([`crate::value::JsObject::read_at`]).
+fn color_wrapper(c: crate::color::Color, owner: Option<(usize, &str)>, read_at: u64) -> Obj {
+    SPARE_COLORS.with_borrow_mut(|spare| {
+        if let Some(o) = spare.free()
+            && let Ok(mut b) = o.try_borrow_mut()
+        {
+            if !as_made(&b, 0) {
+                let owner = b.owner.take();
+                *b = JsObject::default();
+                b.owner = owner;
+            }
+            b.internal = Internal::ValueType(Vt::Color(c));
+            set_owner(&mut b, owner, read_at);
+            return o.clone();
+        }
+        let o = new_obj();
+        {
+            let mut b = o.borrow_mut();
+            b.internal = Internal::ValueType(Vt::Color(c));
+            set_owner(&mut b, owner, read_at);
+        }
+        spare.keep(&o);
+        o
+    })
+}
+
+/// Value type object `src` (no color) as script reads it from property `name` of `item`
+/// at `read_at`: one of [`Spare`]'s when the type's properties are numbers and strings.
+fn value_wrapper(src: &Obj, vt: Vt, item: usize, name: &str, read_at: u64) -> Option<Obj> {
+    let s = src.borrow();
+    let fields = vt.fields();
+    if s.props.len() != fields.len() {
+        return None;
+    }
+    SPARE_VALUES.with_borrow_mut(|spare| {
+        if let Some(o) = spare.free()
+            && let Ok(mut b) = o.try_borrow_mut()
+            && matches!(b.internal, Internal::ValueType(x) if x.same_kind(vt))
+            && as_made(&b, fields.len())
+        {
+            // Two objects of a type made the same way mostly list its properties alike.
+            for ((k, slot), (at, v)) in b.props.iter_mut().zip(&s.props) {
+                match if k == at { Some(v) } else { s.props.get(k) } {
+                    Some(v) if !matches!(v, Value::Obj(_)) => *slot = v.clone(),
+                    _ => return None,
+                }
+            }
+            b.internal = Internal::ValueType(vt);
+            set_owner(&mut b, Some((item, name)), read_at);
+            return Some(o.clone());
+        }
+        let plain = |k: &&str| matches!(s.props.get(*k), Some(v) if !matches!(v, Value::Obj(_)));
+        if !fields.iter().all(plain) {
+            return None;
+        }
+        drop(s);
+        let Value::Obj(o) = copy(src, vt) else {
+            return None;
+        };
+        set_owner(&mut o.borrow_mut(), Some((item, name)), read_at);
+        spare.keep(&o);
+        Some(o)
+    })
+}
+
+/// Color object `o` holds `c`.
+fn set_color(o: &Obj, c: crate::color::Color) {
+    let mut b = o.borrow_mut();
+    match b.props.is_empty() {
+        true => b.internal = Internal::ValueType(Vt::Color(c)),
+        false => show_color(&mut b, c),
+    }
+}
+
+/// Color object `o` holds `c` from now on, unless a caller is reading it at the moment.
+pub fn holds_color(o: &Obj, c: crate::color::Color) {
+    if let Ok(mut d) = o.try_borrow_mut()
+        && let Internal::ValueType(Vt::Color(x)) = d.internal
+        && x != c
+    {
+        match d.props.is_empty() {
+            true => d.internal = Internal::ValueType(Vt::Color(c)),
+            false => show_color(&mut d, c),
+        }
+    }
+}
+
+/// A color object lists its type's properties as its own from now on: what reads an
+/// object's own properties (its keys, a descriptor, `in`) asks for this first.
+pub fn show(o: &Obj) {
+    let c = match o.try_borrow() {
+        Ok(b) => match b.internal {
+            Internal::ValueType(Vt::Color(c)) if b.props.is_empty() => c,
+            _ => return,
+        },
+        Err(_) => return,
+    };
+    if let Ok(mut b) = o.try_borrow_mut() {
+        show_color(&mut b, c);
+    }
+}
+
+fn show_color(b: &mut JsObject, c: crate::color::Color) {
+    COLOR_KEYS.with(|keys| {
+        for k in keys {
+            let v = crate::builtins::color_prop(&c, k);
+            match b.props.get_mut(&**k) {
+                Some(slot) => *slot = v,
+                None => {
+                    b.keys.push(k.clone());
+                    b.props.insert(k.clone(), v);
+                }
+            }
+        }
+    });
+    b.internal = Internal::ValueType(Vt::Color(c));
+}
+
+/// The color `v` is: a [`Value::Color`] or a color object ([`color_object`]).
+pub fn color_of(v: &Value) -> Option<crate::color::Color> {
+    match v {
+        Value::Color(c) => Some(*c),
+        Value::Obj(o) => match o.try_borrow().ok()?.internal {
+            Internal::ValueType(Vt::Color(c)) => Some(c),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// Value type `v` as a `var` property holds it: one read from a property as a copy that
+/// knows no property, any other as the object it is (`var a = pv; a.r = 0.5` changes what
+/// `pv` holds, and `a === pv`).
+pub fn held_by_var(v: Value) -> Value {
+    let o = match &v {
+        Value::Color(c) => return color_object(*c),
+        Value::Obj(o) => o,
+        _ => return v,
+    };
+    let vt = match &*o.borrow() {
+        b if b.owner.is_some() => match b.internal {
+            Internal::ValueType(vt) => Some(vt),
+            _ => None,
+        },
+        _ => None,
+    };
+    match vt {
+        Some(Vt::Color(c)) => color_object(c),
+        Some(vt) => copy(o, vt),
+        None => v,
+    }
+}
+
+/// `v` as a property holds it and the host takes it: a color object is its
+/// [`Value::Color`].
+pub fn plain(v: Value) -> Value {
+    match &v {
+        Value::Obj(_) => match color_of(&v) {
+            Some(c) => Value::Color(c),
+            None => v,
+        },
+        _ => v,
+    }
+}
+
 /// `o.k = val` on value type object `o` (QQmlValueTypeWrapper::virtualPut): a property of
 /// the type takes the value converted to its C++ type; any other name is not written, which
 /// `false` tells.
@@ -2349,6 +2622,9 @@ pub fn put(
     k: &str,
     val: Value,
 ) -> crate::eval::R<bool> {
+    if let Vt::Color(_) = vt {
+        return put_color(it, o, k, val);
+    }
     let k = if vt.fields().contains(&k) {
         k
     } else {
@@ -2386,15 +2662,28 @@ pub fn put(
             "Cannot assign JavaScript function to value-type property",
         )));
     }
+    // The write is made to what the property holds now.
+    if !it.reread(&Value::Obj(o.clone())) {
+        return Ok(true);
+    }
+    let vt = kind(&Value::Obj(o.clone())).unwrap_or(vt);
     let Value::Obj(before) = copy(o, vt) else {
         return Ok(true);
     };
     put_field(it, o, vt, k, val)?;
+    // The write goes to the property the value was read from, and a write takes its binding
+    // off, also one that changes nothing.
+    let owner = o.borrow().owner.clone();
+    if let Some((i, p)) = owner {
+        it.host.unbind(i, &p);
+    }
     // The owner's setter compares with the value it holds (the type's operator==) and only
     // a different one notifies.
     let unset = take_unset(&Value::Obj(o.clone()));
     if unset || equal(&before, o) != Some(true) {
         notify_owner(it, o);
+    } else if let Some((i, p)) = o.borrow().owner.clone() {
+        it.host.value_type_kept(i, &p, &Value::Obj(o.clone()));
     }
     Ok(true)
 }
@@ -2695,6 +2984,89 @@ fn copy(o: &Obj, vt: Vt) -> Value {
     make(vt, vals)
 }
 
+/// What script reads of property `name` of `item`, which holds value type `v`: a copy
+/// that knows the property. Qt makes a QQmlValueTypeWrapper (a QV4::ReferenceObject) at
+/// each read: it reads the property again each time it is used ([`assign`] by
+/// `Interp::reread`) and a write to one of its properties is written to the property.
+/// `read_at` is the [`crate::value::JsObject::read_at`] of this read.
+pub fn reference(v: &Value, item: usize, name: &str, read_at: u64) -> Option<Value> {
+    let c = match v {
+        Value::Color(c) => {
+            return Some(Value::Obj(color_wrapper(*c, Some((item, name)), read_at)));
+        }
+        Value::Obj(o) => {
+            let (vt, unset) = {
+                let b = o.borrow();
+                let Internal::ValueType(vt) = b.internal else {
+                    return None;
+                };
+                (vt, b.props.contains_key(UNSET))
+            };
+            if let Some(r) = value_wrapper(o, vt, item, name, read_at) {
+                return Some(Value::Obj(r));
+            }
+            let c = copy(o, vt);
+            if let (true, Value::Obj(c)) = (unset, &c) {
+                crate::eval::set_hidden(c, UNSET, Value::Bool(true));
+            }
+            c
+        }
+        _ => return None,
+    };
+    if let Value::Obj(c) = &c {
+        c.borrow_mut().owner = Some((item, Rc::from(name)));
+    }
+    Some(c)
+}
+
+/// Value type object `dst` holds what `src`, one of its kind, holds; what script defined
+/// on `dst` stays.
+pub fn assign(dst: &Obj, src: &Obj) {
+    if Rc::ptr_eq(dst, src) {
+        return;
+    }
+    let Internal::ValueType(vt) = src.borrow().internal else {
+        return;
+    };
+    // One a caller is reading at the moment stays as it is.
+    if let Vt::Color(c) = vt {
+        return holds_color(dst, c);
+    }
+    // A type whose properties are numbers and strings takes them as they are.
+    {
+        let s = src.borrow();
+        let held = |k: &&str| !matches!(s.props.get(*k), Some(Value::Obj(_)));
+        if vt.fields().iter().all(held) {
+            let Ok(mut d) = dst.try_borrow_mut() else {
+                return;
+            };
+            for k in vt.fields() {
+                if let (Some(v), Some(slot)) = (s.props.get(*k), d.props.get_mut(*k)) {
+                    match (&*slot, v) {
+                        (Value::Num(a), Value::Num(b)) if a.to_bits() == b.to_bits() => {}
+                        _ => *slot = v.clone(),
+                    }
+                }
+            }
+            d.internal = Internal::ValueType(vt);
+            return;
+        }
+    }
+    let Value::Obj(c) = copy(src, vt) else {
+        return;
+    };
+    let Ok(mut d) = dst.try_borrow_mut() else {
+        return;
+    };
+    let c = c.borrow();
+    for k in vt.fields() {
+        if let (Some(v), Some(slot)) = (c.props.get(*k), d.props.get_mut(*k)) {
+            *slot = v.clone();
+        }
+    }
+    d.internal = Internal::ValueType(vt);
+}
+
 /// QString::toDouble: a C locale number between optional white space, `nan` or `inf`.
 fn qt_double(s: &str) -> Option<f64> {
     let t = s.trim();
@@ -2949,6 +3321,9 @@ fn from_components(vt: Vt, c: &[f64]) -> Value {
 
 /// QML's name of the type of `v` in a "Cannot assign" error.
 pub(crate) fn type_name(v: &Value) -> String {
+    if matches!(kind(v), Some(Vt::Color(_))) {
+        return "QColor".into();
+    }
     match v {
         Value::Undefined => "[undefined]".into(),
         Value::Null => "std::nullptr_t".into(),
@@ -2981,6 +3356,7 @@ pub(crate) fn type_name(v: &Value) -> String {
 /// what JavaScript converts `v` to, and a value with no conversion arrives as the type's
 /// default (an invalid colour or date, an empty url or list, `null` for an object type).
 pub fn signal_arg(it: &mut crate::eval::Interp, ty: &str, v: Value) -> crate::eval::R<Value> {
+    let v = plain(v);
     let failed = |v: &Value, to: &str| {
         tracing::warn!(
             target: "ri::qml",
@@ -3051,7 +3427,14 @@ pub fn signal_arg(it: &mut crate::eval::Interp, ty: &str, v: Value) -> crate::ev
                 crate::builtins::new_date(it, f64::NAN)
             }
         },
-        "var" | "variant" => v,
+        // A value type is given as a copy that knows no property.
+        "var" | "variant" => match kind(&v) {
+            Some(_) => {
+                it.reread(&v);
+                held_by_var(through_variant(&v))
+            }
+            None => v,
+        },
         // An object type: an object of that type, else null.
         t if t.starts_with(|c: char| c.is_ascii_uppercase()) => match &v {
             Value::Item(i) if it.host.item_is(*i, t) => v,
@@ -3228,6 +3611,7 @@ pub fn through_variant(v: &Value) -> Value {
             }
             match b.internal {
                 Internal::Date(ms) => crate::builtins::plain_date(ms),
+                Internal::ValueType(Vt::Color(c)) => Value::Color(c),
                 Internal::ValueType(vt) => copy(o, vt),
                 Internal::Ordinary if b.call.is_none() => {
                     let m = crate::eval::new_obj();
@@ -3310,6 +3694,7 @@ fn variant_bool(v: &Value) -> Option<bool> {
 
 /// QVariant::toString of `v`, `None` for a type that has no conversion to QString.
 fn variant_string(v: &Value) -> Option<Value> {
+    let v = &plain(v.clone());
     Some(match v {
         Value::Null => Value::str(""),
         Value::Bool(_) | Value::Symbol(_) => Value::str(&v.to_js_string()),
@@ -3440,6 +3825,7 @@ pub fn qqml_property_write(
     target: &WriteTarget,
     val: &Value,
 ) -> crate::eval::R<Option<Value>> {
+    let val = &plain(val.clone());
     let ty = match target {
         WriteTarget::Type(ty) => *ty,
         WriteTarget::List(elem) => return Ok(Some(variant_list(elem, val))),
@@ -3781,6 +4167,7 @@ enum Refused {
 }
 
 fn refused(v: &Value) -> Refused {
+    let v = &plain(v.clone());
     let name = match v {
         Value::Null => return Refused::Null,
         Value::Native(_) => return Refused::Function,
@@ -3848,6 +4235,11 @@ fn slot_value(
     binding: bool,
 ) -> crate::eval::R<Result<Value, Refused>> {
     use SlotKind as K;
+    // A `var` takes a color as the object it is.
+    let val = match &slot.kind {
+        K::Var | K::Unknown => val,
+        _ => plain(val),
+    };
     let scalar = match &slot.kind {
         K::Var | K::Unknown => return Ok(Ok(val)),
         // A line alone converts to a line.

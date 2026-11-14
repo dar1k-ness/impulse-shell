@@ -18280,6 +18280,10 @@ impl World {
         if !self.items.holds(item) {
             return false;
         }
+        let v = match self.holds_var(item, name) {
+            true => crate::valuetypes::held_by_var(v),
+            false => crate::valuetypes::plain(v),
+        };
         let shown = self.shown_followers(item, name);
         self.write_told(item, name, v, shown)
     }
@@ -20290,6 +20294,7 @@ impl World {
             && (self.items[item].prop_info_sym(sym))
                 .is_some_and(|pi| pi.ty == "QVariant" && pi.notify)
             && !self.items[item].inherits("Binding");
+        let var = self.holds_var(item, name);
         let p = self.items[item]
             .props
             .entry_sym(sym)
@@ -20310,6 +20315,10 @@ impl World {
                 )
             }
             _ => v,
+        };
+        let v = match var {
+            true => crate::valuetypes::held_by_var(v),
+            false => v,
         };
         // A sequence or value type mutated in place, written back to re-notify its property.
         let in_place = matches!((&p.value, &v), (Value::Obj(a), Value::Obj(b)) if Rc::ptr_eq(a, b));
@@ -20347,7 +20356,9 @@ impl World {
             _ => v,
         };
         // The stored value type writes member changes back here, however script reached it.
-        if let Value::Obj(o) = &v
+        // The one a `var` holds is a value of its own: a field written to it is kept there.
+        if !var
+            && let Value::Obj(o) = &v
             && let Ok(mut b) = o.try_borrow_mut()
             && matches!(b.internal, crate::value::Internal::ValueType(_))
         {
@@ -21002,11 +21013,13 @@ impl World {
         match self.source_size_read(item, sym, v?) {
             Value::Str(s) => Some(self.script_str(item, sym, s)),
             v => {
+                if let Some(r) = self.value_type_read(&v, item, sym) {
+                    return Some(r);
+                }
                 // A sequence writes its changes back too (`li.length = 5` by the bare name).
                 if let Value::Obj(o) = &v
                     && let Ok(mut b) = o.try_borrow_mut()
-                    && (b.array.is_some()
-                        || matches!(b.internal, crate::value::Internal::ValueType(_)))
+                    && b.array.is_some()
                     && !matches!(&b.owner, Some((i, n)) if *i == item && **n == *sym)
                 {
                     b.owner = Some((item, Rc::from(&*sym)));
@@ -21014,6 +21027,41 @@ impl World {
                 Some(self.date_read(item, sym, v))
             }
         }
+    }
+
+    /// Whether property `name` of `item` is a `var` QML declares (a property of a Qt type
+    /// that nothing here knows the type of is kept as a `var` too).
+    fn holds_var(&self, item: usize, name: &str) -> bool {
+        Sym::lookup(name).is_some_and(|s| self.holds_var_sym(item, s))
+    }
+
+    fn holds_var_sym(&self, item: usize, name: Sym) -> bool {
+        let p = self.items.get(item).and_then(|i| i.props.get_sym(name));
+        p.is_some_and(|p| p.decl != Decl::Cpp && matches!(&*p.ty, "var" | "variant"))
+    }
+
+    /// Value type `v` as script reads it from property `name` of `item`: a reference to the
+    /// property ([`crate::valuetypes::reference`]). One read from a field of a value type of
+    /// Qt's that script has as a group here (`icon`, a QQuickIcon) is a copy that knows no
+    /// property: in Qt 6.12 `var c = button.icon.color` neither follows the field nor writes
+    /// to it. A `var` property holds a value of its own, which is the one script reads: a
+    /// field written through it is kept there and nothing is notified.
+    fn value_type_read(&self, v: &Value, item: usize, name: Sym) -> Option<Value> {
+        let var = self.holds_var_sym(item, name);
+        if var && matches!(v, Value::Obj(_)) {
+            return crate::valuetypes::kind(v).map(|_| v.clone());
+        }
+        let r = crate::valuetypes::reference(v, item, &name, self.revision + 1)?;
+        let of_value = self.groups.get(&item).is_some_and(|(o, g)| {
+            (self.items.get(*o))
+                .is_some_and(|i| i.prop_info(g).is_some_and(|p| p.ty == "QQuickIcon"))
+        });
+        if (var || of_value)
+            && let Value::Obj(o) = &r
+        {
+            o.borrow_mut().owner = None;
+        }
+        Some(r)
     }
 
     /// QQuickImageBase::sourceSize: a dimension that is not set is the loaded pixmap's.
@@ -21776,6 +21824,110 @@ impl JsConn {
 pub(crate) struct WorldHost(pub(crate) Rc<RefCell<World>>);
 
 impl WorldHost {
+    /// What script reads of property `sym` of `item`; with `held`, a value type as the
+    /// property holds it and not the reference to the property a read makes.
+    fn read_sym(&mut self, item: usize, sym: Sym, held: bool) -> Option<Value> {
+        let sym = self.0.borrow().declared_sym(item, sym);
+        let name: &str = &sym;
+        if name == "item" {
+            lazy_force(&self.0, item);
+        }
+        if matches!(name, "__text" | "__data") {
+            self.file_call(item, name);
+        }
+        let v = if name == "visible" {
+            self.js_read(|w| w.read_visible(item, sym))
+        } else {
+            self.js_read(|w| {
+                w.note_implicit_read(item, sym);
+                w.read_told(item, sym)
+            })
+        };
+        // The properties of a row that is an object are read through its model item; `row`
+        // and `column` are members of a model item and no names of the delegate's context.
+        if v.is_none() {
+            let kind = self.0.borrow().model_items.get(&item).cloned();
+            match (kind, sym.as_str()) {
+                (Some(_), "row") => return self.get_sym(item, sym!("index")),
+                (Some(_), "column") => return Some(Value::Num(0.0)),
+                // The item has the properties of its object and none of its signals and
+                // methods (QQmlDMObjectDataMetaObject::createProperty), and connects to the
+                // object when one is first read. The reader hears of the item's signal, which
+                // the item passes on from its object's, not of the object's own.
+                (Some(RowKind::Object(o)), _) => {
+                    let reading = self.0.borrow_mut().reading.take();
+                    let v = self.read_sym(o, sym, held);
+                    let mut w = self.0.borrow_mut();
+                    w.resume_reading(reading);
+                    let method = |v: &Value| {
+                        matches!(
+                            crate::eval::callable(v),
+                            Some(crate::eval::Callable::Item(i, _)) if i == o
+                        )
+                    };
+                    let function = |p: &Prop| &*p.ty == "function";
+                    if v.as_ref().is_none_or(method)
+                        || w.items[o].props.get(name).is_some_and(function)
+                    {
+                        return None;
+                    }
+                    w.row_item_connects(o, item);
+                    return v;
+                }
+                _ => {}
+            }
+        }
+        // A signal or method read as a property is its method object: `item.clicked.connect(f)`,
+        // `var f = timer.restart`, `Qt.callLater(timer.start)`.
+        let v = match v {
+            None | Some(Value::Undefined) if self.0.borrow().is_signal(item, name) => Some(
+                crate::eval::fn_value(crate::eval::Callable::Item(item, sym.as_str())),
+            ),
+            None if self.native(item, name, None).is_some() => Some(crate::eval::fn_value(
+                crate::eval::Callable::Item(item, sym.as_str()),
+            )),
+            // The name of a type that attaches an object (`x.Layout`, `x.Keys`): the object's
+            // own, made by this read when the document attached none
+            // (QQmlTypeWrapper, qmlAttachedPropertiesObject with `create`).
+            // The name of any other type is the type (`x.Item`).
+            None | Some(Value::Undefined) if type_name(name) => {
+                let mut w = self.0.borrow_mut();
+                match w.attached_class(name) {
+                    Some(_) if !w.dead.contains(&item) => Some(Value::Item(w.group(item, name))),
+                    Some(_) => v,
+                    None => w.type_value(name).or(v).or_else(|| w.extra(item, name)),
+                }
+            }
+            None => self.0.borrow().extra(item, name),
+            v => v,
+        };
+        let v = match v {
+            Some(v @ Value::Obj(_)) if name == "sourceSize" => {
+                Some(self.js_read(|w| w.source_size_read(item, sym, v.clone())))
+            }
+            v => v,
+        };
+        let of_value_type =
+            |v: &&Value| matches!(v, Value::Color(_)) || crate::valuetypes::kind(v).is_some();
+        if let Some(v) = v.as_ref().filter(of_value_type) {
+            return match held {
+                true => Some(v.clone()),
+                false => self.0.borrow().value_type_read(v, item, sym),
+            };
+        }
+        if let Some(Value::Obj(o)) = &v
+            && let Ok(mut b) = o.try_borrow_mut()
+            && b.array.is_some()
+        {
+            b.owner = Some((item, Rc::from(name)));
+        }
+        // A url property holds the url's string; script reads it as a `url` value.
+        match v {
+            Some(Value::Str(s)) => Some(self.0.borrow().script_str(item, sym, s)),
+            Some(v) => Some(self.0.borrow().date_read(item, sym, v)),
+            v => v,
+        }
+    }
     /// Quickshell's FileView::reload(), waitForJob() and the read of its text or data: what
     /// they load is loaded before they return, and the view says so before they return.
     fn file_call(&mut self, item: usize, name: &str) -> Value {
@@ -23797,10 +23949,24 @@ impl WorldHost {
             Some((o, g)) if keeper != item => w.group_prop(*o, g, name),
             _ => w.items[item].prop_info(name),
         };
+        // What script changed is the copy it read ([`crate::valuetypes::reference`]): the
+        // value the property holds takes the change.
+        let copy = |v: &Value| crate::valuetypes::plain(crate::valuetypes::through_variant(v));
         let v = match (w.items[keeper].props.get(&kept), changed) {
-            (Some(p), Some(v)) if p.alias.is_some() => v.clone(),
+            (Some(p), Some(v)) if p.alias.is_some() => copy(v),
+            (Some(p), Some(Value::Obj(c))) => match &p.value {
+                Value::Obj(held)
+                    if crate::valuetypes::kind(&p.value)
+                        .zip(crate::valuetypes::kind(&Value::Obj(c.clone())))
+                        .is_some_and(|(a, b)| a.same_kind(b)) =>
+                {
+                    crate::valuetypes::assign(held, c);
+                    p.value.clone()
+                }
+                _ => copy(&Value::Obj(c.clone())),
+            },
             (Some(p), _) => p.value.clone(),
-            (None, Some(v)) if info.is_some_and(|p| !p.readonly) => v.clone(),
+            (None, Some(v)) if info.is_some_and(|p| !p.readonly) => copy(v),
             _ => return,
         };
         // The write-back of an in-place change notifies inside the mutating statement, like
@@ -23821,10 +23987,7 @@ impl Host for WorldHost {
     fn signal_types(&mut self, item: usize, name: &str) -> Option<Vec<Sym>> {
         let w = self.0.borrow();
         let params = w.signals.get(&item)?.get(name)?;
-        params
-            .iter()
-            .any(|p| p.ty != sym!("var"))
-            .then(|| params.iter().map(|p| p.ty).collect())
+        Some(params.iter().map(|p| p.ty).collect())
     }
 
     fn item_is(&mut self, item: usize, ty: &str) -> bool {
@@ -24174,9 +24337,21 @@ impl Host for WorldHost {
             _ => None,
         }
     }
+    fn holds_var(&mut self, item: usize, name: &str) -> bool {
+        self.0.borrow().holds_var(item, name)
+    }
+
+    fn destroyed(&mut self, item: usize) -> bool {
+        let w = self.0.borrow();
+        !w.items.holds(item) || w.dead.contains(&item)
+    }
+    fn unchanged(&mut self, item: usize, read_at: u64) -> bool {
+        let w = self.0.borrow();
+        w.revision + 1 == read_at && w.items.holds(item) && !w.dead.contains(&item)
+    }
     fn unbind(&mut self, item: usize, name: &str) {
         let mut w = self.0.borrow_mut();
-        if item < w.items.len() {
+        if w.items.holds(item) {
             w.script_unbinds(item, name);
         }
     }
@@ -24340,98 +24515,10 @@ impl Host for WorldHost {
         ks
     }
     fn get_sym(&mut self, item: usize, sym: Sym) -> Option<Value> {
-        let sym = self.0.borrow().declared_sym(item, sym);
-        let name: &str = &sym;
-        if name == "item" {
-            lazy_force(&self.0, item);
-        }
-        if matches!(name, "__text" | "__data") {
-            self.file_call(item, name);
-        }
-        let v = if name == "visible" {
-            self.js_read(|w| w.read_visible(item, sym))
-        } else {
-            self.js_read(|w| {
-                w.note_implicit_read(item, sym);
-                w.read_told(item, sym)
-            })
-        };
-        // The properties of a row that is an object are read through its model item; `row`
-        // and `column` are members of a model item and no names of the delegate's context.
-        if v.is_none() {
-            let kind = self.0.borrow().model_items.get(&item).cloned();
-            match (kind, sym.as_str()) {
-                (Some(_), "row") => return self.get_sym(item, sym!("index")),
-                (Some(_), "column") => return Some(Value::Num(0.0)),
-                // The item has the properties of its object and none of its signals and
-                // methods (QQmlDMObjectDataMetaObject::createProperty), and connects to the
-                // object when one is first read. The reader hears of the item's signal, which
-                // the item passes on from its object's, not of the object's own.
-                (Some(RowKind::Object(o)), _) => {
-                    let reading = self.0.borrow_mut().reading.take();
-                    let v = self.get_sym(o, sym);
-                    let mut w = self.0.borrow_mut();
-                    w.resume_reading(reading);
-                    let method = |v: &Value| {
-                        matches!(
-                            crate::eval::callable(v),
-                            Some(crate::eval::Callable::Item(i, _)) if i == o
-                        )
-                    };
-                    let function = |p: &Prop| &*p.ty == "function";
-                    if v.as_ref().is_none_or(method)
-                        || w.items[o].props.get(name).is_some_and(function)
-                    {
-                        return None;
-                    }
-                    w.row_item_connects(o, item);
-                    return v;
-                }
-                _ => {}
-            }
-        }
-        // A signal or method read as a property is its method object: `item.clicked.connect(f)`,
-        // `var f = timer.restart`, `Qt.callLater(timer.start)`.
-        let v = match v {
-            None | Some(Value::Undefined) if self.0.borrow().is_signal(item, name) => Some(
-                crate::eval::fn_value(crate::eval::Callable::Item(item, sym.as_str())),
-            ),
-            None if self.native(item, name, None).is_some() => Some(crate::eval::fn_value(
-                crate::eval::Callable::Item(item, sym.as_str()),
-            )),
-            // The name of a type that attaches an object (`x.Layout`, `x.Keys`): the object's
-            // own, made by this read when the document attached none
-            // (QQmlTypeWrapper, qmlAttachedPropertiesObject with `create`).
-            // The name of any other type is the type (`x.Item`).
-            None | Some(Value::Undefined) if type_name(name) => {
-                let mut w = self.0.borrow_mut();
-                match w.attached_class(name) {
-                    Some(_) if !w.dead.contains(&item) => Some(Value::Item(w.group(item, name))),
-                    Some(_) => v,
-                    None => w.type_value(name).or(v).or_else(|| w.extra(item, name)),
-                }
-            }
-            None => self.0.borrow().extra(item, name),
-            v => v,
-        };
-        let v = match v {
-            Some(v @ Value::Obj(_)) if name == "sourceSize" => {
-                Some(self.js_read(|w| w.source_size_read(item, sym, v.clone())))
-            }
-            v => v,
-        };
-        if let Some(Value::Obj(o)) = &v
-            && let Ok(mut b) = o.try_borrow_mut()
-            && (b.array.is_some() || matches!(b.internal, crate::value::Internal::ValueType(_)))
-        {
-            b.owner = Some((item, Rc::from(name)));
-        }
-        // A url property holds the url's string; script reads it as a `url` value.
-        match v {
-            Some(Value::Str(s)) => Some(self.0.borrow().script_str(item, sym, s)),
-            Some(v) => Some(self.0.borrow().date_read(item, sym, v)),
-            v => v,
-        }
+        self.read_sym(item, sym, false)
+    }
+    fn held(&mut self, item: usize, name: &str) -> Option<Value> {
+        self.read_sym(item, Sym::lookup(name)?, true)
     }
     fn prop_type(&mut self, item: usize, name: &str) -> Option<Sym> {
         let w = self.0.borrow();
@@ -24459,6 +24546,23 @@ impl Host for WorldHost {
     fn is_instance(&mut self, item: usize, class: &str) -> bool {
         self.0.borrow().is_instance(item, class)
     }
+    fn value_type_kept(&mut self, item: usize, name: &str, v: &Value) {
+        let w = self.0.borrow();
+        if item >= w.items.len() || w.dead.contains(&item) {
+            return;
+        }
+        let name = w.declared(item, name);
+        let (keeper, kept) = w.kept_by(item, name);
+        if let Some(p) = w.items[keeper].props.get(&kept)
+            && p.alias.is_none()
+            && let (Value::Obj(held), Value::Obj(c)) = (&p.value, v)
+            && crate::valuetypes::kind(&p.value)
+                .zip(crate::valuetypes::kind(v))
+                .is_some_and(|(a, b)| a.same_kind(b))
+        {
+            crate::valuetypes::assign(held, c);
+        }
+    }
     fn sequence_changed(&mut self, item: usize, name: &str, seq: &Value) {
         // QQuickItem's lists are not stored: the changed copy is written to them.
         // Nor is QQuickImageBase::sourceSize the size asked for.
@@ -24471,8 +24575,10 @@ impl Host for WorldHost {
                 || name == "sourceSize" && w.image_base(item)
         };
         match item_list {
+            // The changed size as it is: a write of one read from a property writes what the
+            // property holds now ([`Self::set_or_store_back`]).
             true => {
-                self.set(item, name, seq.clone());
+                self.set(item, name, crate::valuetypes::held_by_var(seq.clone()));
             }
             false => self.write_back(item, name, Some(seq)),
         }
@@ -24489,6 +24595,19 @@ impl WorldHost {
     /// [`Host::set`]; `store_back` is the sequence the property holds, mutated in place and
     /// stored back (QV4::Sequence, QQmlListProperty): the property keeps its binding.
     fn set_or_store_back(&mut self, item: usize, name: &str, v: Value, store_back: bool) -> bool {
+        // A value type read from a property is written as that property is now.
+        if let Value::Obj(o) = &v
+            && let Some(vt) = crate::valuetypes::kind(&v)
+            && let Some((i, p)) = o.try_borrow().ok().and_then(|b| b.owner.clone())
+            && let Some(Value::Obj(now)) = self.get(i, &p)
+            && crate::valuetypes::kind(&Value::Obj(now.clone())).is_some_and(|k| k.same_kind(vt))
+        {
+            crate::valuetypes::assign(o, &now);
+        }
+        let v = match self.0.borrow().holds_var(item, name) {
+            true => crate::valuetypes::held_by_var(v),
+            false => crate::valuetypes::plain(v),
+        };
         let kind = self.0.borrow().model_items.get(&item).cloned();
         if let Some(kind) = kind {
             return self.set_model_item(item, name, v, kind);

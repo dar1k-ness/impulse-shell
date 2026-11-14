@@ -133,6 +133,7 @@ pub fn color(it: &mut Interp, _: &Value, a: &[Value]) -> R<Value> {
 /// (colorVariantFromJSValue): a color value, or the color a string names. Anything else
 /// makes the call return `null`.
 fn base_color(v: &Value) -> Option<Color> {
+    let v = &crate::valuetypes::plain(v.clone());
     match v {
         Value::Color(c) => Some(*c),
         Value::Str(s) => {
@@ -308,6 +309,7 @@ pub(crate) fn is_qt_global(o: &crate::value::JsObject) -> bool {
 /// QJSValue -> QColor as QtObject's QColor parameters take it: a color value or a color
 /// string; a string that names no color is an "Invalid color name", anything else is invalid.
 fn color_arg(it: &Interp, fname: &str, v: &Value) -> R<Color> {
+    let v = &crate::valuetypes::plain(v.clone());
     match v {
         Value::Color(c) => Ok(*c),
         Value::Str(s) => match crate::builtins::to_color(&Value::Str(s.clone())) {

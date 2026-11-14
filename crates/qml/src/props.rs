@@ -125,6 +125,9 @@ fn has_property(it: &mut Interp, v: &Value, k: &str) -> R<bool> {
 /// [[GetOwnProperty]] (ECMA-262 §10.1.5.1, with the exotic own properties of arrays,
 /// strings and functions).
 pub fn own_desc(it: &mut Interp, v: &Value, k: &str) -> R<Option<Desc>> {
+    if let Value::Obj(o) = v {
+        crate::valuetypes::show(o);
+    }
     match v {
         Value::Obj(o) if o.borrow().is_proxy() => {
             crate::proxy::own_desc(it, o, &PropKey::Str(k.into()))
@@ -254,6 +257,9 @@ pub fn own_desc(it: &mut Interp, v: &Value, k: &str) -> R<Option<Desc>> {
 /// [[OwnPropertyKeys]] (ECMA-262 §10.1.11): array indices ascending, then the other string
 /// keys, enumerable ones in insertion order.
 pub fn own_keys(it: &mut Interp, v: &Value) -> R<Vec<String>> {
+    if let Value::Obj(o) = v {
+        crate::valuetypes::show(o);
+    }
     Ok(match v {
         Value::Obj(o) if o.borrow().is_proxy() => {
             let ks = crate::proxy::own_keys(it, o)?;
@@ -425,10 +431,6 @@ pub fn define(it: &mut Interp, o: &Obj, k: &str, d: &Desc) -> R<bool> {
     }
     // A value type keeps what is defined on it beside its value, a name of the type too.
     if matches!(o.borrow().internal, Internal::ValueType(_)) {
-        // One read from a property is a wrapper the definition is lost with.
-        if o.borrow().owner.is_some() {
-            return Ok(true);
-        }
         let m = crate::valuetypes::members_mut(o);
         return define(it, &m, k, d);
     }
@@ -827,9 +829,8 @@ pub fn prevent_extensions(it: &mut Interp, o: &Obj) -> R<bool> {
     if crate::types::qml_type(o).is_some() {
         return Ok(true);
     }
-    // The Easing type stays extensible and does not say so; so does a value type read from
-    // a property, a wrapper the change is lost with.
-    if crate::builtins::is_easing(&o.borrow()) || crate::valuetypes::is_property_copy(o) {
+    // The Easing type stays extensible and does not say so.
+    if crate::builtins::is_easing(&o.borrow()) {
         return Ok(true);
     }
     o.borrow_mut().non_extensible = true;
@@ -871,9 +872,6 @@ pub fn set_integrity(it: &mut Interp, o: &Obj, frozen: bool) -> R<bool> {
     }
     // A value type's properties stay writable: what script defined on it is sealed.
     if matches!(o.borrow().internal, Internal::ValueType(_)) {
-        if crate::valuetypes::is_property_copy(o) {
-            return Ok(true);
-        }
         o.borrow_mut().ext.get_or_insert_default().sealed = true;
         return match crate::valuetypes::members(o) {
             Some(m) => set_integrity(it, &m, frozen),
@@ -1021,9 +1019,8 @@ pub fn set_prototype(it: &mut Interp, o: &Obj, p: Option<&Obj>) -> R<bool> {
     if cur.as_ref().map(Rc::as_ptr) == p.map(Rc::as_ptr) {
         return Ok(true);
     }
-    // A value type read from a property is a wrapper the prototype is lost with; the
-    // Easing type keeps its own without a word.
-    if crate::valuetypes::is_property_copy(o) || crate::builtins::is_easing(&o.borrow()) {
+    // The Easing type keeps its own without a word.
+    if crate::builtins::is_easing(&o.borrow()) {
         return Ok(true);
     }
     if o.borrow().non_extensible || o.borrow().locked {

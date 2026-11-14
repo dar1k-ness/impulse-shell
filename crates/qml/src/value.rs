@@ -145,8 +145,13 @@ pub struct JsObject {
     /// %Object.prototype% ([`crate::eval::Interp::proto_of`]).
     pub null_proto: bool,
     pub call: Option<crate::eval::Callable>,
-    /// QML sequence property this array was read from: in-place mutation notifies it.
+    /// QML property this array (a sequence) or value type object was read from: in-place
+    /// mutation notifies it, and a value type object reads it again when it is used.
     pub owner: Option<(usize, Rc<str>)>,
+    /// Not 0 on a value type object made for a read of `owner` that script has used for
+    /// nothing yet: what [`crate::eval::Host::unchanged`] takes to say that the property
+    /// still holds what the object shows.
+    pub read_at: u64,
     /// Own accessor properties (ECMA-262 §6.1.7.1), by name; an enumerable one is in `keys`.
     pub accessors: Option<Box<rustc_hash::FxHashMap<Rc<str>, Accessor>>>,
     /// Own properties whose attributes (ECMA-262 §6.1.7.1) are not the defaults of a property

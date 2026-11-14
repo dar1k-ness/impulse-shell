@@ -922,6 +922,7 @@ fn color_from_string(s: &str) -> Color {
 
 /// A JS value as a QColor: a `color` value, else a colour string.
 fn value_color(v: &Value) -> Color {
+    let v = &crate::valuetypes::plain(v.clone());
     match v {
         Value::Color(c) => *c,
         Value::Str(_) | Value::Str16(_) => color_from_string(&v.to_js_string()),
@@ -1624,7 +1625,7 @@ fn text_path(c: &Ctx, a: &[Value]) -> Option<CanvasPath> {
 }
 
 fn set_style(it: &mut Interp, this: &Value, a: &[Value], fill: bool) -> R<Value> {
-    let v = a.first().cloned().unwrap_or_default();
+    let v = crate::valuetypes::plain(a.first().cloned().unwrap_or_default());
     setter(it, this, |c, out| {
         let cur = if fill { &c.state.fill } else { &c.state.stroke };
         let new = match &v {
@@ -2309,7 +2310,7 @@ const METHODS: &[(&str, NativeFn)] = &[
             return Ok(Value::Undefined);
         }
         // toVariant(QColor): a colour, or a string QColor::fromString reads.
-        let color = match &a[0] {
+        let color = match &crate::valuetypes::plain(a[0].clone()) {
             Value::Color(c) => *c,
             Value::Str(_) | Value::Str16(_) => crate::builtins::parse_color(&a[0].to_js_string()),
             _ => Color::INVALID,

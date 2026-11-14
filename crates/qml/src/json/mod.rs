@@ -560,6 +560,7 @@ impl Js<'_, '_> {
         if o.borrow().is_proxy() {
             return self.proxy(s);
         }
+        crate::valuetypes::show(o);
         let b = o.borrow();
         if let Some(arr) = &b.array {
             let arr = arr.clone();
@@ -983,6 +984,10 @@ impl Serialize for Qt<'_> {
             }
             Value::Obj(o) if let Some(v) = crate::value::wrapped(o) => {
                 Qt { w: self.w, v: &v }.serialize(s)
+            }
+            // A color a `var` holds is a QColor to QJsonValue::fromVariant: its name.
+            Value::Obj(_) if let Some(c) = crate::valuetypes::color_of(self.v) => {
+                s.serialize_str(&Value::Color(c).to_js_string())
             }
             Value::Obj(o) => {
                 let b = o.borrow();

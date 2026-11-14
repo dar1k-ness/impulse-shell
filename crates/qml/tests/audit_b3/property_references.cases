@@ -1,0 +1,41 @@
+# Red until a value type read from a property or made by Qt.rgba is a reference
+# (QQmlValueTypeWrapper): its own members and identity.
+@property color c: "red"
+@property point p: Qt.point(1, 2)
+@property color d: "red"
+@property int nc: 0
+@onCChanged: nc += 1
+(function(){ var x = Qt.rgba(1, 0, 0, 1); x[0] = 1; return [x[0], Object.keys(x).length, 0 in x, x.hasOwnProperty(0), String(x)].join("|") })()
+=> string:1|13|true|true|#ff0000
+(function(){ "use strict"; var x = Qt.rgba(1, 0, 0, 1); try { x[0] = 1; return "ok " + x[0] } catch (e) { return String(e) } })()
+=> string:ok 1
+(function(){ var x = Qt.rgba(1, 0, 0, 1); try { Object.defineProperty(x, "foo", {value: 5}); return "ok " + x.foo + ("foo" in x) } catch (e) { return String(e) } })()
+=> string:ok 5false
+(function(){ var x = Qt.rgba(1, 0, 0, 1); try { Object.setPrototypeOf(x, {foo: 1}); return "ok " + x.foo + x } catch (e) { return String(e) } })()
+=> string:ok 1#ff0000
+(function(){ var x = Qt.rgba(1, 0, 0, 1); Object.freeze(x); Object.seal(x); Object.preventExtensions(x); x.r = 0.5; return [Object.isFrozen(x), Object.isSealed(x), Object.isExtensible(x), x].join("|") })()
+=> string:true|true|false|#800000
+w(function(){ c = "red"; var x = c; x.r = 0.5; return c + " " + x })
+=> string:#800000 #800000
+w(function(){ var x = Qt.rgba(1, 0, 0, 1); var y = x; y.r = 0.5; return x + " " + y })
+=> string:#800000 #800000
+w(function(){ function g(q) { q.r = 0.25; return q } c = "red"; return g(c) + " " + c })
+=> string:#400000 #400000
+w(function(){ c = "red"; var o = {k: c}; o.k.g = 1; return c + " " + o.k })
+=> string:#ffff00 #ffff00
+w(function(){ c = "red"; var a = [c]; a[0].b = 1; return c + " " + a[0] })
+=> string:#ff00ff #ff00ff
+w(function(){ c = "red"; var x = c; c = "blue"; return c + " " + x })
+=> string:#0000ff #0000ff
+w(function(){ c = "red"; var x = c; var y = x; y.g = 1; return [c, x, y].join(" ") })
+=> string:#ffff00 #ffff00 #ffff00
+w(function(){ c = "red"; c.r = 2; var x = c; c = "red"; c = x; return [c, c.r, c.g].join("|") })
+=> string:#ff0000|1|0
+w(function(){ c = "red"; var a = nc; c.hsvHue = 0; return (nc - a) + " " + c })
+=> string:1 #ff0000
+w(function(){ p = Qt.point(1, 2); var x = p; x.x = 5; return p + " " + x })
+=> string:QPointF(5, 2) QPointF(5, 2)
+w(function(){ p = Qt.point(1, 2); var x = p; p = Qt.point(7, 8); return p + " " + x })
+=> string:QPointF(7, 8) QPointF(7, 8)
+w(function(){ p = Qt.point(1, 2); var x = p; x[0] = 1; Object.defineProperty(x, "foo", {value: 5}); return [x[0], x.foo, p[0], p.foo, Object.getOwnPropertyNames(x)].join("|") })
+=> string:1|5|||x,y,0,foo

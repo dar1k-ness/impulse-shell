@@ -33,18 +33,6 @@ impl std::fmt::Display for Why {
 
 /// (fixture, case, why): the case is the text before ` => `, or the first word of the line.
 const KNOWN: &[(&str, &str, Why)] = &[
-    // A debt: this case answered as Qt before a colour got its members (pull request #360).
-    // A value type read from a property as a reference gives it back
-    // (`audit_b3_env::value_types_read_from_a_property_are_references_as_in_qt`, pull
-    // request #262), and this fixture has not been run with that.
-    (
-        "misc",
-        "Z6",
-        Why {
-            what: "`Object.isFrozen` of a frozen `Qt.rgba` colour is true",
-            seen: &[],
-        },
-    ),
     // What the tail of long arrays (B2-17) took from the array storage of B1: both were
     // merged in #308, and without the tail these cases are equal to Qt.
     (

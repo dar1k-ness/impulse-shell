@@ -711,6 +711,29 @@ pub trait Host {
     /// write the property refuses leaves it with no binding too. `set` and `assign` do it for
     /// a value they take; whoever refuses one calls this first.
     fn unbind(&mut self, _item: usize, _name: &str) {}
+    /// Whether object `item` is destroyed.
+    fn destroyed(&mut self, _item: usize) -> bool {
+        false
+    }
+
+    /// Whether no property of any object changed since a value type object was made with
+    /// `read_at` ([`crate::value::JsObject::read_at`]) for a read of a property of `item`,
+    /// and `item` is not destroyed.
+    fn unchanged(&mut self, _item: usize, _read_at: u64) -> bool {
+        false
+    }
+
+    /// What property `name` of `item` holds, read as [`Host::get`] reads it: a value type
+    /// as the property holds it, where `get` makes a reference to the property.
+    fn held(&mut self, item: usize, name: &str) -> Option<Value> {
+        self.get(item, name)
+    }
+
+    /// Whether property `name` of `item` is a `var` declared in QML: it holds a value type
+    /// as the object script gave it.
+    fn holds_var(&mut self, _item: usize, _name: &str) -> bool {
+        false
+    }
     /// What `undefined` written by a script to `name` of `item` is, where `item` is a value
     /// type property of a Qt type and `name` its field: the field's type made of it.
     fn undefined_field(&mut self, _item: usize, _name: &str) -> Option<Value> {
@@ -811,6 +834,10 @@ pub trait Host {
     /// Re-notify `name` after its sequence value was mutated in place (keeps bindings).
     fn notify(&mut self, _item: usize, _name: &str) {}
     /// [`Self::notify`] of `name` after `seq`, the sequence read from it, was mutated in place.
+    /// Property `name` of `item` holds value type `v`, which its setter finds equal to what
+    /// it held (so nothing is notified) though a component differs within the comparison's
+    /// tolerance.
+    fn value_type_kept(&mut self, _item: usize, _name: &str, _v: &Value) {}
     fn sequence_changed(&mut self, item: usize, name: &str, _seq: &Value) {
         self.notify(item, name)
     }
@@ -2074,6 +2101,12 @@ pub fn has_own(o: &Obj, k: &str) -> bool {
         let members = b.ext.as_ref().and_then(|e| e.members.as_ref());
         return members.is_some_and(|m| has_own(m, k));
     }
+    // A color object has its type's properties before it lists them.
+    if let Internal::ValueType(crate::valuetypes::Vt::Color(_)) = b.internal
+        && crate::valuetypes::is_color_property(k)
+    {
+        return true;
+    }
     b.props.contains_key(k)
         || own_accessor(&b, k).is_some()
         || b.array.as_ref().is_some_and(|a| {
@@ -2594,6 +2627,21 @@ impl Interp {
 
     /// [`Host::call`] with what the host throws raised as a JS exception.
     pub fn host_call(&mut self, item: usize, name: &str, args: &[Value]) -> Option<R<Value>> {
+        // The host takes a value type read from a property as the property is now, and a
+        // color as its value.
+        let held: Vec<Value>;
+        let args = match args.iter().any(|a| crate::valuetypes::kind(a).is_some()) {
+            true => {
+                for a in args {
+                    self.reread(a);
+                }
+                held = (args.iter().cloned())
+                    .map(crate::valuetypes::plain)
+                    .collect();
+                &held[..]
+            }
+            false => args,
+        };
         // A signal declared in QML takes its arguments converted to the declared types
         // (QV4::QObjectMethod::callInternal -> CallArgument::fromValue).
         let converted: Vec<Value>;
@@ -3227,6 +3275,11 @@ impl Interp {
     /// `host.assign` of a free-name write, first converting `v` to the target property's type
     /// (QQmlPropertyPrivate::write: a value type is copied, an incompatible value throws).
     pub fn host_assign(&mut self, item: usize, ctx: usize, name: &str, v: Value) -> R<bool> {
+        self.reread(&v);
+        let v = match self.host.holds_var(item, name) {
+            true => crate::valuetypes::held_by_var(v),
+            false => crate::valuetypes::plain(v),
+        };
         let v = match self.host.assign_slot(item, ctx, name) {
             Some(slot) if !matches!(v, Value::Undefined) => {
                 crate::valuetypes::qobject_wrapper_set_property(self, &slot, v)?
@@ -3684,6 +3737,42 @@ impl Interp {
         }
     }
 
+    /// `v`, when it is a value type read from a property, holds what the property holds
+    /// now: Qt reads the property again each time such a value is used
+    /// (QV4::ReferenceObject::readReference; [`crate::valuetypes::reference`]).
+    ///
+    /// False when the object the property is of is destroyed: the value then reads no field
+    /// and takes no write (QQmlValueTypeWrapper::virtualGet and virtualPut).
+    pub fn reread(&mut self, v: &Value) -> bool {
+        let Value::Obj(o) = v else {
+            return true;
+        };
+        let owner = match o.try_borrow() {
+            Ok(b) if matches!(b.internal, Internal::ValueType(_)) => b.owner.clone(),
+            _ => None,
+        };
+        let Some((i, p)) = owner else {
+            return true;
+        };
+        if self.host.destroyed(i) {
+            return false;
+        }
+        match self.host.held(i, &p) {
+            Some(Value::Color(c)) => crate::valuetypes::holds_color(o, c),
+            Some(Value::Obj(now)) => {
+                if let (Some(a), Some(b)) = (
+                    crate::valuetypes::kind(v),
+                    crate::valuetypes::kind(&Value::Obj(now.clone())),
+                ) && a.same_kind(b)
+                {
+                    crate::valuetypes::assign(o, &now);
+                }
+            }
+            _ => {}
+        }
+        true
+    }
+
     pub fn get(&mut self, v: &Value, k: &str) -> R<Value> {
         match v {
             Value::Obj(o) if crate::generator::is_scope(o) => {
@@ -3781,6 +3870,22 @@ impl Interp {
     /// OrdinaryGet (ECMA-262 §10.1.8.1) of `k` from `o` on, with `receiver` as the `this` of a
     /// getter; a proxy on the chain takes over with its [[Get]] (§10.5.8).
     pub fn get_from(&mut self, o: &Obj, k: &str, receiver: &Value) -> R<Value> {
+        if let Some((item, read_at)) = o.try_borrow().ok().and_then(|b| {
+            let (item, _) = b.owner.as_ref()?;
+            Some((*item, b.read_at))
+        }) {
+            // The object of `a.at` in `a.at.x`: only the read that made it and this
+            // expression know it, so the property is read again only if something changed.
+            let just_read =
+                read_at != 0 && Rc::strong_count(o) == 2 && self.host.unchanged(item, read_at);
+            let v = Value::Obj(o.clone());
+            if !just_read
+                && !self.reread(&v)
+                && crate::valuetypes::kind(&v).is_some_and(|vt| vt.fields().contains(&k))
+            {
+                return Ok(Value::Undefined);
+            }
+        }
         let mut cur = Some(o.clone());
         let mut first = true;
         while let Some(ob) = cur {
@@ -3841,6 +3946,12 @@ impl Interp {
                     return Ok(v);
                 }
                 if first && let Internal::ValueType(vt) = b.internal {
+                    // A color object that lists no properties yet reads them from its color.
+                    if let crate::valuetypes::Vt::Color(c) = vt
+                        && crate::valuetypes::is_color_property(k)
+                    {
+                        return Ok(crate::builtins::color_prop(&c, k));
+                    }
                     if let Some(m) = crate::valuetypes::method(&ob, vt, k) {
                         return Ok(m);
                     }
@@ -4002,11 +4113,6 @@ impl Interp {
                 };
                 if let Some(vt) = vt {
                     let index = idx(k).is_some();
-                    // An index is an element of the wrapper, lost with it when the value
-                    // was read from a property.
-                    if index && o.borrow().owner.is_some() {
-                        return Ok(true);
-                    }
                     // An index, and a name script defined on the wrapper, is written where
                     // the wrapper keeps them.
                     let members = match index {
@@ -4206,6 +4312,11 @@ impl Interp {
                         format!("Cannot assign to property \"{k}\" of read-only object"),
                     );
                 }
+                self.reread(&val);
+                let val = match self.host.holds_var(*id, k) {
+                    true => crate::valuetypes::held_by_var(val),
+                    false => crate::valuetypes::plain(val),
+                };
                 // An array index is no QObject member (QV4: not a string key): kept by the
                 // object like any other JavaScript property.
                 let target = match array_index(k) {
@@ -4567,7 +4678,15 @@ impl Interp {
         match callable(f) {
             Some(Callable::Native(_, nf)) => {
                 self.constructing = false;
-                nf(self, &this, args)
+                self.reread(&this);
+                for a in args {
+                    self.reread(a);
+                }
+                // A color a builtin makes is an object of its own to script.
+                match nf(self, &this, args) {
+                    Ok(Value::Color(c)) => Ok(crate::valuetypes::color_object(c)),
+                    r => r,
+                }
             }
             Some(Callable::Item(i, n)) => {
                 self.host_call(i, n, args).unwrap_or(Ok(Value::Undefined))
@@ -6308,6 +6427,7 @@ impl Interp {
     pub fn entries(&self, v: &Value) -> Vec<(String, Value)> {
         match v {
             Value::Obj(o) => {
+                crate::valuetypes::show(o);
                 let b = o.borrow();
                 // OrdinaryOwnPropertyKeys: the present elements, then the other own keys.
                 if let Some(a) = &b.array {
@@ -6965,8 +7085,11 @@ impl Interp {
             }
             Eq => Ok(Value::Bool(self.loose_eq(&x, &y)?)),
             Ne => Ok(Value::Bool(!self.loose_eq(&x, &y)?)),
-            StrictEq => Ok(Value::Bool(x.strict_eq(&y))),
-            StrictNe => Ok(Value::Bool(!x.strict_eq(&y))),
+            StrictEq | StrictNe => {
+                self.reread(&x);
+                self.reread(&y);
+                Ok(Value::Bool(x.strict_eq(&y) == matches!(op, StrictEq)))
+            }
             In => {
                 // RelationalExpression `in` (ECMA-262 §13.10.1): a TypeError unless the right
                 // operand is an object, then ToPropertyKey and HasProperty.
@@ -7175,6 +7298,8 @@ impl Interp {
     /// compares its string form, as in QV4.
     #[inline(never)]
     pub fn loose_eq(&mut self, x: &Value, y: &Value) -> R<bool> {
+        self.reread(x);
+        self.reread(y);
         // IsLooselyEqual steps 11-12 (ECMA-262 §7.2.14).
         let prim = |v: &Value| {
             matches!(
