@@ -68,11 +68,12 @@ Results in `OUT`: `orig/` and `native/` (shots, shell logs, `state.log`, `overla
 - A shot passes when `coarse` is within its limit in `policy.json`: 0 for a still screen, 12000
   for a frame of a running animation. Each limit has its measured reason next to it.
 - `masks.json` lists rectangles left out of the comparison because what they show differs between
-  two runs of one shell: live values (CPU, memory, uptime), a random icon. One line per
-  rectangle with the reason. A key is a pattern on the shot's name, or `layer:NAME+NAME`: then the
-  rectangle is left out of every shot taken while the shell had those layers mapped, whatever the
-  scene is called (`shot` and `frames` write the layers of each shot to `layers.txt`). The uptime
-  in the header of the right sidebar is masked this way, on `layer:sidebarRight+bar`.
+  two runs of one shell: live values (CPU, memory), a random icon. One line per
+  rectangle with the reason. The lines that start with `renamed` are the names the project changed
+  on purpose and the original still shows: the app id and title of the shell's own windows in the
+  bar (`org.rustshell`, `rusty-impulse Settings`) and the config folder in the Assistant hint of
+  the left sidebar. Each covers the differing words and one pixel around them, nothing else of
+  the shot.
 - `areas` in `policy.json` are rectangles of a shot with limits of their own, for a difference the
   whole-shot number cannot see: a button that is a shade lighter while it is pressed differs by
   less than 24 of 255. Inside the rectangle the mean colour difference and the largest one after
@@ -91,6 +92,9 @@ Results in `OUT`: `orig/` and `native/` (shots, shell logs, `state.log`, `overla
 - Wall clock pinned to 2026-01-15 12:34:30 (`clock.sh`), so clock and date texts are equal. Timing
   inside the tool uses the monotonic clock. `build.sh` and `provision.sh` put the real time back
   first: with the pinned clock cargo and pacman cannot download (TLS).
+- The shell's uptime is 1 h 23 min 45 s: `launch.sh` starts the shell in a mount namespace of its
+  own, where `/proc/uptime` is a file that says so. The guest's own `/proc/uptime` keeps running
+  (the tool times itself by it), and nothing else about the shell's process changes.
 - A generated wallpaper and the colours made from it; `panelFamily` the original, horizontal bar, first-run
   file present, a known password for lock and polkit, one audio sink at a known volume.
 - The Qt platform theme the end-4 dots use (`kdeglobals.py`): application font, icon theme, caret
@@ -138,7 +142,8 @@ Results in `OUT`: `orig/` and `native/` (shots, shell logs, `state.log`, `overla
 - `ptr_*` scenes hover, click and drag: sidebars, overview, notifications, overlay widgets and
   every overlay button. `region` opens the region selector over the idle screen.
 - `ptr_hold` presses a button and shoots it 1.5 s into the press, still down: the ripple that fills a
-  `RippleButton`, which a click does not show (`hold` / `release` in `lib.sh`).
+  `RippleButton`, which a click does not show (`hold` / `release` in `lib.sh`). `ptr_hold_buttons`
+  does the same on a bar button and on the settings window's close button.
 - `anim`, `notifburst`: back-to-back frames right after the trigger (`frames.txt` has the times).
   Hyprland's own open animation of the layer is switched off for these (`layer_anim`).
 - `bar_vertical`, `bar_bottom`, `bar_float`, `waffle`: `*_live` shots are taken after editing

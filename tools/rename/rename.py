@@ -642,11 +642,6 @@ struct Guest {""",
         ),
         (
             "tools/parity/lib.sh",
-            """jq -r '[.. | .namespace? // empty | select(startswith("quickshell:")) | ltrimstr("quickshell:")]""",
-            """jq -r --arg p "$(ns):" '[.. | .namespace? // empty | select(startswith($p)) | ltrimstr($p)]""",
-        ),
-        (
-            "tools/parity/lib.sh",
             'namespace = \\"quickshell:$1\\" }, no_anim',
             'namespace = \\"$(ns):$1\\" }, no_anim',
         ),

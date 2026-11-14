@@ -110,10 +110,17 @@ the shots and are not compared.
   overlay's taskbar the original draws the Crosshair widget inside the Recorder frame and the
   Resources widget inside the Crosshair frame. Native does not. Those two frames are masked on
   `ptr_overlay_btn_task4` to `task6`, and the toggles go last in their scene.
-- **Live values (masked).** CPU, memory and uptime texts and graphs, the random icon of a critical
+- **Live values (masked).** CPU and memory texts and graphs, the random icon of a critical
   notification, the wavy slider of the welcome window: `masks.json`, one line each with the reason.
   With no cpufreq in the guest the overlay's Resources widget says `of NaN GHz` in the original and
   `of --` in native, inside the same mask.
+- **Renamed on purpose (masked).** Native is `rusty-impulse` under `org.rustshell`, the original
+  has its own name under `org.quickshell`. The bar shows both for the shell's own windows
+  (`settings`, `ptr_hold_settingsClose*`, `welcome`; `killDialog` the app id only), and the
+  Assistant hint of the left sidebar names the config folder twice (`sidebarLeft`,
+  `ptr_sidebarLeft_*`). Unmasked these measure 1129, 1117, 82 and 988; the masks are the words
+  themselves (57x12 and 171x15 or 180x15 in the bar, 118x16 and 187x15 in the hint), and outside
+  them the shots are where they were before the rename (`settings` 196 pixels over 8, `sidebarLeft` 66).
 - **Not covered.** Tray menus (the guest has no tray items) and the cheatsheet's content (empty in
   both shells in the guest).
 

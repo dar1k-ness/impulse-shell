@@ -4,9 +4,8 @@
 Rasteriser noise (a third of the pixels of a text-like pattern and their neighbours 35 to 40 of
 255 off, a few thousand pixels) must pass with exit code 0; a small part that moved, changed
 colour or is missing, or a measured time further apart than its limit, must give 1; a missing shot,
-a shot of another size and a shot equal to the idle screen must give 2. A `layer:` mask must hide
-its rectangle only on a shot taken with that layer mapped, and an area with limits of its own must
-catch a part a shade lighter, which the whole-shot limit passes.
+a shot of another size and a shot equal to the idle screen must give 2. An area with limits of its
+own must catch a part a shade lighter, which the whole-shot limit passes.
 """
 import json
 import os
@@ -40,12 +39,9 @@ def screen(panel=True, icon_x=100, icon=(255, 180, 170), noise=0):
     return img
 
 
-def run(a, b, extra_a=(), extra_b=(), life=None, layers=None, masks=None, areas=None):
+def run(a, b, extra_a=(), extra_b=(), life=None, areas=None):
     with tempfile.TemporaryDirectory() as t:
         opts = []
-        if masks is not None:
-            json.dump(masks, open(f"{t}/masks.json", "w"))
-            opts += ["--masks", f"{t}/masks.json"]
         if areas is not None:
             policy = json.load(open(os.path.join(HERE, "policy.json")))
             policy["areas"] = areas
@@ -60,14 +56,11 @@ def run(a, b, extra_a=(), extra_b=(), life=None, layers=None, masks=None, areas=
                 Image.fromarray(im).save(os.path.join(t, side, name))
             if life:
                 open(os.path.join(t, side, "osd-life.log"), "w").write(f"osdVolume {life[side == 'b']} ms\n")
-            if layers is not None:
-                open(os.path.join(t, side, "layers.txt"), "w").write(f"shot {layers}\n")
         r = subprocess.run([sys.executable, os.path.join(HERE, "compare.py"), f"{t}/a", f"{t}/b", f"{t}/out"] + opts,
                            capture_output=True, text=True)
         return r.returncode, r.stderr.strip().splitlines()[-1].split(';')[0]
 
 
-ICON_MASK = {"layer:panel+bar": [[96, 16, 28, 24, "the icon"]]}
 ICON_AREA = {"shot": [[100, 20, 16, 16, 2, 4, "the icon"]]}
 LIGHTER = (235, 160, 150)   # the icon 20 of 255 lighter or darker: under COARSE_DELTA
 
@@ -82,12 +75,6 @@ CASES = [
     ("a shot missing on one side", 2, lambda: run(screen(), None)),
     ("a shot of another size", 2, lambda: run(screen(), screen()[:300])),
     ("a shot equal to the idle screen", 2, lambda: run(screen(panel=False), screen(panel=False))),
-    ("a moved icon under a mask of the layers that are mapped", 0,
-     lambda: run(screen(), screen(icon_x=102), layers="bar panel", masks=ICON_MASK)),
-    ("a moved icon under a mask of a layer that is not mapped", 1,
-     lambda: run(screen(), screen(icon_x=102), layers="bar", masks=ICON_MASK)),
-    ("a moved icon under a layer mask, a run without layers.txt", 1,
-     lambda: run(screen(), screen(icon_x=102), masks=ICON_MASK)),
     ("an icon a shade off, no area", 0, lambda: run(screen(), screen(icon=LIGHTER))),
     ("an icon a shade off, in an area with limits of its own", 1,
      lambda: run(screen(), screen(icon=LIGHTER), areas=ICON_AREA)),

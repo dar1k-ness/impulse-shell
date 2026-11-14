@@ -18,10 +18,7 @@ its own run although its scene opens something (`empty-*`); a scene that did not
 idle screen (not-idle.txt from capture.sh).
 
 masks.json: {"*": [[x, y, w, h, "reason"], ...], "scene": [...]} rectangles excluded from the
-diff because their content legitimately differs between two runs (uptime, CPU %, ...). A key
-`layer:NAME` (or `layer:NAME+NAME`) is not a pattern on the shot's name: its rectangles are left
-out of every shot taken while the shell had those layers mapped (layers.txt of the run, written by lib.sh), so
-a live value is masked wherever its panel is open, whatever the scene is called.
+diff because their content legitimately differs between two runs (uptime, CPU %, ...).
 
 policy.json `areas`: rectangles of a shot with limits of their own, for a difference the whole-shot
 limit cannot see (a button a shade lighter is under COARSE_DELTA). The shot differs when, inside
@@ -49,26 +46,11 @@ def load(p):
     return np.asarray(Image.open(p).convert("RGB"), dtype=np.int16)
 
 
-def layers(d):
-    """{shot: the shell's layers mapped when it was taken} of a capture dir (lib.sh on_screen)."""
-    out = {}
-    p = os.path.join(d, "layers.txt")
-    for line in open(p) if os.path.exists(p) else []:
-        name, *on = line.split()
-        out.setdefault(name, set()).update(on)
-    return out
-
-
-def mask_for(name, shape, masks, on=()):
-    """The pixels compared (True) in shot `name`, taken with the layers `on` mapped."""
+def mask_for(name, shape, masks):
     m = np.ones(shape[:2], bool)
     used = []
     for pat, rects in masks.items():
-        if pat.startswith("layer:"):
-            applies = set(pat[len("layer:"):].split("+")) <= set(on)
-        else:
-            applies = fnmatch.fnmatch(name, pat)
-        if applies:
+        if fnmatch.fnmatch(name, pat):
             for x, y, w, h, why in rects:
                 m[y:y + h, x:x + w] = False
                 used.append(why)
@@ -151,12 +133,12 @@ def lookup(table, name):
     return hit
 
 
-def same_screen(pa, pb, masks, name="*", on=()):
+def same_screen(pa, pb, masks, name="*"):
     """Whether two shots of one shell show the same screen: nothing visible differs outside the masks."""
     a, b = load(pa), load(pb)
     if a.shape != b.shape:
         return False, -1
-    m, _ = mask_for(name, a.shape, masks, on)
+    m, _ = mask_for(name, a.shape, masks)
     n = int((compare(a, b, m) > 8).sum())
     return n == 0, n
 
@@ -197,7 +179,6 @@ def main():
     policy = json.load(open(args.policy))
     limits, idle_of, idle_shots = policy["limits"], policy["idle_of"], policy["idle_shots"]
     areas = policy.get("areas", {})
-    on = {side: layers(d) for side, d in (("a", args.orig), ("b", args.native))}
     os.makedirs(args.out, exist_ok=True)
     sides = {"a": args.orig, "b": args.native}
 
@@ -259,10 +240,9 @@ def main():
             if len(members) > 1 and frame_re.match(n):
                 cands = [c for c in members if os.path.exists(os.path.join(args.orig, c + ".png"))]
             best = None
-            shown = on["a"].get(n, set()) | on["b"].get(n, set())
             for c in cands:
                 a = load(os.path.join(args.orig, c + ".png"))
-                m, used = mask_for(n, a.shape, masks, shown)
+                m, used = mask_for(n, a.shape, masks)
                 d = compare(a, b, m)
                 if d is None:
                     continue
@@ -298,7 +278,7 @@ def main():
             if not frame_re.match(n) and lookup(idle_shots, n) is None:
                 for side, sd in sides.items():
                     ref = os.path.join(sd, (lookup(idle_of, n) or "idle") + ".png")
-                    if os.path.exists(ref) and same_screen(ref, os.path.join(sd, n + ".png"), masks, n, on[side].get(n, ()))[0]:
+                    if os.path.exists(ref) and same_screen(ref, os.path.join(sd, n + ".png"), masks, n)[0]:
                         res["status"] = f"empty-{side}"
                         res["note"] = f"equal to {os.path.basename(ref)} of its run: the scene shot nothing"
                         break

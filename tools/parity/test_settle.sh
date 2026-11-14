@@ -25,7 +25,6 @@ CLOCK=0
 mono_ms() { echo "$CLOCK"; }
 sleep() { CLOCK=$(( CLOCK + $(awk -v s="$1" 'BEGIN { printf "%d", s * 1000 }') )); }
 log() { :; }
-on_screen() { :; }   # no Hyprland here to ask for the mapped layers
 # play REC: the screen shows REC from now on. grim writes the frame on screen when the grab starts.
 play() { local e; SCREEN=; for e in $1; do SCREEN="$SCREEN $(( CLOCK + ${e%%:*} )):${e#*:}"; done; }
 grim() {

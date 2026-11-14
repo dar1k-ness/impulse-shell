@@ -10,7 +10,9 @@ here=$(dirname "$0")
 pgrep() { return 1; }
 pkill() { return 1; }
 # A "native binary" that stays up and is not named rusty-impulse, started as start_shell starts one.
-export BIN=$XDG_RUNTIME_DIR/any-name SHELL_PID
+# launch.sh takes the step that pins the uptime (a mount namespace through sudo) as done: that step
+# needs root, and the shell it starts is then a child of sudo, not the process started here.
+export BIN=$XDG_RUNTIME_DIR/any-name SHELL_PID PARITY_UPTIME_PINNED=1
 printf '#!/bin/bash\nexec sleep 600\n' > "$BIN"; chmod +x "$BIN"
 bash "$here/launch.sh" native "$XDG_RUNTIME_DIR/log" & pid=$!
 sleep 0.5

@@ -5,7 +5,9 @@
   "*.f[0-9]*": [12000, "a frame of a running animation, matched to the closest frame of the original: the phase differs between any two runs (up to about 4000 between two runs of the original, up to about 9000 against native); a frame that shows something else measures 100000 and more"]
  },
  "areas": {
-  "ptr_hold_*": [[1854, 724, 30, 30, 1, 2, "the calendar's next-month button, which the scene holds down: the original fills it with the ripple (79,68,66 against 59,48,47 hovered), a step of 20 that the whole-shot number does not see. 20 captures of the original differ from each other by 0 here in all four shots (mean and largest); native measures mean 0.01 and largest 0.08 where it draws the same, and mean 12.47, largest 20.04 held down without the ripple"]]
+  "ptr_hold_cal*": [[1854, 724, 30, 30, 1, 2, "the calendar's next-month button, which the scene holds down: the original fills it with the ripple (79,68,66 against 59,48,47 hovered), a step of 20 that the whole-shot number does not see. 20 captures of the original differ from each other by 0 here in all four shots (mean and largest); native measures mean 0.01 and largest 0.08 where it draws the same, and mean 12.47, largest 20.04 held down without the ripple"]],
+  "ptr_hold_barOsk*": [[1394, 6, 26, 26, 1, 2, "the bar's on-screen keyboard toggle held down: 62,50,49 with the ripple against 49,39,37 hovered. 19 captures of the original differ from each other by 0 here in all three shots (mean and largest); native measures mean 0.01 and largest 0.08 where it draws the same, and mean 7.13, largest 13.04 held down without the ripple"]],
+  "ptr_hold_settingsClose*": [[1854, 69, 34, 34, 1, 2, "the settings window's close button held down: 62,50,49 with the ripple against 49,39,37 hovered. 19 captures of the original differ from each other by 0 here in both shots (mean and largest); native measures mean 0.02 and largest 0.24 where it draws the same, and mean 8.15, largest 13.16 held down without the ripple"]]
  },
  "logs": ["overlay-actions.log", "state.log"],
  "times": {

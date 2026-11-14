@@ -53,7 +53,9 @@ fail-fast = false
 # capture_without_screencopy_ends_failed (it asks for the output's power, which a test of
 # the group switches).
 # qml's userenv_sites test runs the record action, which stops every wf-recorder pgrep
-# finds, and starts a program by that name.
+# finds, and starts a program by that name. Its OCR action runs a tesseract that prints
+# nothing and copies that empty text to that sway's clipboard, where ports_ab's
+# shot::screenshot_action_ab read it as what its own action had copied.
 # With several Qt
 # windows opening at once sway can answer a frame later than 100 ms; QtWayland then counts the
 # window as not exposed for that moment, and a qmltestrunner, which asks isExposed() exactly

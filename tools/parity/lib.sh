@@ -32,11 +32,6 @@ wait_for() {
 # The shell under test has a layer surface with this namespace mapped (hyprctl layers).
 layer() { hyprctl layers -j | jq -e --arg n "$(ns):$1" '[.. | .namespace? // empty] | index($n)' >/dev/null; }
 no_layer() { ! layer "$1"; }
-# layers_now: the shell's layers that are mapped, without the "quickshell:" of their namespaces.
-layers_now() { hyprctl layers -j | jq -r --arg p "$(ns):" '[.. | .namespace? // empty | select(startswith($p)) | ltrimstr($p)] | unique | join(" ")'; }
-# on_screen NAME...: write down which layers are mapped now, for the shots NAME (layers.txt).
-# compare.py leaves out a `layer:` mask of masks.json only on the shots that had its layers.
-on_screen() { local l n; l=$(layers_now); for n in "$@"; do echo "$n $l" >> "$OUT/layers.txt"; done; }
 bar_layer() { layer bar || layer verticalBar; }
 
 # shell_pid: the pid of the shell start_shell launched, while that process lives. launch.sh writes its
@@ -155,7 +150,6 @@ settle() {
 shot() {
   sleep "${2:-$SETTLE}"
   settle "$OUT/$1.ppm" || echo "$1" >> "$OUT/unsettled.txt"
-  on_screen "$1"
   log "shot $1 ($SETTLED)"
 }
 
@@ -173,7 +167,6 @@ shot_twice() {
     [ "$i" = 1 ] || ! cmp -s "$f" "$TMPF/once.ppm" || { same=1; break; }
   done
   [ -n "$same" ] || echo "$name" >> "$OUT/unsettled.txt"
-  on_screen "$name"
   log "shot $name (go $i, $SETTLED)"
 }
 
@@ -206,17 +199,12 @@ layer_anim() {
 # frames NAME N CMD...: run CMD then grab N screenshots back to back (animation frames).
 frames() {
   local name=$1 n=$2; shift 2
-  # The frames get the layers mapped before the action and after the last frame: one that opens
-  # or closes is in some of them, and a question between two frames would move them apart.
-  local before; before=$(layers_now)
   "$@"
   local t0=$(mono_ms)
   for i in $(seq -w 0 $((n - 1))); do
     grim -l 0 -t ppm "$OUT/$name.f$i.ppm"
     echo "$name.f$i $(( $(mono_ms) - t0 ))" >> "$OUT/frames.txt"
   done
-  local after; after=$(layers_now)
-  for i in $(seq -w 0 $((n - 1))); do echo "$name.f$i $before $after" >> "$OUT/layers.txt"; done
   log "frames $name x$n"
 }
 

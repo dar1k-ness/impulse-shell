@@ -1,6 +1,6 @@
 # Scene matrix for capture.sh. Each scene_X opens a state, shoots, and puts the shell back
 # to the base state. Coordinates are for a 1920x1080 output at scale 1 (Virtual-1 in the guest).
-SCENES="base bar_hover sidebarRight sidebarRight_tabs ptr_sidebarRight ptr_hold ptr_sidebarLeft ptr_overview ptr_notif ptr_overlay ptr_overlay_buttons region sidebarLeft overview search session cheatsheet
+SCENES="base bar_hover sidebarRight sidebarRight_tabs ptr_sidebarRight ptr_hold ptr_hold_buttons ptr_sidebarLeft ptr_overview ptr_notif ptr_overlay ptr_overlay_buttons region sidebarLeft overview search session cheatsheet
 mediaControls overlay wallpaperSelector osdVolume osdLife notif anim bar_vertical bar_bottom bar_float waffle settings welcome killDialog polkit notifburst lock
 firstStart"
 
@@ -72,6 +72,18 @@ scene_ptr_hold() {
   shot ptr_hold_calNext_released
   click 1833 738; shot ptr_hold_calPrev
   park; ipc sidebarRight close; sleep 1
+}
+# The same on two RippleButtons of other kinds: the bar's on-screen keyboard toggle (a
+# CircleUtilButton; releasing it opens the keyboard, a click closes it again) and the close button
+# of the settings window (releasing it closes the window).
+scene_ptr_hold_buttons() {
+  ptr 1407 19; shot ptr_hold_barOsk_hover 1
+  hold 1407 19; shot ptr_hold_barOsk 1.5; release; sleep 1.5
+  shot ptr_hold_barOsk_released 1
+  click 1407 19; sleep 1.5; park
+  app settings; sleep 6; ptr 1871 86; shot ptr_hold_settingsClose_hover 1
+  hold 1871 86; shot ptr_hold_settingsClose 1.5; release; sleep 1.5
+  app_close settings
 }
 scene_ptr_sidebarLeft() {
   ipc sidebarLeft open; sleep 1.5
