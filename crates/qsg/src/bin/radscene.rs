@@ -32,7 +32,7 @@ fn main() {
             })
             .collect();
         let r = gradient::Radial::new(n(2), n(3), n(4), n(5), n(6), n(7), n(8));
-        let tex = gradient::gradient_texture(&stops, true);
+        let tex = gradient::gradient_texture(&stops, true, 1.0);
         gradient::radial(&mut cv, &tex, &r, None, n(0), n(1), n(2), n(3), 1.0);
     }
     cv.save_png(&args[2]).unwrap();

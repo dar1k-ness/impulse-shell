@@ -116,6 +116,14 @@ name = "turned_rect_qt"
 required-features = ["interp"]
 
 [[test]]
+name = "transform_pixels_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "translate_qt"
+required-features = ["interp"]
+
+[[test]]
 name = "effect_colour_qt"
 required-features = ["interp"]
 

@@ -10195,11 +10195,20 @@ fn canvas_texture(w: &mut World, i: usize, cw: usize, ch: usize, wd: f64, ht: f6
 /// transform nodes' and its own (QSGNodeUpdater::enterTransformNode), each as
 /// QQuickWindowPrivate::updateDirtyNode builds it, an identity one left out.
 fn node_matrix(w: &mut World, i: usize) -> Mat4 {
+    node_matrix_under(w, i, None)
+}
+
+/// `node_matrix` in the texture of the item `top`, a layer's or a source's: the nodes below
+/// `top`'s own, which QSGLayer renders from.
+fn node_matrix_under(w: &mut World, i: usize, top: Option<usize>) -> Mat4 {
     let mut chain = vec![i];
     while let Some(p) = w.items.get(*chain.last().unwrap()).and_then(|it| it.parent) {
         chain.push(p);
+        if Some(p) == top {
+            break;
+        }
     }
-    // The window itself has no node of its own.
+    // Neither the window nor `top` has a node of its own here.
     chain.pop();
     let mut mat = Mat4::identity();
     for &c in chain.iter().rev() {
@@ -13439,7 +13448,8 @@ thread_local! {
 }
 
 /// Paints Qt5Compat RadialGradient `i` (scene x y, size wd ht) as RadialGradient.qml's
-/// ShaderEffect does: its `gradient` (white to black when unset) as a 16 x 256 texture read by
+/// ShaderEffect does: its `gradient` (white to black when unset) as the texture of a 16 x 256
+/// Rectangle at the window's devicePixelRatio (`qsg::gradient::gradient_texture`) read by
 /// the distance from the centre, with the radii the item's size when unset, times the alpha
 /// of the `source` item's texture when there is one.
 #[allow(clippy::too_many_arguments)]
@@ -13458,18 +13468,22 @@ fn paint_radial(
         Some(Value::Item(g)) => (gradient_stops(w, g), num(w, g, "orientation") != 1.0),
         _ => (vec![(0.0, [255; 4]), (1.0, [0, 0, 0, 255])], true),
     };
+    let dpr = match cv {
+        Target::Gpu(fr) => fr.dpr,
+        Target::Cpu(_) => 1.0,
+    };
     let key = {
         use std::hash::{Hash, Hasher};
         let mut h = rustc_hash::FxHasher::default();
         for (p, c) in &stops {
             (p.to_bits(), c).hash(&mut h);
         }
-        vertical.hash(&mut h);
+        (vertical, dpr.to_bits()).hash(&mut h);
         h.finish()
     };
     let tex = RADIAL_TEX.with_borrow_mut(|m| {
         m.get(&key).cloned().unwrap_or_else(|| {
-            let t = Rc::new(qsg::gradient::gradient_texture(&stops, vertical));
+            let t = Rc::new(qsg::gradient::gradient_texture(&stops, vertical, dpr));
             m.insert(key, t.clone(), canvas_bytes(&t));
             t
         })
@@ -13487,14 +13501,22 @@ fn paint_radial(
         Some(Value::Item(src)) => Some(src),
         _ => None,
     };
-    if let Target::Gpu(fr) = cv {
-        let dpr = fr.dpr;
+    if let Target::Gpu(_) = cv {
         let mask = src.map(|src| {
             let sz = [num(w, src, "width"), num(w, src, "height")];
             (gpu_layer_dpr(w, fonts, src, dpr), sz)
         });
+        // RadialGradient.qml's ShaderEffect fills the item: its node is the item's, in the
+        // window or in the texture being drawn, whichever has the item here.
+        let tops = [LAYER_SKIP.get(), SOURCE_ROOT.get(), None];
+        let node = tops.into_iter().find_map(|top| {
+            let m = node_matrix_under(w, i, top);
+            let at = m.map3([0.0; 3]);
+            let here = (at[0] as f64 - x).abs() < 0.01 && (at[1] as f64 - y).abs() < 0.01;
+            here.then_some(([0.0, 0.0, wd as f32, ht as f32], m))
+        });
         if let Target::Gpu(fr) = cv {
-            fr.radial(tex, r, mask, [x, y, wd, ht], op);
+            fr.radial(tex, r, mask, [x, y, wd, ht], node, op);
         }
         return;
     }
@@ -14066,8 +14088,20 @@ fn paint_turned(
         return true;
     }
     if let Some((dx, dy)) = t.as_translation() {
+        // The item's node holds a QMatrix4x4: its x and y and the move add up as floats
+        // (QQuickWindowPrivate::updateDirtyNode), 40.4 and -45 to -4.599998.
+        let by = |p: f64, d: f64| (p as f32 + d as f32) as f64 - p;
         let prev = XFORM_SKIP.with(|s| s.replace(Some(i)));
-        paint(w, fonts, i, cv, x - ix + dx, y - iy + dy, opacity, false);
+        paint(
+            w,
+            fonts,
+            i,
+            cv,
+            x - ix + by(ix, dx),
+            y - iy + by(iy, dy),
+            opacity,
+            false,
+        );
         XFORM_SKIP.with(|s| s.set(prev));
         return true;
     }

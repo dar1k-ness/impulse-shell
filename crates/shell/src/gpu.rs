@@ -132,6 +132,8 @@ enum Cmd {
         mask: Option<Rc<Frame>>,
         crop: [f32; 2],
         rect: [f32; 4],
+        /// RadialGradient.qml's ShaderEffect as Qt draws it: see `GaussAt`.
+        qt: Option<GaussAt>,
         r: qsg::gradient::Radial,
         op: f32,
     },
@@ -2363,16 +2365,21 @@ impl Frame {
         r: qsg::gradient::Radial,
         mask: Option<(Frame, [f64; 2])>,
         rect: [f64; 4],
+        node: Option<([f32; 4], Mat4)>,
         op: f32,
     ) {
         self.taint();
         let rect = self.xf_rect(rect).map(|v| v as f32);
+        let qt = node.and_then(|(item, mv)| self.gauss_at(item, &mv, rect));
         let mut h = mix_f(
             mix(14, tex.key.get()),
             &[r.center[0], r.center[1], r.sin, r.cos],
         );
         h = mix_f(h, &[r.ratio[0], r.ratio[1]]);
         h = mix_f(h, &[rect[0], rect[1], rect[2], rect[3], op]);
+        if let Some(q) = &qt {
+            h = mix_f(mix_f(h, &q.m), &q.item);
+        }
         let mut crop = [1.0, 1.0];
         let mask = mask.map(|(m, size)| {
             if m.plain() {
@@ -2392,6 +2399,7 @@ impl Frame {
             mask,
             crop,
             rect,
+            qt,
             r,
             op,
         };
@@ -3269,7 +3277,8 @@ pub struct Gpu {
     curve: glow::Program,
     curve_u: [Option<glow::UniformLocation>; 3],
     radial: glow::Program,
-    radial_u: [Option<glow::UniformLocation>; 8],
+    radial_u: [Option<glow::UniformLocation>; 7],
+    radial_q: Option<glow::UniformLocation>,
     vbo: glow::Buffer,
     /// Next free byte of `vbo` (`stream`).
     stream_at: std::cell::Cell<usize>,
@@ -3817,15 +3826,21 @@ void main() { vec2 p = u - r * 0.5; float i = 2.0 + 0.5 * sign(p.x) + sign(p.y);
  float t = b > 0.0 ? clamp(d / b, 0.0, 1.0) : (d > 0.0 ? 1.0 : 0.0);
  float v = 1.0 - t * t * (3.0 - 2.0 * t); gl_FragColor = c * (v * v * o); }";
 
-/// radialgradient.vert with radialgradient_nomask.frag or radialgradient_mask.frag: `u` the
-/// fragment in the item (0..1), `c` the centre, `a` the sine and cosine of the angle, `r` the
-/// horizontal and vertical ratio, `x` the gradient texture read down its height, `y` the
-/// `source` layer (bottom-up) the item covers `m.xy` of, when `m.z` is set.
-const RADIAL_FS: &str = "varying vec2 u; uniform sampler2D x; uniform sampler2D y;
-uniform vec2 c; uniform vec2 a; uniform vec2 r; uniform vec3 m; uniform float o;
-void main() { vec2 d = u - c;
- vec2 t = (vec2(d.x * a.y - d.y * a.x, d.x * a.x + d.y * a.y) + c) * r;
- vec4 g = texture2D(x, vec2(0.0, 2.0 * distance(t, c * r)));
+/// radialgradient.vert: `t` the vertex in the item (0..1), `c` the centre, `a` the sine and
+/// cosine of the angle, `r` the horizontal and vertical ratio. Where the gradient is read
+/// (`v`, with the centre `w`) is the vertex shader's, interpolated over the quad, as in Qt.
+const RADIAL_VS: &str = "attribute vec2 p; attribute vec2 t; uniform mat4 q;
+uniform vec2 c; uniform vec2 a; uniform vec2 r; varying vec2 u; varying vec2 v; varying vec2 w;
+void main() { u = t; vec2 d = t - c;
+ v = (vec2(d.x * a.y - d.y * a.x, d.x * a.x + d.y * a.y) + c) * r; w = c * r;
+ gl_Position = q * vec4(p, 0.0, 1.0); }";
+
+/// radialgradient_nomask.frag or radialgradient_mask.frag: `x` the gradient texture read down
+/// its height, `y` the `source` layer (bottom-up) the item covers `m.xy` of, when `m.z` is
+/// set.
+const RADIAL_FS: &str = "varying vec2 u; varying vec2 v; varying vec2 w;
+uniform sampler2D x; uniform sampler2D y; uniform vec3 m; uniform float o;
+void main() { vec4 g = texture2D(x, vec2(0.0, 2.0 * distance(v, w)));
  float k = m.z > 0.5 ? texture2D(y, vec2(u.x * m.x, 1.0 - u.y * m.y)).a : 1.0;
  gl_FragColor = g * (k * o); }";
 
@@ -4151,11 +4166,13 @@ impl Gpu {
             unsafe { gl.get_uniform_location(curve, n) }
         });
         // SAFETY: `make_current` above succeeded.
-        let radial = unsafe { program(&gl, TEX_VS, RADIAL_FS, &["p", "t"]) }?;
-        let radial_u = ["s", "c", "a", "r", "m", "o", "x", "y"].map(|n| {
+        let radial = unsafe { program(&gl, RADIAL_VS, RADIAL_FS, &["p", "t"]) }?;
+        let radial_u = ["c", "a", "r", "m", "o", "x", "y"].map(|n| {
             // SAFETY: `make_current` above succeeded.
             unsafe { gl.get_uniform_location(radial, n) }
         });
+        // SAFETY: `make_current` above succeeded.
+        let radial_q = unsafe { gl.get_uniform_location(radial, "q") };
         // SAFETY: `make_current` above succeeded.
         let vbo = unsafe { gl.create_buffer() }.ok()?;
         let mk = |gl: &glow::Context| -> Option<glow::Texture> {
@@ -4238,6 +4255,7 @@ impl Gpu {
             curve_u,
             radial,
             radial_u,
+            radial_q,
             pool: Vec::new(),
             layers: LayerCache::new(),
             frame_no: 0,
@@ -5163,6 +5181,7 @@ impl Gpu {
                     mask,
                     crop,
                     rect,
+                    qt,
                     r,
                     op,
                 } => {
@@ -5201,20 +5220,30 @@ impl Gpu {
                     // SAFETY: the context is current, as this fn requires.
                     unsafe { self.filter(t, glow::LINEAR as i32) };
                     let mut v = Vec::with_capacity(24);
-                    quad(
-                        &mut v,
-                        rect[0],
-                        rect[1],
-                        rect[2],
-                        rect[3],
-                        [0.0, 0.0, 1.0, 1.0],
-                    );
+                    grid(&mut v, qt.as_ref().map_or(*rect, |q| q.item));
                     // SAFETY: the context is current, as this fn requires.
                     unsafe { self.use_prog(self.radial) };
+                    // The target's pixels to its clip space, or Qt's own matrix; a target
+                    // kept top row first turns either over.
+                    let [sw, sh] = self.space(w, h);
+                    #[rustfmt::skip]
+                    let mut pm = qt.as_ref().map_or([
+                        2.0 / sw, 0.0, 0.0, 0.0,
+                        0.0, -2.0 / sh.abs(), 0.0, 0.0,
+                        0.0, 0.0, 1.0, 0.0,
+                        -1.0, 1.0, 0.0, 1.0,
+                    ], |q| q.m);
+                    if sh < 0.0 {
+                        for k in [1, 5, 9, 13] {
+                            pm[k] = -pm[k];
+                        }
+                    }
+                    gl_count(GL_UNIFORM);
+                    // SAFETY: the context is current, as this fn requires.
+                    unsafe { gl.uniform_matrix_4_f32_slice(self.radial_q.as_ref(), false, &pm) };
                     let loc = &self.radial_u;
                     let has = if m.is_some() { 1.0 } else { 0.0 };
                     let vals = [
-                        Uni::f(&self.space(w, h)),
                         Uni::f(&r.center),
                         Uni::f(&[r.sin, r.cos]),
                         Uni::f(&r.ratio),

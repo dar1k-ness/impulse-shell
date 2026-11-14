@@ -791,6 +791,84 @@ Test: `an_alignment_taken_back_under_mirroring_is_laid_out_anew` in
 a script reads differs, if Qt stops keeping the state above, or if the signal, the binding
 or the place of the text here is not as in this table.
 
+## Transforms that go through a texture
+
+Qt draws a transformed subtree's nodes through the node's matrix: a Rectangle's geometry,
+the scissor or stencil of a `clip`, the rectangle of a layer's effect. The engine does so
+for moves, for an upright `scale` on the GPU path, and for any transform that keeps lines
+parallel over Rectangles and plain Items. Everything else it renders upright into a texture
+of the subtree and draws that texture through the transform, which smooths edges Qt draws
+sharp and filters a layer twice.
+
+Pixels that are not Qt 6.12's (OpenGL on llvmpipe), compared without tolerance. CPU at
+scale 1; GPU at the four scales of the test.
+
+`crates/shell/tests/transform_pixels_qt.rs`, a 160 x 100 scene, scales 1 / 1.25 / 1.5 / 1.75:
+
+| scene | what goes through a texture | CPU | GPU | places in `qml/` |
+|---|---|---|---|---|
+| `matrix` | a `Matrix4x4` with a perspective row | 114 | 114 / 154 / 171 / 211 | 0 |
+| `rotation_axis` | a `Rotation` about x, y or a slanted axis | 411 | 411 / 588 / 628 / 684 | 0 |
+| `clip_on_item` | `clip: true` on an item turned by 30 degrees, scaled, or tilted | 548 | 236 / 328 / 350 / 410 | 0 |
+| `clip_on_parent` | `clip: true` on a parent of turned children, and on a turned parent | 226 | 99 / 123 / 144 / 169 | 0 |
+| `scale` | on the CPU path, `transform: Scale` by different factors along x and y | 719 | 0 / 0 / 0 / 1 | 0 |
+
+`with_item_scale_rotation` is Qt's at every scale. At 1.75 the tip of its turned Rectangle's
+corner was ours and not Qt's, one pixel, until the tests' context got Qt's depth buffer, which
+came with GaussianBlur on the GPU path: with one llvmpipe takes the rasterizer it takes under
+Qt. With the surface's depth taken away again the pixel is back, at (80, 4). The one pixel of
+`scale` at 1.75 stays with the depth buffer.
+
+`qml/` has three `transform:` and all are a `Translate`; no `Scale`, `Rotation`, `Matrix4x4`
+or `Shear` stands in one. Of its 32 `rotation:` none is on an item that clips or has a
+child that clips.
+
+`crates/shell/tests/turned_layer_qt.rs`, a 160 x 60 scene, scales 1 / 1.25 / 1.5 / 2: a
+round button whose background is a layer under an `OpacityMask`, in an item with
+`rotation:`. The one such place of `qml/` is `NavigationRailExpandButton.qml:16`
+(`rotation: expanded ? 0 : -180` under a Behavior, in `settings.qml:240`).
+
+| scene | CPU | GPU |
+|---|---|---|
+| `at_rest`: 0 and -180 on whole pixels, as the button stands | 0 | 0 / 0 / 0 / 0 |
+| `at_rest`: -180 half a pixel off the grid | 25 | 25 / 0 / 0 / 0 |
+| `while_turning`: -30, -90 and -157.5, frames of the Behavior | 505 | 488 / 1039 / 772 / 1028 |
+
+While the button turns, the ring of pixels along the round mask is up to 24 of 255 from
+Qt's and the inside is Qt's; at -90 it is 7 pixels, up to 3 of 255. We turn the picture of
+the masked layer; Qt turns the effect's rectangle and reads the layer and the mask through
+the turn. Half a pixel off the grid at -180 the column Qt covers is the left one and ours
+the right one: the texture is cut upright and then turned.
+
+`crates/shell/tests/scaled_item_qt.rs`, a 160 x 60 scene, scales 1 / 1.25 / 1.5 / 2: the
+item's own `scale:` as `qml/` has it while something is pressed
+(`AbstractBackgroundWidget.qml:32`, `settings/QuickConfig.qml:114`,
+`SettingsPreviewTile.qml:40`).
+
+| scene | CPU | GPU |
+|---|---|---|
+| `rectangles`: Rectangles scaled by 1.05, 0.9 and 0.96 | 19 | 0 / 1 / 1 / 0 |
+| `clips_inside`: clipped quarters in an item scaled by 0.9 | 0 | 0 / 49 / 0 / 0 |
+| `clip_on_the_item`: an item with `clip: true` scaled by 0.96 | 0 | 0 / 72 / 0 / 0 |
+
+The 19 pixels are one row of an antialiased edge, 1 of 255 off, and so are the single
+pixels on the GPU path. The 49 and the 72 are one row each at scale 1.25: the clip's edge
+lies on the middle of a device pixel (37.5), Qt's scissor takes the row and ours leaves it
+(`Frame::push_clip_f`, `qsg::raster::scissor_rect_scaled`).
+
+Why: the shell shows none of the first table; the layer in a turned item differs for the
+fifth of a second the button turns, and the scaled items by one row while pressed.
+
+To remove the differences: a clip under a transform that is not upright needs Qt's stencil
+clip, a perspective transform needs the nodes drawn through a 4 x 4 matrix, and a layer
+under a turn needs its effect drawn through the matrix (`paint_turned`, `takes_matrix` and
+`paint_layer` in `crates/shell/src/scene.rs`).
+
+Tests: `cpu` and `gpu` of each scene named above. They hold the counts of the tables: a
+change that brings a scene closer to Qt's or takes it further fails them. The other scenes
+of `transform_pixels_qt.rs` and all of `translate_qt.rs` are compared with no difference
+allowed.
+
 ## The drawn glyphs of `Text.QtRendering` are kept, 512 a font
 
 Qt draws every glyph of such a text from its distance field each frame and keeps nothing drawn, so it has no limit. rusty-impulse keeps the drawn glyphs of a font at a size, 512 at most (`DF_TILES`): the 513th pushes out the one used longest ago, and that one is drawn anew with the same pixels when it is next asked for. The picture is Qt's; only the time differs. Test: `tile_past_the_limit_evicts_the_oldest_which_redraws_the_same` in `crates/qsg/src/text.rs`.

@@ -236,6 +236,31 @@ pub fn shown_like_qt(body: &str, size: (usize, usize), allow: usize, ours: impl 
     compared(shown, &[1.0], 0, allow);
 }
 
+/// How many pixels of `body` are not Qt's on our GPU path at each of `dprs`, with no
+/// tolerance; nothing without the oracle. For a scene whose count is held: more of them fail
+/// its test and so do fewer.
+pub fn off_qt_by(by: Scale, body: &str, size: (usize, usize), dprs: &[f64]) -> Option<Vec<usize>> {
+    let off = |&dpr: &f64| {
+        let (want, _) = qt(body, size, dpr, by, Caret::Blinks)?;
+        let got = ours(body, size, dpr);
+        dump(&got, &want, dpr);
+        let (n, max, at) = diff(&got, &want, 0);
+        println!("dpr {dpr}: {n} px over 0, max {max} at {at:?}");
+        Some(n)
+    };
+    dprs.iter().map(off).collect()
+}
+
+/// `off_qt_by` at scale 1 for our CPU path.
+pub fn cpu_off_qt(body: &str, size: (usize, usize)) -> Option<usize> {
+    let (want, _) = qt(body, size, 1.0, Scale::Qt, Caret::Blinks)?;
+    let got = ours_cpu(body, size);
+    dump(&got, &want, 1.0);
+    let (n, max, at) = diff(&got, &want, 0);
+    println!("dpr 1: {n} px over 0, max {max} at {at:?}");
+    Some(n)
+}
+
 /// Our pixels of the same scene on the CPU path, at scale 1.
 fn ours_cpu(body: &str, (w, h): (usize, usize)) -> Canvas {
     let qml = format!(

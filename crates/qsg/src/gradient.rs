@@ -1,13 +1,15 @@
-//! Port of Qt5Compat RadialGradient: a 16x256 Rectangle gradient texture sampled by
+//! Port of Qt5Compat RadialGradient: the texture of a 16x256 Rectangle gradient sampled by
 //! `2 * distance(tc1, center * ratio)` (radialgradient.vert / radialgradient_nomask.frag).
 use crate::layer;
 use crate::raster::Canvas;
 use crate::rect::{self, RectParams};
 
 /// The texture RadialGradient.qml reads its colours from: a 16 x 256 Rectangle with the
-/// Gradient's `stops` (plain white without any) in its orientation.
-pub fn gradient_texture(stops: &[(f32, [u8; 4])], vertical: bool) -> Canvas {
-    let mut tex = layer::texture(16.0, 256.0);
+/// Gradient's `stops` (plain white without any) in its orientation, in a ShaderEffectSource
+/// of no `textureSize`: its size times the window's devicePixelRatio `dpr`, the Rectangle
+/// drawn through that scale (20 x 320 at 1.25, 32 x 512 at 2).
+pub fn gradient_texture(stops: &[(f32, [u8; 4])], vertical: bool, dpr: f64) -> Canvas {
+    let mut tex = layer::texture(16.0 * dpr, 256.0 * dpr);
     let g = rect::build(&RectParams {
         width: 16.0,
         height: 256.0,
@@ -15,7 +17,8 @@ pub fn gradient_texture(stops: &[(f32, [u8; 4])], vertical: bool) -> Canvas {
         vertical,
         ..Default::default()
     });
-    tex.draw_smooth(&g, 0.0, 0.0, 1.0);
+    let all = [0, 0, tex.w as i64, tex.h as i64];
+    tex.draw_smooth_scaled(&g, [dpr as f32; 2], 0.0, 0.0, 1.0, all);
     tex
 }
 
