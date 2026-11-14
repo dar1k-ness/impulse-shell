@@ -19,7 +19,9 @@
 #   -n, --dry-run                    with any of these: say what would be done, do nothing
 #   -q, --quiet                      say only what was done or went wrong
 #
-# Exit status: 0 done or nothing to do, 1 failed, 3 something was left uncopied (it says what).
+# Exit status: 0 done or nothing to do, 1 failed, 3 something was left uncopied (it says what),
+# 4 the keyring item could not be copied though the keyring is open ("keyring: FAILED" says why;
+# everything else was done).
 set -euo pipefail
 shopt -s nullglob dotglob
 
@@ -39,7 +41,7 @@ runtime=${XDG_RUNTIME_DIR-}
 
 own=$state/$NEW_BIN/carry-over
 stamp=$(date +%Y%m%d-%H%M%S)
-dry= quiet= force= left=0
+dry= quiet= force= left=0 failed=0
 
 die() { echo "carry-over.sh: $*" >&2; exit 1; }
 say() { [ -n "$quiet" ] || echo "$*"; }
@@ -192,10 +194,25 @@ copy_pair() {
 # The new build writes an item of its own, {}, the first time it reads an open keyring and finds
 # none. So an item that is already there is completed, not skipped: what the old item has and
 # the new one lacks is added, nothing in the new one is replaced.
+#
+# secret-tool reads the label and the attributes from its arguments and prints them in the
+# charset of its locale. Under LC_ALL=C (tools/pc/switch and rollback-watch run this so) a label
+# or an attribute that is not ASCII comes out of "search" as question marks or is refused by
+# "store" ("Invalid byte sequence in conversion input"), and the item is not copied. So
+# secret-tool runs under a UTF-8 locale whatever the caller's is: C.UTF-8, else another one the
+# system has. CHARSET is what GLib asks before the locale: the arguments pass as UTF-8 even
+# where no such locale is found. LANGUAGE=C: its messages stay in English, kr_is_locked reads
+# one of them.
 KEYRING_WAIT=${KEYRING_WAIT:-15}
 pending=$own/keyring-pending
 wrote=
-st() { timeout "$KEYRING_WAIT" secret-tool "$@"; }
+kr_locale=
+for l in C.UTF-8 en_US.UTF-8 $(locale -a 2>/dev/null | grep -i -E '\.utf-?8$' || true); do
+    [ "$(LC_ALL=$l locale charmap 2>/dev/null)" = UTF-8 ] || continue
+    kr_locale=$l
+    break
+done
+st() { LC_ALL=${kr_locale:-C} LANGUAGE=C CHARSET=UTF-8 timeout "$KEYRING_WAIT" secret-tool "$@"; }
 # $1 how the keyring step ended, $2 non-empty: the item under the new name was written.
 kr_done() {
     local log
@@ -211,15 +228,26 @@ kr_done() {
     note "keyring, after the keyring was opened: $1"
     rm -f -- "$pending"
 }
-# $1 why the item is not copied yet.
-kr_wait() {
+# Writes down that the item is not copied, for the next run and for where its end is logged.
+kr_pending() {
     local log=${CARRY_LOG-} since
-    echo "carry-over.sh: keyring: $1" >&2
-    left=3
     [ -z "$dry" ] || return 0
     [ -n "$log" ] || log=$(sed -n 's/^log=//p' "$pending" 2>/dev/null) || true
     since=$(sed -n 's/^since=//p' "$pending" 2>/dev/null) || true
     mkdir -p "$own" && printf 'since=%s\nlog=%s\n' "${since:-$(date -Is)}" "$log" >"$pending"
+}
+# $1 why the item is not copied yet: something to wait for (a locked keyring, no answer).
+kr_wait() {
+    echo "carry-over.sh: keyring: $1" >&2
+    left=3
+    kr_pending
+}
+# $1 what went wrong with an open keyring. Waiting does not mend that, so it is an error and
+# the exit status says so; the next run still tries again.
+kr_fail() {
+    echo "carry-over.sh: keyring: FAILED, the API keys did NOT move to application=$NEW_APP: $1. The item application=$OLD_APP is as it was" >&2
+    failed=4
+    kr_pending
 }
 # secret-tool search without the secret itself. Status 124: no answer. A locked keyring answers
 # it without asking for its password and names the item by a hashed attribute only: that is how
@@ -252,17 +280,21 @@ copy_keyring() {
     tmp=$(umask 077 && mktemp -d "$runtime/.carry-over.XXXXXX")
     # shellcheck disable=SC2064
     trap "rm -rf -- '$tmp'" EXIT
-    keyring_items "$found" "$tmp" || true
+    keyring_items "$found" "$tmp" || kr_fail "copying the item stopped with status $?"
     rm -rf -- "$tmp"
     trap - EXIT
 }
 # $1 the search answer for the old item, $2 a directory for the secrets.
 keyring_items() {
-    local found=$1 tmp=$2 attrs=() label='' k v rc n what
+    local found=$1 tmp=$2 attrs=() label='' k v rc n what err now i
     rc=0
     (umask 077 && st lookup application "$OLD_APP" >"$tmp/old" 2>/dev/null) || rc=$?
+    if [ "$rc" != 0 ] && [ "$rc" != 124 ]; then
+        kr_fail "the keyring is open, lists the item application=$OLD_APP and secret-tool lookup ended with status $rc for it"
+        return 0
+    fi
     if [ "$rc" != 0 ] || [ ! -s "$tmp/old" ]; then
-        kr_wait "NOT COPIED YET: the item application=$OLD_APP could not be read ($([ "$rc" = 124 ] && echo "no answer in $KEYRING_WAIT s" || echo "status $rc"))"
+        kr_wait "NOT COPIED YET: the item application=$OLD_APP could not be read ($([ "$rc" = 124 ] && echo "no answer in $KEYRING_WAIT s" || echo "it came back empty"))"
         return 0
     fi
     rc=0
@@ -304,12 +336,36 @@ keyring_items() {
         echo "keyring: would be: $what"
         return 0
     fi
-    if st store --label="${label:-$NEW_APP Safe Storage}" application "$NEW_APP" "${attrs[@]}" <"$tmp/put" &&
-        st lookup application "$NEW_APP" 2>/dev/null | cmp -s - "$tmp/put"; then
-        kr_done "$what" 1
-    else
-        kr_wait "NOT COPIED YET: the item application=$NEW_APP could not be written or read back"
+    label=${label:-$NEW_APP Safe Storage}
+    rc=0
+    err=$(st store --label="$label" application "$NEW_APP" "${attrs[@]}" <"$tmp/put" 2>&1) || rc=$?
+    if [ "$rc" = 124 ]; then
+        kr_wait "NOT COPIED YET: no answer in $KEYRING_WAIT s when writing the item application=$NEW_APP"
+        return 0
     fi
+    if [ "$rc" != 0 ]; then
+        kr_fail "secret-tool store ended with status $rc for the label \"$label\"${attrs[*]:+ and the attributes ${attrs[*]}} (${err%%$'\n'*})"
+        return 0
+    fi
+    # What was written is what was meant: the secret byte for byte, the label, each attribute.
+    if ! st lookup application "$NEW_APP" 2>/dev/null | cmp -s - "$tmp/put"; then
+        kr_fail "the item was written and its secret does not read back as what was put there"
+        return 0
+    fi
+    # The keys are there. The names are looked at too where the keyring answers: an item named
+    # in question marks is found by nothing that looks for it by its attributes.
+    if now=$(kr_search "$NEW_APP"); then
+        if ! grep -qxF -- "label = $label" <<<"$now"; then
+            kr_fail "the item was written and its label does not read back as \"$label\""
+            return 0
+        fi
+        for ((i = 0; i < ${#attrs[@]}; i += 2)); do
+            grep -qxF -- "attribute.${attrs[i]} = ${attrs[i + 1]}" <<<"$now" && continue
+            kr_fail "the item was written and its attribute ${attrs[i]} does not read back as \"${attrs[i + 1]}\""
+            return 0
+        done
+    fi
+    kr_done "$what" 1
 }
 
 carry() {
@@ -361,8 +417,17 @@ put_text() {
 # as it is at that moment, or that it is not there, and --dots old puts exactly that back.
 # What the new build saved is not lost: it stays beside the file as <name>.from-rusty-impulse,
 # and the next --dots new makes it the file again when the file still is what --dots old put
-# there. A copy with that name that holds something else is kept under a name with the time.
+# there. A copy with that name that holds something else is kept under a name with the time;
+# of those only the newest stays, so they do not add up with every switch.
 LAYOUT_FILES=(layout.toml layout.toml.prev)
+# $1: the copy's name without the time.
+layout_prune() {
+    local f first=1
+    while IFS= read -r f; do
+        [ -n "$first" ] || rm -f -- "$f"
+        first=
+    done < <(ls -1d -- "$1".[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9] 2>/dev/null | sort -r)
+}
 # True when file $1 is what was kept as $2, or is not there as $2.absent says.
 is_kept() {
     if [ -e "$2.absent" ]; then [ ! -e "$1" ] && [ ! -L "$1" ]; else [ -f "$2" ] && [ -f "$1" ] && cmp -s -- "$1" "$2"; fi
@@ -379,6 +444,7 @@ layout_new() {
     local keep=$own/layout n f side take
     for n in "${LAYOUT_FILES[@]}"; do
         f=$config/$NEW_APP/$n side=$config/$NEW_APP/$n.from-$NEW_BIN
+        [ -n "$dry" ] || layout_prune "$side"
         # Kept at the switch and not put back since: the file may be the new build's by now.
         if [ -e "$keep/$n" ] || [ -e "$keep/$n.absent" ]; then say "kept for $OLD_BIN already: $f"; continue; fi
         if [ ! -f "$f" ] && { [ -e "$f" ] || [ -L "$f" ]; }; then leave "$f is not a file: left as it is, not kept for $OLD_BIN"; continue; fi
@@ -402,7 +468,7 @@ layout_old() {
         if ! is_kept "$f" "$keep/$n"; then
             if [ -n "$dry" ]; then did "would put back $f"; continue; fi
             if [ -f "$f" ]; then
-                [ ! -e "$side" ] || cmp -s -- "$f" "$side" || mv -f -- "$side" "$side.$stamp" || die "cannot move $side"
+                [ ! -e "$side" ] || cmp -s -- "$f" "$side" || { mv -f -- "$side" "$side.$stamp" && layout_prune "$side"; } || die "cannot move $side"
                 put_copy "$f" "$side" || die "cannot keep $f as $side"
             fi
             if [ -e "$keep/$n.absent" ]; then
@@ -514,5 +580,6 @@ done
 [ "$NEW_WORD" != "$OLD_WORD" ] || die "RI_WORD is $OLD_WORD: that is the old name"
 [[ $NEW_WORD =~ ^[a-z][a-z0-9-]*$ ]] || die "RI_WORD=$NEW_WORD is not a name"
 $mode
+[ "$failed" = 0 ] || exit "$failed"
 [ "$mode" != copy_keyring ] || [ "$left" != 0 ] || [ -z "$wrote" ] || exit 5
 exit "$left"

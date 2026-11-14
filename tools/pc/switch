@@ -14,7 +14,8 @@
 #      nothing under ~/.local/lib/ii-rs, ~/.local/bin/ii-rs* and ~/.config/quickshell changed
 #   3. puts rusty-impulse-shell and rusty-impulse-default into ~/.local/bin (ii-shell and
 #      ii-default stay), and the rollback copies' names into rollback-watch and rollback-now
-#   4. stops the old rollback watch (its unit is removed: it would roll back at the next login)
+#   4. stops the old rollback watch (its unit is removed: it would roll back at the next login;
+#      which script it was is written to old-rollback-watch here, rollback-now starts it again)
 #   5. stops the old shell, copies the data to the new names (carry-over.sh), makes the owner's
 #      own files name the new build (carry-over.sh --dots new), reloads Hyprland, starts hypridle
 #      again (rollback-watch idle: a screen hypridle had turned off still comes on at a key or
@@ -26,6 +27,10 @@
 #      treated as one that did not come up: rollback-now, and the old shell takes the lock
 #   6. if the new shell does not come up with its layers in START_WAIT seconds: rollback-now
 #   7. turns the new rollback watch on (now and at each login)
+# The API keys are an item of the keyring, copied in step 5. A locked keyring is not asked for
+# its password: the item is copied later, the last lines say by what. An open keyring whose item
+# could not be copied is an error: the install goes on (the old item is untouched, the new
+# build runs without the keys), "KEYRING: FAILED" says why and the exit status is 4.
 # No sudo. A log of each run is written beside the script: switch-<time>.log
 set -u
 export LC_ALL=C
@@ -74,7 +79,7 @@ for f in rusty-impulse install.sh carry-over.sh rollback-watch rollback-now rust
     [ -f "$here/$f" ] || die "no $here/$f"
 done
 [ -d "$here/tree" ] || die "no $here/tree (the QML tree the binary was compiled from)"
-for c in jq rsync pgrep hyprctl flock sha256sum; do command -v "$c" >/dev/null || die "$c is not installed"; done
+for c in jq pgrep hyprctl flock sha256sum; do command -v "$c" >/dev/null || die "$c is not installed"; done
 [ -n "$(hc monitors -j | jq length 2>/dev/null)" ] || die "Hyprland does not answer (hyprctl monitors)"
 NEW_SHA=$(sha "$here/rusty-impulse"); new8=${NEW_SHA:0:8}
 say "rusty-impulse to install: sha256 $NEW_SHA ($here)"
@@ -137,9 +142,15 @@ fi
 old_unit=$config/systemd/user/ii-rollback-watch.service
 if [ -e "$old_unit" ]; then
     old_watch=$(sed -n 's/^ExecStart=\(.*\) run$/\1/p' "$old_unit")
+    # rollback-now turns it on again.
+    [ ! -x "$old_watch" ] || { printf '%s\n' "$old_watch" >"$here/.old-rollback-watch.new" && mv -f "$here/.old-rollback-watch.new" "$here/old-rollback-watch"; } ||
+        say "ERROR: cannot write $here/old-rollback-watch: after a rollback the old watch has to be started by hand: $old_watch enable"
     say "stopping the old rollback watch: $old_watch stop"
     [ -x "$old_watch" ] && "$old_watch" stop 2>&1 | sed 's/^/   /' | tee -a "$LOGF"
     [ ! -e "$old_unit" ] || { systemctl --user disable --now ii-rollback-watch.service >/dev/null 2>&1; rm -f "$old_unit"; systemctl --user daemon-reload; }
+elif [ -n "$(pids ii-rs)" ]; then
+    # The old build runs with no watch of its own: a name left by an earlier switch is not true any more.
+    rm -f "$here/old-rollback-watch"
 fi
 p=$(cat "$XDG_RUNTIME_DIR/ii-rollback-watch.pid" 2>/dev/null)
 [ -z "$p" ] || ! kill -0 "$p" 2>/dev/null || ! grep -qa rollback-watch "/proc/$p/cmdline" || { kill "$p"; say "old rollback watch pid $p stopped"; }
@@ -149,7 +160,13 @@ p=$(cat "$XDG_RUNTIME_DIR/ii-rollback-watch.pid" 2>/dev/null)
 say "stopping the old shell, copying the data, rewriting the owner's files"
 stop ii-rs; stop rusty-impulse
 CARRY_LOG=$LOGF "$here/carry-over.sh" --quiet 2>&1 | sed 's/^/   /' | tee -a "$LOGF"; rc=${PIPESTATUS[0]}
-[ "$rc" = 0 ] || [ "$rc" = 3 ] || { old_shell_again; die "carry-over.sh failed ($rc); the old shell was started again"; }
+[ "$rc" = 0 ] || [ "$rc" = 3 ] || [ "$rc" = 4 ] || { old_shell_again; die "carry-over.sh failed ($rc); the old shell was started again"; }
+kr_failed=
+if [ "$rc" = 4 ]; then
+    kr_failed=$(grep -a 'keyring: FAILED' "$LOGF" | tail -1 | sed 's/^.*keyring: FAILED, //')
+    kr_failed=${kr_failed:-carry-over.sh ended with status 4 and did not say why}
+    say "ERROR: KEYRING: the API keys did NOT move to the new build; the install goes on without them"
+fi
 "$here/carry-over.sh" --dots new 2>&1 | sed 's/^/   /' | tee -a "$LOGF"; rc=${PIPESTATUS[0]}
 if [ "$rc" != 0 ]; then
     "$here/carry-over.sh" --dots old >>"$LOGF" 2>&1; hc reload >/dev/null; old_shell_again
@@ -187,9 +204,12 @@ if [ -n "$have_old" ]; then
     "$here/rollback-watch" status 2>/dev/null | head -3 | sed 's/^/   /' | tee -a "$LOGF"
 fi
 kp=${XDG_STATE_HOME:-$HOME/.local/state}/rusty-impulse/carry-over/keyring-pending
-if [ -e "$kp" ]; then
+if [ -n "$kr_failed" ]; then
+    say "KEYRING: FAILED. The new build runs WITHOUT the API keys: ${kr_failed}. Nothing is lost, and nothing of this is the keyring being locked. Again by hand: $here/carry-over.sh --keyring$([ -z "$have_old" ] || echo " (the rollback watch also tries every few seconds and adds a line to this log when it is done: $LOGF)")"
+elif [ -e "$kp" ]; then
     say "KEYRING: the API keys are NOT in the new build yet, the keyring was locked. $([ -n "$have_old" ] && echo "The rollback watch copies them once the keyring is open (nobody has to run anything) and adds a line to this log: $LOGF" || echo "No rollback watch is on here, so nothing copies them later: $here/carry-over.sh --keyring")"
 else
     say "keyring: nothing is left to copy"
 fi
 say "done. Back to the old build: $here/rollback-now"
+[ -z "$kr_failed" ] || exit 4

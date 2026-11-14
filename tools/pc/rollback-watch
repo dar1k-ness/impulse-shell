@@ -33,9 +33,10 @@
 # commands if they are not), starts ii-shell and checks the result. After that it stays on for
 # the previous build in a restart-only role: when that shell goes away it is started again,
 # nothing is copied (there is nothing older to go back to). At most RESTART_MAX restarts in
-# RESTART_WINDOW seconds; one more death inside that time and it writes GIVING UP and ends, so a
-# build that dies at start is not restarted for ever. Started while Hyprland is set to start the
-# previous build (a login after a rollback), it takes the same restart-only role.
+# RESTART_WINDOW seconds; one more death inside that time and it writes GIVING UP, to its log
+# and on the screen (give_up_note), and ends, so a build that dies at start is not restarted
+# for ever. Started while Hyprland is set to start the previous build (a login after a
+# rollback, or rollback-now), it takes the same restart-only role.
 # It never deletes or changes the rollback copies, and nothing the new build wrote under the
 # new names is removed: carry-over.sh --dots new and rusty-impulse-shell bring the new build back.
 # It does nothing while Hyprland does not answer, the session is closing or the system is
@@ -409,8 +410,11 @@ gone_report() {
 # DPMS_KEPT is there, the values in it are the owner's and what Hyprland says is not: a second
 # run with the screen still off (switch, then rollback-now, then a rollback by the watch) reads
 # nothing anew. A file left by another Hyprland went with that Hyprland's settings.
-# When dpms-wait is killed, the two options stay on in the running Hyprland until it loads its
-# settings anew (hyprctl reload, a login) or until this runs again with the screen on.
+# dpms-wait runs as a unit of the user's systemd when there is one (DPMS_UNIT): a helper that
+# is killed (SIGKILL cannot be caught) is started again and goes on waiting. One that is asked
+# to stop (SIGTERM, SIGINT, SIGHUP) turns the screen on itself when it is still off, so that
+# nobody is left with a dark screen that no key lights, and puts the owner's values back.
+DPMS_UNIT=rusty-impulse-dpms-wait
 DPMS_KEPT=$XDG_RUNTIME_DIR/rusty-impulse-dpms-wake
 IDLE_CONF=${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hypridle.conf
 opt() {
@@ -465,6 +469,10 @@ dpms_keep() {
 }
 dpms_wait_start() {
     dpms_waiting && return 0
+    if systemd-run --user --quiet --collect --unit="$DPMS_UNIT" -p Restart=on-failure -p RestartSec=1 \
+        -E HYPRLAND_INSTANCE_SIGNATURE="$HYPRLAND_INSTANCE_SIGNATURE" "$SELF" dpms-wait >/dev/null 2>&1 7>&-; then
+        for _ in 1 2 3 4 5 6 7 8 9 10; do dpms_waiting && return 0; sleep 0.2; done
+    fi
     hc dispatch "hl.dsp.exec_cmd(\"$SELF dpms-wait\")" >/dev/null
     for _ in 1 2 3 4 5 6 7 8 9 10; do dpms_waiting && return 0; sleep 0.2; done
     setsid "$SELF" dpms-wait >/dev/null 2>&1 </dev/null 7>&- &
@@ -491,6 +499,15 @@ dpms_look() {
             ;;
     esac
 }
+# dpms-wait was asked to stop while it still had the two options on.
+dpms_stopped() {
+    [ -e "$DPMS_KEPT" ] || return 0
+    if [ "$(screen)" = off ]; then
+        hc dispatch 'hl.dsp.dpms({ action = "enable" })' >/dev/null &&
+            note "DPMS: dpms-wait is stopped while the screen is off: the screen is turned on, hypridle turns it off again in its own time"
+    fi
+    dpms_back "dpms-wait was stopped"
+}
 # Ends when the screen is on (the owner's values go back), when hypridle's longest time and a
 # minute have passed since hypridle was started again (it has turned the screen off itself by
 # then and turns it on itself; the values go back), or when Hyprland is gone. When Hyprland
@@ -503,6 +520,7 @@ dpms_wait() {
     flock -w 3 8 || exit 0
     cap=$(sed -n 's/^[[:space:]]*timeout[[:space:]]*=[[:space:]]*\([0-9]\{1,9\}\).*/\1/p' "$IDLE_CONF" 2>/dev/null | sort -n | tail -1)
     cap=$((${cap:-3600} + 60))
+    trap 'dpms_step dpms_stopped; exit 0' TERM INT HUP
     log "DPMS: waiting for the screen to come on, at most $cap s after hypridle was started again"
     while :; do
         dpms_step dpms_look "$cap" "$gone"
@@ -517,6 +535,41 @@ idle_again() {
     pkill -u "$(id -u)" -x hypridle; sleep 0.5
     hc dispatch 'hl.dsp.exec_cmd("hypridle")' >/dev/null && note "hypridle started again${1:+ $1}" || { note "ERROR: hypridle was stopped and could not be started again"; return 1; }
 }
+
+# GIVING UP leaves a screen with no panel and the reason only in the log. So the reason and
+# the command that starts the shell are also written on the screen, by Hyprland itself
+# (hyprctl notify: no shell and no notification service is needed for it), in Russian when
+# the session's language is Russian. The lines stay for GIVE_UP_NOTE_SECS seconds or until a
+# shell draws its panels again, whichever comes first: "rollback-watch give-up-note" waits for
+# that after the watch has ended. $1: restarts or rolled.
+GIVE_UP_NOTE_SECS=${GIVE_UP_NOTE_SECS:-43200}
+give_up_note() {
+    local why how where line i ok=1 start=${PREV_START/#$HOME/\~} at=${LOG/#$HOME/\~} lang=${LC_MESSAGES:-${LANG-}}
+    case "$1 $lang" in
+        "restarts ru"*) why="Оболочка рабочего стола ($PREV_PROC) несколько раз подряд завершилась и больше не запускается сама." ;;
+        "restarts "*) why="The desktop shell ($PREV_PROC) went away several times in a row and is not started again." ;;
+        "rolled ru"*) why="Оболочка рабочего стола завершилась, возврат к предыдущей сборке ($PREV_PROC) не помог: само больше ничего не запускается." ;;
+        *) why="The desktop shell went away and going back to the previous build ($PREV_PROC) did not help: nothing more is started." ;;
+    esac
+    case "$lang" in
+        ru*) how="Запустить вручную, в терминале: $start" where="Что произошло, записано в $at" ;;
+        *) how="By hand, in a terminal: $start" where="What happened is written in $at" ;;
+    esac
+    # One line each: Hyprland does not wrap, a long line would run off the screen.
+    for line in "$why" "$how" "$where"; do
+        hc notify 0 $((GIVE_UP_NOTE_SECS * 1000)) 'rgb(ff5555)' "fontsize:16 $line" >/dev/null || ok=
+    done
+    [ -n "$ok" ] || { log "ERROR: Hyprland did not take the lines for the screen (hyprctl notify)"; return 1; }
+    log "written on the screen for ${GIVE_UP_NOTE_SECS} s or until a shell is up: $why $how $where"
+    for i in $(seq $((GIVE_UP_NOTE_SECS / 2))); do
+        sleep 2
+        [ -n "$(nmon)" ] || return 0
+        [ "$(qtlayers)" = 0 ] || break
+    done
+    hc dismissnotify >/dev/null
+    log "a shell draws again or the time is over: the lines are taken off the screen"
+}
+give_up_note_start() { setsid "$SELF" give-up-note "$1" >/dev/null 2>&1 </dev/null 7>&- & }
 
 # Start the shell of the build looked after and wait for it. $1: the word for the log (ROLLBACK or RESTART), $2: a note.
 start_and_check() {
@@ -557,9 +610,16 @@ rollback() { # the arguments of gone_report
         log "installed $PROC was sha256 $(sha "$BIN"); putting the previous build back"
         rm -f "$BIN" && cp -p "$OLD_BIN" "$BIN" || log "ERROR: copying the binary failed"
     fi
-    # --checksum: a file of the same size and time but other content is put back too. Nothing
-    # is written when the tree already equals the copy.
-    rsync -a --delete --checksum "$OLD_TREE/" "$TREE/" || log "ERROR: rsync of the QML tree failed"
+    # Nothing is written when the tree already equals the copy. With rsync, --checksum: a file
+    # of the same size and time but other content is put back too. Without rsync a tree that
+    # differs from the copy is emptied and filled from it; no shell runs at this point.
+    if command -v rsync >/dev/null; then
+        rsync -a --delete --checksum "$OLD_TREE/" "$TREE/" || log "ERROR: rsync of the QML tree failed"
+    elif diff -r --no-dereference -q "$OLD_TREE" "$TREE" >/dev/null 2>&1; then :
+    else
+        log "rsync is not installed: the QML tree is put back with cp"
+        mkdir -p "$TREE" && find "$TREE/" -mindepth 1 -delete && cp -a "$OLD_TREE/." "$TREE/" || log "ERROR: copying the QML tree failed"
+    fi
     log "installed now: sha256 $(sha "$BIN") files=$(find "$TREE" -type f | wc -l) links=$(find "$TREE" -type l | wc -l) tree $([ "$(treesum "$TREE")" = "$(treesum "$OLD_TREE")" ] && echo "equals the copy" || echo "DIFFERS FROM THE COPY")"
     start_and_check ROLLBACK
 }
@@ -575,6 +635,7 @@ restart_prev() { # the arguments of gone_report
     gone_report "$@"
     if [ "$n" -ge "$RESTART_MAX" ]; then
         log "GIVING UP: the previous build ($OLD_SHA) went away again after $n restarts in the last ${RESTART_WINDOW} s (the limit is $RESTART_MAX); it is not started again and nothing older is installed. The watch ends. By hand: $HOME/.local/bin/ii-shell"
+        give_up_note_start restarts
         return 1
     fi
     RESTARTS="$RESTARTS $now"
@@ -595,7 +656,7 @@ run() {
         exit 1
     fi
     [ -x "$CARRY" ] || { log "NOT STARTED: no $CARRY"; echo "rollback-watch: no $CARRY" >&2; exit 1; }
-    for c in jq rsync pgrep hyprctl flock; do
+    for c in jq pgrep hyprctl flock; do
         command -v $c >/dev/null || { log "NOT STARTED: no $c"; echo "rollback-watch: no $c" >&2; exit 1; }
     done
     if [ "$(default_shell)" = qt ]; then
@@ -682,6 +743,7 @@ run() {
                     elif [ "$rolled" = 1 ]; then
                         gone_report "$why" "$last" "$cpu" "$rt"
                         log "GIVING UP: a rollback was already made by this watch and the build looked after is still not the previous one; nothing more is copied or started. The watch ends."
+                        give_up_note_start rolled
                         act=end
                     else
                         rollback "$why" "$last" "$cpu" "$rt"
@@ -726,6 +788,11 @@ case ${1-} in
     dpms-wait)
         hypr_env
         dpms_wait
+        ;;
+    give-up-note)
+        hypr_env
+        mkdir -p "$STATE"
+        give_up_note "${2-}"
         ;;
     enable)
         copies_ok || { echo "rollback copies missing or changed, nothing enabled"; exit 1; }

@@ -2,8 +2,10 @@
 # One command that puts the previous build (ii-rs, the old names) back as it was before
 # rusty-impulse was installed: stops the rollback watch and the shell, puts the owner's own
 # files (Hyprland, hypridle, matugen, fish, kitty) back to the text they had for ii-rs, restores
-# the ii-rs binary and its QML tree from the copies if they differ, starts ii-shell and checks
-# the result. Nothing of rusty-impulse is removed: "switch" beside this script brings it back.
+# the ii-rs binary and its QML tree from the copies if they differ, starts ii-shell, checks
+# the result and turns a watch on for the previous build: the one it had before the switch,
+# or this build's in its restart-only role. Nothing of rusty-impulse is removed: "switch"
+# beside this script brings it back.
 # When the screen is locked, the lock screen goes with the shell that is stopped: ii-shell is
 # asked to lock the session again (rollback-watch relock), nothing is unlocked.
 # No sudo.
@@ -35,7 +37,17 @@ hyprctl reload >/dev/null || { echo "ERROR: hyprctl reload failed"; rc=1; }
 if [ "$(sha "$BIN")" != "$OLD_SHA" ]; then
     rm -f "$BIN" && cp -p "$OLD_BIN" "$BIN" || { echo "ERROR: could not restore $BIN"; exit 1; }
 fi
-rsync -a --delete --checksum "$OLD_TREE/" "$TREE/" || { echo "ERROR: rsync of the QML tree failed"; exit 1; }
+# Nothing is written when the tree already equals the copy (a switch leaves it alone). With
+# rsync, --checksum: a file of the same size and time but other content is put back too.
+# Without rsync a tree that differs from the copy is emptied and filled from it; the shell is
+# stopped by now.
+if command -v rsync >/dev/null; then
+    rsync -a --delete --checksum "$OLD_TREE/" "$TREE/" || { echo "ERROR: rsync of the QML tree failed"; rc=1; }
+elif diff -r --no-dereference -q "$OLD_TREE" "$TREE" >/dev/null 2>&1; then :
+else
+    echo "rsync is not installed: the QML tree is put back with cp"
+    mkdir -p "$TREE" && find "$TREE/" -mindepth 1 -delete && cp -a "$OLD_TREE/." "$TREE/" || { echo "ERROR: copying the QML tree failed"; rc=1; }
+fi
 hyprctl dispatch 'hl.dsp.exec_cmd("$HOME/.local/bin/ii-shell")' >/dev/null
 for _ in $(seq 100); do n=$(pids ii-rs | head -1); [ -n "$n" ] && break; sleep 0.1; done
 sleep 3
@@ -46,5 +58,18 @@ n=$(pids ii-rs | head -1)
 [ -z "$n" ] || "$here/rollback-watch" relock prev || { echo "ERROR: the screen was locked and the previous build did not take the lock: the owner cannot type his password. Again: $here/rollback-watch relock prev"; rc=1; }
 grep -v '^[[:space:]]*--' "$HOME/.config/hypr/hyprland/execs.lua" 2>/dev/null | grep -qF 'hl.exec_cmd("$HOME/.local/bin/ii-shell")' ||
     { echo "ERROR: execs.lua does not start ii-shell: the next login starts something else"; rc=1; }
-[ $rc = 0 ] && echo "rolled back: previous build $(echo $OLD_SHA | cut -c1-8) runs as pid $n, realtime timeout $(awk '/^Max realtime timeout/{print $4"/"$5}' /proc/$n/limits); the owner's files name ii-rs again; the rollback watch is off (start it for restarts only: $here/rollback-watch enable)"
+# The previous build is looked after again, now and at each login: by the watch it had before
+# the switch (the switch stopped it, removed its unit and wrote down which script it was) or,
+# when it had none, by this build's watch, which only restarts a build Hyprland is set to start
+# as the previous one. With no shell running nothing is turned on: there is nothing to watch.
+watch="no watch is on (start it for restarts only: $here/rollback-watch enable)"
+old_watch=$(cat "$here/old-rollback-watch" 2>/dev/null)
+if [ -z "$n" ]; then :
+elif [ -n "$old_watch" ] && [ -x "$old_watch" ]; then
+    if w=$("$old_watch" enable 2>&1); then watch="the watch it had before the switch is on again ($old_watch: $(echo "$w" | tail -1))"
+    else echo "ERROR: the watch the previous build had before the switch did not start ($(echo "$w" | tail -1)). Again: $old_watch enable"; rc=1; fi
+elif w=$("$here/rollback-watch" enable 2>&1); then watch="the rollback watch is on for restarts only ($(echo "$w" | tail -1))"
+else echo "ERROR: the rollback watch did not start ($(echo "$w" | tail -1)). Again: $here/rollback-watch enable"; rc=1
+fi
+[ $rc = 0 ] && echo "rolled back: previous build $(echo $OLD_SHA | cut -c1-8) runs as pid $n, realtime timeout $(awk '/^Max realtime timeout/{print $4"/"$5}' /proc/$n/limits); the owner's files name ii-rs again; $watch"
 exit $rc

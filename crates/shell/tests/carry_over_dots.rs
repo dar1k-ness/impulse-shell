@@ -355,3 +355,61 @@ fn a_layout_that_was_not_there_is_not_there_after_going_back() {
         "edge = \"rusty\"\n"
     );
 }
+
+/// Each round in which both builds save the layout leaves the new build's earlier copy under
+/// a name with the time; only the newest of those stays, and a pile left by earlier switches
+/// goes at the next one.
+#[test]
+fn dated_copies_of_the_layout_do_not_add_up() {
+    let home = Home::new();
+    let dir = home.path().join(".config/rusty-impulse");
+    let layout = dir.join("layout.toml");
+    std::fs::create_dir_all(&dir).unwrap();
+    let dated = || {
+        let mut names: Vec<String> = std::fs::read_dir(&dir)
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name().into_string().unwrap())
+            .filter(|name| name.starts_with("layout.toml.from-rusty-impulse."))
+            .collect();
+        names.sort();
+        names
+    };
+    for old in ["20000101-000001", "20000101-000002", "20000101-000003"] {
+        std::fs::write(
+            dir.join(format!("layout.toml.from-rusty-impulse.{old}")),
+            old,
+        )
+        .unwrap();
+    }
+    std::fs::write(&layout, "edge = \"ii\"\nx = 0\n").unwrap();
+    for round in 1..=4 {
+        home.carry_over("new");
+        assert!(dated().len() <= 1, "round {round}: {:?}", dated());
+        std::fs::write(&layout, format!("edge = \"rusty\"\nx = {round}\n")).unwrap();
+        home.carry_over("old");
+        assert!(dated().len() <= 1, "round {round}: {:?}", dated());
+        std::fs::write(&layout, format!("edge = \"ii\"\nx = {round}\n")).unwrap();
+        // The names carry the time to the second, and the rounds here take less than one:
+        // the copy this round left is given the time of an earlier switch, as on a PC where
+        // the next switch comes later.
+        for name in dated() {
+            std::fs::rename(
+                dir.join(&name),
+                dir.join(format!(
+                    "layout.toml.from-rusty-impulse.2001010{round}-120000"
+                )),
+            )
+            .unwrap();
+        }
+    }
+    assert_eq!(
+        std::fs::read_to_string(dir.join("layout.toml.from-rusty-impulse")).unwrap(),
+        "edge = \"rusty\"\nx = 4\n"
+    );
+    let names = dated();
+    assert_eq!(names.len(), 1, "{names:?}");
+    assert_eq!(
+        std::fs::read_to_string(dir.join(&names[0])).unwrap(),
+        "edge = \"rusty\"\nx = 3\n"
+    );
+}
