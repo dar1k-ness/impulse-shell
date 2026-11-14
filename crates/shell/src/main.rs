@@ -1368,7 +1368,10 @@ impl App {
     /// A paint-only change under a hidden ancestor that no effect samples (the bar's hidden
     /// tray overflow arrow rotating on `bar.bottom`) and any change inside a hidden sampled
     /// subtree below its root (the bar's occupied-workspace pills inside the hidden mask
-    /// layer) schedule none. Other geometry writes under hidden ancestors still draw.
+    /// layer) schedule none. Other geometry writes under hidden ancestors still draw. A
+    /// delegate its view culls counts as hidden: Qt does schedule a frame for a change inside
+    /// one, and that frame draws the same pixels (a press ripple fading in a search row
+    /// scrolled out of the list).
     fn shown_changes(&mut self, changed: Vec<usize>) -> Vec<usize> {
         let mut w = self.rt.world.borrow_mut();
         let mut sampled = None;

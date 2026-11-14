@@ -417,6 +417,94 @@ fn animation_frames_without_damage_go_by_the_vsync_timer() {
     );
 }
 
+/// A panel that is one list of four rows, two of them in view. The first row fades a mark in
+/// and out without end and says the mark's opacity ten times a second; `away` scrolls that row
+/// out of the list, `back` scrolls it in again.
+const CULLED: &str = r##"import QtQuick
+import Rustshell
+ShellRoot {
+    PanelWindow {
+        anchors { top: true; left: true }
+        implicitWidth: 64; implicitHeight: 32
+        exclusionMode: ExclusionMode.Ignore
+        color: "#ff0000"
+        ListView {
+            id: list
+            anchors.fill: parent
+            clip: true
+            model: 4
+            delegate: Rectangle {
+                id: row
+                required property int index
+                width: 64; height: 16
+                color: "#00ff00"
+                Rectangle {
+                    id: mark
+                    width: 8; height: 8; color: "#0000ff"
+                    NumberAnimation on opacity {
+                        running: row.index === 0
+                        from: 0; to: 1; duration: 700; loops: Animation.Infinite
+                    }
+                }
+                Timer {
+                    running: row.index === 0; interval: 100; repeat: true
+                    onTriggered: console.log("TICK " + mark.opacity.toFixed(3))
+                }
+            }
+        }
+    }
+    IpcHandler {
+        target: "fx"
+        function away(): void { list.contentY = 32; console.log("AWAY") }
+        function back(): void { list.contentY = 0; console.log("BACK") }
+    }
+}
+"##;
+
+/// QQuickItemView culls a delegate that lies outside the view (QQuickItemPrivate::setCulled):
+/// it is not painted. An animation inside such a row still runs, and changes no pixel of the
+/// window, so the window is not drawn for it; it is drawn again once the row is back in view.
+#[test]
+fn an_animation_in_a_row_scrolled_out_of_its_list_draws_no_frame() {
+    let Some(_sock) = sway() else { return };
+    let _one = OUTPUT.lock().unwrap_or_else(|e| e.into_inner());
+    let mut sh = Shell::start_qml(CULLED, None);
+    let n = sh.draws();
+    sh.wait_draws(n + 5, "the mark fading in view");
+    sh.ipc("away");
+    let ticks = |s: &str, mark: &str| {
+        let (_, after) = s.split_once(mark).unwrap_or_default();
+        after.lines().filter(|l| l.contains("TICK ")).count()
+    };
+    sh.wait("eight ticks with the row out of view", |s| {
+        ticks(s, "AWAY") >= 8
+    });
+    let text = sh.text();
+    let lines: Vec<&str> = text.lines().collect();
+    let away = lines.iter().position(|l| l.contains("AWAY")).unwrap();
+    let tick: Vec<usize> = (away..lines.len())
+        .filter(|&i| lines[i].contains("TICK "))
+        .collect();
+    // The frame that scrolls the row out is drawn before the second tick after it.
+    let quiet = &lines[tick[1]..tick[7]];
+    let said: std::collections::BTreeSet<&str> = (tick[1..8].iter())
+        .filter_map(|&i| lines[i].split("TICK ").nth(1))
+        .collect();
+    assert!(
+        said.len() > 3,
+        "the animation out of view stood still: {said:?}"
+    );
+    let drawn = quiet.iter().filter(|l| l.contains("draw win0")).count();
+    assert_eq!(
+        drawn, 0,
+        "frames drawn in 600 ms for an animation in a row out of view"
+    );
+    sh.ipc("back");
+    sh.wait("the row back in view", |s| s.contains("BACK"));
+    let n = sh.draws();
+    sh.wait_draws(n + 5, "the mark fading in view again");
+}
+
 /// A panel that on `go` starts a 500 ms animation and a 50 ms repeating Timer.
 const FINITE: &str = r##"import QtQuick
 import Rustshell

@@ -16392,18 +16392,22 @@ pub fn invalidate_moved(w: &World, moved: &[usize]) {
     stale_layers(w, moved);
 }
 
-/// The nearest strict ancestor of `t` below its window with `visible: false`: Qt drops such a
-/// subtree's nodes from the scene graph, so changes inside it never schedule a frame.
+/// The nearest strict ancestor of `t` below its window that is not drawn: one with
+/// `visible: false`, or a delegate its view culls (`view_culls`). Qt drops such a subtree's
+/// nodes from the scene graph (QQuickItemPrivate::setCulled counts a hide reference on the
+/// delegate, as `hideSource` does on a source), so a change inside it alters no pixel of the
+/// window.
 pub fn hidden_ancestor(w: &mut World, t: usize) -> Option<usize> {
     let mut cur = w.items.get(t).and_then(|it| it.parent);
     while let Some(i) = cur {
         if type_bits(w, i) & WINDOW_TYPE != 0 {
             return None;
         }
-        if !visible(w, i) {
+        let up = w.items.get(i).and_then(|it| it.parent);
+        if !visible(w, i) || up.is_some_and(|p| view_culls(w, p, i)) {
             return Some(i);
         }
-        cur = w.items.get(i).and_then(|it| it.parent);
+        cur = up;
     }
     None
 }
