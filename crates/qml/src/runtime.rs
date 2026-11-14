@@ -2741,6 +2741,15 @@ pub struct World {
     pub model_items: HashMap<usize, RowKind>,
     /// Delegate → its model item.
     pub delegate_items: HashMap<usize, usize>,
+    /// Row object → the model items that pass its signals on, in the order they connected
+    /// (QQmlDMObjectDataMetaObject::createProperty: when a property of the object is first
+    /// read through the item, for all of them at once), each with the number of its
+    /// connection among the functions connected from JS (`js_conn_seq`): both are QObject
+    /// connections, called in the order they were made.
+    row_items: HashMap<usize, Vec<(u64, usize)>>,
+    /// Model item → the row object it connected to. It stays that one when the item is taken
+    /// for another row (`reuseItems`): Qt connects once.
+    row_item_at: HashMap<usize, usize>,
     /// Items placed by each container's last `contentChildren` assignment.
     pub content_of: HashMap<usize, Vec<usize>>,
     /// QQuickContainer::count each container last reported (`countChanged` fires on a change).
@@ -10526,6 +10535,8 @@ impl World {
             anonymous_states,
             model_items,
             delegate_items,
+            row_items,
+            row_item_at,
             control_complete,
             combo_by_value,
             combo_syncing: _,
@@ -11178,6 +11189,16 @@ impl World {
         fresh.remove(&i);
         settling.remove(&i);
         model_items.remove(&i);
+        if let Some(o) = row_item_at.remove(&i)
+            && let Some(items) = row_items.get_mut(&o)
+        {
+            items.retain(|&(_, m)| m != i);
+        }
+        if let Some(items) = row_items.remove(&i) {
+            for (_, m) in items {
+                row_item_at.remove(&m);
+            }
+        }
         delegate_items.remove(&i);
     }
 
@@ -11337,7 +11358,7 @@ impl World {
             return;
         }
         let Some(ds) = self.dependents.get(key) else {
-            return;
+            return self.row_items_told(key);
         };
         if let Some(t) = dep_trace()
             && ds.iter().any(|d| d.1 == t.as_str())
@@ -11356,6 +11377,54 @@ impl World {
             if Some(*d) != reader {
                 self.dirty.push(*d, cause);
             }
+        }
+        self.row_items_told(key);
+    }
+
+    /// The readers of `key.1` through the model items of row object `key.0` are to update:
+    /// after the object's own readers, in the order the items connected. An item passes the
+    /// object's signal on in its turn among what is connected to it
+    /// (`Eng::run_js_connections`), and its readers update then; without a signal they
+    /// update in this order.
+    fn row_items_told(&mut self, key: &DKey) {
+        if !self.row_items.contains_key(&key.0) {
+            return;
+        }
+        let mut k = 0;
+        while let Some(&(_, mi)) = self.row_items.get(&key.0).and_then(|items| items.get(k)) {
+            k += 1;
+            self.dirty_from(&(mi, key.1));
+        }
+    }
+
+    /// Model item `mi` connects to the signals of its row object `o`, unless it is connected.
+    fn row_item_connects(&mut self, o: usize, mi: usize) {
+        if let std::collections::hash_map::Entry::Vacant(at) = self.row_item_at.entry(mi) {
+            at.insert(o);
+            self.js_conn_seq += 1;
+            (self.row_items.entry(o).or_default()).push((self.js_conn_seq, mi));
+        }
+    }
+
+    /// A Connections whose target is the model item of a row object looks `on<Name>Changed`
+    /// up as the property `<name>` of the item (QQmlPropertyPrivate::initProperty), which
+    /// connects the item to its object like a read of the property.
+    fn connection_reaches_row(&mut self, c: usize) {
+        let Some(Value::Item(mi)) = self.pval(c, "target") else {
+            return;
+        };
+        let Some(&RowKind::Object(o)) = self.model_items.get(&mi) else {
+            return;
+        };
+        let looked_up = self.items[c].props.iter().any(|(k, p)| {
+            is_function(&p.value)
+                && changed_property(k.as_str()).is_some_and(|name| {
+                    let function = |p: &Prop| &*p.ty == "function";
+                    self.has_prop(o, &name) && !self.items[o].props.get(&name).is_some_and(function)
+                })
+        });
+        if looked_up {
+            self.row_item_connects(o, mi);
         }
     }
 
@@ -13312,6 +13381,7 @@ impl World {
 
     /// Orders a Connections after every connection made so far: handlers run in connect order.
     fn stamp_connection(&mut self, c: usize) {
+        self.connection_reaches_row(c);
         self.js_conn_seq += 1;
         let seq = Value::Num(self.js_conn_seq as f64);
         self.items[c].props.insert(
@@ -23409,7 +23479,30 @@ impl Host for WorldHost {
             match (kind, sym.as_str()) {
                 (Some(_), "row") => return self.get_sym(item, sym!("index")),
                 (Some(_), "column") => return Some(Value::Num(0.0)),
-                (Some(RowKind::Object(o)), _) => return self.get_sym(o, sym),
+                // The item has the properties of its object and none of its signals and
+                // methods (QQmlDMObjectDataMetaObject::createProperty), and connects to the
+                // object when one is first read. The reader hears of the item's signal, which
+                // the item passes on from its object's, not of the object's own.
+                (Some(RowKind::Object(o)), _) => {
+                    let reading = self.0.borrow_mut().reading.take();
+                    let v = self.get_sym(o, sym);
+                    let mut w = self.0.borrow_mut();
+                    w.resume_reading(reading);
+                    let method = |v: &Value| {
+                        matches!(
+                            crate::eval::callable(v),
+                            Some(crate::eval::Callable::Item(i, _)) if i == o
+                        )
+                    };
+                    let function = |p: &Prop| &*p.ty == "function";
+                    if v.as_ref().is_none_or(method)
+                        || w.items[o].props.get(name).is_some_and(function)
+                    {
+                        return None;
+                    }
+                    w.row_item_connects(o, item);
+                    return v;
+                }
                 _ => {}
             }
         }
@@ -29907,17 +30000,19 @@ impl Eng<'_> {
     /// while a component finalizes, a singleton completed inside an update): its writes
     /// update the bindings depending on them inside the write, as QQmlNotifier does.
     fn run_handler_args(&mut self, item: usize, handler: Sym, params: &[String], args: &[Value]) {
-        self.run_handler_part(item, handler, params, args, true, true);
+        self.run_handler_part(item, handler, params, args, None, true, true);
     }
 
     /// [`Self::run_handler_args`] for the object's own handler (`own`), for what connected to
     /// the signal afterwards (`conns`: `Connections`, `sig.connect(f)`), or both.
+    #[allow(clippy::too_many_arguments)]
     fn run_handler_part(
         &mut self,
         item: usize,
         handler: Sym,
         params: &[String],
         args: &[Value],
+        changed: Option<Sym>,
         own: bool,
         conns: bool,
     ) {
@@ -29931,7 +30026,7 @@ impl Eng<'_> {
             self.run_own_handler(item, handler, params, args);
         }
         if conns {
-            self.run_connections(item, handler, params, args);
+            self.run_connections(item, handler, params, args, changed);
         }
         {
             let mut w = self.world.borrow_mut();
@@ -29943,7 +30038,14 @@ impl Eng<'_> {
         }
     }
 
-    fn run_connections(&mut self, item: usize, handler: Sym, params: &[String], args: &[Value]) {
+    fn run_connections(
+        &mut self,
+        item: usize,
+        handler: Sym,
+        params: &[String],
+        args: &[Value],
+        changed: Option<Sym>,
+    ) {
         // QQmlConnections tracks its target with a guarded pointer: a destroyed sender has no
         // connections left. A Loader's retired item hides synchronously in Qt, while
         // `Loader.item` still points at it; here that change is delivered after `item` reset,
@@ -30004,7 +30106,7 @@ impl Eng<'_> {
                 self.call_connection(c, "onLengthChanged", g, args);
             }
         }
-        self.run_js_connections(item, handler, args);
+        self.run_js_connections(item, handler, args, changed);
     }
 
     /// Calls `function on<Signal>()` of the Connections object `c`.
@@ -30026,19 +30128,37 @@ impl Eng<'_> {
     /// Functions connected with `sig.connect(f)` run after the handlers, in connection order
     /// (QMetaObject::activate): only the connections made before the emission, minus those
     /// disconnected (or whose receiver was destroyed) while it runs.
-    fn run_js_connections(&mut self, item: usize, handler: Sym, args: &[Value]) {
+    ///
+    /// The model items of a row object are connected to the change signal of each of its
+    /// properties, `changed` here, in the same way: each passes the signal on in its turn
+    /// among the functions.
+    fn run_js_connections(
+        &mut self,
+        item: usize,
+        handler: Sym,
+        args: &[Value],
+        changed: Option<Sym>,
+    ) {
         let key = (item, handler);
         let conns = {
             let w = self.world.borrow();
-            if w.js_conns.is_empty() {
+            let items = changed.and_then(|_| w.row_items.get(&item));
+            if w.js_conns.is_empty() && items.is_none() {
                 return;
             }
-            match w.js_conns.get(&key) {
-                Some(c) => c.iter().map(|c| c.id).collect::<Vec<_>>(),
-                None => return,
-            }
+            let functions = w.js_conns.get(&key).into_iter().flatten();
+            let mut conns: Vec<(u64, Option<usize>)> = functions
+                .map(|c| (c.id, None))
+                .chain(items.into_iter().flatten().map(|&(n, mi)| (n, Some(mi))))
+                .collect();
+            conns.sort_unstable_by_key(|c| c.0);
+            conns
         };
-        for id in conns {
+        for (id, mi) in conns {
+            if let (Some(mi), Some(name)) = (mi, changed) {
+                self.row_item_tells(item, mi, name);
+                continue;
+            }
             let Some((this, f)) = self.world.borrow().js_conns.get(&key).and_then(|c| {
                 let c = c.iter().find(|c| c.id == id)?;
                 Some((c.this.clone(), c.f.clone()))
@@ -30063,6 +30183,21 @@ impl Eng<'_> {
                     .push(format!("{ty}.{handler} (connected function): {m}"));
             }
         }
+    }
+
+    /// Model item `mi` passes on the change signal of `name` of its row object `o`: the
+    /// bindings that read `name` through the item update and its `Connections` are called
+    /// before the next thing connected to the object's signal, as from a write made here.
+    fn row_item_tells(&mut self, o: usize, mi: usize, name: Sym) {
+        let (cause, flushing) = {
+            let mut w = self.world.borrow_mut();
+            if w.dead.contains(&mi) || w.row_item_at.get(&mi) != Some(&o) {
+                return;
+            }
+            (w.sched.cur(), std::mem::replace(&mut w.flushing, true))
+        };
+        self.sync(|e| e.deliver_change(((mi, name), cause), false));
+        self.world.borrow_mut().flushing = flushing;
     }
 
     fn run_own_handler(&mut self, item: usize, handler: Sym, params: &[String], args: &[Value]) {
@@ -35455,6 +35590,7 @@ impl Eng<'_> {
             self.notify_synchronizers(item, name, true);
         }
         let h = changed_handler(name);
+        let changed = Some(Sym::new(name));
         // QQuickItem::focusChanged(bool) / activeFocusChanged(bool) carry the value.
         // QQuickImageBase::sourceChanged(QUrl) / statusChanged(Status) / progressChanged(qreal)
         // too.
@@ -35470,9 +35606,9 @@ impl Eng<'_> {
                 .borrow_mut()
                 .read(item, name)
                 .unwrap_or(Value::Undefined);
-            self.run_handler_part(item, h, &[name.to_string()], &[v], own, conns);
+            self.run_handler_part(item, h, &[name.to_string()], &[v], changed, own, conns);
         } else {
-            self.run_handler_part(item, h, &[], &[], own, conns);
+            self.run_handler_part(item, h, &[], &[], changed, own, conns);
             // `ListView.onSectionChanged` in a delegate: the attached object's signal.
             let owner = self.world.borrow().view_attached_of.get(&item).copied();
             if let Some(o) = owner.filter(|_| own) {
@@ -35552,7 +35688,8 @@ impl Eng<'_> {
                     self.world.borrow_mut().ipc_tap(o, &n, true, &[]);
                     self.notify_synchronizers(o, &n, true);
                 }
-                self.run_handler_part(o, changed_handler(&n), &[], &[], own, conns);
+                let changed = Some(n);
+                self.run_handler_part(o, changed_handler(&n), &[], &[], changed, own, conns);
                 if conns {
                     self.notify_synchronizers(o, &n, false);
                 }
@@ -37753,6 +37890,21 @@ pub fn qml_name(key: &str) -> &str {
 }
 
 /// The handler name of signal `sig` (`triggered` -> `onTriggered`), interned once per signal.
+/// The property whose change signal has the handler `handler` (`k` of `onKChanged`, `_z` of
+/// `on_ZChanged`), if it is the name of one.
+fn changed_property(handler: &str) -> Option<String> {
+    let name = handler.strip_prefix("on")?.strip_suffix("Changed")?;
+    let at = name.find(|c| c != '_')?;
+    let first = name[at..].chars().next()?;
+    let name = format!(
+        "{}{}{}",
+        &name[..at],
+        first.to_lowercase(),
+        &name[at + first.len_utf8()..]
+    );
+    (*changed_handler(&name) == *handler).then_some(name)
+}
+
 pub(crate) fn signal_handler(sig: &str) -> Sym {
     thread_local!(static H: RefCell<HashMap<Sym, Sym>> = Default::default());
     H.with_borrow_mut(|m| {

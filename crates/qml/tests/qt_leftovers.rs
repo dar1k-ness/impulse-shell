@@ -130,6 +130,61 @@ fn a_delegate_told_to_a_container_reads_its_row() {
     same_console("DelegateInContainer");
 }
 
+/// A write to a property of a row object reaches its own readers in the order they
+/// connected, and the readers of `model.<name>` after them, in the order their model items
+/// connected.
+#[test]
+fn a_row_object_tells_its_own_readers_before_the_model_items() {
+    same_console("RowObjectDelegates");
+}
+
+/// A `Connections` on the model item of a row that is an object: its handlers are called
+/// when the item passes its object's signal on, after the bindings that read the property
+/// through the item. Looking `onKChanged` up connects the item to its object.
+#[test]
+fn a_connections_on_the_model_item_of_a_row_object() {
+    same_console("RowObjectConnections");
+}
+
+/// A function connected to a row object's own signal after its model items connected is
+/// called after the readers of `model.<name>`.
+#[test]
+fn a_function_connected_to_a_row_object_after_its_model_items() {
+    same_console("RowObjectSignalAfterItems");
+}
+
+/// Functions connected to a row object's own signal before, between and after its model
+/// items: each is called in its turn among the items, in the order the connections were
+/// made, also after one of them is disconnected.
+#[test]
+fn functions_and_model_items_hear_a_row_object_in_the_order_they_connected() {
+    same_console("RowObjectSignalOrder");
+}
+
+/// Rows whose properties are bound, written while the delegates are made and after: the
+/// readers through the model items, the `Connections` on them (one writes another property
+/// of the row from its handler) and a function connected to the object's own signal.
+#[test]
+fn a_connections_on_a_model_item_writes_its_row_object() {
+    same_console("RowObjectConnectionsWrites");
+}
+
+/// A `Connections` made before a binding first reads the property is called before that
+/// binding updates. Here every binding updates first (docs/qt-differences.md).
+#[test]
+#[ignore = "a Connections made before a binding first reads the property is called after \
+            the binding, in Qt before it (docs/qt-differences.md)"]
+fn a_connections_made_before_a_binding_reads_the_property() {
+    same_console("ConnectionsBeforeBinding");
+}
+
+/// One property read by the bindings of the document, of two Instantiators' objects, of two
+/// Loaders' items, of a Repeater's delegates and of objects made by `createObject`.
+#[test]
+fn a_property_tells_its_readers_in_the_order_they_were_made() {
+    same_console("NotifyOrder");
+}
+
 /// `CheckBox.checkState` and `checked` follow each other; a click goes through the three
 /// states of a `tristate` box or through `nextCheckState`; `toggle()` flips `checked`.
 #[test]

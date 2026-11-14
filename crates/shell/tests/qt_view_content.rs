@@ -209,6 +209,11 @@ case!(
     zz_reuse_obj
 );
 case!(
+    /// The same list, a property of the rows' objects written before and after the delegates
+    /// are taken for other rows: who hears of it as `model.n`, and in which order.
+    zz_reuse_obj_order
+);
+case!(
     /// Rows inserted into and removed from a ListModel while the view is scrolled: the rows in
     /// view stay where they are, their `index` follows the model.
     created_model

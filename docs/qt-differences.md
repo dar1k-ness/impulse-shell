@@ -2015,6 +2015,26 @@ Test: `repeater_given_a_delegate_at_run_time` in `crates/qml/tests/qt_leftovers.
 (`RepeaterDelegateBack.qml`), ignored until this is fixed; it compares the lines with Qt's
 and is red.
 
+## A Connections made before a binding first reads the property
+
+Not on purpose. Compared with Qt 6.12.0 (PySide6). Qt calls what is connected to a
+property's change signal in the order it connected, a binding from its first read of the
+property, a `Connections` from when it completes or gets its target. Here the bindings that
+read the property update first, in the order they connected, and the `Connections` are
+called after them, in the order they connected.
+
+| The QML | Qt 6.12 | Here |
+|---|---|---|
+| `property int b: on ? k : -1` with `on` set after a `Connections { function onKChanged() {} }` on the same object completed, then `k` written | `onKChanged`, then `b` updates | `b` updates, then `onKChanged` |
+
+The same holds for the model item of a row that is an object (`Connections { target: model }`
+next to a binding that first reads `model.k` later). A binding that read the property before
+the `Connections` completed, the usual case, is in Qt's order.
+
+Test: `a_connections_made_before_a_binding_reads_the_property` in
+`crates/qml/tests/qt_leftovers.rs` (`ConnectionsBeforeBinding.qml`), ignored until this is
+fixed; it compares the lines with Qt's and is red.
+
 ## A bare name of a module imported only behind a qualifier
 
 Not on purpose. A document that imports a module only as `import QtQuick as Q` has the
