@@ -35,7 +35,7 @@ pill = true
 
 [widget.desktop]
 component = "modules/rusty/background/widgets/resources/DesktopResources.qml"
-size = { min = [160, 80], max = [1600, 800], default = [400, 180] }
+size = { min = [160, 80], max = [640, 360], default = [400, 180] }
 
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/ResourcesWidget.qml"
@@ -53,7 +53,7 @@ pill = true
 
 [widget.desktop]
 component = "modules/rusty/background/widgets/media/DesktopMedia.qml"
-size = { min = [64, 64], max = [1200, 400], default = [420, 140] }
+size = { min = [64, 64], max = [640, 240], default = [420, 140] }
 
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/MediaWidget.qml"
@@ -80,7 +80,7 @@ pill = true
 
 [widget.desktop]
 component = "modules/rusty/background/widgets/clock/DesktopClock.qml"
-size = { min = [120, 80], max = [1600, 1000], default = [320, 200] }
+size = { min = [120, 80], max = [640, 400], default = [320, 200] }
 enabledBy = "background.widgets.clock.enable"
 placedBy = "background.widgets.clock.placementStrategy"
 
@@ -139,7 +139,7 @@ size = { min = [24, 24], max = [24, 24], default = [24, 24] }
 
 [widget.desktop]
 component = "modules/rusty/background/widgets/weather/DesktopWeather.qml"
-size = { min = [100, 100], max = [800, 800], default = [200, 200] }
+size = { min = [100, 100], max = [360, 360], default = [200, 200] }
 enabledBy = "background.widgets.weather.enable"
 placedBy = "background.widgets.weather.placementStrategy"
 
@@ -442,7 +442,7 @@ icon = "calendar_month"
 
 [widget.desktop]
 component = "modules/rusty/background/widgets/calendar/DesktopCalendar.qml"
-size = { min = [160, 160], max = [1200, 1200], default = [340, 340] }
+size = { min = [160, 160], max = [560, 560], default = [340, 340] }
 
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/CalendarWidget.qml"
@@ -455,7 +455,7 @@ icon = "done_outline"
 
 [widget.desktop]
 component = "modules/rusty/background/widgets/notes/DesktopNotes.qml"
-size = { min = [200, 200], max = [1200, 1400], default = [320, 350] }
+size = { min = [200, 200], max = [560, 720], default = [320, 350] }
 
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/NotesWidget.qml"

@@ -30,7 +30,7 @@ const CONNECT: Duration = Duration::from_secs(15);
 const ANSWER: Duration = Duration::from_secs(30);
 const BODY_STALL: Duration = Duration::from_secs(30);
 
-pub(crate) fn agent_with(limits: &Limits) -> ureq::Agent {
+fn config(limits: &Limits) -> ureq::config::Config {
     ureq::Agent::config_builder()
         .user_agent(USER_AGENT)
         .timeout_resolve(Some(limits.lookup))
@@ -39,7 +39,10 @@ pub(crate) fn agent_with(limits: &Limits) -> ureq::Agent {
         .timeout_per_read(Some(limits.read))
         .max_redirects(8)
         .build()
-        .into()
+}
+
+pub(crate) fn agent_with(limits: &Limits) -> ureq::Agent {
+    config(limits).into()
 }
 
 fn agent() -> &'static ureq::Agent {
@@ -237,6 +240,107 @@ mod tests {
             answer: Duration::from_millis(answer),
             read: Duration::from_millis(read),
         })
+    }
+
+    /// A resolver that never finds the name and a connector whose handshake is never answered:
+    /// each notes how long it was given and says that time ran out, as ureq's own do for a name
+    /// server or a host that hangs.
+    #[derive(Debug)]
+    struct Hangs(std::sync::Arc<std::sync::Mutex<Option<Duration>>>);
+
+    impl ureq::unversioned::resolver::Resolver for Hangs {
+        fn resolve(
+            &self,
+            _uri: &ureq::http::Uri,
+            _config: &ureq::config::Config,
+            timeout: ureq::unversioned::transport::NextTimeout,
+        ) -> Result<ureq::unversioned::resolver::ResolvedSocketAddrs, ureq::Error> {
+            *self.0.lock().expect("lock") = Some(*timeout.after);
+            Err(ureq::Error::Timeout(timeout.reason))
+        }
+    }
+
+    fn timed_out(got: &Result<u64, Error>, reason: ureq::Timeout) -> bool {
+        matches!(got, Err(Error::Http { source, .. })
+            if matches!(**source, ureq::Error::Timeout(r) if r == reason))
+    }
+
+    #[test]
+    fn a_name_nobody_resolves_is_given_up_at_the_limit() {
+        let lookup = Duration::from_secs(7);
+        let given = std::sync::Arc::new(std::sync::Mutex::new(None));
+        let agent = ureq::Agent::with_parts(
+            config(&Limits {
+                lookup,
+                connect: Duration::from_secs(11),
+                answer: Duration::from_secs(13),
+                read: Duration::from_secs(17),
+            }),
+            ureq::unversioned::transport::DefaultConnector::default(),
+            Hangs(given.clone()),
+        );
+        let got = stream_with(
+            &agent,
+            "http://wallpapers.invalid/x",
+            JSON_LIMIT,
+            &Cancel::default(),
+            |_| Ok(()),
+        );
+        assert!(timed_out(&got, ureq::Timeout::Resolve), "{got:?}");
+        // The resolver gets what is left of the lookup's limit (the shortest of the four here),
+        // not the handshake's or the answer's.
+        let given = given.lock().expect("lock").expect("the resolver was asked");
+        assert!(
+            given <= lookup && given > lookup - Duration::from_secs(1),
+            "{given:?}"
+        );
+    }
+
+    impl ureq::unversioned::transport::Connector for Hangs {
+        type Out = ();
+        fn connect(
+            &self,
+            details: &ureq::unversioned::transport::ConnectionDetails,
+            _chained: Option<()>,
+        ) -> Result<Option<()>, ureq::Error> {
+            *self.0.lock().expect("lock") = Some(*details.timeout.after);
+            Err(ureq::Error::Timeout(details.timeout.reason))
+        }
+    }
+
+    #[test]
+    fn a_handshake_nobody_answers_is_given_up_at_the_limit() {
+        let connect = Duration::from_secs(7);
+        let given = std::sync::Arc::new(std::sync::Mutex::new(None));
+        let agent = ureq::Agent::with_parts(
+            config(&Limits {
+                lookup: Duration::from_secs(11),
+                connect,
+                answer: Duration::from_secs(13),
+                read: Duration::from_secs(17),
+            }),
+            Hangs(given.clone()),
+            ureq::unversioned::resolver::DefaultResolver::default(),
+        );
+        // An address, so no name is looked up: the connector is what is asked.
+        let got = stream_with(
+            &agent,
+            "http://127.0.0.1:9/x",
+            JSON_LIMIT,
+            &Cancel::default(),
+            |_| Ok(()),
+        );
+        assert!(timed_out(&got, ureq::Timeout::Connect), "{got:?}");
+        // The connector gets what is left of the handshake's limit (the shortest of the four
+        // here), not the lookup's or the answer's.
+        let given = given
+            .lock()
+            .expect("lock")
+            .expect("the connector was asked");
+        assert!(
+            given <= connect && given > connect - Duration::from_secs(1),
+            "{given:?}"
+        );
     }
 
     #[test]
