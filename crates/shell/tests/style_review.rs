@@ -553,7 +553,7 @@ fn look(r: &mut Review, home: &Path, bar: &str) -> (serde_json::Value, String) {
         let wall = v["background"]["wallpaperPath"].as_str().unwrap_or("?");
         (v["bar"]["layout"].clone(), wall.to_string())
     };
-    while read().0 != bar && r.rt.next_deadline(r.now).is_finite() {
+    while read().0 != bar {
         r.turn();
     }
     read()
