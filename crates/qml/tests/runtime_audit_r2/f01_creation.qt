@@ -1,0 +1,16 @@
+a11.parent a1
+a11.enabled false
+a1.enabled false
+a1.parent a
+b11.visible false
+b1.visible false
+b12.enabled false
+b1.enabled false
+b1.parent b
+c1.visible false
+c1.parent c
+k.p 2
+TextArea.text t5
+TextEdit.length 2
+TextEdit.text t3
+done null false false false false

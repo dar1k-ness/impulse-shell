@@ -1,0 +1,59 @@
+bound b1
+val x1
+bnd y1
+other moved
+live l1
+completed v0 b1 l1 n0 x1 y1 moved
+-- width
+v v1
+v1
+v v0
+v0
+-- on
+bnd held
+val held
+none held
+bound held
+held held held held
+-- src
+live l2
+held l2 held held
+-- off
+bnd y2
+bound b2
+b2 held held y2
+-- src
+bnd y3
+bound b3
+live l3
+b3 l3 held y3
+-- prop
+other o0
+v moved
+o0 moved
+-- target
+v v0
+v0 moved
+outer moved
+-- off2
+o0 v0 foo
+-- write
+bnd held
+bound held
+bound written
+val w2
+none w3
+bnd y3
+written w2 w3
+bnd y4
+written false true
+-- again
+bnd held
+val held
+none held
+bound held
+held held held held
+bnd y4
+val w2
+bound written
+written w2 held y4

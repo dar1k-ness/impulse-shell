@@ -1,0 +1,107 @@
+  img2.sourceSizeChanged 3,0
+  img4.sourceSizeChanged 3,6
+  img3.sourceSizeChanged 4,4
+  boundChanged 0,0
+  ani.sourceSizeChanged 0,0
+0 0 0 0,0 3,0 4,4 3,6 0,0 0,0 0
+  img.sourceSizeChanged 5,0
+  ssChanged 5,0
+  shChanged 0
+  swChanged 5
+  boundChanged 5,0
+  boundWChanged 5
+  img.sourceSizeChanged 5,0
+  ssChanged 5,0
+  shChanged 0
+  swChanged 5
+1 5 0 5,0 5 2
+2 5 0 2
+  img.sourceSizeChanged 7,8
+  ssChanged 7,8
+  shChanged 8
+  swChanged 7
+  boundChanged 7,8
+  boundWChanged 7
+  img.sourceSizeChanged 7,8
+  ssChanged 7,8
+  shChanged 8
+  swChanged 7
+3 7 8 7,8 4
+4 7 8 4
+  img.sourceSizeChanged 7,9
+  ssChanged 7,9
+  shChanged 9
+  swChanged 7
+  boundChanged 7,9
+  img.sourceSizeChanged 7,9
+  ssChanged 7,9
+  shChanged 9
+  swChanged 7
+5 7 9 6
+6 7 9 6
+  img.sourceSizeChanged 7,1
+  ssChanged 7,1
+  shChanged 1
+  swChanged 7
+  boundChanged 7,1
+  img.sourceSizeChanged 7,1
+  ssChanged 7,1
+  shChanged 1
+  swChanged 7
+7 7 1 8
+  img.sourceSizeChanged 0,0
+  ssChanged 0,0
+  shChanged 0
+  swChanged 0
+  boundChanged 0,0
+  boundWChanged 0
+  img.sourceSizeChanged 0,0
+  ssChanged 0,0
+  shChanged 0
+  swChanged 0
+8 0 0 10
+  img.sourceSizeChanged 0,0
+  ssChanged 0,0
+  shChanged 0
+  swChanged 0
+9 0 0 11
+  img.sourceSizeChanged 0,0
+  ssChanged 0,0
+  shChanged 0
+  swChanged 0
+10 0 0 12
+  img.sourceSizeChanged 0,2
+  ssChanged 0,2
+  shChanged 2
+  swChanged 0
+  boundChanged 0,2
+  img.sourceSizeChanged 0,2
+  ssChanged 0,2
+  shChanged 2
+  swChanged 0
+11 0 2 14
+  img.sourceSizeChanged 12,2
+  ssChanged 12,2
+  shChanged 2
+  swChanged 12
+  boundChanged 12,2
+  boundWChanged 12
+  img.sourceSizeChanged 12,2
+  ssChanged 12,2
+  shChanged 2
+  swChanged 12
+12 12 2 12 16
+  img2.sourceSizeChanged 3,2
+  img2.sourceSizeChanged 3,2
+13 3,2
+  img3.sourceSizeChanged 4,5
+  img3.sourceSizeChanged 4,5
+14 4,5
+  ani.sourceSizeChanged 2,2
+  ani.sourceSizeChanged 2,2
+15 2,2
+  ani.sourceSizeChanged 6,2
+  ani.sourceSizeChanged 6,2
+16 6,2
+17 TypeError: Cannot assign to read-only property "sourceSize"
+18 0,0

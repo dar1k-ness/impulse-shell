@@ -36,7 +36,6 @@ AnimatedImage made asynchronous after it loaded | later
 AnimatedImage sourceSize written after it loaded | later
 # BorderImage is not a type here; nothing in qml/ uses one.
 BorderImage declared | same call
-BorderImage with no source | same call
 BorderImage written | same call
 BorderImage declared asynchronous | same call
 BorderImage written asynchronous | same call
@@ -61,7 +60,6 @@ BorderImage written, no such file | later
 BorderImage written asynchronous, no such file | later
 BorderImage written, not a picture | later
 BorderImage written, a url value | later
-BorderImage written empty over a loaded one | later
 BorderImage written over a loading one | later
 BorderImage written, not visible | later
 BorderImage made asynchronous after it loaded | later

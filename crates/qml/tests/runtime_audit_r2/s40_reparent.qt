@@ -1,0 +1,20 @@
+a1.parentChanged a
+a.childrenChanged 1
+b.childrenChanged 1
+a1.parentChanged b
+moved 1 1 b
+same parent again
+b.childrenChanged 0
+a1.parentChanged null
+a.childrenChanged 0
+b.childrenChanged 1
+children= 0 1 null b
+b.childrenChanged 0
+children=[] 0 null
+a.childrenChanged 1
+a1.parentChanged a
+data= 1 1 2
+cycle allowed 
+b.childrenChanged 1
+push 1
+childAt null 0

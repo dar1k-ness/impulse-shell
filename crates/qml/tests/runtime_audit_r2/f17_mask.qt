@@ -1,0 +1,35 @@
+d0 "1-" "1_-__" c0 s0-0 max5 accfalse mask"99-99;_"
+d1 "12-34" "12-34" c5 s5-5 max5 acctrue mask"99-99;_"
+d2 "56-" "56-__" c5 s5-5 max5 accfalse mask"99-99;_"
+d3 "" "" c0 s0-0 max32767 acctrue mask""
+d4 "xyz" "xyz" c3 s3-3 max32767 acctrue mask""
+g1 "12-34" "12-34" c0 s0-0 max5 acctrue mask"99-99;_"
+g2 "1234" "1234" c0 s0-0 max4 acctrue mask"9999; "
+g3 "" "" c0 s0-0 max32767 acctrue mask""
+g4 "77" "77" c2 s2-2 max32767 acctrue mask""
+h1 "abc" "abc" c3 s3-3 max3 acctrue mask""
+h2 "abc" "abc " c0 s0-0 max4 accfalse mask"AAAA; "
+h3 "abc" "abc " c0 s0-0 max4 accfalse mask"AAAA; "
+h4 "" "" c0 s0-0 max32767 acctrue mask""
+k0 "12-" "12-__" c5 s5-5 max5 accfalse mask"99-99;_"
+  k.acc false
+  k.text "34-"
+  k.displayText "34-__"
+k1 "34-" "34-__" c5 s5-5 max5 accfalse mask"99-99;_"
+  k.text ""
+  k.displayText ""
+  k.acc true
+  k.cursor 0
+  k.mask ""
+k2 "" "" c0 s0-0 max32767 acctrue mask""
+  k.text "9"
+  k.displayText "9"
+  k.cursor 1
+  k.acc false
+  k.text "9-"
+  k.displayText "9_-__"
+  k.acc false
+  k.cursor 5
+  k.cursor 0
+  k.mask "99-99;_"
+k3 "9-" "9_-__" c0 s0-0 max5 accfalse mask"99-99;_"

@@ -3560,6 +3560,9 @@ pub enum SlotKind {
     /// A QQmlListProperty: a `list<T>` a QML document declares, of objects of that QML
     /// type, or one of a Qt type, of objects of that C++ class.
     Objects(String),
+    /// A QQmlListProperty without an append function (QQuickItem::visibleChildren): it
+    /// takes nothing.
+    FixedObjects,
     /// An enum: whether it has no negative value (the compiler then stores it unsigned), and
     /// the value of each of its keys.
     Enum {
@@ -4186,6 +4189,12 @@ fn slot_value(
                 _ => Ok(variant_list(elem, &val)),
             }
         }
+        K::FixedObjects => match &val {
+            Value::Obj(o) if o.borrow().array.is_some() => {
+                Err(Refused::Type("QList<QObject*>".into()))
+            }
+            _ => Err(refused(&val)),
+        },
         // A QQmlListProperty takes the objects of a list, or the one object, and a null for
         // anything else.
         K::Objects(class) => {

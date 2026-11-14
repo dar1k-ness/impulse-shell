@@ -1,0 +1,9 @@
+init r true a true orphan true oc true
+visibleChildren 2
+b.visibleChanged false
+b false c false vc 0 0
+b after own true false
+b.visibleChanged true
+b true c false
+d unparented false
+d true

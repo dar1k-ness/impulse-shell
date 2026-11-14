@@ -1,0 +1,12 @@
+Error Cannot assign [undefined] to QQmlListProperty<QQuickItem>
+Error Cannot assign [undefined] to QQmlListProperty<QObject>
+Error Cannot assign [undefined] to QQmlListProperty<QObject>
+Error Cannot assign [undefined] to QQmlListProperty<QQuickItem>
+Error Cannot assign QList<QObject*> to QQmlListProperty<QQuickItem>
+Error Cannot assign QObject* to QQmlListProperty<QQuickItem>
+Error Cannot assign std::nullptr_t to QQmlListProperty<QQuickItem>
+ok 0 1 1
+ok 0 1 1
+ok 0 1 1
+ok 0 1 1
+ok 0 1 1

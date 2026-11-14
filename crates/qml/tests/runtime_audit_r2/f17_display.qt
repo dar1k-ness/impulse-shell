@@ -1,0 +1,67 @@
+a0 "abc" "abc" c3 abc|field
+b0 "" "" c0 abc|field
+c0 "secret" "******" c6 abc|field
+e0 "hid" "" c3 abc|field
+f0 "edit" "####" c4 abc|field
+t0 "field" "field" c5 abc|field
+  a.text "abcd"
+  a.displayText "abcd"
+  a.cursor 4
+a1 "abcd" "abcd" c4 abcd|field
+a2 "abcd" "abcd" c4 abcd|field
+  a.text ""
+  a.displayText ""
+  a.cursor 0
+a3 "" "" c0 |field
+  a.text "xy"
+  a.displayText "xy"
+  a.cursor 2
+a4 "xy" "xy" c2 xy|field
+  a.displayText "●●"
+  a.echo 2
+a5 21 2 true
+  a.displayText "++"
+  a.pwc +
+a6 "xy" "++" c2 ++|field
+  a.text "xyz"
+  a.displayText "+++"
+  a.cursor 3
+a7 "xyz" "+++" c3 +++|field
+  a.displayText ""
+  a.echo 1
+a8 "xyz" "" c3 |field
+  a.text "q"
+  a.cursor 1
+a9 "q" "" c1 |field
+  a.displayText "q"
+  a.echo 0
+a10 "q" "q" c1 q|field
+  a.text ""
+  a.displayText ""
+  a.cursor 0
+  a.max 0
+a11 "" "" c0 |field
+  a.max 5
+  a.text "12345"
+  a.displayText "12345"
+  a.cursor 5
+a12 "12345" "12345" c5 12345|field
+a13 "12345" "12345" c5 12345|field
+  a.text "345"
+  a.displayText "345"
+  a.cursor 3
+a14 "345" "345" c3 345|field
+  a.text ""
+  a.displayText ""
+  a.cursor 0
+a15 "" "" c0 |field
+b1 "new" "new" c3 |field
+  t.text "f2"
+  t.displayText "f2"
+t1 "f2" "f2" c2 |f2
+  t.displayText "●●"
+  t.displayText "xx"
+t2 "f2" "xx" c2 |xx
+  t.text ""
+  t.displayText ""
+t3 "" "" c0 |

@@ -3,7 +3,9 @@
 //! in the `tools/testenv` image: `QQmlApplicationEngine`, offscreen, quit after 500 ms, the
 //! engine deleted at exit); its `.qt` file is what Qt printed, and the engine has to print
 //! the same lines. `s…` are the audit's fixtures, `p…` further cases of the same finding,
-//! `r2_…` an audit fixture without the lines that belong to another finding.
+//! `r2_…` an audit fixture without the lines that belong to another finding, `f…` what still
+//! differed after the audit. Qt's own warnings that have no file and line (`Cannot append …`,
+//! `QQuickItem::setParentItem: …`) are left out of the `.qt` files.
 #![cfg(feature = "interp")]
 
 use qml::runtime::Runtime;
@@ -163,4 +165,78 @@ fn r2_18_enum_values_in_hexadecimal() {
 fn r2_19_progress_bar_clamps_its_value_and_mirrors_its_visual_position() {
     same_as_qt("s16_progress");
     same_as_qt("p19b");
+}
+
+// What still differed from Qt 6.12 next to the findings above (`f…` fixtures).
+
+#[test]
+fn f17_display_text_follows_the_text_and_the_echo_mode() {
+    same_as_qt("f17_display");
+}
+
+#[test]
+fn f17_a_mask_write_notifies_in_the_order_of_qt_with_both_cursor_moves() {
+    same_as_qt("f17_mask");
+}
+
+#[test]
+fn f12_source_size_is_a_value_that_notifies_per_write_and_per_load() {
+    same_as_qt("f12_source_size");
+}
+
+#[test]
+fn f12_a_source_size_group_notifies_once_while_the_object_is_populated() {
+    same_as_qt("f12_creation");
+}
+
+#[test]
+fn f04_an_item_in_a_property_is_no_child_and_the_lists_move_objects_as_qt() {
+    same_as_qt("f04_children");
+}
+
+#[test]
+fn f04_an_item_in_a_property_gets_its_parent_when_the_children_binding_lists_it() {
+    same_as_qt("f04_property_child");
+}
+
+#[test]
+fn f04_the_item_lists_refuse_undefined_and_objects_of_another_type() {
+    same_as_qt("f04_list_errors");
+}
+
+#[test]
+fn f02b_a_binding_object_holds_its_target_while_when_is_true() {
+    same_as_qt("f02b_binding");
+}
+
+#[test]
+fn f01_the_signals_of_an_object_being_created() {
+    same_as_qt("f01_creation");
+}
+
+#[test]
+fn s40_a_reparented_item_and_child_at() {
+    same_as_qt("s40_reparent");
+    same_as_qt("f40_child_at");
+}
+
+#[test]
+fn f05_removed_waits_for_the_busy_changed_handler_that_pushes() {
+    same_as_qt("f05_stack_removed");
+}
+
+#[test]
+fn s15_visible_children_lists_the_visible_child_items() {
+    same_as_qt("s15_visible");
+    same_as_qt("f15_visible_children");
+}
+
+#[test]
+fn s50_the_border_of_a_rectangle_is_one_pixel_wide_by_default() {
+    same_as_qt("f50_border_width");
+}
+
+#[test]
+fn s19c_an_alias_to_a_group_field_reads_the_default_of_the_group() {
+    same_as_qt("s19c_alias");
 }

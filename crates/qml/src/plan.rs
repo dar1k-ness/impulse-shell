@@ -1098,6 +1098,9 @@ pub fn post_capture(w: &World, n0: usize, n1: usize, srcs: &[crate::runtime::Sym
                         | "data"
                         | "contentChildren"
                 )
+                // QQuickImageBase::setSourceSize keeps the size asked for apart from the
+                // property.
+                || (name == "sourceSize" && w.image_base(i))
                 // A LazyLoader's setters, like `active`.
                 || (matches!(name, "loading" | "activeAsync")
                     && it.types.iter().any(|t| t == "LazyLoader"))

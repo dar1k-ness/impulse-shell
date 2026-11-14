@@ -1,0 +1,34 @@
+init b,d 1 2 object false
+1
+a.vcc 1
+2
+a.vcc 2
+3
+b.vcc 2
+4
+b.vcc 0
+a.visible false
+a.vcc 0
+5 
+6
+b.vcc 2
+a.visible true
+a.vcc 1
+7 b
+8
+e.vcc 1
+9
+e.vcc 0
+a.vcc 2
+10 b,d
+a.vcc 1
+b.vcc 0
+11 d
+b.vcc 2
+a.vcc 2
+12 d,b
+err Cannot assign QList<QObject*> to QQmlListProperty<QQuickItem>
+a.vcc 3
+13 d,b,k
+a.vcc 2
+end d,b

@@ -2814,6 +2814,11 @@ pub struct World {
     /// what their object sets of them. Qt connects an alias to its target after that write,
     /// so it is not told of it.
     pub(crate) populated: HashSet<DKey>,
+    /// Images whose setSourceSize has emitted and has yet to load, each with the cause of the
+    /// write: load() runs once the signal's handlers and bindings have.
+    image_loads: Vec<(usize, Cause)>,
+    /// How many `dispatch_changes` are running.
+    dispatching: u32,
     /// Variants/Repeater/Instantiator: model signature and created instances.
     pub delegated: HashMap<usize, (String, Vec<usize>)>,
     /// Repeater delegates by model index, `None` for a row without one (a DelegateChooser
@@ -3341,6 +3346,15 @@ pub struct World {
     /// running before the next (QQmlListProperty clear, then append per object).
     list_stepwise: bool,
     list_steps: Vec<ListStep>,
+    /// QQuickItemPrivate::ExtraData::resourcesList of the items whose `resources` were written
+    /// or lost an object to another item; the others list their non-Item children.
+    res_lists: HashMap<usize, Vec<usize>>,
+    /// The incomplete TextEdits whose `text` is a literal.
+    text_literals: HashSet<usize>,
+    /// The complete `Binding` objects, each with what it replaced while it holds its target.
+    binds: HashMap<usize, Option<BindSaved>>,
+    /// The object whose declared child is about to be created, and the context declaring it.
+    populating: Option<(usize, usize)>,
     /// Undo / redo history of each editor that was edited since its text was last assigned.
     text_undo: HashMap<usize, crate::undo::History>,
     /// QQuickTextInputPrivate's m_selstart / m_selend of a TextInput while they are not what
@@ -3362,7 +3376,10 @@ pub struct World {
     /// `text_replay` is applying an undo or redo: `text_steps` does not record it.
     text_replaying: bool,
     /// Editor getters Qt stores only when their change signal is emitted (`text_defer`).
-    text_pending: Vec<(usize, Sym, Value)>,
+    /// Values of `text_steps` steps their change handlers have yet to see: (item, property,
+    /// value, stored). A stored one is already the property's value and is put back while its
+    /// handler runs, because a later step of the same write replaced it.
+    text_pending: Vec<(usize, Sym, Value, bool)>,
     /// In-flight XMLHttpRequests. Dropping an entry stops its request.
     pub xhr: Vec<crate::xhr::Pending>,
     /// Objects whose `destroy()` was called; Qt deletes them once control returns to the event loop.
@@ -3835,6 +3852,15 @@ enum ListWrite {
     WriteBack,
 }
 
+/// What a `Binding` object found on its target property (QQmlBindPrivate::prevBind /
+/// prevValue), for the day its `when` turns false.
+struct BindSaved {
+    target: usize,
+    property: String,
+    value: Value,
+    binding: Option<Code>,
+}
+
 /// One step of a write to an Item's `children`/`data`/`resources`: the object leaves `item`'s
 /// list or joins it.
 #[derive(Clone, Copy)]
@@ -3845,6 +3871,8 @@ struct ListStep {
     /// The object was made inside the item's declaration and joins its list for the first
     /// time.
     declared: bool,
+    /// A step of the `resources` list alone: no object changes its parent.
+    res: bool,
 }
 
 /// How an editor change came about: picks Qt 6.12's notify order in `World::text_steps`.
@@ -4219,23 +4247,38 @@ impl World {
     }
 
     /// Queues one `text_steps` step; a QQuickTextInput selection end is stored when dispatched.
+    /// Its cursor position is stored at once and again when dispatched: one write can move the
+    /// cursor twice (QQuickTextInput::setInputMask: internalSetText leaves it at the end of the
+    /// text, moveCursor takes it to the first blank), and each cursorPositionChanged handler
+    /// reads the position of its own step.
     fn text_defer(&mut self, item: usize, name: &str, v: Value) {
-        if matches!(name, "selectionStart" | "selectionEnd")
-            && self.items[item].prop_info("acceptableInput").is_some()
-        {
-            self.text_pending.push((item, Sym::new(name), v));
+        let line = self.items[item].prop_info("acceptableInput").is_some();
+        let sym = Sym::new(name);
+        if line && matches!(name, "selectionStart" | "selectionEnd") {
+            self.text_pending.push((item, sym, v, false));
         } else {
+            if line && name == "cursorPosition" {
+                self.text_pending.push((item, sym, v.clone(), true));
+            }
             self.text_quiet(item, name, v);
         }
         self.notify(item, name);
     }
 
-    /// Stores deferred values whose change was never dispatched (e.g. during creation).
-    fn flush_text_pending(&mut self) {
-        for (item, name, v) in std::mem::take(&mut self.text_pending) {
-            self.text_quiet(item, name.as_str(), v);
-            self.dirty_from(&(item, name));
+    /// Stores the deferred values `text_steps` reads (the selection). With `all`, every value
+    /// whose change was never dispatched (e.g. during creation).
+    fn flush_text_pending_of(&mut self, all: bool) {
+        let (kept, pending): (Vec<_>, Vec<_>) = std::mem::take(&mut self.text_pending)
+            .into_iter()
+            .partition(|p| !all && p.3);
+        self.text_pending = kept;
+        for (item, name, v, stored) in pending {
+            self.text_restore(item, name, v, stored);
         }
+    }
+
+    fn flush_text_pending(&mut self) {
+        self.flush_text_pending_of(false)
     }
 
     fn apply_text_pending(&mut self, item: usize, name: &str) {
@@ -4243,12 +4286,25 @@ impl World {
         if let Some(k) = self
             .text_pending
             .iter()
-            .position(|(i, n, _)| (*i, *n) == key)
+            .position(|(i, n, _, _)| (*i, *n) == key)
         {
-            let (_, _, v) = self.text_pending.remove(k);
-            self.text_quiet(item, name, v);
-            self.dirty_from(&key);
+            let (_, _, v, stored) = self.text_pending.remove(k);
+            self.text_restore(item, key.1, v, stored);
         }
+    }
+
+    /// Stores one `text_pending` value; a stored one only when a later step replaced it.
+    fn text_restore(&mut self, item: usize, name: Sym, v: Value, stored: bool) {
+        if stored
+            && self.items[item]
+                .props
+                .get_sym(name)
+                .is_some_and(|p| p.value.strict_eq(&v))
+        {
+            return;
+        }
+        self.text_quiet(item, name.as_str(), v);
+        self.dirty_from(&(item, name));
     }
 
     /// Sends one `text_steps` step: stores its value and notifies.
@@ -4260,6 +4316,10 @@ impl World {
             }
             self.text_keep_cursor = false;
             if self.items[item].prop_info("acceptableInput").is_some() {
+                // An edit stored the text for its textEdited handlers before this step.
+                if self.input_mask(item).is_none() {
+                    self.update_display_text(item);
+                }
                 self.update_acceptable(item);
             }
         } else {
@@ -4480,6 +4540,7 @@ fn read_special(name: &str) -> bool {
             | "Layout.topMargin"
             | "Layout.bottomMargin"
             | "children"
+            | "visibleChildren"
             // PADDINGS
             | "padding"
             | "horizontalPadding"
@@ -4819,6 +4880,9 @@ fn builtin_default(inst: &Inst, name: &str) -> Option<Value> {
         "contentWidth" | "contentHeight" if types.iter().any(|t| t == "ScrollView") => {
             Value::Num(-1.0)
         }
+        // QQuickPen::m_width.
+        "border.width" if types.iter().any(|t| t == "Rectangle") => Value::Num(1.0),
+        "border.pixelAligned" if types.iter().any(|t| t == "Rectangle") => Value::Bool(true),
         "opacity" | "scale" if item_like => Value::Num(1.0),
         // QQuickItem::Center.
         "transformOrigin" if item_like => Value::Num(4.0),
@@ -4923,6 +4987,10 @@ fn builtin_default(inst: &Inst, name: &str) -> Option<Value> {
         // QQuickTextInputPrivate::m_maxLength starts at 32767.
         "maximumLength" if types.iter().any(|t| t == "TextInput" || t == "TextField") => {
             Value::Num(32767.0)
+        }
+        // QStyleHints::passwordMaskCharacter of the platform theme: U+25CF.
+        "passwordCharacter" if types.iter().any(|t| t == "TextInput" || t == "TextField") => {
+            Value::str("\u{25cf}")
         }
         // QQuickTextInputPrivate / QQuickTextEditPrivate: focusOnPress starts true, and
         // selectByMouse too since Qt 6.4.
@@ -6069,6 +6137,7 @@ impl WriteFx {
                 "currentIndex" | "highlightedIndex" | "visible" | "enabled"
             ) || name == "active" && (is("Loader") || is("Instantiator"))
                 || name == "blur" && is("RectangularShadow")
+                || name == "maximumLength" && is("TextInput")
                 || matches!(name, "horizontalAlignment" | "effectiveHorizontalAlignment")
                     && is("Text"),
             Self::CPP_DEFAULT,
@@ -6730,7 +6799,28 @@ impl World {
         if let Some(p) = parent {
             self.bump_tree(p);
             self.items[p].children.push(id);
-            self.children_changed(p);
+            // QQmlObjectCreator connects the handlers an object declares after it populated
+            // the children declared beside them: those hear nothing of these children, the
+            // handlers of the documents below do.
+            let layer = self.populating.take().filter(|l| l.0 == p).map(|l| l.1);
+            let heard = |w: &World, h: Sym| {
+                layer.is_none_or(|l| {
+                    w.items[p]
+                        .handlers
+                        .get(&h)
+                        .is_some_and(|hs| hs.iter().any(|c| c.ctx != l))
+                })
+            };
+            if heard(self, sym!("onChildrenChanged")) {
+                self.children_changed(p);
+            } else {
+                self.children_restructured(p);
+            }
+            if !crate::types::is_non_item(&self.items[id].types)
+                && heard(self, sym!("onVisibleChildrenChanged"))
+            {
+                self.visible_children_changed(p);
+            }
             self.owned.entry(p).or_default().push(id);
         }
         id
@@ -7054,7 +7144,16 @@ impl World {
         let slot = match name.rsplit_once('.') {
             _ if changes => None,
             None if anchors => None,
-            None => inst.prop_info(name).map(|pi| Slot::of_cpp(pi, &inst.types)),
+            None => inst.prop_info(name).map(|pi| {
+                let slot = Slot::of_cpp(pi, &inst.types);
+                match name == "visibleChildren" && !crate::types::is_non_item(&inst.types) {
+                    true => Slot {
+                        kind: SlotKind::FixedObjects,
+                        ..slot
+                    },
+                    false => slot,
+                }
+            }),
             // `anchors.fill`, `Layout.fillWidth`: a property of the group's or attached class.
             Some((head, field)) => {
                 let reg = crate::types::registry();
@@ -10720,6 +10819,8 @@ impl World {
             image_loading,
             image_shell: _,
             populated: _,
+            image_loads,
+            dispatching: _,
             polish_held: _,
             polish_order: _,
             hypr_early: _,
@@ -10941,6 +11042,10 @@ impl World {
             list_write: _,
             list_stepwise: _,
             list_steps: _,
+            res_lists: _,
+            populating: _,
+            text_literals: _,
+            binds: _,
             track_fresh: _,
             layouts: _,
             classes: _,
@@ -10982,6 +11087,7 @@ impl World {
         icons.remove(&i);
         icons_unpolished.remove(&i);
         shown_at.remove(&i);
+        image_loads.retain(|l| l.0 != i);
         canvas_ops.remove(&i);
         canvas_gen.remove(&i);
         canvas_dirty.remove(&i);
@@ -11298,6 +11404,10 @@ impl World {
         self.state_hosts.retain(|i| !dead.contains(i));
         self.canvas_scan.1.retain(|i| !dead.contains(i));
         self.canvas_wait.retain(|i| !dead.contains(i));
+        self.res_lists.retain(|k, l| {
+            l.retain(|o| !dead.contains(o));
+            !dead.contains(k)
+        });
         self.alias_rev.retain(|k, owners| {
             owners.retain(|(o, _)| !dead.contains(o));
             !dead.contains(&k.0) && !owners.is_empty()
@@ -11772,9 +11882,95 @@ impl World {
 
     /// `children` of `p` changed (child added/removed/reordered): re-run bindings reading it.
     pub fn children_changed(&mut self, p: usize) {
+        self.children_restructured(p);
+        self.changed.push(((p, sym!("children")), self.sched.cur()));
+    }
+
+    /// The children of `p` changed without a `childrenChanged` any handler hears.
+    fn children_restructured(&mut self, p: usize) {
         self.memo_invalidate(p);
-        let key = (p, Sym::new("children"));
         self.restructured.push(p);
+        self.dirty_from(&(p, sym!("children")));
+        // Bindings on `visibleChildren` read the list again; its own signal comes from
+        // `visible_children_changed` where Qt emits it.
+        self.dirty_from(&(p, sym!("visibleChildren")));
+    }
+
+    fn text_edit(&self, item: usize) -> bool {
+        self.items[item]
+            .types
+            .iter()
+            .any(|t| matches!(t.as_str(), "TextEdit" | "TextArea"))
+    }
+
+    /// QQmlObjectCreator gives a declared child to its parent once the child is populated:
+    /// QQuickItem::setParentItem makes its subtree follow the parent's effective states and
+    /// emits parentChanged, which the handlers the child declares hear.
+    fn child_populated(&mut self, c: usize, p: usize) {
+        let item = |w: &World, i: usize| crate::types::inherits(&w.items[i].types, "QQuickItem");
+        if self.items[c].parent != Some(p) || !item(self, c) || !item(self, p) {
+            return;
+        }
+        // `p` is being populated and has no parent item yet: its own flags are its states.
+        // QQuickItemPrivate::setEffectiveVisibleRecur / setEffectiveEnableRecur: the items
+        // that follow it, children first.
+        let reading = self.reading.take();
+        let own = |w: &mut Self, i: usize, s: Sym| {
+            w.read_inner_sym(i, s.as_str(), s)
+                .is_none_or(|v| v.truthy())
+        };
+        for s in [sym!("visible"), sym!("enabled")] {
+            if own(self, p, s) || !own(self, c, s) {
+                continue;
+            }
+            let mut order = Vec::new();
+            let mut stack = vec![(c, false)];
+            while let Some((x, done)) = stack.pop() {
+                if done {
+                    order.push(x);
+                    continue;
+                }
+                stack.push((x, true));
+                for k in self.items[x].children.clone().into_iter().rev() {
+                    if !self.dead.contains(&k) && item(self, k) && own(self, k, s) {
+                        stack.push((k, false));
+                    }
+                }
+            }
+            for x in order {
+                self.dirty_from(&(x, s));
+                self.changed.push(((x, s), self.sched.cur()));
+            }
+        }
+        self.reading = reading;
+        // A handler reading `parent` flushes a pending `parent:` binding
+        // (QQmlData::flushPendingBinding), so it never sees this parent: the binding's own
+        // change is the one delivered.
+        let bound = (self.items[c].props.get("parent")).is_some_and(|p| p.binding.is_some());
+        if !bound
+            && self.items[c]
+                .handlers
+                .contains_key(&sym!("onParentChanged"))
+        {
+            self.changed.push(((c, sym!("parent")), self.sched.cur()));
+        }
+    }
+
+    /// `c`, a child that was not hidden itself, is gone from `p`.
+    fn visible_child_left(&mut self, p: usize, c: usize) {
+        if crate::types::inherits(&self.items[c].types, "QQuickItem")
+            && self.items[c]
+                .props
+                .get_sym(sym!("visible"))
+                .is_none_or(|v| v.value.truthy())
+        {
+            self.visible_children_changed(p);
+        }
+    }
+
+    /// QQuickItem::visibleChildrenChanged of `p`.
+    fn visible_children_changed(&mut self, p: usize) {
+        let key = (p, sym!("visibleChildren"));
         self.dirty_from(&key);
         self.changed.push((key, self.sched.cur()));
         // Declared content joins before the container's handlers are connected.
@@ -12021,6 +12217,9 @@ impl World {
             self.bump_tree(old);
             self.items[old].children.retain(|&x| x != c);
             self.children_changed(old);
+            if shown {
+                self.visible_children_changed(old);
+            }
             self.resized.push(old);
         }
         // QQuickItem::setParentItem: the focus item `c` brings along (itself, or the one below
@@ -12051,6 +12250,9 @@ impl World {
             tracing::debug!(target: "ri::lrev", "lrev reparent {c}");
         }
         self.parent_changed(c);
+        if item && self.effective_visible(c) {
+            self.visible_children_changed(p);
+        }
         if let Some(f) = loses {
             self.write(f, "focus", Value::Bool(false));
         }
@@ -12154,7 +12356,7 @@ impl World {
         let non_item = crate::types::is_non_item(&self.items[obj].types);
         let takes = match name {
             "children" | "flickableChildren" => !non_item,
-            "resources" => non_item,
+            // resources_append takes any QObject.
             _ => true,
         };
         if !takes {
@@ -12181,6 +12383,7 @@ impl World {
             object: obj,
             join: true,
             declared: true,
+            res: name == "resources",
         };
         if self.list_stepwise {
             self.list_steps.push(step);
@@ -12260,6 +12463,41 @@ impl World {
             .collect()
     }
 
+    /// QQuickItem::resources of `item`.
+    fn resources_of(&self, item: usize) -> Vec<usize> {
+        match self.res_lists.get(&item) {
+            Some(l) => l.clone(),
+            None => self.listed_children(item, false),
+        }
+    }
+
+    /// Whether `c` is the value of a property QML declares: an object without a parent item,
+    /// kept under its owner here.
+    fn loose_value(&self, c: usize) -> bool {
+        matches!(
+            self.items[c].props.get("\x01propval"),
+            Some(Prop {
+                value: Value::Null,
+                ..
+            })
+        )
+    }
+
+    /// QQuickItem::childItems of `item`.
+    fn child_items(&self, item: usize) -> Vec<usize> {
+        self.items[item]
+            .children
+            .iter()
+            .copied()
+            .filter(|&c| {
+                self.items
+                    .get(c)
+                    .is_none_or(|ci| !crate::types::is_non_item(&ci.types))
+                    && !self.loose_value(c)
+            })
+            .collect()
+    }
+
     /// A write to QQuickItem's `children`, `data` or `resources` list with the objects `new`.
     /// An assignment replaces the list (QQuickItemPrivate::children_clear / data_clear, then an
     /// append per object) unless it already holds the same objects; a list of object literals
@@ -12283,7 +12521,8 @@ impl World {
             _ => {}
         }
         let kids = self.listed_children(item, true);
-        let res = self.listed_children(item, false);
+        let res = self.resources_of(item);
+        let listed = if name == "children" { 0 } else { res.len() };
         let (cur, new): (Vec<usize>, Vec<usize>) = match name {
             // children_append takes a QQuickItem: another object is refused.
             "children" => (
@@ -12293,13 +12532,16 @@ impl World {
                     .filter(|&c| !crate::types::is_non_item(&self.items[c].types))
                     .collect(),
             ),
-            "resources" => (
-                res,
-                new.iter()
-                    .copied()
-                    .filter(|&c| crate::types::is_non_item(&self.items[c].types))
-                    .collect(),
-            ),
+            // resources_append takes any QObject, and none twice.
+            "resources" => {
+                let mut l: Vec<usize> = Vec::new();
+                for &c in new {
+                    if !l.contains(&c) {
+                        l.push(c);
+                    }
+                }
+                (res, l)
+            }
             // QQuickItemPrivate::data_at: the resources, then the child items.
             _ => (res.into_iter().chain(kids).collect(), new.to_vec()),
         };
@@ -12320,11 +12562,13 @@ impl World {
             _ => 0,
         };
         let from = keep;
-        let leave = cur[keep..].iter().map(|&object| ListStep {
+        // resources_clear takes the objects off the list; they stay QObject children.
+        let leave = (keep..cur.len()).map(|k| ListStep {
             item,
-            object,
+            object: cur[k],
             join: false,
             declared: false,
+            res: k < listed,
         });
         let join = new.get(from..).unwrap_or_default().iter();
         let steps: Vec<ListStep> = leave
@@ -12333,6 +12577,7 @@ impl World {
                 object,
                 join: true,
                 declared: false,
+                res: name == "resources",
             }))
             .collect();
         if self.list_stepwise {
@@ -12350,30 +12595,51 @@ impl World {
             object: c,
             join,
             declared,
+            res,
         } = s;
         if self.dead.contains(&item) || self.dead.contains(&c) {
             return;
         }
         let non_item = crate::types::is_non_item(&self.items[c].types);
-        if !join {
+        if res {
+            let derived = self.listed_children(item, false);
+            let l = self.res_lists.entry(item).or_insert(derived);
+            match join {
+                true if !l.contains(&c) => l.push(c),
+                true => {}
+                false => l.retain(|&x| x != c),
+            }
+        } else if !join {
             if self.items[c].parent != Some(item) {
                 return;
             }
-            if non_item {
-                // resources_clear: off the list, still a QObject child of the item.
-                self.adopt(c, Some(item));
-                self.items[c].parent = None;
-                self.items[item].children.retain(|&x| x != c);
+            self.set_parent_item(c, None);
+        } else if non_item {
+            // data_append: `o->setParent(item)`, then resources_append. The list of the
+            // item it was a resource of keeps it.
+            let owner = self.items[c].parent;
+            if owner != Some(item) {
+                self.items[c].props.remove("\x01propval");
+                self.adopt(c, owner);
+                if let Some(old) = owner {
+                    let derived = self.listed_children(old, false);
+                    self.res_lists.entry(old).or_insert(derived);
+                    self.items[old].children.retain(|&x| x != c);
+                    self.bump_tree(old);
+                }
+                self.items[c].parent = Some(item);
+                self.items[item].children.push(c);
                 self.bump_tree(item);
-            } else {
-                self.set_parent_item(c, None);
+            }
+            if let Some(l) = self.res_lists.get_mut(&item)
+                && !l.contains(&c)
+            {
+                l.push(c);
             }
         } else {
             // Listed in `children`: a visual child now, even if created as a property value.
+            let loose = self.loose_value(c);
             self.items[c].props.remove("\x01propval");
-            if self.items[c].parent == Some(item) {
-                return;
-            }
             let owner = self.items[c].parent;
             // Declared in a Flickable: made as its QObject child, a child item of nothing
             // until this append gives it to the contentItem.
@@ -12392,19 +12658,16 @@ impl World {
                 self.revision += 1;
                 return;
             }
-            self.adopt(c, owner);
-            if non_item {
-                // resources_append: `o->setParent(item)`; no child item list changes.
-                if let Some(old) = owner {
-                    self.items[old].children.retain(|&x| x != c);
-                    self.bump_tree(old);
-                }
-                self.items[c].parent = Some(item);
-                self.items[item].children.push(c);
-                self.bump_tree(item);
+            if owner == Some(item) && loose {
+                // It had no parent item so far: this is its setParentItem(item).
+                self.items[item].children.retain(|&x| x != c);
+                self.items[c].parent = None;
+            } else if owner == Some(item) {
+                return;
             } else {
-                self.reparent(c, item);
+                self.adopt(c, owner);
             }
+            self.reparent(c, item);
         }
         self.touched.push(item);
         self.stamp(item);
@@ -12423,6 +12686,9 @@ impl World {
         self.bump_tree(old);
         self.items[old].children.retain(|&x| x != c);
         self.children_changed(old);
+        if shown {
+            self.visible_children_changed(old);
+        }
         self.resized.push(old);
         if item {
             if shown {
@@ -12540,6 +12806,7 @@ impl World {
             self.bump_tree(p);
             self.items[p].children.retain(|&c| c != id);
             self.children_changed(p);
+            self.visible_child_left(p, id);
             self.items[id].parent = None;
         }
         let mut stack = vec![id];
@@ -12815,6 +13082,25 @@ impl World {
             }
             if self.content_item_of.contains_key(&c) {
                 self.flick_complete(c);
+            }
+            // QQuickTextEdit::setText only stores the text of an incomplete item;
+            // ::componentComplete gives it to the document, which emits textChanged.
+            if self.text_literals.remove(&c)
+                && self
+                    .read(c, "text")
+                    .is_some_and(|v| !v.to_js_string().is_empty())
+            {
+                self.changed.push(((c, sym!("text")), self.sched.cur()));
+            }
+            // QQuickAnimatedImage::componentComplete loads also without a source, which
+            // QQuickImageBase's does not; the shell tells when a source is loaded.
+            if self.items[c].types.iter().any(|t| t == "AnimatedImage")
+                && self.image_base(c)
+                && self
+                    .read(c, "source")
+                    .is_none_or(|v| v.to_js_string().is_empty())
+            {
+                self.image_load_ended(c);
             }
             if self.items[c].types.contains(&scroll) {
                 self.scroll_view_complete(c);
@@ -13424,6 +13710,7 @@ impl World {
             self.bump_tree(p);
             self.items[p].children.retain(|&c| c != id);
             self.children_changed(p);
+            self.visible_child_left(p, id);
         }
         self.doomed.push(id);
     }
@@ -13689,6 +13976,7 @@ impl World {
             self.bump_tree(p);
             self.items[p].children.retain(|&c| c != id);
             self.children_changed(p);
+            self.visible_child_left(p, id);
         }
         let mut stack = vec![id];
         let mut killed = vec![];
@@ -13749,6 +14037,7 @@ impl World {
                 self.bump_tree(p);
                 self.items[p].children.retain(|&x| x != k);
                 self.children_changed(p);
+                self.visible_child_left(p, k);
                 self.touched.push(p);
                 self.resized.push(p);
             }
@@ -14303,6 +14592,15 @@ impl World {
     /// QQuickImageBasePrivate::sourcesize, the size an Image asks its picture at: a dimension
     /// is `None` when nothing set it (-1 in Qt's QSize).
     pub fn source_size_set(&mut self, item: usize) -> [Option<f64>; 2] {
+        // QQuickImageBase's own is kept in `sourceSize.width` and `sourceSize.height`, as -1
+        // where nothing set it ([`Self::set_source_size`]).
+        if self.image_base(item) {
+            let props = &self.items[item].props;
+            return ["sourceSize.width", "sourceSize.height"].map(|k| {
+                let n = props.get(k)?.value.to_number();
+                (n.is_finite() && n != -1.0).then_some(n)
+            });
+        }
         // Only what the object holds: what a read makes up for a dimension it does not hold
         // is not one that was set.
         let held = |w: &Self, k: &str| w.items.get(item).is_some_and(|i| i.props.contains_key(k));
@@ -14430,6 +14728,16 @@ impl World {
         {
             self.menu_content(item);
             return Some(Value::Item(item));
+        }
+        if sym == sym!("sourceSize") && self.image_base(item) {
+            if let Some(r) = &mut self.reading {
+                r.push((item, sym));
+            }
+            let size = self.image_source_size(item);
+            return Some(crate::valuetypes::make_num(
+                crate::valuetypes::Vt::Size,
+                &size,
+            ));
         }
         // A QObject reference reads as null once the object is destroyed (QPointer semantics).
         match self.read_inner_sym(item, name, sym) {
@@ -14687,7 +14995,7 @@ impl World {
 
     /// QQuickItemPrivate::setEffectiveVisibleRecur: after `item`'s own `visible` changed, every
     /// descendant whose effective visibility follows it gets `visibleChanged` as well.
-    fn visible_subtree_changed(&mut self, item: usize) {
+    fn visible_subtree_changed(&mut self, item: usize) -> bool {
         let reading = self.reading.take();
         let own = |w: &mut Self, i: usize| w.read(i, "visible").is_none_or(|v| v.truthy());
         let mut up = item;
@@ -14744,10 +15052,15 @@ impl World {
                 .filter(|c| self.layers.contains_key(c))
                 .collect(),
         };
+        // `emit q->visibleChildrenChanged()` of an item whose child changed, after its own.
+        let parents: HashSet<usize> = hit.iter().filter_map(|&c| self.items[c].parent).collect();
         for c in hit {
             let key = (c, Sym::new("visible"));
             self.dirty_from(&key);
             self.changed.push((key, self.sched.cur()));
+            if parents.contains(&c) {
+                self.visible_children_changed(c);
+            }
         }
         let key = (item, Sym::new("visible"));
         if let Some(k) = self.changed.iter().rposition(|c| c.0 == key) {
@@ -14757,6 +15070,10 @@ impl World {
         for c in layered {
             self.layer_follow(c, "visible");
         }
+        if parents.contains(&item) {
+            self.visible_children_changed(item);
+        }
+        shown
     }
 
     fn read_inner_sym(&mut self, item: usize, name: &str, sym: Sym) -> Option<Value> {
@@ -15278,30 +15595,41 @@ impl World {
                 .get_sym(sym)
                 .is_none_or(|p| p.ty.starts_with("list"))
         {
-            let mut l = self.listed_children(item, false);
+            let mut l = self.resources_of(item);
             if name == "data" {
-                l.extend(inst.children.iter().copied().filter(|&c| {
-                    self.items
-                        .get(c)
-                        .is_none_or(|ci| !crate::types::is_non_item(&ci.types))
-                }));
+                l.extend(self.child_items(item));
+            }
+            return Some(Value::array(l.into_iter().map(Value::Item).collect()));
+        }
+        // QQuickItem::visibleChildren: the child items that are visible (isVisible()).
+        if sym == sym!("visibleChildren")
+            && !crate::types::is_non_item(&inst.types)
+            && inst.props.get_sym(sym).is_none()
+        {
+            let reading = self.reading.take();
+            let mut l = self.child_items(item);
+            l.retain(|&c| {
+                self.read_visible(c, sym!("visible"))
+                    .is_none_or(|v| v.truthy())
+            });
+            self.reading = reading;
+            if let Some(r) = &mut self.reading {
+                r.push((item, sym));
             }
             return Some(Value::array(l.into_iter().map(Value::Item).collect()));
         }
         match name {
             "parent" | "children" if !model_children => {
                 let v = if name == "parent" {
-                    inst.parent.map(Value::Item).unwrap_or(Value::Null)
+                    match inst.parent {
+                        Some(p) if !self.loose_value(item) => Value::Item(p),
+                        _ => Value::Null,
+                    }
                 } else {
                     Value::array(
-                        inst.children
-                            .iter()
-                            .filter(|&&c| {
-                                self.items
-                                    .get(c)
-                                    .is_none_or(|ci| !crate::types::is_non_item(&ci.types))
-                            })
-                            .map(|&c| Value::Item(c))
+                        self.child_items(item)
+                            .into_iter()
+                            .map(Value::Item)
                             .collect(),
                     )
                 };
@@ -15920,6 +16248,119 @@ impl World {
         }
     }
 
+    /// Whether `item` is a QQuickImageBase (Image, AnimatedImage, BorderImage) with the C++
+    /// `sourceSize`.
+    pub fn image_base(&self, item: usize) -> bool {
+        self.items.get(item).is_some_and(|i| {
+            !i.props
+                .get("sourceSize")
+                .is_some_and(|p| p.decl != Decl::Cpp)
+                && crate::types::inherits(&i.types, "QQuickImageBase")
+        })
+    }
+
+    /// QQuickImageBase::sourceSize: a dimension nobody asked for is the loaded pixmap's.
+    fn image_source_size(&mut self, item: usize) -> [f64; 2] {
+        let asked = self.source_size_set(item);
+        // What the shell loaded; an image it loads nothing for (an AnimatedImage, or no
+        // shell) has the implicit size its pixmap gave it.
+        let pix = match self.images.get(&item) {
+            Some(s) if !s.request.is_empty() => [s.pix.0, s.pix.1],
+            _ => ["implicitWidth", "implicitHeight"]
+                .map(|k| self.read(item, k).map_or(0.0, |v| v.to_number())),
+        };
+        [0, 1].map(|k| asked[k].unwrap_or(pix[k]))
+    }
+
+    /// QQuickImageBase::setSourceSize (`name` is `sourceSize`) or the write of one property
+    /// of it, which QQmlValueTypeWrapper does as read, change, write back: no signal for the
+    /// size it had, else sourceSizeChanged, and once the component is complete load().
+    fn set_source_size(&mut self, item: usize, name: &str, v: Value) -> bool {
+        // QSizeF::toSize: qRound.
+        let int = |n: f64| (n.abs() + 0.5).floor().copysign(n);
+        let size = match (name, &v) {
+            ("sourceSize", Value::Undefined) => [-1.0, -1.0],
+            ("sourceSize", Value::Obj(o)) => ["width", "height"].map(|k| {
+                let n = o.borrow().props.get(k).map_or(-1.0, Value::to_number);
+                if n.is_finite() { int(n) } else { -1.0 }
+            }),
+            // QQmlStringConverters::sizeFFromString.
+            ("sourceSize", Value::Str(_)) => {
+                let s = v.to_js_string();
+                let wh = s.split_once('x').and_then(|(w, h)| {
+                    Some([w.trim().parse::<f64>().ok()?, h.trim().parse::<f64>().ok()?])
+                });
+                match wh {
+                    Some(wh) => wh.map(int),
+                    None => return false,
+                }
+            }
+            ("sourceSize", _) => return false,
+            _ => {
+                let n = v.to_number();
+                if !n.is_finite() {
+                    return false;
+                }
+                let mut size = self.image_source_size(item);
+                size[usize::from(name.ends_with("height"))] = int(n);
+                size
+            }
+        };
+        if size.map(|n| (n != -1.0).then_some(n)) == self.source_size_set(item) {
+            return false;
+        }
+        // The NOTIFY signal is the property's, sent once below.
+        let sent = self.changed.len();
+        for (k, n) in ["sourceSize.width", "sourceSize.height"]
+            .into_iter()
+            .zip(size)
+        {
+            if !self.items[item].props.contains_key(k) {
+                self.declare(item, k, "real");
+                self.items[item].props.get_mut(k).unwrap().value = Value::Num(-1.0);
+            }
+            self.write_setter(item, k, Sym::new(k), Value::Num(n));
+        }
+        self.changed.truncate(sent);
+        self.notify(item, "sourceSize");
+        if self.behaviors_live || item < self.creating_from {
+            let movie = self.items[item].types.iter().any(|t| t == "AnimatedImage");
+            if self.text_measure.is_some() && !movie {
+                // The shell loads inside this call, as it does for a written `source`.
+                self.image_written(item);
+            } else if !self.image_loads.iter().any(|l| l.0 == item) {
+                self.image_loads.push((item, self.sched.cur()));
+            }
+        }
+        true
+    }
+
+    /// Loads the images whose size request changed, unless a change handler is running (the
+    /// dispatch it is part of loads them); whether one was loaded.
+    fn load_images(&mut self) -> bool {
+        if self.dispatching > 0 {
+            return false;
+        }
+        let loads = std::mem::take(&mut self.image_loads);
+        for &(i, cause) in &loads {
+            self.sched.establish(cause);
+            // A shell ends the load as it measures the Image, after the status is told. The
+            // load of no source (QQuickImageBase::loadEmptyUrl) ends here, and with no shell
+            // an AnimatedImage's too.
+            self.image_load(i);
+            let shell =
+                self.image_shell || self.image_complete.is_some() || self.text_measure.is_some();
+            let movie = self.items[i].types.iter().any(|t| t == "AnimatedImage");
+            let empty = self
+                .pval(i, "source")
+                .is_none_or(|v| v.to_js_string().is_empty());
+            if empty || movie && !shell {
+                self.image_load_ended(i);
+            }
+        }
+        !loads.is_empty()
+    }
+
     /// The value type property `prop` of `t` is declared (in C++ or QML) to hold.
     fn value_type_of(&self, t: usize, prop: &str) -> Option<crate::valuetypes::Vt> {
         use crate::valuetypes::Vt;
@@ -15957,17 +16398,14 @@ impl World {
 
     /// Property `sub` of value type property `prop` of `t`, as an alias to it reads it.
     fn value_field(&mut self, t: usize, prop: &str, sub: &str, vt: crate::valuetypes::Vt) -> Value {
-        // QQuickImageBase::sourceSize: an unset dimension (-1, as a QSize nothing set has) is
-        // the loaded pixmap's.
-        let image = prop == "sourceSize" && self.items[t].types.iter().any(|ty| ty == "Image");
-        match self.read(t, &format!("{prop}.{sub}")) {
-            Some(v) if !(image && v.to_number() == -1.0) => return v,
-            _ => {}
+        if prop == "sourceSize" && self.image_base(t) {
+            if let Some(r) = &mut self.reading {
+                r.push((t, sym!("sourceSize")));
+            }
+            return Value::Num(self.image_source_size(t)[usize::from(sub == "height")]);
         }
-        // QQuickImageBase::sourceSize: with none requested, the loaded pixmap's.
-        if image {
-            let pix = self.images.get(&t).map_or((0.0, 0.0), |s| s.pix);
-            return Value::Num(if sub == "width" { pix.0 } else { pix.1 });
+        if let Some(v) = self.read(t, &format!("{prop}.{sub}")) {
+            return v;
         }
         match crate::valuetypes::default_value(vt) {
             Value::Obj(o) => o.borrow().props.get(sub).cloned().unwrap_or_default(),
@@ -17304,6 +17742,36 @@ impl World {
         }
     }
 
+    /// QQuickTextInputPrivate::updateDisplayText without a mask: the text as echoMode shows it.
+    /// (With a mask `displayText` holds m_text and is written with the text.)
+    fn update_display_text(&mut self, item: usize) {
+        let text = self.read(item, "text").unwrap_or(Value::str(""));
+        let mut units = units_of(Some(&text));
+        match self.read(item, "echoMode").map_or(0.0, |v| v.to_number()) as i32 {
+            // NoEcho.
+            1 => units.clear(),
+            // Password, and PasswordEchoOnEdit outside an edit: `str.fill(m_passwordCharacter)`.
+            2 | 3 => {
+                let c = units_of(self.read(item, "passwordCharacter").as_ref())
+                    .first()
+                    .copied()
+                    .unwrap_or(0x25cf);
+                units.fill(c);
+            }
+            _ => {}
+        }
+        // LineSeparator, ParagraphSeparator and ObjectReplacementCharacter are shown as spaces.
+        for u in &mut units {
+            if matches!(*u, 0x2028 | 0x2029 | 0xfffc) {
+                *u = 0x20;
+            }
+        }
+        if units_of(self.read(item, "displayText").as_ref()) != units {
+            self.text_quiet(item, "displayText", Value::from_utf16(&units));
+            self.notify(item, "displayText");
+        }
+    }
+
     /// QQuickTextInputPrivate::checkIsValid for the current text: `acceptableInput`.
     pub fn update_acceptable(&mut self, item: usize) {
         let ok = self.text_acceptable(item, None);
@@ -17571,6 +18039,16 @@ impl World {
         }
         let sym = Sym::new(name);
         let reading = self.reading.take();
+        if matches!(
+            name,
+            "sourceSize" | "sourceSize.width" | "sourceSize.height"
+        ) && self.image_base(item)
+            && !self.items[item].read_only(sym!("sourceSize"))
+        {
+            let r = self.set_source_size(item, name, v);
+            self.reading = reading;
+            return r;
+        }
         let outer = self.items.writing.replace(sym);
         // A value type property whose properties were set one by one (`sourceSize.width: 5`)
         // takes a whole value into those too.
@@ -17748,6 +18226,26 @@ impl World {
             self.changed.push((key, self.sched.cur()));
         }
         self.image_load_ended(item);
+    }
+
+    /// The shell measured AnimatedImage `item`: the load of its source, or of none after one,
+    /// has ended unless the movie is still awaited.
+    pub fn movie_measured(&mut self, item: usize) {
+        if !self.image_base(item) {
+            return;
+        }
+        let r = self.reading.take();
+        let sourced = self
+            .read(item, "source")
+            .is_some_and(|v| !v.to_js_string().is_empty());
+        let loading = self
+            .read(item, "status")
+            .is_some_and(|v| v.to_number() == 2.0);
+        self.reading = r;
+        if !loading && (sourced || self.images.get(&item).is_some_and(|s| s.told.is_some())) {
+            self.image_loading.remove(&item);
+            self.image_load_ended(item);
+        }
     }
 
     /// The end of an Image's load (QQuickImageBase::requestFinished, loadEmptyUrl): its
@@ -18501,6 +18999,8 @@ impl World {
             _ => false,
         };
         // internalSetText with a mask: m_text is the masked display text, `text` its stripString.
+        let mark = self.changed.len();
+        let mut masked_dirty = false;
         let v = match (v, &mask) {
             (Value::Str(s), Some(_))
                 if name == "text" && self.text_edit.as_ref().is_some_and(|e| e.0 == item) =>
@@ -18519,7 +19019,7 @@ impl World {
                 } else {
                     m.display(&s)
                 };
-                self.write_raw(
+                masked_dirty = self.write_raw(
                     item,
                     "displayText",
                     Value::str(&d.iter().collect::<String>()),
@@ -18635,6 +19135,40 @@ impl World {
             let on = self.read(item, name).is_some_and(|s| s.to_number() == 2.0);
             self.write(item, "checked", Value::Bool(on));
         }
+        // QQuickTextInputPrivate::finishChange with a mask, for a changed m_text: checkIsValid
+        // (acceptableInputChanged whenever the text is not acceptable), textChanged, and
+        // displayTextChanged from updateDisplayText.
+        if masked_dirty {
+            let shown = (item, sym!("displayText"));
+            let d = self.changed[mark..]
+                .iter()
+                .position(|c| c.0 == shown)
+                .map(|k| self.changed.remove(mark + k));
+            if !self.text_acceptable(item, None) {
+                let key = (item, sym!("acceptableInput"));
+                self.changed.insert(mark, (key, self.sched.cur()));
+            }
+            if !r {
+                self.notify(item, "text");
+            }
+            self.changed.extend(d);
+        }
+        // Without a mask: textChanged, then updateDisplayText. QQuickTextInput::setEchoMode and
+        // setPasswordCharacter call it before their own signal.
+        if r && line && name == "text" && mask.is_none() {
+            self.update_display_text(item);
+        }
+        if r && line
+            && matches!(name, "echoMode" | "passwordCharacter")
+            && self.input_mask(item).is_none()
+        {
+            self.update_display_text(item);
+            let key = (item, Sym::new(name));
+            if let Some(k) = self.changed.iter().rposition(|c| c.0 == key) {
+                let c = self.changed.remove(k);
+                self.changed.push(c);
+            }
+        }
         if combo {
             self.combo_written(item, name, r);
         }
@@ -18680,8 +19214,17 @@ impl World {
                 // Dropping a mask: `m_maxLength = 32767; internalSetText(QString())`.
                 (Some(_), None) => {
                     self.text_quiet(item, "maximumLength", Value::Num(32767.0));
-                    self.write(item, "displayText", Value::str(""));
-                    self.write(item, "text", Value::str(""));
+                    let shown = units_of(self.read(item, "displayText").as_ref());
+                    // m_text changes even when the text without its blanks was empty already.
+                    if !self.write(item, "text", Value::str("")) && !shown.is_empty() {
+                        self.notify(item, "text");
+                        self.update_display_text(item);
+                        self.update_acceptable(item);
+                        self.text_sel_rest.remove(&item);
+                        for (k, v) in self.text_steps(item, &[], 0, (0, 0), TextOp::Edit) {
+                            self.text_defer(item, k, v);
+                        }
+                    }
                 }
                 // A mask: `m_maxLength` is its length, then `internalSetText(m_text)`, where
                 // m_text is the display text while a mask was set; QQuickTextInput::setInputMask
@@ -18706,9 +19249,15 @@ impl World {
                 self.changed.push(c);
             }
         }
+        // QQuickTextInput::setMaxLength: internalSetText, then maximumLengthChanged.
         if r && line && name == "maximumLength" {
             let t = self.read(item, "text").unwrap_or(Value::str(""));
             self.write(item, "text", t);
+            let key = (item, sym!("maximumLength"));
+            if let Some(k) = self.changed.iter().rposition(|c| c.0 == key) {
+                let c = self.changed.remove(k);
+                self.changed.push(c);
+            }
         }
         if r && line && matches!(name, "text" | "validator") {
             self.update_acceptable(item);
@@ -18753,6 +19302,11 @@ impl World {
         if r && name == "currentIndex" && self.swipes.get(&item).is_some_and(|s| s.settled) {
             self.note_started(Started::Swipe(item));
         }
+        // QQuickPen::setWidth and ::setColor work out whether the pen draws (m_valid); one
+        // never set draws nothing, whatever its width of 1.
+        if matches!(name, "border.width" | "border.color") {
+            self.items[item].props.entry("\x01pen").or_default();
+        }
         if r && name == "visible" {
             // QQuickItem::setVisible recomputes the effective visibility, which the constructor
             // left true: an item `createObject(null)` made is shown until its first write of
@@ -18767,7 +19321,7 @@ impl World {
             if on {
                 self.unparented.insert(item);
             }
-            self.visible_subtree_changed(item);
+            let shown = self.visible_subtree_changed(item);
             if lone && !on {
                 self.unparented.insert(item);
             }
@@ -18778,6 +19332,10 @@ impl World {
             {
                 self.shown_gen += 1;
                 self.shown_at.insert(item, self.shown_gen);
+            }
+            // QQuickItem::setVisible: the parent's visible children changed with it.
+            if shown && let Some(p) = self.items[item].parent {
+                self.visible_children_changed(p);
             }
         }
         if r && name == "enabled" {
@@ -18819,7 +19377,7 @@ impl World {
             }
         }
         // QQuickTextInput::setText: a new text puts the cursor at its end and drops the selection.
-        if (r || reset) && name == "text" && !self.text_keep_cursor && line {
+        if (r || masked_dirty || reset) && name == "text" && !self.text_keep_cursor && line {
             let t = units_of(self.read(item, "text").as_ref());
             let shown = if mask.is_some() {
                 "displayText"
@@ -19856,9 +20414,11 @@ impl World {
             crate::native::file_set_path(self, item);
         }
         // The shell loads inside this call; with none the load ends after the write's signal.
+        // QQuickImageBase::setSourceSize loads after its one signal (`set_source_size`).
         if fx.has(WriteFx::IMAGE_SOURCE)
             && self.text_measure.is_some()
             && (self.behaviors_live || item < self.creating_from)
+            && (name == "source" || !self.image_base(item))
         {
             self.image_written(item);
         }
@@ -19991,6 +20551,17 @@ impl World {
     }
 
     pub fn clear_binding_sym(&mut self, item: usize, name: Sym) {
+        // An assignment to the property a `Binding` object holds: nothing comes back later.
+        if !self.binds.is_empty() {
+            for held in self.binds.values_mut() {
+                if held
+                    .as_ref()
+                    .is_some_and(|h| h.target == item && h.property == name.as_str())
+                {
+                    *held = None;
+                }
+            }
+        }
         // Assigning a target property replaces a PropertyChanges binding installed on it.
         if !self.state_linked.is_empty() && self.state_linked.remove(&(item, name)) {
             for s in self.state_rt.values_mut() {
@@ -21570,17 +22141,8 @@ impl WorldHost {
             }
         } else if let [x, y, ..] = args {
             let (x, y) = (x.to_number(), y.to_number());
-            let kids: Vec<usize> = w.items[item]
-                .children
-                .iter()
-                .copied()
-                .filter(|&c| {
-                    w.items
-                        .get(c)
-                        .is_some_and(|ci| !crate::types::is_non_item(&ci.types))
-                        && !w.dead.contains(&c)
-                })
-                .collect();
+            let mut kids = w.child_items(item);
+            kids.retain(|c| w.items.holds(*c) && !w.dead.contains(c));
             let mut found = Value::Null;
             for c in kids.into_iter().rev() {
                 // QQuickItem::isVisible: a child of a hidden item is hidden.
@@ -23566,7 +24128,20 @@ impl Host for WorldHost {
         }
         match it.props.get(name) {
             Some(p) => Some(p.ty),
-            None => it.prop_info(name).map(|p| Sym::new(&p.ty)),
+            // A list of QQuickItem is a QQmlListProperty; `visibleChildren` is one without
+            // an append function, which `valuetypes::assign` reads from the `const`.
+            None => it.prop_info(name).map(|p| match p.list {
+                true if !crate::types::is_non_item(&it.types) => Sym::new(&format!(
+                    "{}QQmlListProperty<{}>",
+                    if name == "visibleChildren" {
+                        "const "
+                    } else {
+                        ""
+                    },
+                    p.ty
+                )),
+                _ => Sym::new(&p.ty),
+            }),
         }
     }
     fn write_slot(&mut self, item: usize, name: &str) -> Option<Rc<crate::valuetypes::Slot>> {
@@ -23577,12 +24152,14 @@ impl Host for WorldHost {
     }
     fn sequence_changed(&mut self, item: usize, name: &str, seq: &Value) {
         // QQuickItem's lists are not stored: the changed copy is written to them.
+        // Nor is QQuickImageBase::sourceSize the size asked for.
         let item_list = {
             let w = self.0.borrow();
             matches!(name, "children" | "data" | "resources")
                 && w.items.get(item).is_some_and(|i| {
                     !i.props.contains_key(name) && !crate::types::is_non_item(&i.types)
                 })
+                || name == "sourceSize" && w.image_base(item)
         };
         match item_list {
             true => {
@@ -23623,6 +24200,14 @@ impl WorldHost {
             delegators_sync(&self.0, since);
             fire_sync(&self.0);
             return true;
+        }
+        // QQuickItem::visibleChildren has no append or clear function: the list a script
+        // changed in place is not written back.
+        if name == "visibleChildren"
+            && !crate::types::is_non_item(&w.items[item].types)
+            && !w.items[item].props.contains_key(name)
+        {
+            return false;
         }
         // A write to an alias is a write to its target: that property's setter runs.
         if let Some((target, prop)) = w.alias_setter(item, name) {
@@ -24214,7 +24799,9 @@ fn fire_sync(world: &Rc<RefCell<World>>) {
         let depth = w.handler_depth;
         if w.flushing
             || w.reading.is_some()
-            || (w.changed.is_empty() && w.changed_late.last().is_none_or(|c| c.2 < depth))
+            || (w.changed.is_empty()
+                && w.image_loads.is_empty()
+                && w.changed_late.last().is_none_or(|c| c.2 < depth))
         {
             return;
         }
@@ -24236,6 +24823,9 @@ fn fire_sync(world: &Rc<RefCell<World>>) {
             let changed = std::mem::take(&mut e.world.borrow_mut().changed);
             if changed.is_empty() {
                 if e.dispatch_late(0, true) {
+                    continue;
+                }
+                if e.world.borrow_mut().load_images() {
                     continue;
                 }
                 break;
@@ -27304,7 +27894,7 @@ impl Eng<'_> {
             })
         };
         self.world.borrow_mut().fill_list_models(n0);
-        self.finalize_settle();
+        self.finalize_settle(n0);
         if self.world.borrow_mut().icons_sized(n0) {
             self.settle();
         }
@@ -27354,7 +27944,7 @@ impl Eng<'_> {
             )
         };
         // Bindings follow what componentComplete() changed before Component.onCompleted runs.
-        if notified {
+        if notified | self.binds_complete(n0) {
             self.settle();
         }
         self.images_complete(images, Self::settle);
@@ -27657,8 +28247,21 @@ impl Eng<'_> {
         }
     }
 
-    /// QQmlObjectCreator::finalize: enable the queued bindings last-created first.
-    fn finalize_settle(&mut self) {
+    /// QQmlObjectCreator::finalize: enable the queued bindings last-created first. The
+    /// `sourceSizeChanged` the images from `n0` on emitted while they were populated is
+    /// delivered first: Qt runs its handlers from the write.
+    fn finalize_settle(&mut self, n0: usize) {
+        let populated: Vec<(DKey, Cause)> = {
+            let mut w = self.world.borrow_mut();
+            let (new, old) = std::mem::take(&mut w.changed)
+                .into_iter()
+                .partition(|c| c.0.0 >= n0 && c.0.1 == "sourceSize");
+            w.changed = old;
+            new
+        };
+        if !populated.is_empty() {
+            self.dispatch_changes(populated, true);
+        }
         {
             let mut w = self.world.borrow_mut();
             let w = &mut *w;
@@ -27909,7 +28512,7 @@ impl Eng<'_> {
         self.register_loading_singleton(id);
         crate::native::init_clocks(&self.world, self.it, n0);
         self.world.borrow_mut().fill_list_models(n0);
-        self.finalize_settle();
+        self.finalize_settle(n0);
         if self.world.borrow_mut().icons_sized(n0) {
             self.settle();
         }
@@ -27921,7 +28524,7 @@ impl Eng<'_> {
         self.world.borrow_mut().behaviors_live = live;
         self.world.borrow_mut().creating_from = from;
         // Bindings follow what componentComplete() changed before Component.onCompleted runs.
-        if notified {
+        if notified | self.binds_complete(n0) {
             self.settle();
         }
         self.images_complete(images, Self::settle);
@@ -28341,6 +28944,22 @@ impl Eng<'_> {
         {
             order.swap(t, c);
         }
+        // Value bindings come before the default property's objects in the compilation unit:
+        // a child is given to a parent that already has its literal `visible` / `enabled`.
+        if prefix.is_empty()
+            && let Some(first) = order
+                .iter()
+                .position(|&k| matches!(members[k], Member::Child(_)))
+        {
+            for n in ["visible", "enabled"] {
+                if let Some(at) = order.iter().position(|k| constant(k, n, false))
+                    && at > first
+                {
+                    let k = order.remove(at);
+                    order.insert(first, k);
+                }
+            }
+        }
         // The first of `onTextChanged` / `onLengthChanged` this object declared (text editors).
         let mut text_handler: Option<bool> = None;
         // The level these members declare at, found when the first one is declared.
@@ -28692,9 +29311,14 @@ impl Eng<'_> {
                                     self.assign(id, &p, &v, ctx, file, vis, depth)?
                                 }
                                 None => {
-                                    let c = self.create(o, ctx, Some(id), file, vis, depth + 1)?;
+                                    self.world.borrow_mut().populating = Some((id, ctx));
+                                    let c = self.create(o, ctx, Some(id), file, vis, depth + 1);
+                                    let mut w = self.world.borrow_mut();
+                                    w.populating = None;
+                                    let c = c?;
+                                    w.child_populated(c, id);
                                     if let Some(name) = name {
-                                        self.world.borrow_mut().list_append(id, name, c);
+                                        w.list_append(id, name, c);
                                     }
                                 }
                             }
@@ -29310,6 +29934,23 @@ impl Eng<'_> {
                     func: None,
                 });
                 let k = (id, sym);
+                // A value type group is read, populated and written back once, after the
+                // object's signal handlers are connected (QmlUnitGenerator::generate lists
+                // group properties after them): QQuickImageBase::setSourceSize emits for
+                // the size read, which is not the unset one.
+                let size_group =
+                    matches!(name, "sourceSize.width" | "sourceSize.height") && w.image_base(id);
+                let size_key = (id, sym!("sourceSize"));
+                let size_sent = size_group && w.changed.iter().any(|c| c.0 == size_key);
+                if size_group && !constant {
+                    let now = w.image_source_size(id)[usize::from(name.ends_with("height"))];
+                    let n = w.changed.len();
+                    w.set_source_size(id, name, Value::Num(now));
+                    w.changed.truncate(n + usize::from(!size_sent));
+                }
+                if name == "text" {
+                    w.text_literals.remove(&id);
+                }
                 if constant {
                     // Qt stores literal values while populating the object, not in finalize().
                     if w.fresh_bind.remove(&k).is_some() {
@@ -29327,7 +29968,17 @@ impl Eng<'_> {
                     // (QmlUnitGenerator::generate), so `LayoutMirroring.enabled` does reach
                     // `onMirroredChanged`.
                     let mut w = self.world.borrow_mut();
-                    if !name.starts_with("LayoutMirroring.") {
+                    if size_group && !size_sent {
+                        let at = w.changed[n..].iter().position(|c| c.0 == size_key);
+                        w.changed.truncate(n + at.map_or(0, |at| at + 1));
+                    } else if matches!(name, "visible" | "enabled") {
+                        // The handlers of its children are connected: those follow it.
+                        let mut k = 0;
+                        w.changed.retain(|c| {
+                            k += 1;
+                            k <= n || (c.0.0 != id && c.0.1 == sym)
+                        });
+                    } else if !name.starts_with("LayoutMirroring.") {
                         // A value type property is written once, after the properties an
                         // object sets of it and after its signal handlers are connected: that
                         // write's change signal does reach them (`font.bold: true`).
@@ -29364,6 +30015,9 @@ impl Eng<'_> {
                         && w.items[p].types.iter().any(|t| *t == "ScrollView")
                     {
                         w.items[id].props.insert(mark, Prop::default());
+                    }
+                    if name == "text" && w.text_edit(id) {
+                        w.text_literals.insert(id);
                     }
                     return Ok(());
                 }
@@ -29424,6 +30078,25 @@ impl Eng<'_> {
             }
         };
         let mut w = self.world.borrow_mut();
+        // The value of a property QML declares (`property Item mask: Item {}`) gets no parent
+        // item: QQmlObjectCreator only makes it a QObject child.
+        let declared = w.items[id]
+            .props
+            .get_sym(sym)
+            .is_some_and(|p| p.decl != Decl::Cpp && p.alias.is_none());
+        if declared {
+            let mut loose = |v: &Value| {
+                if let Value::Item(c) = v
+                    && let Some(p) = w.items[*c].props.get_mut("\x01propval")
+                {
+                    p.value = Value::Null;
+                }
+            };
+            match &val {
+                Value::Obj(o) => o.borrow().array.iter().flatten().for_each(&mut loose),
+                v => loose(v),
+            }
+        }
         // Objects listed in `children`/`data` stay visual children, not property values.
         if matches!(
             name,
@@ -29445,8 +30118,22 @@ impl Eng<'_> {
         ) {
             w.list_write = ListWrite::Append;
         }
+        let n = w.changed.len();
         w.write(id, name, val);
         w.list_write = ListWrite::Assign;
+        // The handlers this object declares beside the value are connected after it is set.
+        if declared
+            && w.items[id]
+                .handlers
+                .get(&changed_handler(name))
+                .is_none_or(|hs| hs.iter().all(|c| c.ctx == ctx))
+        {
+            let mut k = 0;
+            w.changed.retain(|c| {
+                k += 1;
+                k <= n || c.0 != (id, sym)
+            });
+        }
         Ok(())
     }
 
@@ -29459,8 +30146,11 @@ impl Eng<'_> {
         vis: &Vis,
         depth: usize,
     ) -> Result<Value, String> {
-        let c = self.create(o, ctx, Some(id), file, vis, depth + 1)?;
+        self.world.borrow_mut().populating = Some((id, ctx));
+        let c = self.create(o, ctx, Some(id), file, vis, depth + 1);
         let mut w = self.world.borrow_mut();
+        w.populating = None;
+        let c = c?;
         if w.items[c].parent != Some(id) {
             // QObject-owned by `id` without being its visual child: dies with it.
             w.adopt(c, Some(id));
@@ -29641,6 +30331,100 @@ impl Eng<'_> {
         Ok(m.m0)
     }
 
+    /// QQmlBind::componentComplete for the `Binding` objects created from `n0` on, the last
+    /// one first; whether there is one.
+    fn binds_complete(&mut self, n0: usize) -> bool {
+        let binds: Vec<usize> = {
+            let mut w = self.world.borrow_mut();
+            let l: Vec<usize> = (n0..w.items.len())
+                .rev()
+                .filter(|&c| w.items[c].types.iter().any(|t| t == "Binding"))
+                .collect();
+            for &b in &l {
+                w.binds.insert(b, None);
+            }
+            l
+        };
+        for &b in &binds {
+            self.bind_eval(b);
+        }
+        !binds.is_empty()
+    }
+
+    /// QQmlBind::eval for the complete `Binding` object `b`: while `when` holds, `value` is
+    /// written to the `property` of `target` in place of what was there, which comes back as
+    /// `restoreMode` says once it no longer holds.
+    fn bind_eval(&mut self, b: usize) {
+        let mut w = self.world.borrow_mut();
+        if w.dead.contains(&b) {
+            return;
+        }
+        let reading = w.reading.take();
+        // QQmlBindPrivate: `when` starts true, `restoreMode` RestoreBindingOrValue, and a
+        // `value` never set (or whose binding threw) writes nothing.
+        let set = |w: &World, n: &str| w.items[b].props.contains_key(n);
+        let when = !set(&w, "when") || w.read(b, "when").is_none_or(|v| v.truthy());
+        let target = match w.read(b, "target") {
+            Some(Value::Item(t)) if !w.dead.contains(&t) => Some(t),
+            _ => None,
+        };
+        let property = w
+            .read(b, "property")
+            .map(|v| v.to_js_string())
+            .filter(|p| !p.is_empty());
+        let value = w
+            .read(b, "value")
+            .filter(|v| !matches!(v, Value::Undefined));
+        let mode = match w.read(b, "restoreMode") {
+            Some(Value::Num(m)) if set(&w, "restoreMode") => m as u8,
+            _ => 3,
+        };
+        w.reading = reading;
+        let on = match (when, target, property, value) {
+            (true, Some(t), Some(p), Some(v)) if w.items[t].props.contains_key(&p) => {
+                Some((t, p, v))
+            }
+            _ => None,
+        };
+        let mut held = w.binds.get_mut(&b).and_then(Option::take);
+        let moved = match (&held, &on) {
+            (Some(h), Some((t, p, _))) => h.target != *t || h.property != *p,
+            (Some(_), None) => true,
+            _ => false,
+        };
+        if moved && let Some(h) = held.take() {
+            match h.binding {
+                Some(code) if mode & 1 != 0 => {
+                    if let Some(p) = w.items[h.target].props.get_mut(&h.property) {
+                        p.binding = Some(code);
+                    }
+                    drop(w);
+                    self.eval_binding(h.target, &h.property);
+                    w = self.world.borrow_mut();
+                }
+                None if mode & 2 != 0 => {
+                    w.write(h.target, &h.property, h.value);
+                }
+                _ => {}
+            }
+        }
+        let Some((t, p, v)) = on else {
+            return;
+        };
+        let held = held.unwrap_or_else(|| {
+            let cur = w.items[t].props.get(&p);
+            BindSaved {
+                target: t,
+                property: p.clone(),
+                value: cur.map(|c| c.value.clone()).unwrap_or_default(),
+                binding: cur.and_then(|c| c.binding.clone()),
+            }
+        });
+        w.clear_binding(t, &p);
+        w.binds.insert(b, Some(held));
+        w.write(t, &p, v);
+    }
+
     fn eval_binding(&mut self, item: usize, name: &str) {
         let world = self.world.clone();
         Self::eval_binding_in(&world, self.it, item, name);
@@ -29650,6 +30434,21 @@ impl Eng<'_> {
         let t = prof_on().then(std::time::Instant::now);
         let outer = world.borrow_mut().sched.enter((item, Sym::new(name)));
         Self::eval_binding_inner(world, it, item, name);
+        let steps = std::mem::take(&mut world.borrow_mut().list_steps);
+        for s in steps {
+            // QQmlListProperty append / clear: the handlers of one step run before the next.
+            let changed = {
+                let mut w = world.borrow_mut();
+                let mark = w.changed.len();
+                w.list_step(s);
+                w.changed.split_off(mark)
+            };
+            Eng {
+                it: &mut *it,
+                world: world.clone(),
+            }
+            .dispatch_changes(changed, false);
+        }
         world.borrow_mut().sched.establish(outer);
         if let Some(t) = t {
             prof_report(world, "bind", item, name, t);
@@ -29894,11 +30693,16 @@ impl Eng<'_> {
                 }
                 match undef {
                     None | Some(Undef::Store) => {
+                        // An Item's list takes the objects one by one, as in an assignment; the
+                        // first evaluation is part of the object's creation.
+                        w.list_stepwise =
+                            fresh.is_none() && matches!(name, "children" | "data" | "resources");
                         if undef.is_none() {
                             w.write_bound(key, name, v);
                         } else {
                             w.write(item, name, v);
                         }
+                        w.list_stepwise = false;
                     }
                     Some(Undef::Reset(pi)) => w.reset_bound(key, pi),
                     // QQmlBinding::doStore: the property keeps its value.
@@ -31176,7 +31980,16 @@ impl Eng<'_> {
                             continue;
                         }
                         Fire::StackHide(_) | Fire::StackIdle(_) | Fire::StackRemove(_) => {
-                            self.world.borrow_mut().stack_fire(f);
+                            // viewItemTransitionFinished: the `removed` it queued waits here
+                            // for setBusy(false) to return, whatever a busyChanged handler
+                            // starts.
+                            let queued = {
+                                let mut w = self.world.borrow_mut();
+                                let n0 = w.fire.len();
+                                w.stack_fire(f);
+                                w.fire.split_off(n0)
+                            };
+                            queued.into_iter().rev().for_each(|f| fire.push_front(f));
                             self.settle_bindings();
                             continue;
                         }
@@ -35578,6 +36391,11 @@ impl Eng<'_> {
         }
         if own {
             (self.world.borrow_mut()).ipc_tap(item, qml_name(name), true, &[]);
+            if matches!(name, "when" | "value" | "target" | "property")
+                && self.world.borrow().binds.contains_key(&item)
+            {
+                self.bind_eval(item);
+            }
             if !self.world.borrow().text_pending.is_empty() {
                 self.world.borrow_mut().apply_text_pending(item, name);
             }
@@ -36029,6 +36847,7 @@ impl Eng<'_> {
     /// componentComplete) and the ones outside it hear the change at once. Otherwise they
     /// wait in [`World::changed_late`] for the bindings to update.
     fn dispatch_changes(&mut self, changed: Vec<(DKey, Cause)>, skip_dead: bool) {
+        self.world.borrow_mut().dispatching += 1;
         for ((item, name), cause) in changed {
             let late = {
                 let mut w = self.world.borrow_mut();
@@ -36045,6 +36864,7 @@ impl Eng<'_> {
                 w.changed_late.push(((item, name), cause, depth));
             }
         }
+        self.world.borrow_mut().dispatching -= 1;
     }
 
     /// Tells `Connections` and connected functions of the changes made by the handlers running
@@ -36125,8 +36945,11 @@ impl Eng<'_> {
                 let mut w = self.world.borrow_mut();
                 w.release_notify(status);
                 // The end of the load, unless the picture is awaited.
-                if w.image_complete.is_some() && w.items[c].types.iter().any(|t| t == "Image") {
-                    w.image_measured(c, true);
+                if w.image_complete.is_some() {
+                    match w.items[c].types.iter().any(|t| t == "Image") {
+                        true => w.image_measured(c, true),
+                        false => w.movie_measured(c),
+                    }
                 }
             }
             told(self);
@@ -36164,8 +36987,11 @@ impl Eng<'_> {
                 let from = w.creating_from;
                 w.fresh_bind.retain(|k, _| k.0 < from);
                 if !w.text_pending.is_empty() {
-                    w.flush_text_pending();
+                    w.flush_text_pending_of(true);
                     drop(w);
+                    continue;
+                }
+                if w.load_images() {
                     continue;
                 }
                 break;

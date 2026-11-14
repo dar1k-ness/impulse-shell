@@ -6590,6 +6590,8 @@ fn picture_sized(w: &mut World, i: usize, told: bool) {
     w.release_notify((i, qml::runtime::Sym::new("status")));
     if is(w, i, "Image") {
         w.image_measured(i, told);
+    } else {
+        w.movie_measured(i);
     }
 }
 
@@ -10095,7 +10097,7 @@ fn lift_for(
             && num(w, i, "width") == wd
             && num(w, i, "height") == ht
             && color16(w, i, "color", [u16::MAX; 4])[3] == u16::MAX
-            && num(w, i, "border.width") == 0.0
+            && pen_set_width(w, i) == 0.0
             && w.read(i, "gradient").is_none_or(|g| !g.truthy())
             && corners.iter().all(|c| !explicit(w, i, c))
     };
@@ -12345,13 +12347,22 @@ fn rect_pen_width(width: f64, color: [u8; 4], aligned: bool, dpr: f64) -> f32 {
     }
 }
 
+/// The width of a Rectangle's border as it draws: QQuickPen::isValid is false until a width or
+/// a color was set, whatever `border.width` reads (1).
+fn pen_set_width(w: &mut World, i: usize) -> f64 {
+    match w.items[i].props.contains_key("\x01pen") {
+        true => num(w, i, "border.width"),
+        false => 0.0,
+    }
+}
+
 /// What QQuickRectangle::updatePaintNode hands its node, for a Rectangle `wd` by `ht` on a
 /// screen of scale `dpr`.
 fn rect_params(w: &mut World, i: usize, wd: f64, ht: f64, dpr: f64) -> qsg::rect::RectParams {
     let corner = |w: &mut World, n: &str| opt_num(w, i, n).map(|v| v as f32);
     let border_color = color(w, i, "border.color", [0, 0, 0, 255]);
     let pen_width = rect_pen_width(
-        num(w, i, "border.width"),
+        pen_set_width(w, i),
         border_color,
         truthy(w, i, "border.pixelAligned", true),
         dpr,
