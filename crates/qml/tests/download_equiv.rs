@@ -4,8 +4,11 @@
 //! (`Download`, `ImageDownload`): their reference side is a `Process` with the command line the original
 //! had there (real bash/curl/mkdir/file), kept in this file. Weather.qml's `fetcher` runs once
 //! as the command line the original had (tests/fixtures/original) and once as `WeatherFetch`.
+#[path = "support/closed_port.rs"]
+mod closed_port;
 mod event_loop;
 
+use closed_port::closed_port;
 use qml::runtime::Runtime;
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
@@ -171,14 +174,6 @@ fn wttr_reply(path: &str) -> (&'static str, Vec<u8>) {
     } else {
         ("200 OK", b"oops, not json".to_vec())
     }
-}
-
-/// A port nothing listens on.
-fn closed_port() -> String {
-    let l = TcpListener::bind("127.0.0.1:0").unwrap();
-    let a = l.local_addr().unwrap();
-    drop(l);
-    format!("http://{a}")
 }
 
 /// The exit code of a native download whose original command line exited `code`: 0, or 1 for
@@ -401,7 +396,9 @@ fn favicon_download_matches_the_original_command() {
         "faviconDownloadProcess",
         &["url", "path", "userAgent"],
     );
-    let dead = closed_port();
+    // Kept to the end of the test, so the port stays closed for both sides.
+    let closed = closed_port();
+    let dead = closed.url();
     let cases: Vec<(&str, String, &str, bool)> = vec![
         (
             "ok",
@@ -545,7 +542,9 @@ fn image_downloader_matches_the_original_command() {
     let (base, seen) = server();
     let d = tmpdir("imgdl");
     let out = d.join("out");
-    let dead = closed_port();
+    // Kept to the end of the test, so the port stays closed for both sides.
+    let closed = closed_port();
+    let dead = closed.url();
     let o = out.to_str().unwrap();
     // The file each case leaves (the original's curl has no `-f`: an error page is saved like an image),
     // known here: both sides downloading nothing (a server that

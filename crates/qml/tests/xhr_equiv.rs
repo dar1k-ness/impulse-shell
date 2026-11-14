@@ -4,8 +4,11 @@
 //! goes through, with what it reads in each, must be the ones Qt 6.12 itself (the QQmlEngine
 //! of ri-testenv's system Qt, asked through PySide6 and tools/testenv/system_qt.py) reports
 //! against the same server.
+#[path = "support/closed_port.rs"]
+mod closed_port;
 mod event_loop;
 
+use closed_port::{ClosedPort, closed_port};
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
 
@@ -340,14 +343,11 @@ fn ready_states_match_qt() {
         return testenv::unavailable(format_args!("{PYTHON} (PySide6) is not installed"));
     }
     let port = state_server();
-    let closed = TcpListener::bind("127.0.0.1:0")
-        .unwrap()
-        .local_addr()
-        .unwrap()
-        .port();
+    // Kept to the end of the test, so the port stays closed for Qt and for the runtime.
+    let closed = closed_port();
     let src = STATES_QML
         .replace("@BASE@", &format!("http://127.0.0.1:{port}"))
-        .replace("@CLOSED@", &format!("http://127.0.0.1:{closed}"));
+        .replace("@CLOSED@", &closed.url());
 
     let dir = tempfile::tempdir().unwrap();
     let doc = dir.path().join("states.qml");
@@ -360,6 +360,14 @@ fn ready_states_match_qt() {
     );
     let want = String::from_utf8(qt.stdout).unwrap();
     assert!(want.contains("== handler throws\n"), "Qt:\n{want}");
+    // Qt was refused at the closed port, not answered by someone.
+    let refused = "== nothing listens\n";
+    let case = &want[want.find(refused).expect(refused)..];
+    let case = &case[..case[3..].find("== ").map_or(case.len(), |at| at + 3)];
+    assert!(
+        case.ends_with("  state 4 0 \"\" \"\" \"\" \"\"\n  error 4\n  loadend 4\n"),
+        "Qt:\n{case}"
+    );
 
     let mut rt = qml::runtime::Runtime::new(None);
     let mut lp = event_loop::Loop::new(&mut rt);
@@ -2729,12 +2737,12 @@ for step in sys.argv[3:]:
 "#;
 
 /// A server whose n-th connection is answered with the body `n`, and the address of
-/// another where nothing listens.
-fn numbering_server() -> (String, String) {
+/// another where nothing listens for as long as the port is kept.
+fn numbering_server() -> (String, String, ClosedPort) {
     let server = TcpListener::bind("127.0.0.1:0").unwrap();
     let url = format!("http://{}/", server.local_addr().unwrap());
-    let closed = TcpListener::bind("127.0.0.1:0").unwrap();
-    let dead = format!("http://{}/", closed.local_addr().unwrap());
+    let closed = closed_port();
+    let dead = closed.url() + "/";
     std::thread::spawn(move || {
         for (n, stream) in server.incoming().enumerate() {
             let mut stream = stream.unwrap();
@@ -2751,7 +2759,7 @@ fn numbering_server() -> (String, String) {
             stream.write_all(reply.as_bytes()).unwrap();
         }
     });
-    (url, dead)
+    (url, dead, closed)
 }
 
 /// The number of the next connection to the [`numbering_server`] at `url`: one more than
@@ -2805,8 +2813,9 @@ fn steps_in_qt_and_here(
         testenv::unavailable("a soft RLIMIT_NPROC of 0 refuses this user no thread");
         return None;
     }
-    let document =
-        |(url, dead): &(String, String)| REFUSED_QML.replace("@URL@", url).replace("@DEAD@", dead);
+    let document = |(url, dead, _): &(String, String, ClosedPort)| {
+        REFUSED_QML.replace("@URL@", url).replace("@DEAD@", dead)
+    };
     let next = |url: &str| format!("next connection {}\n", next_connection(url));
 
     let dir = tempfile::tempdir().unwrap();
