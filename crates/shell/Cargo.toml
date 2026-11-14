@@ -164,6 +164,14 @@ name = "plain_layer_qt"
 required-features = ["interp"]
 
 [[test]]
+name = "image_dpr_qt"
+required-features = ["interp"]
+
+[[test]]
+name = "canvas_dpr_qt"
+required-features = ["interp"]
+
+[[test]]
 name = "styled_text_dpr_qt"
 required-features = ["interp"]
 

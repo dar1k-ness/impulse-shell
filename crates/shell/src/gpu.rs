@@ -957,11 +957,13 @@ pub struct SegStart {
 enum Op {
     Smooth(Rc<Geometry>, f64, f64, f32),
     Glyphs(Rc<[GlyphQuadF]>, f64, f64, [u8; 4], f32),
-    /// `Frame::text_dpr`: the device-scale stack, line, node and pen position, color, opacity.
+    /// `Frame::text_dpr`: the device-scale stack, line, node and pen position, the node's
+    /// batch root, color, opacity.
     GlyphsDpr(
         Rc<qsg::text::FontStack>,
         Rc<qsg::text::ShapedLine>,
         [f64; 4],
+        Option<[f64; 2]>,
         [u8; 4],
         f32,
     ),
@@ -1129,8 +1131,12 @@ impl Frame {
             match op {
                 Op::Smooth(g, x, y, o) => self.smooth(g, x + dx, y + dy, *o),
                 Op::Glyphs(q, x, y, c, o) => self.glyphs(q.clone(), x + dx, y + dy, *c, *o),
-                Op::GlyphsDpr(st, l, [x, y, px, py], c, o) => {
-                    self.text_dpr(st.clone(), l.clone(), [x + dx, y + dy, *px, *py], *c, *o)
+                Op::GlyphsDpr(st, l, [x, y, px, py], root, c, o) => {
+                    let (at, root) = match root {
+                        Some([rx, ry]) => ([*x, *y, *px, *py], Some([rx + dx, ry + dy])),
+                        None => ([x + dx, y + dy, *px, *py], None),
+                    };
+                    self.text_dpr(st.clone(), l.clone(), at, root, *c, *o)
                 }
                 Op::Image(t, r, uv, o, sm, mip, tint) => {
                     let r = [r[0] + dx, r[1] + dy, r[2], r[3]];
@@ -1311,6 +1317,13 @@ impl Frame {
         f
     }
 
+    /// The texels of a layer's texture to the scene unit, along x and along y. None for a
+    /// frame that is no layer's.
+    pub fn layer_texels(&self) -> Option<[f64; 2]> {
+        let [lw, lh] = self.rect?;
+        Some([self.w as f64 / lw, self.h as f64 / lh])
+    }
+
     /// A layer's texture as Qt's render target, when nothing but its own scale scales what is
     /// drawn now: the rectangle of its projection, which is the source rect's, and its
     /// devicePixelRatio, the larger of the texels to the unit along x and along y
@@ -1340,12 +1353,22 @@ impl Frame {
     }
 
     /// The scale of a window whose pixels are not a whole number of times its
-    /// devicePixelRatio (`window_scale`), when it differs from that ratio: Qt has it in the
-    /// projection, past what a vertex shader does with the ratio.
-    fn past_snap(&self) -> Option<[f32; 2]> {
+    /// devicePixelRatio (`window_scale`), or of a layer's texture whose texels are not
+    /// (`sized`), when it differs from that ratio, and the devicePixelRatio of Qt's render
+    /// target there: the window's own, and of a layer the larger of its texels to the unit
+    /// along x and along y (QSGRhiLayer::grab). Qt has the scale in the projection, past what
+    /// a vertex shader does with the ratio.
+    fn past_snap(&self) -> Option<([f32; 2], f32)> {
         let dpr = self.dpr as f32;
         match self.own {
-            Some([kx, ky, ..]) if self.whole && [kx, ky] != [dpr, dpr] => Some([kx, ky]),
+            Some([kx, ky, ..]) if [kx, ky] != [dpr, dpr] => match self.rect {
+                _ if self.whole => Some(([kx, ky], dpr)),
+                Some([lw, lh]) => {
+                    let t = (self.w as f64 / lw).max(self.h as f64 / lh) as f32;
+                    Some(([kx, ky], t))
+                }
+                None => None,
+            },
             _ => None,
         }
     }
@@ -1865,38 +1888,65 @@ impl Frame {
     }
 
     /// NativeRendering glyphs of `line` on this frame's device pixels: `st` is the line's
-    /// stack `scaled(self.dpr)`, `at` the node (x y) and pen (x y) position in scene units.
+    /// stack `scaled(self.dpr)`, `at` the node (x y) and pen (x y) position in scene units,
+    /// the node's in `root` when that is its batch root's place (`FontStack::place_dpr`).
     /// Translatable: a moved segment re-places and re-snaps them like a fresh draw.
     pub fn text_dpr(
         &mut self,
         st: Rc<qsg::text::FontStack>,
         line: Rc<qsg::text::ShapedLine>,
         at: [f64; 4],
+        root: Option<[f64; 2]>,
         color: [u8; 4],
         opacity: f32,
     ) {
         let against = self.against;
         let xf = self.xform();
-        let mut q = st.place_dpr(&line, at[0], at[1], at[2], at[3], xf, against, self.dpr);
-        if let Some([kx, ky]) = self.past_snap() {
-            // textmask.vert snaps a vertex to a pixel of the devicePixelRatio before the
-            // projection, which in such a window is over a little more or less.
-            let dpr = self.dpr;
+        let (op_at, op_root) = (at, root);
+        let (at, r) = match root {
+            Some(r) => (at, r),
+            None => self.under_root(at),
+        };
+        let dpr = self.dpr;
+        let mut q = st.place_dpr(&line, at[0], at[1], at[2], at[3], r, xf, against, dpr, dpr);
+        if let Some(([kx, ky], target)) = self.past_snap() {
+            // textmask.vert snaps a vertex to a pixel of the target's devicePixelRatio before
+            // the projection, which there is over a little more or less.
             let [sx, sy, ox, oy] = self.xform();
-            let (kx, ky) = (kx as f64, ky as f64);
+            let (kx, ky, t) = (kx as f64, ky as f64, target as f64);
             let view = [sx / kx * dpr, sy / ky * dpr, ox / kx * dpr, oy / ky * dpr];
-            q = st.place_dpr(&line, at[0], at[1], at[2], at[3], view, against, dpr);
-            let (kx, ky) = ((kx / dpr) as f32, (ky / dpr) as f32);
+            q = st.place_dpr(&line, at[0], at[1], at[2], at[3], r, view, against, dpr, t);
+            let (kx, ky) = ((kx / t) as f32, (ky / t) as f32);
             for (_, r) in &mut q {
                 *r = [r[0] * kx, r[1] * ky, r[2] * kx, r[3] * ky];
             }
         }
         if self.plain() {
-            self.ops.push(Op::GlyphsDpr(st, line, at, color, opacity));
+            self.ops
+                .push(Op::GlyphsDpr(st, line, op_at, op_root, color, opacity));
         } else {
             self.taint();
         }
         self.push_glyph_rects(q, color, opacity);
+    }
+
+    /// A text node at `at` (node x y, pen x y) as `place_dpr` takes it under the batch root
+    /// of the item being drawn (`qsg::raster::Place`), and that root: the clip node of an
+    /// item with `clip: true` above it, or the window's, which is at the origin.
+    fn under_root(&self, at: [f64; 4]) -> ([f64; 4], [f64; 2]) {
+        let Some((p, _)) = self.places.last() else {
+            return (at, [0.0; 2]);
+        };
+        if p.root == [0.0; 2] {
+            return (at, [0.0; 2]);
+        }
+        let over = self.over.map_or([0.0; 2], |o| [o[0], o[1]]);
+        let root = [p.root[0] as f64 - over[0], p.root[1] as f64 - over[1]];
+        let rel = match p.is_at([at[0] + over[0], at[1] + over[1]]) {
+            true => [p.rel[0] as f64, p.rel[1] as f64],
+            false => [at[0] - root[0], at[1] - root[1]],
+        };
+        ([rel[0], rel[1], at[2], at[3]], root)
     }
 
     /// NativeRendering glyphs rasterized for this frame's `dpr`, on device rects

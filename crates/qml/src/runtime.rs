@@ -2195,8 +2195,11 @@ pub struct ImageState {
     /// What the pixmap shown was asked by (its url, requested size and fill mode): another
     /// picture's load of the same file is not a load of this one.
     pub request: String,
-    /// The size of the pixmap shown: `sourceSize` reads it where none was requested.
+    /// The size of the pixmap shown over the Image's devicePixelRatio: its implicit size.
     pub pix: (f64, f64),
+    /// The size of the pixmap shown in its own pixels: `sourceSize` reads it where none was
+    /// requested.
+    pub px: (f64, f64),
     /// `oldSourceSize`: the `sourceSize` last notified, none before the first load ends.
     pub told: Option<(f64, f64)>,
 }
@@ -14904,7 +14907,13 @@ impl World {
                 None if set[1 - k].is_some() => 0.0,
                 None => {
                     let implicit = ["implicitWidth", "implicitHeight"][k];
-                    self.read(item, implicit).map_or(0.0, |v| v.to_number())
+                    let implicit = self.read(item, implicit).map_or(0.0, |v| v.to_number());
+                    // QQuickImageBase::sourceSize: the pixmap's pixels, which at a
+                    // devicePixelRatio that is not 1 are not the implicit size.
+                    match self.images.get(&item) {
+                        Some(s) if s.px != s.pix => [s.px.0, s.px.1][k],
+                        _ => implicit,
+                    }
                 }
             };
         }
@@ -16250,7 +16259,7 @@ impl World {
         let d = match name.strip_prefix("font.") {
             // QQuickImageBase::sourceSize: with none requested, the loaded pixmap's.
             _ if sym == sym!("sourceSize") && inst.types.iter().any(|t| t == "Image") => {
-                let pix = self.images.get(&item).map_or((0.0, 0.0), |s| s.pix);
+                let pix = self.images.get(&item).map_or((0.0, 0.0), |s| s.px);
                 Some(crate::valuetypes::make_num(
                     crate::valuetypes::Vt::SizeF,
                     &[pix.0, pix.1],
@@ -16568,7 +16577,7 @@ impl World {
         // What the shell loaded; an image it loads nothing for (an AnimatedImage, or no
         // shell) has the implicit size its pixmap gave it.
         let pix = match self.images.get(&item) {
-            Some(s) if !s.request.is_empty() => [s.pix.0, s.pix.1],
+            Some(s) if !s.request.is_empty() => [s.px.0, s.px.1],
             _ => ["implicitWidth", "implicitHeight"]
                 .map(|k| self.read(item, k).map_or(0.0, |v| v.to_number())),
         };
@@ -18484,6 +18493,12 @@ impl World {
         } else {
             self.image_load_ended(item);
         }
+    }
+
+    /// QQuickImageBase::itemChange of an Image whose window's devicePixelRatio changed: it
+    /// loads again, and a shell ends that load when it has measured the Image.
+    pub fn image_reloads(&mut self, item: usize) {
+        self.image_loading.insert(item);
     }
 
     /// The Images given a `source` that have loaded nothing yet, the last created first: Qt
@@ -30652,6 +30667,26 @@ impl Eng<'_> {
         {
             let mut w = self.world.borrow_mut();
             w.assign((id, sym));
+            // QQmlObjectCreator::setupBindings: an object that sets properties of a value type
+            // property (`sourceSize.width: 320`) removes the binding a type under it put on
+            // the whole value (`sourceSize: Qt.size(..)`), which Qt has not evaluated yet.
+            if let Some((whole, _)) = name.split_once('.')
+                && whole.starts_with(|c: char| c.is_ascii_lowercase())
+            {
+                let whole = (id, Sym::new(whole));
+                if w.fresh_bind.remove(&whole).is_some() {
+                    w.dirty.remove(&whole);
+                    w.clear_binding_sym(id, whole.1);
+                    // A property of the C++ type goes back to holding nothing.
+                    let props = &mut w.items[id].props;
+                    if props
+                        .get_sym(whole.1)
+                        .is_some_and(|p| p.seq == 0 && matches!(p.value, Value::Undefined))
+                    {
+                        props.remove(whole.1.as_str());
+                    }
+                }
+            }
             if name == "states" && !w.state_hosts.contains(&id) {
                 w.state_hosts.push(id);
             }

@@ -2951,13 +2951,18 @@ impl FontStack {
         dpr: f64,
     ) -> Vec<GlyphRect> {
         match self.scaled(dpr) {
-            Some(st) => st.place_dpr(line, tx, ty, x, y, xf, [false; 2], dpr),
+            Some(st) => st.place_dpr(line, tx, ty, x, y, [0.0; 2], xf, [false; 2], dpr, dpr),
             None => Vec::new(),
         }
     }
 
     /// `line_rects_dpr` on the stack `scaled(dpr)` returned; `against` is the axes of the
-    /// target that run against the screen's (`snap_px`).
+    /// target that run against the screen's (`snap_px`). `root` is where the node's batch root
+    /// is when that is not the window (the clip node of a TextField's or a TextArea's text):
+    /// the node is at `tx`, `ty` in it, the renderer adds that to the vertices and the shader
+    /// the root's place, two float sums where a node of the window has one. `target` is the
+    /// devicePixelRatio of the render target, whose pixels the shader snaps to: `dpr`, the
+    /// glyphs' own, in a window.
     #[allow(clippy::too_many_arguments)]
     pub fn place_dpr(
         &self,
@@ -2966,9 +2971,11 @@ impl FontStack {
         ty: f64,
         x: f64,
         y: f64,
+        root: [f64; 2],
         xf: [f64; 4],
         against: [bool; 2],
         dpr: f64,
+        target: f64,
     ) -> Vec<GlyphRect> {
         let st = self;
         let [sx, sy, ox, oy] = xf;
@@ -2976,9 +2983,10 @@ impl FontStack {
         let baseline = y + line.ascent as f64 / 64.0;
         // The vertex shader (textmask.vert): the node's vertex through the scene transform in
         // floats, then to the nearest device pixel.
-        let snap = |v: f64, t: f64, k: f64, o: f64, against: bool| {
-            let scene = (v as f32 + t as f32) * k as f32 + (o / dpr) as f32;
-            snap_px(scene * dpr as f32, against)
+        let snap = |v: f64, t: f64, k: f64, o: f64, root: f64, against: bool| {
+            let m = (o / dpr) as f32 + k as f32 * root as f32;
+            let scene = (v as f32 + t as f32) * k as f32 + m;
+            snap_px(scene * target as f32, against)
         };
         // glyphCacheInverseScale: Qt multiplies by it, and the last bit decides a tie.
         let inv = 1.0 / dpr;
@@ -2992,7 +3000,8 @@ impl FontStack {
             // offset; the node's own position only moves the result.
             let px = x + gx as f64 / 64.0;
             let py = baseline + gy as f64 / 64.0;
-            let fx = qround(qround(px * 64.0) / 64.0 * dpr * 64.0) as i64;
+            // QFixed::fromReal cuts the fraction off, both times.
+            let fx = ((px * 64.0).trunc() / 64.0 * dpr * 64.0).trunc() as i64;
             // QFontEngineFT::supportsHorizontalSubPixelPositions: not a fully hinted font.
             let sp = if st.full_hint { 0 } else { Font::subpixel(fx) };
             let Some(g) = font.glyph(gid, sp) else {
@@ -3002,10 +3011,10 @@ impl FontStack {
             let ly = qround(py * dpr) * inv - g.top as f64 * inv;
             let (w, h) = (g.width as f64 * inv, g.rows as f64 * inv);
             let r = [
-                snap(lx, tx, kx, ox, against[0]),
-                snap(ly, ty, ky, oy, against[1]),
-                snap(lx + w, tx, kx, ox, against[0]),
-                snap(ly + h, ty, ky, oy, against[1]),
+                snap(lx, tx, kx, ox, root[0], against[0]),
+                snap(ly, ty, ky, oy, root[1], against[1]),
+                snap(lx + w, tx, kx, ox, root[0], against[0]),
+                snap(ly + h, ty, ky, oy, root[1], against[1]),
             ];
             out.push((g, r));
         }

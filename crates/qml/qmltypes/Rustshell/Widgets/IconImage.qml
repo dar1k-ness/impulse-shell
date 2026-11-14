@@ -61,7 +61,10 @@ Item {
 		anchors.fill: parent
 		fillMode: Image.PreserveAspectFit
 
-		sourceSize.width: root.actualSize
-		sourceSize.height: root.actualSize
+		// The IconImage this follows is compiled ahead of time, and that code stores a real in
+		// an int by cutting its fraction (19.5 asks for 19), where a binding that is
+		// interpreted rounds it (20): crates/qml/tests/icon_image_size.rs.
+		sourceSize.width: Math.trunc(root.actualSize)
+		sourceSize.height: Math.trunc(root.actualSize)
 	}
 }

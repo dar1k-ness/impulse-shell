@@ -142,12 +142,17 @@ fn icons(cases: &[Case]) -> String {
 
 /// The icons side by side, their tops at `y`.
 fn icons_at(cases: &[Case], y: usize) -> String {
+    icons_with(cases, y, "")
+}
+
+/// [`icons_at`], each icon with the properties `more` as well.
+fn icons_with(cases: &[Case], y: usize, more: &str) -> String {
     let mut s = String::new();
     for ((file, w, h), x) in cases.iter().zip(lefts(cases)) {
         assert!(x + *w as usize + 4 <= W);
         s += &format!(
             "    Kirigami.Icon {{ x: {x}; y: {y}; width: {w}; height: {h}; \
-             roundToIconSize: false; source: \"{file}\" }}\n"
+             roundToIconSize: false; source: \"{file}\"{more} }}\n"
         );
     }
     s
@@ -1355,12 +1360,18 @@ fn kirigami_scaled_pixels(
     let (w, h) = size;
     let scale = outputs[on];
     let sway = testenv::Sway::start();
+    // The output is a whole count of units, or grim's picture of it is not its pixels.
+    let whole = |side: f64| outputs.iter().all(|s| (side / s).fract() == 0.0);
+    let (rw, rh) = match whole(2560.0) && whole(1600.0) {
+        true => (2560, 1600),
+        false => (2400, 1500),
+    };
     for (n, scale) in outputs.iter().enumerate() {
         if n > 0 {
             swaymsg(&sway, "create_output");
         }
         let name = format!("output HEADLESS-{}", n + 1);
-        swaymsg(&sway, &format!("{name} resolution 2560x1600"));
+        swaymsg(&sway, &format!("{name} resolution {rw}x{rh}"));
         swaymsg(&sway, &format!("{name} scale {scale}"));
     }
     let output = format!("HEADLESS-{}", on + 1);
@@ -1416,11 +1427,7 @@ fn kirigami_scaled_pixels(
         log.text()
     );
     let full = qsg::image::load_png(shot.to_str().unwrap()).unwrap();
-    assert_eq!(
-        (full.w, full.h),
-        (2560, 1600),
-        "grim's picture of the output"
-    );
+    assert_eq!((full.w, full.h), (rw, rh), "grim's picture of the output");
     // The scene's rectangle ends where the window is clear: the window draws at `scale`.
     let (dw, dh) = shell::gpu::device_size(w, h, scale);
     let at = |x: usize, y: usize| full.px[y * full.w + x];
@@ -1617,6 +1624,69 @@ fn icons_are_drawn_as_kirigami_draws_them_on_a_scaled_output() {
     let dir = tempfile::tempdir().unwrap();
     let cases = scaled_cases(dir.path());
     let wrong: Vec<String> = [1.25, 2.0]
+        .iter()
+        .flat_map(|scale| scaled_differences(&cases, dir.path(), &[*scale], 0))
+        .collect();
+    assert!(
+        wrong.is_empty(),
+        "{} differ:\n{}",
+        wrong.len(),
+        wrong.join("\n")
+    );
+}
+
+const LAYERED_TEST: &str = concat!(
+    module_path!(),
+    "::icons_in_a_layer_are_drawn_as_kirigami_draws_them_on_a_scaled_output"
+);
+
+/// The file cases, each in a texture of its own (`layer.enabled`), and below them icons that
+/// have only an implicit size, as the bar's workspace icons do: such an icon is as large as
+/// its pixmap, which is asked for at the screen's whole ratio, so on a fractional output it is
+/// larger than its item and its corner is half a pixel outside the texture.
+fn layered_cases(dir: &std::path::Path) -> (String, (usize, usize), Regions) {
+    let files = cases(dir);
+    let mut scene = icons_with(&files, 4, "; layer.enabled: true");
+    let mut regions: Regions = Vec::new();
+    for ((file, w, h), x) in files.iter().zip(lefts(&files)) {
+        let name = file.rsplit('/').next().unwrap();
+        regions.push((
+            format!("{name} in a layer of {w}x{h}"),
+            [x - 2, 0, x + w.ceil() as usize + 2, H],
+            (x, 4),
+        ));
+    }
+    let unsized_ones = [
+        write_png(dir, "wide.png", 100, 30),
+        write_png(dir, "high.png", 30, 100),
+        write_png(dir, "square.png", 64, 64),
+    ];
+    for (n, file) in unsized_ones.iter().enumerate() {
+        let (x, y) = (4 + n * 40, H + 8);
+        scene += &format!(
+            "    Kirigami.Icon {{ x: {x}; y: {y}; implicitWidth: 18; implicitHeight: 18; \
+             roundToIconSize: false; source: \"{file}\"; layer.enabled: true }}\n"
+        );
+        let name = file.rsplit('/').next().unwrap();
+        regions.push((
+            format!("{name} in a layer of an implicit 18x18"),
+            [x - 4, y - 4, x + 22, y + 22],
+            (x, y),
+        ));
+    }
+    (scene, (W, 2 * H), regions)
+}
+
+/// A layer's texture is Kirigami's render target: icon.vert rounds each vertex to a texel of
+/// it, and its rows run the other way than a window's, so half a pixel goes down there.
+#[test]
+fn icons_in_a_layer_are_drawn_as_kirigami_draws_them_on_a_scaled_output() {
+    if !scaled_setup(LAYERED_TEST) {
+        return;
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let cases = layered_cases(dir.path());
+    let wrong: Vec<String> = [1.0, 1.25, 1.5, 2.0]
         .iter()
         .flat_map(|scale| scaled_differences(&cases, dir.path(), &[*scale], 0))
         .collect();

@@ -319,7 +319,15 @@ fn with_shadow(p: &mut Painter, s: &Shadow, bbox: [f64; 4], paint: &dyn Fn(&mut 
 
 /// Replays `ops` onto a transparent `cw` x `ch` image.
 pub fn replay(ops: &[CanvasOp], cw: usize, ch: usize) -> Canvas {
+    replay_at(ops, cw, ch, 1.0)
+}
+
+/// `replay` onto the image of a window of devicePixelRatio `dpr`: QQuickContext2DImageTexture
+/// sets the ratio on its QImage, so the painter draws every op `dpr` times as large.
+pub fn replay_at(ops: &[CanvasOp], cw: usize, ch: usize, dpr: f64) -> Canvas {
+    let device = |m: &[f64; 6]| m.map(|v| v * dpr);
     let mut p = Painter::new(cw, ch);
+    p.set_matrix(device(&[1.0, 0.0, 0.0, 1.0, 0.0, 0.0]));
     let black = Brush::Solid([0, 0, 0, 255]);
     let mut fill = black.clone();
     let mut pen = Pen {
@@ -365,7 +373,7 @@ pub fn replay(ops: &[CanvasOp], cw: usize, ch: usize) -> Canvas {
     };
     for op in ops {
         match op {
-            CanvasOp::Matrix(m) => p.set_matrix(*m),
+            CanvasOp::Matrix(m) => p.set_matrix(device(m)),
             CanvasOp::ClearRect(r) => p.clear_rect(*r),
             CanvasOp::FillRect(r) => {
                 if shadow.on() {

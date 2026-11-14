@@ -87,3 +87,19 @@ fn plain_rectangle_in_a_layer() {
          Desaturate { x: 9.54; y: 8.62; width: 22.5; height: 19.3; source: src; desaturation: 0.5 }",
     );
 }
+
+/// A panel's outline: the window hears of the output's scale after its Rectangles were made,
+/// at the screen's whole ratio, and Qt does not round their borders again to the new pixels.
+#[test]
+fn border_made_before_the_scale() {
+    qt_window::like_qt_by(
+        qt_window::Scale::OutputAfterLoad,
+        "Rectangle { x: 8; y: 4; width: 40; height: 24; radius: 6; color: \"#3366ff\"; border.color: \"#ffee00\"; border.width: 1 }\n\
+         Rectangle { x: 60; y: 4; width: 40; height: 24; color: \"#3366ff\"; border.color: \"#ffee00\"; border.width: 1 }\n\
+         Rectangle { x: 8; y: 34; width: 40; height: 24; radius: 6; color: \"#3366ff\"; border.color: \"#ffee00\"; border.width: 2 }",
+        (120, 64),
+        &[1.25, 1.5, 2.0],
+        2,
+        0,
+    );
+}

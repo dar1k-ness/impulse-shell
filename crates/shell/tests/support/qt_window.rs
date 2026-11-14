@@ -29,6 +29,9 @@ pub enum Scale {
     /// The compositor's output scale (wp_fractional_scale_v1), as a shell on a scaled monitor
     /// has it: fonts are laid out as at scale 1.
     Output,
+    /// `Output`, heard of by a window whose scene was loaded before, as a shell's panel
+    /// hears of it: until then the window was at the screen's whole ratio.
+    OutputAfterLoad,
 }
 
 /// Whether a text caret Qt draws blinks.
@@ -81,7 +84,7 @@ fn qt_shows(
         path = format!("{path}:{}", dir.display());
     }
     let sway = testenv::Sway::start();
-    if by == Scale::Output {
+    if by != Scale::Qt {
         let st = std::process::Command::new("swaymsg")
             .env("SWAYSOCK", sway.ipc_socket())
             .arg(format!("output HEADLESS-1 scale {dpr}"))
@@ -104,6 +107,9 @@ fn qt_shows(
     match by {
         Scale::Qt => cmd.env("QT_SCALE_FACTOR", dpr.to_string()),
         Scale::Output => cmd.env("ORACLE_DPR", dpr.to_string()),
+        Scale::OutputAfterLoad => cmd
+            .env("ORACLE_DPR", dpr.to_string())
+            .env("ORACLE_SCENE_KEPT", "1"),
     };
     // Where QSGRhiDistanceFieldGlyphCache puts a glyph in its texture follows the order of
     // a QSet, which the process's random hash seed gives: without a fixed seed two runs of
@@ -131,15 +137,35 @@ fn qt_shows(
     (Canvas::from_px(w, h, px), text)
 }
 
-/// Our device pixels of the same scene on the GPU path.
-fn ours(body: &str, (w, h): (usize, usize), dpr: f64) -> Canvas {
+/// Tells the scene the ratio of the screen a window of `dpr` is on (Screen.devicePixelRatio):
+/// `dpr` under Qt's own scaling, the next whole number on an output of a fractional scale.
+fn on_screen(by: Scale, dpr: f64) {
+    scene::set_screens_ratio(match by {
+        Scale::Qt => dpr,
+        Scale::Output | Scale::OutputAfterLoad => dpr.ceil(),
+    });
+}
+
+/// Our device pixels of the same scene on the GPU path, on the screen `by` gives.
+fn ours(body: &str, (w, h): (usize, usize), dpr: f64, by: Scale) -> Canvas {
+    on_screen(by, dpr);
     let (imports, body) = split_imports(body);
     let qml = format!(
         "{IMPORTS}{imports}import Quickshell\nFloatingWindow {{\n    width: {w}; height: {h}\n    \
          color: \"#202020\"\n{body}\n}}\n"
     );
-    let mut rt = qml::runtime::Runtime::new(None);
-    let win = rt.load_str(&qml).expect("scene loads");
+    // From a file: a document loaded from a string does not find its inline components.
+    let dir = tempfile::tempdir().unwrap();
+    let file = dir.path().join("scene.qml");
+    std::fs::write(&file, qml).unwrap();
+    let mut rt = qml::runtime::Runtime::new(Some(dir.path().to_path_buf()));
+    let win = rt.load_file(&file).expect("scene loads");
+    if by == Scale::OutputAfterLoad {
+        let mut fonts = scene::Fonts::default();
+        rt.settle();
+        scene::layout_window(&mut rt, &mut fonts, win, [w as f64, h as f64]);
+        scene::window_scale(&mut rt.world.borrow_mut(), win, dpr);
+    }
     drawn(&mut rt, win, (w, h), dpr)
 }
 
@@ -154,6 +180,8 @@ pub fn drawn(
     for _ in 0..3 {
         rt.settle();
         scene::layout_window(rt, &mut fonts, win, [w as f64, h as f64]);
+        // A Canvas paints in the frame after the one that laid it out.
+        rt.canvases_available();
     }
     let (mut g, _) =
         shell::gpu::Gpu::headless("surfaceless").expect("surfaceless EGL/GLES2 context (Mesa)");
@@ -168,7 +196,7 @@ pub fn drawn(
 /// The device pixels of `body` at `dpr`: (Qt's, ours); `None` (reported) without the oracle.
 pub fn both(body: &str, size: (usize, usize), dpr: f64) -> Option<(Canvas, Canvas)> {
     let (want, _) = qt(body, size, dpr, Scale::Qt, Caret::Blinks)?;
-    Some((want, ours(body, size, dpr)))
+    Some((want, ours(body, size, dpr, Scale::Qt)))
 }
 
 /// `both` of a scene with a text caret, which under Qt does not blink here: Qt's shot is taken
@@ -180,7 +208,7 @@ pub fn both_with_a_still_caret(
     dpr: f64,
 ) -> Option<(Canvas, Canvas)> {
     let (want, _) = qt(body, size, dpr, Scale::Qt, Caret::Still)?;
-    Some((want, ours(body, size, dpr)))
+    Some((want, ours(body, size, dpr, Scale::Qt)))
 }
 
 /// With `RI_DUMP_DIR` set, both pictures as PPM files there, to look at a difference.
@@ -242,7 +270,7 @@ pub fn shown_like_qt(body: &str, size: (usize, usize), allow: usize, ours: impl 
 pub fn off_qt_by(by: Scale, body: &str, size: (usize, usize), dprs: &[f64]) -> Option<Vec<usize>> {
     let off = |&dpr: &f64| {
         let (want, _) = qt(body, size, dpr, by, Caret::Blinks)?;
-        let got = ours(body, size, dpr);
+        let got = ours(body, size, dpr, by);
         dump(&got, &want, dpr);
         let (n, max, at) = diff(&got, &want, 0);
         println!("dpr {dpr}: {n} px over 0, max {max} at {at:?}");
@@ -290,7 +318,7 @@ pub fn like_qt_by(
 ) {
     let shown = |dpr| {
         let (want, _) = qt(body, size, dpr, by, Caret::Blinks)?;
-        Some((want, ours(body, size, dpr)))
+        Some((want, ours(body, size, dpr, by)))
     };
     compared(shown, dprs, tol, allow);
 }
@@ -332,6 +360,7 @@ pub fn like_qt_in(
         rt.load_singletons(&dirs);
         rt.settle();
         let win = rt.load_file(&our_file).expect("scene loads");
+        on_screen(by, dpr);
         Some((want, drawn(&mut rt, win, size, dpr)))
     };
     compared(shown, dprs, 0, 0);
@@ -376,6 +405,7 @@ pub fn off_qt_in(
         let (want, _) = qt_shows(&qt_file, Some(tree), dpr, by, Caret::Blinks);
         let mut rt = qml::runtime::Runtime::new(Some(root.clone()));
         let win = rt.load_file(&our_file).expect("scene loads");
+        on_screen(by, dpr);
         let got = drawn(&mut rt, win, size, dpr);
         dump(&got, &want, dpr);
         let (n, max, _) = diff(&got, &want, 0);

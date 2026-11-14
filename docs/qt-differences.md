@@ -2269,3 +2269,62 @@ Tests, in `crates/shell/tests/qt_view_content.rs`:
 `position_unrealized_origin_differs_from_qt_as_recorded` holds the line read here;
 `position_unrealized_origin` is the comparison with Qt's line, not run until the rows are laid
 out inside the call (`--run-ignored all`); `position_unrealized` compares the rest with Qt.
+
+## Three places of the Settings window at monitor scale 1.25
+
+Not on purpose: what is left of the comparison with the original shell at the monitor
+scales 1.25, 1.5 and 2 in the guest (Hyprland, 1920 x 1080, llvmpipe), scene `settings` of
+`tools/parity`. All three are at scale 1.25 only; at 1, 1.5 and 2 the same
+places have the original's pixels. Pixels that differ / by more than 8 of 255:
+
+| place | pixels | furthest | whose side |
+|---|---|---|---|
+| ring of the chosen accent colour (`AccentSwatch`, `qml/modules/settings/QuickConfig.qml:102`) | 390 / 282 | 109 | not known |
+| "A" in the badge of the same swatch (`QuickConfig.qml:159`) | 71 / 63 | 154 | not known |
+| circle of an occupied workspace on the bar (`qml/modules/rusty/bar/Workspaces.qml:103`) | 146 / 89 | 32 | the original's |
+
+The ring and the "A" touch: counted as one box (71 x 71 at 562, 716) they are 461 / 345.
+
+The ring. A 56 x 56 Rectangle with `border.width: 2`: the outer edge is the original's, the
+border is 2.5 device pixels wide in the original and 3 here. Beside it the border of the
+chosen `SettingsPreviewTile`, also `border.width: 2`, is 3 pixels in both. So in one window
+of the original one border width is drawn two ways. A panel keeps the pen its Rectangles
+rounded before the window heard of the output's scale (`border_made_before_the_scale` in
+`crates/shell/tests/rect_dpr_qt.rs`). The same rule given to an application's window makes
+the ring the original's and takes three borders away from it that are the original's now:
+
+| at 1.25 | as it is | with that rule |
+|---|---|---|
+| the ring | 390 / 282 | 0 |
+| border of the chosen tile | 0 | 560 / 470 |
+| border of the switch (`StyledSwitch`) | 0 | 210 / 146 |
+| border at the bottom of the window | 0 | 202 / 187 |
+
+972 / 803 against 390 / 282, so the rule is not in. A guess, not measured: the tile and the
+switch have `Behavior on border.color`, the ring has none; a colour animation that runs
+while the original starts draws those borders again after the scale has come, with the pen
+rounded to 1.25.
+
+The "A". The badge's circle under it has the original's pixels; the glyph has the
+original's shape and stands a part of a pixel elsewhere, 11 x 11 pixels. The same badge (a
+20 x 20 Rectangle, a bold 11 px `Text.NativeRendering` text centred in it) at ten places a
+tenth and a half of a pixel apart has Qt's pixels at 1.25 and 1.5 with Noto Sans and with
+Noto Sans Mono. The shell's font there is Google Sans Flex with `variableAxes`, which the
+test machine does not have. No cause is named.
+
+The circle. The mask of `MaskMultiEffect` is a layer of 325 x 33 texels shown texel by
+texel, and the item is at x = 797.5 device pixels: the centre of every pixel is on the edge
+between two texels. The original shows column 797 twice (797 and 798 are equal over rows 9
+to 40) and the rest one pixel to the right; under a shift of one pixel the rows 9, 10, 39
+and 40 are equal to ours. The same structure (a masked layer under a `MultiEffect` at part
+pixel places), tried once and not kept as a test, has Qt's pixels at 1.25 and 1.5, so the
+choice on that edge is the original's interpolation of texture coordinates on llvmpipe.
+Seen by eye: an edge of the circle one pixel wider, 32 of 255 at most.
+
+Why: half a pixel of one border, and two ties on a pixel edge, at one scale.
+
+To remove the ring's difference: find what draws the tile's border again after the scale
+in the original, and do that; then the panel's rule can hold for every window.
+
+Tests: none holds these numbers; they are the guest's. `border_made_before_the_scale`
+holds the panel's rule.

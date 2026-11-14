@@ -147,6 +147,38 @@ fn provider_source(src: &str) -> bool {
     src.starts_with("image://icon/") || src.starts_with("image://service.sni/")
 }
 
+/// QQuickPixmap::isScalableImageFormat of a file: a URL whose path ends in `svg` or `svgz`
+/// (`pdf` has no reader here). An Image loads such a source at its own devicePixelRatio
+/// ([`provider_ratio`]): `sourceSize` times it, or the file's own size times it.
+fn scalable_source(src: &str) -> bool {
+    let path = src.split(['?', '#']).next().unwrap_or(src);
+    !src.starts_with("image:") && (path.ends_with("svg") || path.ends_with("svgz"))
+}
+
+thread_local! {
+    /// The ratio, in 120ths, each scalable file without a `sourceSize` was first loaded at,
+    /// by the file and the ratio rounded ([`scalable_request`]).
+    static UNSIZED: std::cell::RefCell<HashMap<(String, i32), i32>> = Default::default();
+}
+
+/// What an Image of devicePixelRatio `ratio` asks the scalable file `src` of for a
+/// `sourceSize` of `ss` (QQuickImageBase::loadPixmap: QSize times the ratio, rounded). Without
+/// a `sourceSize` the file is loaded at its own size times the ratio
+/// (QQuickImageProviderWithOptions::loadSize), which the key says as minus the ratio in 120ths.
+/// Qt's pixmap cache does not hold the ratio: it keys that load by QSize(-1, -1) times the
+/// ratio, rounded, so a ratio of 1.5 is given the pixmap one of 2 loaded (measured on Qt
+/// 6.12: an Image of a 20 px file loaded at 2 and then at 1.5 keeps 40 px and is 26.67 wide).
+fn scalable_request(src: &str, ss: (i32, i32), ratio: f64) -> (i32, i32) {
+    if ss.0 <= 0 && ss.1 <= 0 {
+        let key = (src.to_owned(), ratio.round() as i32);
+        let own = (ratio * 120.0).round() as i32;
+        let first = UNSIZED.with_borrow_mut(|m| *m.entry(key).or_insert(own));
+        return (-first, -first);
+    }
+    let times = |v: i32| (v.max(0) as f64 * ratio).round() as i32;
+    (times(ss.0), times(ss.1))
+}
+
 /// IconImageProvider::requestPixmap's size for a request of `ss`: 100x100 for one without a
 /// size, 2x2 for one with a zero side.
 fn provider_target(ss: (i32, i32)) -> (i32, i32) {
@@ -164,6 +196,13 @@ fn provider_pixels(ss: (i32, i32)) -> (i32, i32) {
     let ((w, h), app) = (provider_target(ss), screens_ratio());
     let px = |side: i32| (side as f64 * app).round() as i32;
     (px(w), px(h))
+}
+
+/// Whether the pixmap a Kirigami.Icon loaded by the key's `fill` is a QIcon's, in pixels of
+/// the window (its own, or the one Quickshell's icon provider made of one); what is loaded
+/// like an Image is in units.
+fn icon_pixels(fill: i32) -> bool {
+    fill < 0 || fill == PROVIDER_FILL
 }
 
 /// The `fillMode` of an [`ImageKey`] that loads a file as QIcon(file)'s pixmap
@@ -290,9 +329,9 @@ fn purge_provider_pixmaps(w: &mut World) {
 }
 
 /// The compositor gave the window of item `win` the scale `dpr` (again, or for the first
-/// time): the Images there from then on ask their icons at it ([`provider_ratio`]), and those
-/// it changes the ratio of are laid out again, their implicit size being their pixmap's over
-/// it.
+/// time): the Images there from then on ask their icons and scalable files at it
+/// ([`provider_ratio`]), and those it changes the ratio of are laid out again, their implicit
+/// size being their pixmap's over it.
 pub fn window_scale(w: &mut World, win: usize, dpr: f64) {
     let n = w.items.len();
     let was = {
@@ -303,12 +342,19 @@ pub fn window_scale(w: &mut World, win: usize, dpr: f64) {
     if was == dpr {
         return;
     }
+    let before = if was.is_nan() { dpr.ceil() } else { was };
+    image_loads(w)
+        .pens_before
+        .borrow_mut()
+        .insert(win, (before, n));
     for i in w.of_type("Image") {
         let src = w.read(i, "source").map(|v| v.to_js_string());
-        if src.is_some_and(|s| provider_source(&s)) && qml::runtime::window_of(w, i) == Some(win) {
+        let ratioed = src.is_some_and(|s| provider_source(&s) || scalable_source(&s));
+        if ratioed && qml::runtime::window_of(w, i) == Some(win) {
             w.memo_invalidate(i);
             w.resized.push(i);
             w.touched.push(i);
+            w.image_reloads(i);
         }
     }
 }
@@ -318,12 +364,15 @@ pub fn forget_ratios(w: &World, ids: &[usize]) {
     let loads = image_loads(w);
     for i in ids {
         loads.ratios.borrow_mut().remove(i);
+        loads.pens.borrow_mut().remove(i);
+        loads.pens_before.borrow_mut().remove(i);
         loads.window_scales.borrow_mut().remove(i);
         loads.icons.borrow_mut().remove(i);
     }
 }
 
-/// QQuickImageBasePrivate::devicePixelRatio of an Image asking an icon provider.
+/// QQuickImageBasePrivate::devicePixelRatio of an Image asking an icon provider or a
+/// scalable file.
 struct ProviderRatio {
     ratio: f64,
     /// The scale its window had when this was last looked at; `None` before the compositor
@@ -333,8 +382,8 @@ struct ProviderRatio {
     request: u64,
 }
 
-/// The devicePixelRatio of Image `i`, which asks an icon provider for `src` with a
-/// `sourceSize` of `ss` (QQuickImageBase::loadPixmap requests `sourceSize` times it, and the
+/// The devicePixelRatio of Image `i`, which asks an icon provider or a scalable file
+/// ([`scalable_source`]) for `src` with a `sourceSize` of `ss` (QQuickImageBase::loadPixmap requests `sourceSize` times it, and the
 /// implicit size is the pixmap's over it). Measured on Qt 6.12 with Quickshell 0.3.2: an
 /// Image loads at its window's ratio, or at the application's when it is loaded before its
 /// window exists, as what a shell declares is; and it loads again when its window's ratio
@@ -486,13 +535,16 @@ fn icon_rect(
 
 /// The corner `x`, `y` of an icon's rectangle in the window as Kirigami's icon.vert moves
 /// it: each vertex goes to the whole pixel `round(pixel + 0.0001)` of the framebuffer, whose
-/// rows OpenGL counts from the bottom, so half a pixel goes right and up. `dpr` is how many
-/// pixels a unit of `x` and `y` is.
-fn icon_corner(x: f64, y: f64, dpr: f64) -> (f64, f64) {
-    (
-        (x * dpr + 0.5001).floor() / dpr,
-        (y * dpr - 0.5001).ceil() / dpr,
-    )
+/// rows OpenGL counts from the bottom, so half a pixel goes right and up. A layer's texture
+/// is a framebuffer of its own that Qt fills bottom row first (QSGRhiLayer::grab mirrors the
+/// projection), so `down` there: half a texel goes right and down. `s` is how many pixels a
+/// unit of `x` and of `y` is.
+fn icon_corner(x: f64, y: f64, s: [f64; 2], down: bool) -> (f64, f64) {
+    let y = match down {
+        true => (y * s[1] + 0.5001).floor(),
+        false => (y * s[1] - 0.5001).ceil(),
+    };
+    ((x * s[0] + 0.5001).floor() / s[0], y / s[1])
 }
 
 /// QQuickItem::widthValid/heightValid of the Kirigami.Icon `i`: set explicitly, by anchors
@@ -743,7 +795,7 @@ fn polish_icon(w: &mut World, i: usize, dpr: f64, asked: bool) -> bool {
                     .is_some_and(|s| s.missed);
                 set(w, i, "status", if missed { 3.0 } else { 1.0 });
                 // A QIcon's pixmap is in pixels; what is loaded like an Image is in units.
-                pixmap = (t.w, t.h, if fk < 0 { dpr } else { 1.0 });
+                pixmap = (t.w, t.h, if icon_pixels(fk) { dpr } else { 1.0 });
             }
             None => {
                 if named && !(is_remote(src) && remote_pending(image_loads(w), src)) {
@@ -1407,7 +1459,7 @@ fn gpu_glyphs(
 ) {
     if fr.dpr != 1.0 {
         if let Some(st) = f.scaled(fr.dpr) {
-            fr.text_dpr(st, Rc::new(line.clone()), [x, y, dx, dy], col, op);
+            fr.text_dpr(st, Rc::new(line.clone()), [x, y, dx, dy], None, col, op);
         }
     } else if fr.xf.is_some() {
         fr.glyphs_f(f.line_quads_f(line, 0.0, 0.0, dx, dy), x, y, col, op);
@@ -1430,6 +1482,68 @@ fn edit_line(
         Target::Cpu(c) => cpu_line(c, f, line, t, at, col, op),
         Target::Gpu(fr) => gpu_glyphs(fr, f, line, x, y, dx, dy, col, op),
     }
+}
+
+/// `edit_line` of a node at `t` in its batch root, which is at `root`: the text of a TextField
+/// or a TextArea, under the clip node QQuickTextField and QQuickTextArea put it in.
+#[allow(clippy::too_many_arguments)]
+fn field_line(
+    cv: &mut Target,
+    f: &FontStack,
+    line: &qsg::text::ShapedLine,
+    root: [f64; 2],
+    t: [f64; 2],
+    at: [f64; 2],
+    col: [u8; 4],
+    op: f32,
+) {
+    if let Target::Gpu(fr) = cv
+        && fr.dpr != 1.0
+    {
+        if let Some(st) = f.scaled(fr.dpr) {
+            let at = [t[0], t[1], at[0], at[1]];
+            fr.text_dpr(st, Rc::new(line.clone()), at, Some(root), col, op);
+        }
+        return;
+    }
+    edit_line(cv, f, line, [root[0] + t[0], root[1] + t[1]], at, col, op);
+}
+
+/// A line of a text editor's NativeRendering text where the scene graph has it: the line is at
+/// `at` in the item at `item`, in a node at `node` in the item. A QQuickTextEdit moves its
+/// text by its paddings and its alignment and has a node for every block, at the block's
+/// place in the document (QQuickTextEdit::updatePaintNode: with no frame after the root's, a
+/// node ends with its block); the placeholder of a TextField or a TextArea is a Text item at
+/// its paddings. A glyph is put on the pixels of the glyph cache in its node
+/// (QSGTextMaskMaterial::populate), and the node on the screen's, so on a screen whose scale
+/// is not whole the two are not one sum. `field`: the text is under the clip node of a
+/// TextField or a TextArea (`field_line`).
+#[allow(clippy::too_many_arguments)]
+fn edit_node_line(
+    cv: &mut Target,
+    f: &FontStack,
+    line: &qsg::text::ShapedLine,
+    item: [f64; 2],
+    field: bool,
+    node: [f64; 2],
+    at: [f64; 2],
+    col: [u8; 4],
+    op: f32,
+) {
+    let pen = [at[0] - node[0], at[1] - node[1]];
+    match field {
+        true => field_line(cv, f, line, item, node, pen, col, op),
+        false => {
+            let t = [item[0] + node[0], item[1] + node[1]];
+            edit_line(cv, f, line, t, pen, col, op)
+        }
+    }
+}
+
+/// QQuickTextField and QQuickTextArea put their text node under a clip node.
+fn is_field(w: &World, i: usize) -> bool {
+    let types = &w.items[i].types;
+    qml::types::inherits(types, "QQuickTextArea") || qml::types::inherits(types, "QQuickTextField")
 }
 
 /// How a Text.QtRendering text is drawn.
@@ -4405,19 +4519,23 @@ impl RichLine {
 /// An underline or a strike-out of a `RichLine`: see `RichLine::underlines`.
 type UnderlineOf = (f64, f64, (f64, i64), Option<[u8; 4]>);
 
-/// The lines of a TextEdit's text with formats, wrapped at `wrap` as its `wrapMode` says.
+/// The lines of a TextEdit's text with formats, wrapped at `wrap` as its `wrapMode` says, and
+/// which of them are the first of their block.
 fn edit_rich_lines(
     w: &mut World,
     i: usize,
     f: &Rc<FontStack>,
     spans: &[(String, Rc<FontStack>, Deco)],
     wrap: Option<f64>,
-) -> Vec<RichLine> {
+) -> (Vec<RichLine>, Vec<bool>) {
     let bounds = match wrap {
         Some(width) => Bounds::wrapped(Wrap::from_qml(num(w, i, "wrapMode") as i32), width),
         None => Bounds::NATURAL,
     };
     let laid = rich_laid(f, spans, &bounds);
+    let text: String = spans.iter().map(|s| s.0.as_str()).collect();
+    let block = |&at: &usize| at == 0 || text.as_bytes().get(at - 1) == Some(&b'\n');
+    let mut blocks: Vec<bool> = laid.starts.iter().map(block).collect();
     let mut lines = laid.lines;
     // A QTextDocument's text that ends in a line separator has one more, empty, block.
     let len: usize = spans.iter().map(|s| s.0.len()).sum();
@@ -4427,7 +4545,8 @@ fn edit_rich_lines(
     {
         lines.push(rich_line(f, vec![], 0.0, None, false));
     }
-    lines
+    blocks.resize(lines.len(), true);
+    (lines, blocks)
 }
 
 /// A line's segments placed from `start`, each tab as wide as the way to the next tab stop.
@@ -6105,10 +6224,10 @@ fn measure_inner(w: &mut World, fonts: &mut Fonts, i: usize) {
         match ts.font {
             Some(f) if ts.spans.is_some() => {
                 let spans = ts.spans.unwrap();
-                let natural = edit_rich_lines(w, i, &f, &spans, None);
+                let natural = edit_rich_lines(w, i, &f, &spans, None).0;
                 let iw = natural.iter().map(|l| l.natural).fold(0.0, f64::max);
                 let ww = edit_wrap_width(w, i, l + r);
-                let lines = edit_rich_lines(w, i, &f, &spans, ww.filter(|&x| x < iw.ceil()));
+                let lines = edit_rich_lines(w, i, &f, &spans, ww.filter(|&x| x < iw.ceil())).0;
                 let h: f64 = lines.iter().map(|l| l.height()).sum();
                 let asc = lines
                     .first()
@@ -6497,7 +6616,8 @@ fn picture_load(w: &mut World, i: usize, why: Load) -> (f64, f64) {
         w.notify(i, "status");
     }
     set(w, i, "progress", if status == 1.0 { 1.0 } else { 0.0 });
-    let pix = tex.map(|t| (t.w as f64 / ratio, t.h as f64 / ratio));
+    let px = tex.as_ref().map(|t| (t.w as f64, t.h as f64));
+    let pix = px.map(|p| (p.0 / ratio, p.1 / ratio));
     if !is(w, i, "Image") {
         return pix.unwrap_or((0.0, 0.0));
     }
@@ -6511,6 +6631,7 @@ fn picture_load(w: &mut World, i: usize, why: Load) -> (f64, f64) {
     let held = w.images.entry(i).or_default();
     if status != 2.0 && !kept {
         held.pix = pix.unwrap_or((0.0, 0.0));
+        held.px = px.unwrap_or((0.0, 0.0));
         held.request = request;
     }
     let pix = held.pix;
@@ -9823,9 +9944,14 @@ fn canvas_raster(
             });
         }
     };
-    // Under a scale the texture is the ceil-sized item raster drawn through the transform
-    // (like `raster`); at scale 1 it is the rounded size at the fractional position.
-    let (cw, ch) = if fr.xf.is_some() {
+    // Under an item's scale the texture is the ceil-sized item raster drawn through the
+    // transform (like `raster`); at scale 1 it is the rounded size at the fractional position.
+    // In a window of another devicePixelRatio it is that many times the rounded size, painted
+    // that many times as large (QQuickContext2DImageTexture::beginPainting).
+    let dpr = fr.dpr;
+    let (cw, ch) = if dpr != 1.0 {
+        canvas_texels(wd, ht, dpr)
+    } else if fr.xf.is_some() {
         (wd.ceil() as i64, ht.ceil() as i64)
     } else {
         (wd.round() as i64, ht.round() as i64)
@@ -9858,7 +9984,7 @@ fn canvas_raster(
             if qml::log_on!("ri::rastdbg") {
                 tracing::debug!(target: "ri::rastdbg", "rastdbg canvas {i} {wd:.0}x{ht:.0}");
             }
-            let c = canvas_texture(w, i, cw as usize, ch as usize, wd, ht);
+            let c = canvas_texture(w, i, cw as usize, ch as usize, wd, ht, dpr);
             let o = c.px.iter().any(|p| p[3] != 0).then(|| Rc::new(c));
             let n = opt_canvas_bytes(&o);
             CANVASES.with(|m| m.borrow_mut().insert(i, (key, o.clone()), n));
@@ -9869,7 +9995,7 @@ fn canvas_raster(
     SHOWN.with_borrow_mut(|m| m.remove(&i));
     if let Some(c) = out {
         let smooth = !explicit(w, i, "smooth") || truthy(w, i, "smooth", true);
-        let rect = if fr.xf.is_some() {
+        let rect = if fr.xf.is_some() && dpr == 1.0 {
             [x, y, c.w as f64, c.h as f64]
         } else {
             [x, y, wd, ht]
@@ -9885,6 +10011,14 @@ fn canvas_raster(
         SHOWN.with_borrow_mut(|m| m.insert(i, (key, c.clone(), false)));
         fr.image(c, rect, [0.0, 0.0, 1.0, 1.0], op, smooth);
     }
+}
+
+/// The pixels of the image a `wd` x `ht` Canvas paints on in a window of devicePixelRatio
+/// `dpr`: the canvas window as a QRect (QRectF::toRect), times the ratio as a QSize (which
+/// rounds again).
+fn canvas_texels(wd: f64, ht: f64, dpr: f64) -> (i64, i64) {
+    let texels = |l: f64| (l.round() * dpr).round() as i64;
+    (texels(wd), texels(ht))
 }
 
 /// What a Canvas texture is made for: the generation of its ops, its size in pixels and the
@@ -9933,7 +10067,7 @@ pub fn swap_repainted(w: &mut World, c: usize, fr: &mut crate::gpu::Frame) -> bo
     if (wd.to_bits(), ht.to_bits()) != (key.3, key.4) || !fr.draws(&old) {
         return false;
     }
-    let tex = canvas_texture(w, c, key.1 as usize, key.2 as usize, wd, ht);
+    let tex = canvas_texture(w, c, key.1 as usize, key.2 as usize, wd, ht, fr.dpr);
     if tex.px.iter().all(|p| p[3] == 0) {
         // Nothing to draw: the frame is one without the Canvas.
         return false;
@@ -10168,22 +10302,31 @@ thread_local! {
     static CANVAS_TEXTURES: std::cell::Cell<[u64; 2]> = const { std::cell::Cell::new([0; 2]) };
 }
 
-/// The `cw` x `ch` texture of Canvas `i`, `wd` x `ht` in the scene: its ops replayed onto
-/// transparent pixels. `paint_canvas` replays at the ceil of the item size and copies that 1:1
-/// at the origin with opacity 1, which changes no byte, so a texture of that size is the replay
-/// itself: a Canvas repainted every frame (a visualizer) is rasterized once per frame, not
-/// rasterized and then copied.
-fn canvas_texture(w: &mut World, i: usize, cw: usize, ch: usize, wd: f64, ht: f64) -> Canvas {
+/// The `cw` x `ch` texture of Canvas `i`, `wd` x `ht` in the scene, in a window of
+/// devicePixelRatio `dpr`: its ops replayed onto transparent pixels. `paint_canvas` replays at
+/// the ceil of the item size and copies that 1:1 at the origin with opacity 1, which changes
+/// no byte, so a texture of that size is the replay itself: a Canvas repainted every frame (a
+/// visualizer) is rasterized once per frame, not rasterized and then copied. At another ratio
+/// the texture is always the replay, painted that many times as large.
+fn canvas_texture(
+    w: &mut World,
+    i: usize,
+    cw: usize,
+    ch: usize,
+    wd: f64,
+    ht: f64,
+    dpr: f64,
+) -> Canvas {
     let count = |copied: bool| {
         CANVAS_TEXTURES.with(|c| {
             let [made, copies] = c.get();
             c.set([made + 1, copies + copied as u64]);
         });
     };
-    if (wd.ceil().max(1.0) as usize, ht.ceil().max(1.0) as usize) == (cw, ch) {
+    if dpr != 1.0 || (wd.ceil().max(1.0) as usize, ht.ceil().max(1.0) as usize) == (cw, ch) {
         count(false);
         return match w.canvas_ops.get(&i) {
-            Some(ops) if !ops.is_empty() => crate::canvas2d::replay(ops, cw, ch),
+            Some(ops) if !ops.is_empty() => crate::canvas2d::replay_at(ops, cw, ch, dpr),
             _ => Canvas::new(cw, ch, [0, 0, 0, 0]),
         };
     }
@@ -10242,7 +10385,8 @@ struct GpuGauss {
 /// whatever their sizes; with it the proxy is the source 1:1 in sourceRect
 /// (-radius, 0, `_paddedTexWidth`, height), and the horizontal pass's layer has sourceRect
 /// (0, -radius, width, `_paddedTexHeight`). Every texture is its rect times `dpr`, and a tap
-/// of the kernel is one device pixel (`dirstep`).
+/// of the kernel is one pixel of the screen's own ratio (`dirstep`, [`app_dpr`]): a device
+/// pixel, but on a monitor of a fractional scale `dpr` over the next whole number of one.
 #[allow(clippy::too_many_arguments)]
 fn gpu_gauss(
     w: &mut World,
@@ -10284,11 +10428,13 @@ fn gpu_gauss(
     };
     let layer = crate::gpu::Frame::sized(rect[2], rect[3], dpr);
     let (taps, spread, sum) = qsg::blur::kernel(radius, samples, deviation);
+    // `_dpr` is Screen.devicePixelRatio, not the window's.
+    let screen = app_dpr(dpr);
     let kernel = crate::gpu::Gauss {
         taps,
         spread,
         sum,
-        per: [(pwf * dpr) as f32, (phf * dpr) as f32],
+        per: [(pwf * screen) as f32, (phf * screen) as f32],
         band,
         shadow,
         first: Some(match tb {
@@ -12356,29 +12502,82 @@ fn pen_set_width(w: &mut World, i: usize) -> f64 {
     }
 }
 
+/// The devicePixelRatio the border of Rectangle `i`, drawn in a window of `dpr`, is rounded
+/// to whole pixels of (`rect_pen_width`). QQuickRectangle rounds it in updatePaintNode, which
+/// runs when the Rectangle's size or look (`look`, a hash of them) changes and not when its
+/// window's ratio does: a Rectangle made before the compositor gave its window a fractional
+/// scale keeps the border of the output's whole scale the window had until then
+/// (QWaylandWindow::devicePixelRatio), a pixel and a half wide at 1.5 where a new one's is two.
+fn pen_ratio(w: &World, i: usize, dpr: f64, look: u64) -> f64 {
+    let loads = image_loads(w);
+    let before =
+        qml::runtime::window_of(w, i).and_then(|win| loads.pens_before.borrow().get(&win).copied());
+    let mut pens = loads.pens.borrow_mut();
+    match pens.get_mut(&i) {
+        Some(p) if p.1 == look => p.0,
+        Some(p) => {
+            *p = (dpr, look);
+            dpr
+        }
+        None => {
+            let ratio = match before {
+                Some((was, made)) if i < made => was,
+                _ => dpr,
+            };
+            pens.insert(i, (ratio, look));
+            ratio
+        }
+    }
+}
+
 /// What QQuickRectangle::updatePaintNode hands its node, for a Rectangle `wd` by `ht` on a
 /// screen of scale `dpr`.
 fn rect_params(w: &mut World, i: usize, wd: f64, ht: f64, dpr: f64) -> qsg::rect::RectParams {
+    use std::hash::{Hash, Hasher};
     let corner = |w: &mut World, n: &str| opt_num(w, i, n).map(|v| v as f32);
     let border_color = color(w, i, "border.color", [0, 0, 0, 255]);
-    let pen_width = rect_pen_width(
-        pen_set_width(w, i),
-        border_color,
-        truthy(w, i, "border.pixelAligned", true),
-        dpr,
-    );
+    let fill = color(w, i, "color", [255, 255, 255, 255]);
+    let (border, radius) = (pen_set_width(w, i), num(w, i, "radius") as f32);
+    let aligned = truthy(w, i, "border.pixelAligned", true);
+    let corners = [
+        "topLeftRadius",
+        "topRightRadius",
+        "bottomLeftRadius",
+        "bottomRightRadius",
+    ]
+    .map(|n| corner(w, n));
+    let antialiasing = rect_antialiasing(w, i);
+    let pen_dpr =
+        if aligned && dpr.fract() != 0.0 && rect_pen_width(border, border_color, true, 1.0) > 0.0 {
+            let mut h = rustc_hash::FxHasher::default();
+            let bits = corners.map(|c| c.map(f32::to_bits));
+            (
+                wd.to_bits(),
+                ht.to_bits(),
+                fill,
+                border_color,
+                border.to_bits(),
+            )
+                .hash(&mut h);
+            (radius.to_bits(), bits, antialiasing).hash(&mut h);
+            pen_ratio(w, i, dpr, h.finish())
+        } else {
+            dpr
+        };
+    let pen_width = rect_pen_width(border, border_color, aligned, pen_dpr);
+    let [tl, tr, bl, br] = corners;
     let mut p = qsg::rect::RectParams {
         width: wd as f32,
         height: ht as f32,
-        color: color(w, i, "color", [255, 255, 255, 255]),
+        color: fill,
         border_color,
         pen_width,
-        radius: num(w, i, "radius") as f32,
-        tl: corner(w, "topLeftRadius"),
-        tr: corner(w, "topRightRadius"),
-        bl: corner(w, "bottomLeftRadius"),
-        br: corner(w, "bottomRightRadius"),
-        antialiasing: rect_antialiasing(w, i),
+        radius,
+        tl,
+        tr,
+        bl,
+        br,
+        antialiasing,
         // setAligned(false): the width is rounded above, in device pixels.
         aligned: false,
         ..Default::default()
@@ -12633,13 +12832,18 @@ fn paint_body(
         if let (Some(f), Some(spans)) = (&ts.font, &ts.spans) {
             let [l, t, r, b] = edit_padding(w, i);
             let ww = edit_wrap_width(w, i, l + r);
-            let lines = edit_rich_lines(w, i, f, spans, ww);
+            let (lines, blocks) = edit_rich_lines(w, i, f, spans, ww);
             let col = edit_color(w, i);
             let ha = num(w, i, "horizontalAlignment") as u32;
             let th: f64 = lines.iter().map(|l| l.height()).sum();
             let mut dy = t + edit_valign(w, i) * (ht - t - b - th);
             let mut under_lines = vec![];
-            for line in &lines {
+            let mut node = [0.0; 2];
+            let field = is_field(w, i);
+            for (line, first) in lines.iter().zip(blocks) {
+                if first {
+                    node = [l, dy];
+                }
                 let dx = l + match ha {
                     4 => (wd - l - r - line.advance) / 2.0,
                     2 => wd - l - r - line.advance,
@@ -12654,7 +12858,7 @@ fn paint_body(
                     let sy = dy + (line.ascent - sl.ascent) as f64 / 64.0;
                     let col = deco.0.unwrap_or(col);
                     run_background(cv, line, sl, x + dx + sx, y + dy, deco, op);
-                    edit_line(cv, sf, sl, [x, y], [dx + sx, sy], col, op);
+                    edit_node_line(cv, sf, sl, [x, y], field, node, [dx + sx, sy], col, op);
                 }
                 for (sx, width, metrics, of) in line.underlines() {
                     under_lines.push(Underline {
@@ -12693,9 +12897,7 @@ fn paint_body(
                 true => [edit_padding(w, i)[0], lines.first().map_or(0.0, |l| l.y)],
                 false => [0.0; 2],
             };
-            let types = &w.items[i].types;
-            let field = qml::types::inherits(types, "QQuickTextArea")
-                || qml::types::inherits(types, "QQuickTextField");
+            let field = is_field(w, i);
             let df_own = df.map(|d| DfText {
                 root: field.then_some(([0.0; 2], base)),
                 ..d
@@ -12764,8 +12966,31 @@ fn paint_body(
                 _ => nodes,
             };
             let mut caret_done = false;
+            let native = df.is_none();
+            let edit = is(w, i, "TextEdit") || is(w, i, "TextArea");
+            let mut node = match native && placeholder {
+                true => {
+                    let [l, t, ..] = edit_padding(w, i);
+                    [l, t]
+                }
+                false => [0.0; 2],
+            };
             for (n, el) in lines.iter().enumerate() {
-                let (start, dx, dy, lh) = (el.start, el.x, el.y, el.h);
+                let (start, lh) = (el.start, el.h);
+                if native && edit && !placeholder && (n == 0 || lines[n - 1].last) {
+                    node = [base[0], el.y];
+                }
+                let (dx, dy) = (el.x, el.y);
+                let [nx, ny] = [x + node[0], y + node[1]];
+                let [px, py] = [dx - node[0], dy - node[1]];
+                // The text's own node; the selected text is under the selection's clip node.
+                let own = |cv: &mut Target, part: &qsg::text::ShapedLine, df| match df {
+                    None => {
+                        let field = field && !placeholder;
+                        edit_node_line(cv, &f, part, [x, y], field, node, [dx, dy], col, op)
+                    }
+                    df => rt_line(cv, &f, part, nx, ny, px, py, col, op, df),
+                };
                 let line = &el.shaped;
                 let len = el.text.chars().count();
                 let (a, b) = (s0.clamp(start, start + len), s1.clamp(start, start + len));
@@ -12779,10 +13004,10 @@ fn paint_body(
                                 gray: gray[*node],
                                 ..d
                             });
-                            rt_line(cv, &f, part, x, y, dx, dy, col, op, df);
+                            own(cv, part, df);
                         }
                     }
-                    None => rt_line(cv, &f, line, x, y, dx, dy, col, op, df),
+                    None => own(cv, line, df),
                 }
                 if a < b {
                     for (xa, xb) in el.ranges(a - start, b - start) {
@@ -12791,7 +13016,7 @@ fn paint_body(
                         let r = [x + dx + xa, y + dy, xb - xa, lh];
                         solid_rect(cv, r[0], r[1], r[2], r[3], sel_bg, op);
                         clipped(cv, r, &|cv| {
-                            rt_line(cv, &f, line, x, y, dx, dy, sel_fg, op, df_selected)
+                            rt_line(cv, &f, line, nx, ny, px, py, sel_fg, op, df_selected)
                         });
                     }
                 }
@@ -13007,13 +13232,18 @@ fn paint_body(
             let (x, y, wd, ht, fill) = if is_icon(w, i) {
                 let valid = icon_size_valid(w, i);
                 // A QIcon's pixmap is in pixels; what is loaded like an Image is in units.
-                let ratio = if fk < 0 { dpr } else { 1.0 };
+                let ratio = if icon_pixels(fk) { dpr } else { 1.0 };
                 let round = truthy(w, i, "roundToIconSize", true);
                 let r = icon_rect((tex.w, tex.h), (wd, ht), valid, ratio, round);
                 let stretch = qsg::image::FillMode::Stretch;
                 // Each vertex goes to a whole pixel on its own.
-                let (x0, y0) = icon_corner(x + r[0], y + r[1], dpr);
-                let (x1, y1) = icon_corner(x + r[0] + r[2], y + r[1] + r[3], dpr);
+                let (s, down) = match &*cv {
+                    Target::Gpu(fr) => fr.layer_texels().map(|s| (s, true)),
+                    _ => None,
+                }
+                .unwrap_or(([dpr, dpr], false));
+                let (x0, y0) = icon_corner(x + r[0], y + r[1], s, down);
+                let (x1, y1) = icon_corner(x + r[0] + r[2], y + r[1] + r[3], s, down);
                 (x0, y0, x1 - x0, y1 - y0, stretch)
             } else {
                 (x, y, wd, ht, fill)
@@ -13257,12 +13487,14 @@ fn paint_body(
             let tb = truthy(w, i, "transparentBorder", true);
             if let Some(dpr) = gpu_dpr(cv) {
                 // DropShadowBase.qml: the alpha-only blur at the rounded offset, its radius and
-                // samples (an int, truncated) times the devicePixelRatio; then the source proxy
-                // over `_outputRect`.
+                // samples (an int, truncated) times Screen.devicePixelRatio, which on a monitor
+                // of a fractional scale is the next whole number; then the source proxy over
+                // `_outputRect`.
                 let tint = qsg::shadow::shader_color(col);
                 let shadow = Some((tint, qsg::blur::shadow_thickness(spread)));
                 let at = [x + off.0.round(), y + off.1.round(), wd, ht];
-                let (radius, samples) = (radius * dpr, (samples as f64 * dpr) as i32);
+                let screen = app_dpr(dpr);
+                let (radius, samples) = (radius * screen, (samples as f64 * screen) as i32);
                 let b = gpu_gauss(
                     w, fonts, src, at, radius, samples, None, tb, dpr, shadow, None,
                 );
@@ -14432,6 +14664,11 @@ fn image_src(
         let mut icons = image_loads(w).icons.borrow_mut();
         icons.entry(i).or_default().missed = missed;
     }
+    // Kirigami Icon::findIcon: Quickshell's icon provider is asked for the item's size, and
+    // gives `QIcon::pixmap(w, h)` of it, which is that size times the application's ratio.
+    if icon && src.starts_with("image://icon/") {
+        return (src, (wd as i32, ht as i32), PROVIDER_FILL, 1.0);
+    }
     // QQuickImageBase::loadPixmap: `qmlContext(this)->resolvedUrl(source)`.
     if !icon {
         src = w.resolved_url(i, &src);
@@ -14439,6 +14676,19 @@ fn image_src(
     if !icon && provider_source(&src) {
         let (ss, ratio) = provider_request(w, i, &src);
         return (src, ss, PROVIDER_FILL, ratio);
+    }
+    if !icon && is(w, i, "Image") && scalable_source(&src) {
+        let ss = w
+            .source_size_set(i)
+            .map(|v| v.unwrap_or(0.0).round() as i32);
+        let ss = (ss[0], ss[1]);
+        let ratio = provider_ratio(w, i, &src, ss);
+        let request = scalable_request(&src, ss, ratio);
+        // At a ratio of 1 the request is the `sourceSize` itself, as for any other file.
+        if ratio != 1.0 || (request.0 < 0 && request.0 != -120) {
+            let fk = num(w, i, "fillMode") as i32;
+            return (src, request, fk, ratio);
+        }
     }
     // A file is a plain QIcon; what a provider answers is fitted like an Image.
     let fk = if let Some((fill, _)) = loader {
@@ -14590,6 +14840,12 @@ pub struct ImageLoads {
     asked: std::cell::RefCell<IconAsks>,
     /// Each icon provider Image's own devicePixelRatio.
     ratios: std::cell::RefCell<HashMap<usize, ProviderRatio>>,
+    /// The devicePixelRatio each Rectangle's border was last rounded at ([`pen_ratio`]), and
+    /// the hash of what it was a border of.
+    pens: std::cell::RefCell<HashMap<usize, (f64, u64)>>,
+    /// Per window: the devicePixelRatio it had before the compositor last gave it another
+    /// scale, and how many items there were then (`window_scale`).
+    pens_before: std::cell::RefCell<HashMap<usize, (f64, usize)>>,
     /// Set when the world goes away: its downloads in flight stop.
     stop: qml::runtime::StopOnDrop,
 }
@@ -14632,6 +14888,8 @@ pub fn image_loads(w: &World) -> &ImageLoads {
                 icons: Default::default(),
                 asked: Default::default(),
                 ratios: Default::default(),
+                pens: Default::default(),
+                pens_before: Default::default(),
                 stop: Default::default(),
             })
         })
@@ -14789,6 +15047,10 @@ fn decode_file(f: &str, ss: (i32, i32), fill: i32, scheme: Option<&str>) -> Opti
         }
         let (lw, lh) = if ss.0 > 0 || ss.1 > 0 {
             qsg::svg::load_size(dw, dh, ss.0, ss.1, fm)
+        } else if ss.0 < 0 {
+            // No `sourceSize` at a ratio of -ss.0 / 120 ([`scalable_request`]).
+            let own = qsg::image::qsize_times(dw, dh, f64::from(-ss.0) / 120.0);
+            (own.0.max(0) as usize, own.1.max(0) as usize)
         } else {
             (dw as usize, dh as usize)
         };
@@ -19189,7 +19451,8 @@ Item {
         let draws = fr.sigs().len();
         assert!(draws >= 3, "{draws} draws");
         KEYED.with_borrow_mut(|m| m.remove(&item));
-        // A Canvas keeps its ceil-sized texture across frames too.
+        // A Canvas keeps its texture across frames too: 11 x 6 units painted 1.5 times as
+        // large, the 10.5 units of red ending inside the 16th of its 17 pixels.
         let mut rt = qml::runtime::Runtime::new(None);
         let c = rt
             .load_str("import QtQuick\nCanvas { width: 10.5; height: 6 }\n")
@@ -19217,8 +19480,12 @@ Item {
         }
         let tex = CANVASES.with_borrow_mut(|m| m.get(&c).and_then(|e| e.1.clone()));
         let tex = tex.expect("canvas texture cached under a scale");
-        assert_eq!((tex.w, tex.h), (11, 6));
+        assert_eq!((tex.w, tex.h), (17, 9));
         assert_eq!(tex.px[0], [255, 0, 0, 255]);
+        assert_eq!(tex.px[14], [255, 0, 0, 255]);
+        assert!(tex.px[15][3] > 0 && tex.px[15][3] < 255, "{:?}", tex.px[15]);
+        assert_eq!(tex.px[16], [0, 0, 0, 0]);
+        assert_eq!(tex.px[8 * 17], [255, 0, 0, 255]);
         let s = fr.sigs();
         assert_eq!(
             s[s.len() - 1].0,

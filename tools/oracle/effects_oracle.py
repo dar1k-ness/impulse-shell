@@ -1,7 +1,8 @@
 # effects_oracle.py SCENE.qml OUT.rgba [OBJECT.PROPERTY...]
 # Shows the scene (an Item root) in a QQuickView at the devicePixelRatio QT_SCALE_FACTOR gives
 # it (or, with ORACLE_DPR set, at that ratio once the compositor's output scale gave it to the
-# window) and writes the device pixels the root covers, once the third frame was swapped: u32 width,
+# window: the scene is loaded again then, or with ORACLE_SCENE_KEPT set stays as it was loaded
+# at the screen's whole ratio) and writes the device pixels the root covers, once the third frame was swapped: u32 width,
 # u32 height (little endian), then premultiplied RGBA rows. Prints "DPR <ratio>" and, per
 # argument, "PROP <objectName.property> <value>". Needs a platform with OpenGL (wayland under a
 # headless sway): the effects are shaders, which the software backend of `offscreen` skips.
@@ -68,6 +69,10 @@ def scale_known():
     if v.effectiveDevicePixelRatio() != float(scale):
         return
     v.devicePixelRatioChanged.disconnect(scale_known)
+    if os.environ.get("ORACLE_SCENE_KEPT"):
+        v.frameSwapped.connect(swapped)
+        v.requestUpdate()
+        return
     # Loaded again: a layer made before keeps its texture's size (qquickshadereffectsource.cpp:764).
     v.setSource(QUrl())
     v.setSource(QUrl.fromLocalFile(src))

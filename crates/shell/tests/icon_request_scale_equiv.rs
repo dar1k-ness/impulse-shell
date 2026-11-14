@@ -13,6 +13,8 @@
 //!   its window's, or the application's for an Image loaded before its window exists (those a
 //!   shell declares); without `sourceSize` the request has no size and the ratio is 1. The
 //!   implicit size is the pixmap's pixels over that ratio.
+//! - A Kirigami.Icon asks the provider itself (Icon::findIcon) for its own size, so its pixmap
+//!   is that size times the application's ratio as well, whatever its window's.
 //! - An Image is loaded again when its window's ratio changes (on a fractional output: from
 //!   the output's integer scale to the fraction), not when an output comes or goes: the icon
 //!   shown stays, a new Image of the same source and size gets the cached pixmap, one of
@@ -78,6 +80,17 @@ fn write_theme(share: &Path, cache: bool) {
                 )
                 .unwrap();
             }
+            // `e`: an edge in the middle, which a pixmap of fewer pixels than the screen's blurs.
+            let [r, g, b, _] = colour(s, n, 255);
+            std::fs::write(
+                t.join(&d).join("e.svg"),
+                format!(
+                    "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"{h}\">\
+                     <rect width=\"32\" height=\"{h}\" fill=\"#ffffff\"/>\
+                     <rect width=\"16\" height=\"{h}\" fill=\"#{r:02x}{g:02x}{b:02x}\"/></svg>\n"
+                ),
+            )
+            .unwrap();
             if s == 1 { &mut plain } else { &mut scaled }.push(d);
         }
         for (n, size) in FIXED.iter().enumerate() {
@@ -121,6 +134,7 @@ import Quickshell.Io
 import Quickshell.Widgets
 import Quickshell.Services.SystemTray
 import Quickshell.Services.Notifications
+import org.kde.kirigami as Kirigami
 
 ShellRoot {
     id: root
@@ -165,6 +179,7 @@ ShellRoot {
                     p.say("sized", a); p.say("unsized", b); p.say("IconImage", c.backer);
                     p.say("fallback", f); p.say("width-only", z); p.say("png", g);
                     p.say("small-png", pp); p.say("missing", m);
+                    console.log("IMG " + p.out + " kirigami " + k.paintedWidth + "x" + k.paintedHeight + " painted");
                     p.each(later); p.each(tray); p.each(noted); p.each(early);
                     p.say(lazy.item.n, lazy.item);
                     const got = [() => b.sourceSize, () => b.sourceSize.width, () => b.sourceSize.height,
@@ -191,6 +206,8 @@ ShellRoot {
             Image { id: wide; visible: false; sourceSize.width: 20; source: "image://icon/x" }
             Item { id: follows; width: b.sourceSize.width + wide.sourceSize.height }
             Image { id: m; x: 300; y: 20; width: 26; height: 26; sourceSize: Qt.size(26, 26); source: "image://icon/nope" }
+            // Kirigami asks the provider itself, for the item's size.
+            Kirigami.Icon { id: k; x: 640; y: 20; width: 26; height: 26; source: "image://icon/e" }
             Item {
                 id: later
                 x: 340; y: 20
@@ -300,7 +317,7 @@ const QS_FRAMES: &str = r##"Item {
 /// their pixel. `missing` is compared by its size alone: Quickshell draws a checkerboard,
 /// rusty-impulse the theme's generic icon (see `missing_icon_is_the_generic_one_a_found_icon_would_be`);
 /// so is `width-only`, a 2x2 icon stretched, whose every pixel is an edge.
-const PLACES: [(&str, usize); 12] = [
+const PLACES: [(&str, usize); 13] = [
     ("sized", 20),
     ("unsized", 60),
     ("IconImage", 100),
@@ -312,6 +329,7 @@ const PLACES: [(&str, usize); 12] = [
     ("early-made", 420),
     ("early-loader", 460),
     ("early-called", 580),
+    ("kirigami", 640),
     ("notification", 700),
 ];
 
