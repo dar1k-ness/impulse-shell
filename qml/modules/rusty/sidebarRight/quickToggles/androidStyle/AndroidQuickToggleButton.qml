@@ -36,11 +36,13 @@ GroupButton {
     property bool editMode: false
 
     // Sizing shenanigans
-    baseWidth: root.baseCellWidth * cellSize + cellSpacing * (cellSize - 1)
+    readonly property real cellsWidth: root.baseCellWidth * cellSize + cellSpacing * (cellSize - 1)
+    baseWidth: cellsWidth + widthSlide
     baseHeight: root.baseCellHeight
     enableImplicitWidthAnimation: !editMode && root.mouseArea.containsMouse
     enableImplicitHeightAnimation: !editMode && root.mouseArea.containsMouse
     Behavior on baseWidth {
+        enabled: !widened.running
         animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
     }
     Behavior on baseHeight {
@@ -49,9 +51,91 @@ GroupButton {
     opacity: 0
     Component.onCompleted: {
         opacity = 1
+        const from = root.movedFrom();
+        if (from) {
+            // The toggle was on screen a moment ago, in another row: it starts as wide as it
+            // was there.
+            root.widthSlide = from.width - root.cellsWidth;
+            widened.restart();
+            if (from.expanded !== root.expandedSize) root.slideContent(root.cellsWidth);
+        }
+        root.made = true;
     }
     Behavior on opacity {
+        enabled: root.made || !root.movedFrom()
         animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
+    }
+
+    // Motion in edit mode (see `movedFrom` of AndroidQuickPanel.qml): a button the change of
+    // the toggles puts elsewhere, or makes anew in another row, is drawn where it was and
+    // slides to its place. The animations are started by hand: a Behavior of a button made
+    // anew does not animate before the button's first layout.
+    property Item quickPanel: null
+    property bool made: false
+    property real widthSlide: 0
+    property real slideX: 0
+    property real slideY: 0
+    property real contentSlide: 0
+    // Where the layout has the button, in the panel.
+    function placeIn(axis) {
+        let at = 0;
+        for (let item = root; item && item !== root.quickPanel; item = item.parent)
+            at += item[axis];
+        return at;
+    }
+    readonly property real placeX: placeIn("x")
+    readonly property real placeY: placeIn("y")
+    onPlaceXChanged: slide()
+    onPlaceYChanged: slide()
+    function movedFrom() {
+        return root.quickPanel?.movedFrom?.[root.buttonData.type] ?? null;
+    }
+    // The layout has put the button somewhere: until it is made it has no place yet.
+    function slide() {
+        const from = root.movedFrom();
+        if (!from || !root.made) return;
+        root.slideX = from.x - placeIn("x");
+        root.slideY = from.y - placeIn("y");
+        slid.restart();
+        root.quickPanel.placed();
+    }
+    // A change of size in edit mode: the icon slides from the middle of the button to its
+    // left edge, or back, and the text fades in.
+    function slideContent(width) {
+        const middle = (width - iconMouseArea.width) / 2 - root.horizontalPadding;
+        root.contentSlide = root.expandedSize ? middle : -middle;
+        contentSlid.restart();
+    }
+    onExpandedSizeChanged: {
+        if (root.made && root.editMode) root.slideContent(root.width);
+    }
+    component Eased: NumberAnimation {
+        to: 0
+        duration: Appearance.animation.elementMove.duration
+        easing.type: Appearance.animation.elementMove.type
+        easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
+    }
+    ParallelAnimation {
+        id: slid
+        Eased { target: root; property: "slideX" }
+        Eased { target: root; property: "slideY" }
+    }
+    Eased { id: widened; target: root; property: "widthSlide" }
+    Eased { id: contentSlid; target: root; property: "contentSlide" }
+    transform: Translate {
+        x: root.slideX
+        y: root.slideY
+    }
+    Connections {
+        target: root.quickPanel
+        function onAboutToMove() {
+            root.quickPanel.movedFrom[root.buttonData.type] = {
+                x: root.placeIn("x") + root.slideX,
+                y: root.placeIn("y") + root.slideY,
+                width: root.width,
+                expanded: root.expandedSize
+            };
+        }
     }
 
     enabled: available || editMode
@@ -81,6 +165,9 @@ GroupButton {
             fill: root.expandedSize ? parent : undefined
             leftMargin: root.horizontalPadding
             rightMargin: root.horizontalPadding
+        }
+        transform: Translate {
+            x: root.contentSlide
         }
 
         // Icon
@@ -146,7 +233,21 @@ GroupButton {
             visible: root.expandedSize
             active: visible
             sourceComponent: Column {
+                id: label
                 spacing: -2
+                Component.onCompleted: {
+                    // Made by a change of size, with the button or in it.
+                    const grown = root.made || root.movedFrom()?.expanded === false;
+                    if (!grown || !root.editMode) return;
+                    label.opacity = 0;
+                    labelShown.start();
+                }
+                Eased {
+                    id: labelShown
+                    target: label
+                    property: "opacity"
+                    to: 1
+                }
 
                 StyledText {
                     anchors {
@@ -190,6 +291,7 @@ GroupButton {
             const index = root.buttonIndex;
             const toggleList = Config.options.sidebar.quickToggles.android.toggles;
             const buttonType = root.buttonData.type;
+            root.quickPanel?.beforeMove();
             if (!toggleList.find(toggle => toggle.type === buttonType)) {
                 toggleList.push({ type: buttonType, size: 1 });
             } else {
@@ -202,6 +304,7 @@ GroupButton {
             const toggleList = Config.options.sidebar.quickToggles.android.toggles;
             const buttonType = root.buttonData.type;
             if (!toggleList.find(toggle => toggle.type === buttonType)) return;
+            root.quickPanel?.beforeMove();
             toggleList[index].size = 3 - toggleList[index].size; // Alternate between 1 and 2
         }
 
@@ -212,6 +315,7 @@ GroupButton {
             const targetIndex = index + offset;
             if (!toggleList.find(toggle => toggle.type === buttonType)) return;
             if (targetIndex < 0 || targetIndex >= toggleList.length) return;
+            root.quickPanel?.beforeMove();
             const temp = toggleList[index];
             toggleList[index] = toggleList[targetIndex];
             toggleList[targetIndex] = temp;

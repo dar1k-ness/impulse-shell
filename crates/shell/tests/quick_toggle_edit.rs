@@ -1,7 +1,8 @@
 //! The quick toggles of the right sidebar in edit mode (the pencil), with the pointer: a right
 //! click changes a toggle's size, a click on an unused one adds it, on a used one removes it,
 //! the wheel moves it. After each the config holds what was asked for, and every button on
-//! screen is the toggle of its own type, as wide as its size.
+//! screen is the toggle of its own type, as wide as its size. What a change moves is drawn on its
+//! way over the frames that follow, and the unused toggles come in after they were made.
 
 use qml::runtime::Runtime;
 use qml::value::Value;
@@ -21,6 +22,8 @@ Item {
     property bool ready: Config.ready
     function used() { return JSON.stringify(Config.options.sidebar.quickToggles.android.toggles) }
     function typeOf(b) { return b.buttonData.type }
+    function edit(on) { panel.editMode = on }
+    function panelHeight() { return panel.height }
     AndroidQuickPanel { id: panel; width: 440; editMode: true }
 }
 "#;
@@ -65,6 +68,8 @@ impl T {
     fn new(compiled: bool) -> T {
         let d = tree(&format!("{compiled}"));
         let mut rt = Runtime::new(Some(d.clone()));
+        // As in the shell: a Behavior of an item does not animate before its first layout.
+        rt.world.borrow_mut().track_fresh = true;
         // Before anything loads: a service that had work before there was a ping does not
         // ping for more.
         let wake = testenv::Wakeups::new();
@@ -181,6 +186,7 @@ impl T {
                 x,
                 y,
                 width: num(&mut w, "width"),
+                drawn: (x + num(&mut w, "slideX"), y + num(&mut w, "slideY")),
             });
         }
         out.sort_by(|a, b| (a.y, a.x).partial_cmp(&(b.y, b.x)).unwrap());
@@ -216,6 +222,37 @@ impl T {
         self.frames(3);
         self.ptr.release(&mut self.rt, button);
         self.frames(FRAMES);
+    }
+    /// A click on the toggle `ty`, and where every toggle is drawn before it and at each of
+    /// the frames after it.
+    fn click_watched(&mut self, ty: &str, button: u32) -> Vec<Drawn> {
+        self.at(ty);
+        let mut seen = vec![self.drawn()];
+        self.ptr.press(&mut self.rt, button);
+        self.frames(3);
+        self.ptr.release(&mut self.rt, button);
+        for _ in 0..FRAMES {
+            self.frame();
+            seen.push(self.drawn());
+        }
+        seen
+    }
+    fn drawn(&mut self) -> Drawn {
+        (self.buttons().into_iter())
+            .map(|b| (b.ty, (b.drawn.0, b.drawn.1, b.width)))
+            .collect()
+    }
+    fn edit(&mut self, on: bool) {
+        let done = self
+            .rt
+            .call_method(self.main, "edit", vec![Value::Bool(on)]);
+        assert!(matches!(done, Some(Ok(_))), "edit: {done:?}");
+    }
+    fn panel_height(&mut self) -> f64 {
+        match self.rt.call_method(self.main, "panelHeight", vec![]) {
+            Some(Ok(Value::Num(h))) => h,
+            other => panic!("panelHeight: {other:?}"),
+        }
     }
     /// One notch of the wheel over the toggle `ty`, towards the user.
     fn wheel_down(&mut self, ty: &str) {
@@ -271,6 +308,43 @@ struct Button {
     x: f64,
     y: f64,
     width: f64,
+    /// Where it is drawn: its place and the offset it slides by.
+    drawn: (f64, f64),
+}
+
+/// Where each toggle is drawn and how wide, by type.
+type Drawn = std::collections::BTreeMap<String, (f64, f64, f64)>;
+
+/// Every toggle that `seen` ends elsewhere, or of another width, than it began is drawn on
+/// the way there at frames in between, and no frame takes it more than half of the way.
+fn gradual(what: &str, seen: &[Drawn]) {
+    let (first, last) = (&seen[0], seen.last().unwrap());
+    let far = |a: (f64, f64, f64), b: (f64, f64, f64)| {
+        (a.0 - b.0).hypot(a.1 - b.1).max((a.2 - b.2).abs())
+    };
+    let mut moved = 0;
+    for (ty, &to) in last {
+        let from = first[ty];
+        let way = far(from, to);
+        if way < 2.0 {
+            continue;
+        }
+        moved += 1;
+        let at: Vec<(f64, f64, f64)> = seen.iter().filter_map(|d| d.get(ty).copied()).collect();
+        let between = (at.iter())
+            .filter(|p| far(**p, from) > 1.0 && far(**p, to) > 1.0)
+            .count();
+        assert!(
+            between >= 8,
+            "{what}: {ty} is drawn between {from:?} and {to:?} at {between} frames: {at:?}"
+        );
+        let step = at.windows(2).map(|w| far(w[0], w[1])).fold(0.0, f64::max);
+        assert!(
+            step <= way / 2.0 + 1.0,
+            "{what}: {ty} goes {step} of {way} in one frame: {at:?}"
+        );
+    }
+    assert!(moved > 0, "{what}: nothing moved");
 }
 
 /// (type, component) of each toggle, in the order of the panel's `availableToggleTypes`: the
@@ -352,6 +426,81 @@ fn edit(compiled: bool) {
     t.click("bluetooth", BTN_LEFT);
     want.push(("bluetooth", 1.0));
     t.check("a click on the unused Bluetooth", &want);
+}
+
+/// The pencil and the changes made with it move what they move over frames, not at once.
+fn motion(compiled: bool) {
+    let mut t = T::new(compiled);
+    let all = t.buttons().len();
+    let open = t.panel_height();
+
+    // Out of edit mode and back. Making the unused toggles takes the shell longer than a
+    // frame, here 300 ms: the panel begins to grow at the frame after the one that made
+    // them, not while they were being made.
+    t.edit(false);
+    t.frames(FRAMES);
+    let shut = t.panel_height();
+    assert!(
+        shut < open - 50.0,
+        "the panel out of edit mode: {shut}, in it {open}"
+    );
+    assert!(t.buttons().len() < all);
+    t.edit(true);
+    t.now += 300.0;
+    t.frame();
+    assert_eq!(t.buttons().len(), all, "the unused toggles after a frame");
+    let mut heights = vec![t.panel_height()];
+    for _ in 0..FRAMES {
+        t.frame();
+        heights.push(t.panel_height());
+    }
+    assert_eq!(heights[0], shut, "the panel at the frame that made them");
+    assert_eq!(*heights.last().unwrap(), open);
+    let between = (heights.iter())
+        .filter(|h| **h > shut + 1.0 && **h < open - 1.0)
+        .count();
+    let step = (heights.windows(2).map(|w| (w[1] - w[0]).abs())).fold(0.0, f64::max);
+    assert!(
+        between >= 8 && step <= (open - shut) / 2.0,
+        "the panel grows over {between} frames, {step} at one: {heights:?}"
+    );
+
+    // With the default toggles: Dark Mode goes up among the used ones and the unused ones
+    // after it close the gap; Bluetooth goes down and the used ones after it move up a row;
+    // a toggle made wider pushes the next one to the row below.
+    gradual(
+        "a click on the unused Dark Mode",
+        &t.click_watched("darkMode", BTN_LEFT),
+    );
+    gradual(
+        "a click on the used Bluetooth",
+        &t.click_watched("bluetooth", BTN_LEFT),
+    );
+    gradual(
+        "a right click on Dark Mode",
+        &t.click_watched("darkMode", BTN_RIGHT),
+    );
+    gradual(
+        "a right click on Internet",
+        &t.click_watched("network", BTN_RIGHT),
+    );
+    assert!(t.rt.errors().is_empty(), "{:?}", t.rt.errors());
+}
+
+#[test]
+#[cfg_attr(not(feature = "interp"), ignore = "temp tree; AOT-only refuses it")]
+fn motion_interp() {
+    if own(concat!(module_path!(), "::motion_interp")) {
+        motion(false);
+    }
+}
+
+#[test]
+#[cfg_attr(not(feature = "interp"), ignore = "temp tree; AOT-only refuses it")]
+fn motion_compiled() {
+    if own(concat!(module_path!(), "::motion_compiled")) {
+        motion(true);
+    }
 }
 
 #[test]

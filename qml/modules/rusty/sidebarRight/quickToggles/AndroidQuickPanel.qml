@@ -14,9 +14,47 @@ AbstractQuickPanel {
     Layout.fillWidth: true
 
     // Sizes
-    implicitHeight: (editMode ? contentItem.implicitHeight : usedRows.implicitHeight) + root.padding * 2
+    implicitHeight: (unusedShown ? contentItem.implicitHeight : usedRows.implicitHeight) + root.padding * 2
     Behavior on implicitHeight {
         animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
+    }
+
+    // Edit mode makes the unused toggles first and shows them at the next frame: making them
+    // takes longer than a frame, and motion that began before it would be over, unseen, by
+    // the time the next frame is drawn.
+    property bool unusedShown: false
+    onEditModeChanged: {
+        root.movedFrom = null;
+        if (!root.editMode) root.unusedShown = false;
+        else if (unused.item) unusedMade.restart(); // still there, fading out
+    }
+    Timer {
+        id: unusedMade
+        interval: 1
+        onTriggered: root.unusedShown = root.editMode
+    }
+
+    // Motion of the toggles in edit mode. Before a button changes the toggles every button
+    // writes where it is drawn to `movedFrom`, under its type. In the layout that follows, a
+    // button that is placed elsewhere, or made anew in another row, starts from there and
+    // slides to its place (AndroidQuickToggleButton.qml). `movedFrom` is cleared at the frame
+    // after that layout: what moves from then on is moved by a width that is animating.
+    property var movedFrom: null
+    signal aboutToMove()
+    function beforeMove() {
+        root.movedFrom = {};
+        root.aboutToMove();
+        moved.interval = 1000;
+        moved.restart();
+    }
+    function placed() {
+        if (moved.interval === 1) return;
+        moved.interval = 1;
+        moved.restart();
+    }
+    Timer {
+        id: moved
+        onTriggered: root.movedFrom = null
     }
     property real spacing: 6
     property real padding: 6
@@ -98,6 +136,7 @@ AbstractQuickPanel {
                         delegate: AndroidToggleDelegateChooser {
                             startingIndex: toggleRow.startingIndex
                             editMode: root.editMode
+                            quickPanel: root
                             baseCellWidth: root.baseCellWidth
                             baseCellHeight: root.baseCellHeight
                             spacing: root.spacing
@@ -113,12 +152,22 @@ AbstractQuickPanel {
         }
 
         FadeLoader {
-            shown: root.editMode
+            id: divider
+            shown: root.unusedShown
             anchors {
                 left: parent.left
                 right: parent.right
                 leftMargin: root.baseCellHeight / 2
                 rightMargin: root.baseCellHeight / 2
+            }
+            // Slides with the toggles under it when the rows above change.
+            property real shownY: y
+            Behavior on shownY {
+                enabled: root.movedFrom !== null
+                animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
+            }
+            transform: Translate {
+                y: divider.shownY - divider.y
             }
             sourceComponent: Rectangle {
                 implicitHeight: 1
@@ -127,7 +176,11 @@ AbstractQuickPanel {
         }
 
         FadeLoader {
-            shown: root.editMode
+            id: unused
+            shown: root.unusedShown
+            active: root.editMode || opacity > 0
+            visible: active
+            onLoaded: unusedMade.restart()
             sourceComponent: Column {
                 id: unusedRows
                 spacing: root.spacing
@@ -150,6 +203,7 @@ AbstractQuickPanel {
                             delegate: AndroidToggleDelegateChooser {
                                 startingIndex: -1
                                 editMode: root.editMode
+                                quickPanel: root
                                 baseCellWidth: root.baseCellWidth
                                 baseCellHeight: root.baseCellHeight
                                 spacing: root.spacing

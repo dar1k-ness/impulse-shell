@@ -469,3 +469,36 @@ Code: the `Connections` on `GlobalStates` in `SidebarRightContent.qml`,
 
 Tests: `crates/shell/tests/sidebar_right_reset.rs`, with the original's own blocks and with the widgets of
 a layout's sidebar.
+
+## The quick toggles move to their places in edit mode
+
+In edit mode (the pencil of the right sidebar) the original shows each change at once. The unused
+toggles are there, whole, at the frame after the click on the pencil. A toggle that is added,
+removed, resized or moved by the wheel changes rows of the panel, and a button whose row
+changed is destroyed and made anew: it and the buttons after it are drawn in their new places
+at the next frame. Here the same changes are shown as motion; where the buttons are when it is
+over, and how they look, is as in the original.
+
+| | the original | Here |
+|---|---|---|
+| A click on the pencil | The panel is as high as with the unused toggles, and they are at full opacity, one frame later: making them takes longer than their fade, and than the fast start of the panel's growth. | The unused toggles are made first; the panel grows and they fade in from the frame after. |
+| A toggle is added, removed or moved by the wheel | Every button the change puts elsewhere is in its new place at the next frame. | Each of them slides there from where it was drawn, a button made anew in another row too. The line over the unused toggles slides with them. |
+| A right click on a toggle (its size) | The button's width grows or shrinks over time, as in the original; the buttons pushed to another row jump there, the icon jumps between the middle and the left edge, the text is there at once. | The pushed buttons slide; one made anew starts as wide as it was. The icon slides, the text fades in. |
+
+Why: asked for by the owner.
+
+A button writes where it is drawn before the toggles change (`movedFrom` of the panel, by
+type), and starts from there once the layout has placed it: a `Translate` that goes to nothing
+by `Appearance.animation.elementMove`. The engine has no transitions of positioners to do it.
+The button starts these animations itself: a `Behavior` of a button made anew does not animate
+before the button's first layout.
+
+Code: `unusedShown`, `movedFrom` and `beforeMove` in
+`qml/modules/rusty/sidebarRight/quickToggles/AndroidQuickPanel.qml`; `slide`, `widthSlide` and
+`contentSlide` in `androidStyle/AndroidQuickToggleButton.qml`.
+
+Tests: `motion_interp` and `motion_compiled` of `crates/shell/tests/quick_toggle_edit.rs`: after
+a click on the pencil the panel grows over many frames, from the frame after the one that made
+the unused toggles; after a click and a right click every button that ends elsewhere, or of
+another width, is drawn between the two for many frames and never goes more than half of the
+way in one.
