@@ -546,12 +546,9 @@ fn sampled_pass(
     // The pixels of the quad are those llvmpipe fills: it holds a corner in 256ths of a
     // pixel, so an edge a float's error off a pixel centre (6.5 of `scale: 1.1` is
     // 6.4999992 here) is on it.
-    let snap = |v: f64| (v * 256.0).round() / 256.0;
-    let (left, right, top, bottom) = (snap(x), snap(x + w), snap(y), snap(y + h));
-    let x0 = (left - 0.5).ceil().max(0.0) as usize;
-    let x1 = ((right - 0.5).ceil().max(0.0) as usize).min(dst.w);
+    let (x0, x1) = dst.cols(x, w);
     // The rows by the rule of `dst`, which a band of it does not know: a window's differs.
-    let rows = dst.rows(top, bottom - top);
+    let rows = dst.rows(y, h);
     if x1 <= x0 || rows.0 >= rows.1 {
         return;
     }

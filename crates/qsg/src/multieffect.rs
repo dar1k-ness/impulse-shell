@@ -50,8 +50,7 @@ fn sample(t: &Tex, x: Tap, y: Tap) -> [f32; 4] {
 
 /// Pixel range `layer::cover` shades for a quad at `x` of size `w` on an axis of `len` pixels.
 fn span(x: f64, w: f64, len: usize) -> (usize, usize) {
-    let a = (x - 0.5).ceil().max(0.0) as usize;
-    let b = ((x + w - 0.5).ceil().max(0.0) as usize).min(len);
+    let (a, b) = crate::raster::cols(x, w, len);
     (a, b.max(a))
 }
 

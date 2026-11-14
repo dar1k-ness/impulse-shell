@@ -573,7 +573,7 @@ tolerance; in brackets, those further than 3 of 255 from Qt's in a channel:
 |---|---|---|
 | `layer.textureSize: Qt.size(10, 7)` | 248 (248) | 248 (248) |
 | `layer.textureSize: Qt.size(10, 7); layer.smooth: true` | 543 (520) | 543 (520) |
-| `scale: 0.25; layer.smooth: true; layer.mipmap: true` | 36 (36) | 26 (26) |
+| `scale: 0.25; layer.smooth: true; layer.mipmap: true` | 26 (26) | 26 (26) |
 
 Why: the tree under `qml/` sets neither property, so nothing a user of the shell sees
 depends on them.

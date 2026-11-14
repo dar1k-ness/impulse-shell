@@ -264,8 +264,7 @@ pub fn draw(cv: &mut Canvas, p: &ShadowParams, x: f64, y: f64, opacity: f32) {
         // Nearest sampling: texel floor(u * n). Exact .5 ties are GPU-dependent (llvmpipe rounds either way).
         let texel = |u: f64, n: usize| ((u * n as f64).floor().max(0.0) as usize).min(n - 1);
         // `cover` with the texel lookups hoisted: rows sampling the same texel row are identical.
-        let x0 = (ex - 0.5).ceil().max(0.0) as usize;
-        let x1 = ((ex + ew - 0.5).ceil().max(0.0) as usize).min(cv.w);
+        let (x0, x1) = cv.cols(ex, ew);
         let (y0, y1) = cv.rows(ey, eh);
         let cols: Vec<usize> = (x0..x1)
             .map(|px| texel((px as f64 + 0.5 - ex) / ew, tw))
@@ -316,8 +315,7 @@ pub fn draw(cv: &mut Canvas, p: &ShadowParams, x: f64, y: f64, opacity: f32) {
             }
         }
     } else {
-        let x0 = (ex - 0.5).ceil().max(0.0) as usize;
-        let x1 = ((ex + ew - 0.5).ceil().max(0.0) as usize).min(cv.w);
+        let (x0, x1) = cv.cols(ex, ew);
         let (y0, y1) = cv.rows(ey, eh);
         if x1 <= x0 || y1 <= y0 {
             return;
@@ -391,8 +389,7 @@ fn cover(
     h: f64,
     mut shade: impl FnMut(f64, f64) -> [f32; 4],
 ) {
-    let x0 = (x - 0.5).ceil().max(0.0) as usize;
-    let x1 = ((x + w - 0.5).ceil().max(0.0) as usize).min(cv.w);
+    let (x0, x1) = cv.cols(x, w);
     let (y0, y1) = cv.rows(y, h);
     for py in y0..y1 {
         for px in x0..x1 {

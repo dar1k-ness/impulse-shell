@@ -76,3 +76,39 @@ fn the_clock_has_qt_s_pixels_on_the_gpu() {
     let body = clock(&format!("{}{HANDS}", lines("\"#844942\"")));
     qt_window::like_qt(&body, SIZE, &[1.0], 0, 0);
 }
+
+/// A Rectangle in an item turned by a quarter whose place is on half a pixel.
+const QUARTER_ON_HALF: &str = "Rectangle { anchors.fill: parent; color: \"white\" }\n\
+     Item { x: 90.5; y: 20.5; width: 40; height: 31; rotation: 90\n\
+         Rectangle { x: 2; y: 3; width: 21; height: 12; color: \"#ffcc00\" } }\n";
+/// The same by half a turn.
+const HALF_TURN: &str = "Rectangle { anchors.fill: parent; color: \"white\" }\n\
+     Item { x: 60; y: 26; width: 64; height: 40; rotation: 180\n\
+         Rectangle { x: 20; y: 8; width: 32; height: 12; color: \"#ffcc00\" } }\n";
+const CELL: (usize, usize) = (160, 96);
+const DPRS: [f64; 4] = [1.0, 1.25, 1.5, 2.0];
+
+#[test]
+fn a_quarter_turn_on_half_a_pixel_has_qt_s_pixels_on_the_gpu() {
+    qt_window::like_qt_by(qt_window::Scale::Output, QUARTER_ON_HALF, CELL, &DPRS, 0, 0);
+}
+
+#[test]
+fn a_quarter_turn_on_half_a_pixel_has_qt_s_pixels_on_the_gpu_scaled_by_qt() {
+    qt_window::like_qt(QUARTER_ON_HALF, CELL, &DPRS, 0, 0);
+}
+
+#[test]
+fn a_quarter_turn_on_half_a_pixel_has_qt_s_pixels_on_the_cpu() {
+    qt_window::cpu_like_qt(QUARTER_ON_HALF, CELL);
+}
+
+#[test]
+fn a_half_turn_has_qt_s_pixels_on_the_gpu() {
+    qt_window::like_qt_by(qt_window::Scale::Output, HALF_TURN, CELL, &DPRS, 0, 0);
+}
+
+#[test]
+fn a_half_turn_has_qt_s_pixels_on_the_cpu() {
+    qt_window::cpu_like_qt(HALF_TURN, CELL);
+}

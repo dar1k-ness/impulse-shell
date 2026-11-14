@@ -301,8 +301,7 @@ pub(crate) fn cover_uv(
     uv: [f64; 4],
     mut shade: impl FnMut(f64, f64) -> [f32; 4],
 ) {
-    let x0 = (x - 0.5).ceil().max(0.0) as usize;
-    let x1 = ((x + w - 0.5).ceil().max(0.0) as usize).min(cv.w);
+    let (x0, x1) = cv.cols(x, w);
     let (y0, y1) = cv.rows(y, h);
     if x0 >= x1 || y0 >= y1 {
         return;

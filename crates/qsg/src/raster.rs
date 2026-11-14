@@ -76,6 +76,19 @@ impl Drop for Window {
     }
 }
 
+/// An edge at `v` where llvmpipe rasterizes it: on its grid of 1/256 of a pixel
+/// (lp_setup_tri.c's subpixel_snap), so an edge a float's error off a pixel's centre is on it.
+pub fn snapped(v: f64) -> f64 {
+    (v * SUB as f64).round_ties_even() / SUB as f64
+}
+
+/// The columns `[x0, x1)` of `len` whose centres are in a shape from `x`, `w` wide: a centre
+/// on the left edge is in, one on the right edge is out.
+pub fn cols(x: f64, w: f64, len: usize) -> (usize, usize) {
+    let edge = |v: f64| (snapped(v) - 0.5).ceil().max(0.0) as usize;
+    (edge(x), edge(x + w).min(len))
+}
+
 /// A vertex in window pixels and its premultiplied colour.
 type Vertex = ([f32; 2], [f32; 4]);
 
@@ -90,6 +103,7 @@ impl Canvas {
     /// The rows `[y0, y1)` of the canvas whose centres are in a shape from `y`, `h` tall.
     pub fn rows(&self, y: f64, h: f64) -> (usize, usize) {
         let edge = |v: f64| {
+            let v = snapped(v);
             let r = if self.is_window() {
                 (v - 0.5).floor() + 1.0
             } else {
@@ -98,6 +112,11 @@ impl Canvas {
             r.max(0.0) as usize
         };
         (edge(y), edge(y + h).min(self.h))
+    }
+
+    /// The columns `[x0, x1)` of the canvas whose centres are in a shape from `x`, `w` wide.
+    pub fn cols(&self, x: f64, w: f64) -> (usize, usize) {
+        cols(x, w, self.w)
     }
 
     pub fn new(w: usize, h: usize, clear: [u8; 4]) -> Self {

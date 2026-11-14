@@ -784,8 +784,7 @@ pub fn draw_unblended_scaled(
     let (x, y) = (s[0] * (x + target[0]), s[1] * (y + target[1]));
     let (w, h) = (s[0] * target[2], s[1] * target[3]);
     // The pixels `draw` shades: those whose centre is in the rectangle.
-    let x0 = (x - 0.5).ceil().max(0.0) as usize;
-    let x1 = ((x + w - 0.5).ceil().max(0.0) as usize).min(cv.w);
+    let (x0, x1) = cv.cols(x, w);
     let (y0, y1) = cv.rows(y, h);
     for py in y0..y1 {
         for px in x0..x1 {

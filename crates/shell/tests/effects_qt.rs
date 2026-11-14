@@ -1514,7 +1514,7 @@ unlike_qt!(
 // full texture, Qt's from a mipmap level.
 unlike_qt!(
     layer_mipmap_is_not_read,
-    [36, 26],
+    [26, 26],
     &format!(
         "    Item {{ x: 4; y: 4; width: 40; height: 28; scale: 0.25; layer.enabled: true
         layer.smooth: true; layer.mipmap: true{LAYERED}"

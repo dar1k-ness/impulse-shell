@@ -366,3 +366,35 @@ fn workspaces_of_the_bar() {
         testenv::run_in_own_process(TEST, vars);
     }
 }
+
+/// An edge on the middle of a pixel inside a layer without an effect, at scale 1: the layer's
+/// texture is drawn top row first, so the row at the Rectangle's top is taken and the one at
+/// its bottom left out.
+const EDGE_INSIDE: &str = "Item { x: 4; y: 4; width: 40; height: 28; layer.enabled: true\n\
+         Rectangle { x: 6.5; y: 4.5; width: 12; height: 10; color: \"#ffcc00\" } }";
+
+/// A layer without an effect whose own place is on the middle of a pixel, at scale 1.
+const LAYER_ON_HALF: &str = "Item { x: 4.5; y: 4.5; width: 40; height: 28; layer.enabled: true\n\
+         Rectangle { anchors.fill: parent; color: \"#ff3366\" }\n\
+         Rectangle { x: 6; y: 4; width: 12; height: 10; color: \"#ffcc00\" }\n\
+         Rectangle { x: 20.5; y: 10.5; width: 14; height: 12; radius: 4; color: \"white\" } }";
+
+#[test]
+fn edge_on_a_pixel_centre_inside_gpu() {
+    gpu(EDGE_INSIDE, 1.0);
+}
+
+#[test]
+fn edge_on_a_pixel_centre_inside_cpu() {
+    qt_window::cpu_like_qt(EDGE_INSIDE, SIZE);
+}
+
+#[test]
+fn layer_on_pixel_centres_gpu() {
+    gpu(LAYER_ON_HALF, 1.0);
+}
+
+#[test]
+fn layer_on_pixel_centres_cpu() {
+    qt_window::cpu_like_qt(LAYER_ON_HALF, SIZE);
+}
