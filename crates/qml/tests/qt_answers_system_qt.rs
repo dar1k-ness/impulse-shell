@@ -143,14 +143,6 @@ const OTHER: &[(&str, &str)] = &[
 /// are of ICU 73 until their owners move them to system_qt.py. Nothing is added here.
 const OWED: &[(&str, &str)] = &[
     (
-        "crates/qml/tests/qt_icu.py",
-        "#254: ICU's converters, of the wheel's libicuuc",
-    ),
-    (
-        "crates/qml/tests/xhr_equiv.rs",
-        "with #254: replies in charsets ICU converts",
-    ),
-    (
         "crates/qsg/tests/bidi_equiv.rs",
         "#59, #267: text of both directions",
     ),
@@ -260,6 +252,8 @@ fn every_place_that_asks_qt_asks_through_system_qt() {
         "crates/qml/tests/expr_corpus_qt.rs",
         "crates/qml/tests/locale_digits_qt/qt.py",
         "crates/qml/tests/system_zone_names_qt/qt.py",
+        "crates/qml/tests/qt_icu.py",
+        "crates/qml/tests/xhr_equiv.rs",
         "crates/qml/tests/zone_names_qt/qt.py",
     ] {
         let text = std::fs::read_to_string(root.join(through)).unwrap();

@@ -7,10 +7,10 @@
 // BIG5_HKSCS: 789 characters, 3156 bytes
 // GBK: 101 characters, 404 bytes
 // GB2312: 1394 characters, 5576 bytes
-// GB18030: 1 characters, 4 bytes
+// GB18030: 0 characters, 0 bytes
 // EUC_KR: 190 characters, 760 bytes
 // WINDOWS_949: 188 characters, 752 bytes
-// All: 8938 characters, 35836 bytes
+// All: 8937 characters, 35832 bytes
 use crate::xhr_text::Fixes;
 
 pub(crate) static SHIFT_JIS: Fixes = Fixes {
@@ -8605,7 +8605,7 @@ pub(crate) static GB2312: Fixes = Fixes {
 };
 
 pub(crate) static GB18030: Fixes = Fixes {
-    two: &[(0xA3A0, 0xE5E5)],
+    two: &[],
     more: &[],
 };
 

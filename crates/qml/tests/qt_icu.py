@@ -1,4 +1,5 @@
-"""What the ICU that Qt 6.12 (PySide6) loads does, asked of the library itself.
+"""What the ICU that the system's Qt 6.12 loads does, asked of the library itself: the one in
+the process once tools/testenv/system_qt.py has put the system's Qt under PySide6.
 
   qt_icu.py names            converter, a tab, a name ICU has for it: one line per name
   qt_icu.py decode NAME FILE each record of FILE (a length byte, then that many bytes) read by
@@ -6,11 +7,16 @@
                              (ucnv_toUnicode, nothing flushed); to stdout a record per record:
                              the count of UTF-16 units as a byte, then the units, low byte first
 """
-import ctypes, glob, os, sys, PySide6
+import ctypes, os, sys
 
-libs = sorted(glob.glob(os.path.dirname(PySide6.__file__) + "/Qt/lib/libicuuc.so.*"))
-icu = ctypes.CDLL(libs[0])
-ver = libs[0].rsplit(".so.", 1)[1].split(".")[0]
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../tools/testenv"))
+import system_qt  # the ICU that answers is the one the system's Qt loads, checked there
+from PySide6 import QtCore  # loads the Qt whose ICU is asked
+
+system_qt.checked()
+lib = next(f for f in system_qt.loaded() if os.path.basename(f).startswith("libicuuc.so"))
+icu = ctypes.CDLL(lib)
+ver = os.path.basename(os.path.realpath(lib)).partition(".so.")[2].split(".")[0]
 P, S = ctypes.c_void_p, ctypes.c_char_p
 
 

@@ -141,9 +141,9 @@ impl Multi {
             ],
             // ibm-1383_P110-1999, ibm-970_P110_P110-2006_U2
             Multi::Gb2312 | Multi::EucKr => &["0-9f, a1-fe:1", "a1-fe"],
-            // gb18030
+            // gb18030-2022: the byte 0x80 is a character in it, U+20AC
             Multi::Gb18030 => &[
-                "0-7f, 81:6, 82:7, 83:8, 84:9, 85-fe:3",
+                "0-80, 81:6, 82:7, 83:8, 84:9, 85-fe:3",
                 "81-fe:2",
                 "30-39",
                 "30-39:4, 40-7e, 80-fe",
@@ -309,7 +309,7 @@ fn converter(of: &str) -> Charset {
         "ibm-1375_P100-2008" => Charset::Multi(Multi::Big5Hkscs),
         "windows-936-2000" => Charset::Multi(Multi::Gbk),
         "ibm-1383_P110-1999" => Charset::Multi(Multi::Gb2312),
-        "gb18030" => Charset::Multi(Multi::Gb18030),
+        "gb18030-2022" => Charset::Multi(Multi::Gb18030),
         "ibm-970_P110_P110-2006_U2" => Charset::Multi(Multi::EucKr),
         "windows-949-2000" => Charset::Multi(Multi::Windows949),
         "ISO_2022,locale=ja,version=0" => Charset::Iso2022Jp,
@@ -973,8 +973,8 @@ mod tests {
     }
 
     /// What ICU itself reads each of `inputs` as by the converter `name`, a whole reply
-    /// each: `crates/qml/tests/qt_icu.py` asks the ICU that Qt 6.12 loads. `None` where
-    /// that Qt is not installed.
+    /// each: `crates/qml/tests/qt_icu.py` asks the ICU that the system's Qt 6.12 loads.
+    /// `None` where that Qt is not installed.
     fn icu(name: &str, inputs: &[Vec<u8>]) -> Option<Vec<Vec<u16>>> {
         const PYTHON: &str = "/opt/qv4-venv/bin/python";
         if !std::path::Path::new(PYTHON).exists() {
@@ -988,7 +988,8 @@ mod tests {
         let file = tempfile::NamedTempFile::new().unwrap();
         std::fs::write(file.path(), records).unwrap();
         let out = std::process::Command::new(PYTHON)
-            .args(["-c", include_str!("../tests/qt_icu.py"), "decode", name])
+            .arg(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/qt_icu.py"))
+            .args(["decode", name])
             .arg(file.path())
             .output()
             .unwrap();
@@ -1255,6 +1256,6 @@ mod tests {
                 count += 1;
             }
         }
-        assert_eq!(count, 8938);
+        assert_eq!(count, 8937);
     }
 }

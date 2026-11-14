@@ -1,8 +1,9 @@
 //! QML `XMLHttpRequest` against a local server: the request target the native runtime sends
 //! must be the one Qt's QQmlXMLHttpRequest sends (QUrl TolerantMode, `toEncoded()`); the
 //! expected targets were recorded from `qs` (Qt 6) on the same URLs. And the states a request
-//! goes through, with what it reads in each, must be the ones Qt 6.12 itself (QQmlEngine
-//! through the PySide6 of ri-testenv) reports against the same server.
+//! goes through, with what it reads in each, must be the ones Qt 6.12 itself (the QQmlEngine
+//! of ri-testenv's system Qt, asked through PySide6 and tools/testenv/system_qt.py) reports
+//! against the same server.
 mod event_loop;
 
 use std::io::{BufRead, BufReader, Write};
@@ -121,15 +122,36 @@ Item {{
 /// The Python with PySide6 in ri-testenv (tools/testenv/Containerfile).
 const PYTHON: &str = "/opt/qv4-venv/bin/python";
 
+/// tools/testenv, where system_qt.py is.
+const TESTENV: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../tools/testenv");
+
+/// The Python that runs `script` from a file in `dir`, as system_qt.py needs to start it
+/// again, with the document `doc` and [`TESTENV`] as its first two arguments.
+fn python(dir: &std::path::Path, script: &str, doc: &std::path::Path) -> std::process::Command {
+    let file = dir.join("run.py");
+    std::fs::write(&file, script).unwrap();
+    let mut command = std::process::Command::new(PYTHON);
+    command
+        .arg(file)
+        .arg(doc)
+        .arg(TESTENV)
+        .env("QT_QPA_PLATFORM", "offscreen");
+    command
+}
+
 /// Loads the document argv[1], runs until its `finished` signal and prints its `out` property.
+/// argv[2] is tools/testenv.
 const QT_RUN: &str = r#"
 import sys
+sys.path.insert(0, sys.argv[2])
+import system_qt
 from PySide6.QtCore import QCoreApplication, QObject, QUrl, SIGNAL, qInstallMessageHandler
 from PySide6.QtQml import QQmlEngine, QQmlComponent
 qInstallMessageHandler(lambda mode, context, message: None)
 app = QCoreApplication(sys.argv[:1])
 engine = QQmlEngine()
 component = QQmlComponent(engine, QUrl.fromLocalFile(sys.argv[1]))
+system_qt.checked()
 root = component.create()
 if root is None:
     sys.exit("; ".join(e.toString() for e in component.errors()))
@@ -330,12 +352,7 @@ fn ready_states_match_qt() {
     let dir = tempfile::tempdir().unwrap();
     let doc = dir.path().join("states.qml");
     std::fs::write(&doc, &src).unwrap();
-    let qt = std::process::Command::new(PYTHON)
-        .args(["-c", QT_RUN])
-        .arg(&doc)
-        .env("QT_QPA_PLATFORM", "offscreen")
-        .output()
-        .unwrap();
+    let qt = python(dir.path(), QT_RUN, &doc).output().unwrap();
     assert!(
         qt.status.success(),
         "Qt: {}",
@@ -463,6 +480,7 @@ const RESPONSES: &[Answer] = &[
     ("/cp1252", "Content-Type: text/plain; charset=windows-1252", b"\x80\xe9"),
     ("/latin1c1", "Content-Type: text/plain; charset=latin1", b"\x80\xe9"),
     ("/koi8", "Content-Type: text/plain; charset=KOI8-R", b"\xf0\xd2\xc9"),
+    ("/gb2022", "Content-Type: application/json; charset=gb18030-2022", b"{\"a\":\"\x80\xa3\xa0\"}"),
     ("/iso5", "Content-Type: text/plain; charset=ISO_8859-5", b"\xbf\xe0\xd8"),
     ("/utf32", "Content-Type: text/plain", b"\xff\xfe\x00\x00h\x00\x00\x00\xe9\x00\x00\x00"),
     ("/utf16odd", "Content-Type: text/plain; charset=utf-16be", b"\x00h\x00\xe9\x00"),
@@ -1529,7 +1547,7 @@ QtObject {
             { name: "bad gzip headers", run: x => { x.open("GET", B + "/badgzip"); x.send() }, done: x => x.getAllResponseHeaders() + " # " + x.status },
             { name: "synchronous gzip", silent: true, run: x => { x.open("GET", B + "/gzip", false); x.send(); return x.responseText + " # " + x.getAllResponseHeaders() } },
             typed("json", "/json", "json"), typed("JSON in capitals", "/json", "JSON"), typed("json that is cut", "/badjson", "json"),
-            typed("json of a latin1 text", "/latin1", "json"), typed("arraybuffer", "/bytes", "arraybuffer"), typed("text", "/json", "text"),
+            typed("json of a latin1 text", "/latin1", "json"), typed("json in gb18030-2022", "/gb2022", "json"), typed("text in gb18030-2022", "/gb2022", "text"), typed("arraybuffer", "/bytes", "arraybuffer"), typed("text", "/json", "text"),
             typed("document", "/xml", "document"), typed("document of a text", "/xmlastext", "document"), typed("type nobody knows", "/json", "blob"),
             typed("type set when done", "/json", "json", "late"), typed("arraybuffer of gzip", "/gzip", "arraybuffer"),
             { name: "type is any value", silent: true, run: x => { const r = [show(x.responseType)]; x.responseType = 5; r.push(show(x.responseType)); x.responseType = null; r.push(show(x.responseType)); x.responseType = undefined; r.push(show(x.responseType)); return r.join(" ") } },
@@ -1876,14 +1894,7 @@ fn in_qt(src: &str, run: &str) -> Option<std::process::Output> {
     let dir = tempfile::tempdir().unwrap();
     let doc = dir.path().join("cases.qml");
     std::fs::write(&doc, src).unwrap();
-    Some(
-        std::process::Command::new(PYTHON)
-            .args(["-c", run])
-            .arg(&doc)
-            .env("QT_QPA_PLATFORM", "offscreen")
-            .output()
-            .unwrap(),
-    )
+    Some(python(dir.path(), run, &doc).output().unwrap())
 }
 
 /// The log of the document run here.
@@ -2065,15 +2076,15 @@ fn a_synchronous_request_from_the_handler_of_done_runs_here_and_ends_qt() {
     );
 }
 
-/// What `qt_icu.py` prints when run with `args`: the ICU that Qt 6.12 loads, asked itself.
-/// `None` without PySide6.
+/// What `qt_icu.py` prints when run with `args`: the ICU that the system's Qt 6.12 loads,
+/// asked itself. `None` without PySide6.
 fn icu(args: &[&str]) -> Option<String> {
     if !std::path::Path::new(PYTHON).exists() {
         testenv::unavailable(format_args!("{PYTHON} (PySide6) is not installed"));
         return None;
     }
     let out = std::process::Command::new(PYTHON)
-        .args(["-c", include_str!("qt_icu.py")])
+        .arg(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/qt_icu.py"))
         .args(args)
         .output()
         .unwrap();
@@ -2165,6 +2176,7 @@ fn charset_server(replies: Vec<Text>) -> u16 {
 /// Asks for `/0`, `/1`, ... in turn and logs the status and the UTF-16 units of each
 /// `responseText`. The text is read in LOADING and twice in DONE. For a reply in `cut` the
 /// text of LOADING is logged first, and the rest of the reply is asked for there. The
+/// request of a reply in `over` is given that type with `overrideMimeType`. The
 /// request of such a reply first read the same reply without its body: Qt reads the
 /// charset of a reply when the reply ends, and reads the text before that in the charset
 /// of the reply the request ended last.
@@ -2175,6 +2187,7 @@ QtObject {
     property bool done: false
     property var lines: []
     property var cut: [@CUT@]
+    property var over: ({@OVER@})
     property int at: 0
     signal finished()
     function isDone() { return done }
@@ -2215,6 +2228,7 @@ QtObject {
             Qt.callLater(root.next)
         }
         x.open("GET", "@BASE@/" + (first ? "empty/" : "") + at)
+        if (over[at]) x.overrideMimeType(over[at])
         x.send()
     }
     Component.onCompleted: next()
@@ -2313,6 +2327,7 @@ fn a_character_in_two_parts_of_a_reply_is_read_whole_as_in_qt() {
     let src = CHARSETS_QML
         .replace("@COUNT@", &cut.len().to_string())
         .replace("@CUT@", &every.join(","))
+        .replace("@OVER@", "")
         .replace("@BASE@", &format!("http://127.0.0.1:{port}"));
     let Some(qt) = in_qt(&src, QT_RUN) else {
         return;
@@ -2333,8 +2348,122 @@ fn a_character_in_two_parts_of_a_reply_is_read_whole_as_in_qt() {
     assert_eq!(ours[16], "3: 3042 | 200: 3042 d83d de00");
 }
 
-/// Every name the ICU of Qt 6.12 has for a converter is read here as Qt reads it, or its
-/// converter is not written here (docs/qt-differences.md). A reply in a charset that is
+/// gb18030 is read as the ICU of the system's Qt reads it, which is not as the ICU inside
+/// the PySide6 wheel does: ICU 78.3 has the table of 2022 (`gb18030-2022`), where the byte
+/// 0x80 is U+20AC and `A3 A0` is U+3000, and ICU 73 had the one of 2005, where 0x80 was
+/// no character and `A3 A0` was U+E5E5. So with every name ICU 78.3 has for it, in the
+/// header of the reply and in `overrideMimeType`. `ibm-1388` is another table too in
+/// ICU 78.3, by another name: that name is one of a converter not written here, and the
+/// name ICU 73 had for the older table is one nobody knows.
+#[test]
+fn gb18030_is_read_as_the_icu_of_the_system_s_qt_reads_it() {
+    const TEST: &str = "gb18030_is_read_as_the_icu_of_the_system_s_qt_reads_it";
+    if !testenv::in_own_process(TEST) {
+        // The log is read from this process's stderr.
+        testenv::run_in_own_process(TEST, [("", ""); 0]);
+        return;
+    }
+    const NAMES: [&str; 8] = [
+        "gb18030",
+        "GB18030",
+        "gb18030-2022",
+        "ibm-1392",
+        "windows-54936",
+        "ibm-1388_P100-2024",
+        "ibm-1388_P103-2001",
+        "x-nobody-knows",
+    ];
+    const BODIES: [&[u8]; 8] = [
+        b"\x80",
+        b"a\x80b\x80",
+        b"\xA3\xA0",
+        b"\xA2\xE3\xA3\xA0\xA1\xA1",
+        b"\x80\xFE\x80\xFF",
+        b"\xC4\xE3\x81\x30\x81\x30\x84\x31\xA4\x39",
+        b"\xA6\xD9\xA6\xDF\xA6\xEC\xA6\xF3\xFE\x59\xFE\x61\xFE\x7E\xFE\x90",
+        b"\x81\x35\xF4\x37\x82\x35\x90\x38\x84\x31\x82\x36\xFF",
+    ];
+    let per = BODIES.len();
+    let mut replies = Vec::new();
+    let mut over = Vec::new();
+    for with_override in [false, true] {
+        for name in NAMES {
+            for body in BODIES {
+                let named = format!("text/plain; charset={name}");
+                if with_override {
+                    over.push(format!("{}: \"{named}\"", replies.len()));
+                }
+                replies.push(Text {
+                    kind: if with_override {
+                        "text/plain; charset=koi8-r".into()
+                    } else {
+                        named
+                    },
+                    body: body.to_vec(),
+                    cut: None,
+                });
+            }
+        }
+    }
+    let count = replies.len();
+    let port = charset_server(replies);
+    let src = CHARSETS_QML
+        .replace("@COUNT@", &count.to_string())
+        .replace("@CUT@", "")
+        .replace("@OVER@", &over.join(", "))
+        .replace("@BASE@", &format!("http://127.0.0.1:{port}"));
+    let Some(qt) = in_qt(&src, QT_RUN) else {
+        return;
+    };
+    assert!(
+        qt.status.success(),
+        "Qt: {}",
+        String::from_utf8_lossy(&qt.stderr)
+    );
+    let qt = String::from_utf8(qt.stdout).unwrap();
+    let (ours, log) = testenv::stderr_with(|| here(&src));
+    let (qt, ours): (Vec<&str>, Vec<&str>) = (qt.lines().collect(), ours.lines().collect());
+    assert_eq!((qt.len(), ours.len()), (count, count));
+    let of = |lines: &[&str], n: usize| lines[n * per..(n + 1) * per].join("\n");
+    let mut wrong = String::new();
+    for (n, name) in NAMES.iter().cycle().take(2 * NAMES.len()).enumerate() {
+        let how = if n < NAMES.len() {
+            "header"
+        } else {
+            "overrideMimeType"
+        };
+        let nobody = (n / NAMES.len() + 1) * NAMES.len() - 1;
+        let (qt_reads, we_read) = (of(&qt, n), of(&ours, n));
+        // Qt knows the names of ICU 78.3 and not the one only ICU 73 had.
+        let qt_knows = of(&qt, nobody) != qt_reads;
+        if qt_knows != (n % NAMES.len() < 6) {
+            wrong += &format!("{name} ({how}): Qt knows it: {qt_knows}\n");
+        }
+        let want = if n % NAMES.len() < 5 {
+            qt_reads
+        } else {
+            of(&ours, nobody)
+        };
+        if we_read != want {
+            wrong += &format!("{name} ({how}):\nours:\n{we_read}\nwanted:\n{want}\n");
+        }
+    }
+    assert!(wrong.is_empty(), "\n{wrong}");
+    assert_eq!(ours[0], "200: 20ac");
+    assert_eq!(ours[1], "200: 61 20ac 62 20ac");
+    assert_eq!(ours[2], "200: 3000");
+    // One line for each reply in the charset that is not written here, and none for a name
+    // nobody knows.
+    let said = |name: &str| {
+        let line = format!("XMLHttpRequest: no decoder here for the charset \"{name}\"");
+        log.lines().filter(|l| l.starts_with(&line)).count()
+    };
+    assert_eq!(said("ibm-1388_P100-2024"), 2 * per);
+    assert_eq!(said("ibm-1388_P103-2001") + said("x-nobody-knows"), 0);
+}
+
+/// Every name the ICU of the system's Qt 6.12 has for a converter is read here as Qt reads
+/// it, or its converter is not written here (docs/qt-differences.md). A reply in a charset that is
 /// not written is read as a reply that names a charset nobody knows, and the log has one
 /// line about it for the reply, however often its text is read. All the names of a converter are of one kind:
 /// none is left unknown. The names come from ICU itself, and the list the runtime looks
@@ -2417,6 +2546,7 @@ fn every_charset_name_of_qt_is_read_as_qt_or_is_not_written() {
     let src = CHARSETS_QML
         .replace("@COUNT@", &count.to_string())
         .replace("@CUT@", "")
+        .replace("@OVER@", "")
         .replace("@BASE@", &format!("http://127.0.0.1:{port}"));
     let qt = in_qt(&src, QT_RUN).unwrap();
     assert!(
@@ -2548,14 +2678,16 @@ QtObject {
 }
 "#;
 
-/// Loads the document argv[1] and takes the steps argv[2..] in order. `refuse` has the
-/// system refuse this process every new thread (a soft `RLIMIT_NPROC` of 0), `give` ends
+/// Loads the document argv[1] and takes the steps argv[3..] in order (argv[2] is
+/// tools/testenv). `refuse` has the system refuse this process every new thread (a soft `RLIMIT_NPROC` of 0), `give` ends
 /// that, `alarm` has the system end the process in 3 s (for a call that never returns). Any
 /// other step is a function of the document to call: it runs until no event is left, and
 /// named with a `!` then until `finished`. Prints what Qt itself says as it says it, and
 /// the `out` each call added: once no event is left, and again after `finished`.
 const QT_STEPS: &str = r#"
 import resource, signal, sys, threading
+sys.path.insert(0, sys.argv[2])
+import system_qt
 from PySide6.QtCore import QCoreApplication, QEventLoop, QMetaObject, QObject, QUrl, SIGNAL, qInstallMessageHandler
 from PySide6.QtQml import QQmlEngine, QQmlComponent
 def write(text):
@@ -2568,9 +2700,10 @@ component = QQmlComponent(engine, QUrl.fromLocalFile(sys.argv[1]))
 root = component.create()
 if root is None:
     sys.exit("; ".join(e.toString() for e in component.errors()))
+system_qt.checked()
 QObject.connect(root, SIGNAL("finished()"), app.quit)
 given = resource.getrlimit(resource.RLIMIT_NPROC)
-for step in sys.argv[2:]:
+for step in sys.argv[3:]:
     if step == "refuse":
         resource.setrlimit(resource.RLIMIT_NPROC, (0, given[1]))
         try:
@@ -2680,11 +2813,8 @@ fn steps_in_qt_and_here(
     let doc = dir.path().join("refused.qml");
     let server = numbering_server();
     std::fs::write(&doc, document(&server)).unwrap();
-    let ran = std::process::Command::new(PYTHON)
-        .args(["-c", QT_STEPS])
-        .arg(&doc)
+    let ran = python(dir.path(), QT_STEPS, &doc)
         .args(qt)
-        .env("QT_QPA_PLATFORM", "offscreen")
         .output()
         .unwrap();
     assert!(

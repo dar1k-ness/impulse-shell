@@ -1,4 +1,4 @@
-//! ISO-2022-JP as Qt 6.12 reads it in an XMLHttpRequest reply: ICU 73's converter
+//! ISO-2022-JP as Qt 6.12 reads it in an XMLHttpRequest reply: ICU's converter
 //! `ISO_2022,locale=ja,version=0` (ucnv2022.cpp), given the whole reply at once with nothing
 //! flushed, each error replaced by U+FFFD.
 
@@ -156,12 +156,8 @@ mod tests {
         }
         std::fs::write(&path, records).unwrap();
         let out = std::process::Command::new(PYTHON)
-            .args([
-                "-c",
-                include_str!("../tests/qt_icu.py"),
-                "decode",
-                "ISO-2022-JP",
-            ])
+            .arg(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/qt_icu.py"))
+            .args(["decode", "ISO-2022-JP"])
             .arg(&path)
             .output()
             .unwrap();

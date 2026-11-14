@@ -357,7 +357,8 @@ request.
 
 ## The charsets of a reply to `XMLHttpRequest` that ICU reads and `encoding_rs` does not
 
-Compared with Qt 6.12.0 (PySide6). Qt reads the text of a reply with QStringDecoder: its
+Compared with the system's Qt 6.12.0 and its ICU 78.3 (PySide6 through
+`tools/testenv/system_qt.py`). Qt reads the text of a reply with QStringDecoder: its
 own decoders for the names `UTF-8`, `UTF-16`, `UTF-16LE`, `UTF-16BE`, `UTF-32`, `UTF-32LE`,
 `UTF-32BE`, `ISO-8859-1`, `Latin1` and `Locale`, and for every other name the converter the
 ICU it is built with opens by that name. That ICU has 228 converters under 1203 names
@@ -446,19 +447,25 @@ them as (U+FFFD where ICU has no character):
 | Big5-HKSCS (`ibm-1375_P100-2008`) | 65 792 | 789 | 3 156 |
 | GBK (`windows-936-2000`) | 65 792 | 101 | 404 |
 | GB2312 (`ibm-1383_P110-1999`) | 65 792 | 1 394 | 5 576 |
-| gb18030 (`gb18030`) | 1 653 392 | 1 | 4 |
+| gb18030 (`gb18030-2022`) | 1 653 392 | 0 | 0 |
 | EUC-KR (`ibm-970_P110_P110-2006_U2`) | 65 792 | 190 | 760 |
 | windows-949 (`windows-949-2000`) | 65 792 | 188 | 752 |
-| All | | 8 938 | 35 836 |
+| All | | 8 937 | 35 832 |
 
 The sequences compared are every one of one byte and of two, each read as a reply of its
 own (EUC-JP also after 0x8F, gb18030 also every sequence of four bytes that can be a
 character), and 60 000 streams of 3 to 12 bytes for each charset, the same on every run.
 
 Examples of what the file has: Big5 `A4 A5` is U+F775 (a private use character; the
-Standard has U+30CC); GBK `A2 E3` is U+E76C (the Standard has U+20AC); gb18030 `A3 A0` is
-U+E5E5 (U+3000); EUC-KR and windows-949 `C9 A1` is U+E000 and EUC-JP `8F F3 A1` is U+2170
-(the Standard has no character for either).
+Standard has U+30CC); GBK `A2 E3` is U+E76C (the Standard has U+20AC); EUC-KR and
+windows-949 `C9 A1` is U+E000 and EUC-JP `8F F3 A1` is U+2170 (the Standard has no
+character for either).
+
+gb18030 is the table of 2022 in ICU 78.3 (`gb18030-2022`): the byte 0x80 is U+20AC and
+`A3 A0` is U+3000, as in the Standard, so nothing is taken from ICU for it. The Qt inside
+the PySide6 wheel has ICU 73 with the table of 2005 (0x80 is no character, `A3 A0` is
+U+E5E5): 387 of the 1 653 392 sequences are read otherwise there, and that Qt is not the
+one compared with.
 
 Code: `multi`, `Multi` and `Fixes` in `crates/qml/src/xhr_text.rs`.
 
@@ -468,7 +475,8 @@ converter written here. `the_characters_taken_from_icu_are_in_order_and_none_is_
 there holds the count of the table and that no character of the file is one the table of
 `encoding_rs` has anyway. `a_character_in_two_parts_of_a_reply_is_read_whole_as_in_qt`
 in `crates/qml/tests/xhr_equiv.rs` runs Qt and the runtime on replies whose character
-comes in two parts.
+comes in two parts, and `gb18030_is_read_as_the_icu_of_the_system_s_qt_reads_it` there on
+replies in gb18030 by each of its names, in the header and in `overrideMimeType`.
 
 ## A request to `XMLHttpRequest` that the system refuses its thread
 
