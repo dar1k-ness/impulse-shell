@@ -19,7 +19,9 @@ pub struct PropInfo {
     /// The property has a BINDABLE accessor: a binding observes it with a
     /// QPropertyChangeTrigger, and an observer hears a change before the NOTIFY signal.
     pub bindable: bool,
-    /// Qt declares it BINDABLE, so its binding is a QQmlPropertyBinding.
+    /// Qt declares it BINDABLE, in any module (`bindable` is only kept for Quickshell's): its
+    /// binding is a QQmlPropertyBinding, which a creation sets after the other bindings, and
+    /// an observer of it hears a change before the NOTIFY signal.
     pub qproperty: bool,
     /// `ty` names an enum, looked up from the declaring class as C++ does (`Registry::load`).
     pub enumeration: bool,

@@ -5557,6 +5557,13 @@ pub fn measure_text(w: &mut World, fonts: &mut Fonts, i: usize) {
         text_metrics(w, fonts, i);
     } else if is(w, i, "FontMetrics") {
         font_metrics(w, fonts, i);
+    } else if w.text_unfinished.contains_key(&i) {
+        // QQuickText::updateSize waits for componentComplete(), setHAlign does not.
+        let text = match w.read(i, "text") {
+            None | Some(Value::Undefined | Value::Null) => String::new(),
+            Some(v) => v.to_js_string(),
+        };
+        return text_aligned(w, i, &text);
     } else {
         measure_prof(w, fonts, i);
     }

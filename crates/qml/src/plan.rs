@@ -461,6 +461,9 @@ pub fn replay(w: &mut World, plan: &Plan, t: &Tables, parent: Option<usize>, k0:
         if it.types.iter().any(|t| t == "FontMetrics") {
             w.text_dirty.insert(m.m0 + j);
         }
+        if w.text_measure.is_some() && it.types.iter().any(|t| t == "Text") {
+            w.text_unfinished.insert(m.m0 + j, false);
+        }
         w.items.push(it);
         if w.track_fresh {
             w.fresh.insert(m.m0 + j);
@@ -1110,7 +1113,13 @@ pub fn post_capture(w: &World, n0: usize, n1: usize, srcs: &[crate::runtime::Sym
                 }
                 || p.deps
                     .iter()
-                    .any(|d| !inr(d.0) && (w.dead.contains(&d.0) || !global(d.0)));
+                    .any(|d| !inr(d.0) && (w.dead.contains(&d.0) || !global(d.0)))
+                // A Text is laid out in its componentComplete(), after this capture: what
+                // read its size has yet to follow it.
+                || p.deps.iter().any(|d| {
+                    w.text_unfinished.contains_key(&d.0)
+                        && crate::runtime::text_metric(d.1.as_str())
+                });
             if bad {
                 taint.insert(key);
             }

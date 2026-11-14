@@ -1,0 +1,19 @@
+console: b, inner.width 0
+console: inner.onBChanged 1
+console: third.onXChanged 9
+console: a
+console: root.width, a 5
+console: inner.height
+console: inner.width, other.width 0
+console: b, inner.width 10
+console: inner.onBChanged 11
+console: other.y, x 0
+console: other.onYChanged 1
+console: other.x
+console: other.y, x 3
+console: other.onYChanged 4
+console: other.width, a 5
+console: inner.width, other.width 5
+console: b, inner.width 15
+console: inner.onBChanged 16
+console: completed 100 15 4 16 5 4 9

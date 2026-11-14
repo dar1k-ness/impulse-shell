@@ -1,0 +1,13 @@
+console: seenName []
+console: seenX 0
+console: seenWidth 0
+console: seenModel false true object
+console: a.width
+console: seenWidth 30
+console: a.x
+console: seenX 7
+console: a.objectName
+console: seenName [A]
+console: sel.model
+console: seenModel true false object
+console: completed A 7 30 true

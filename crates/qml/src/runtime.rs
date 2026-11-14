@@ -693,8 +693,15 @@ impl DirtyQueue {
         }
     }
 
-    pub fn reverse(&mut self) {
-        self.q.make_contiguous().reverse();
+    /// The order a creation enables its pending bindings in: the last made first, and after
+    /// them the ones `late` names, the first made first.
+    pub fn enable_order(&mut self, late: impl Fn(&DKey) -> bool) {
+        let (mut late, mut q): (VecDeque<Queued>, VecDeque<Queued>) = std::mem::take(&mut self.q)
+            .into_iter()
+            .partition(|e| e.pending && self.is_live(e) && late(&e.key));
+        q.make_contiguous().reverse();
+        q.append(&mut late);
+        self.q = q;
     }
 
     /// Queues `other`'s live entries behind these (those not queued here already).
@@ -1156,6 +1163,14 @@ pub struct Prop {
     /// On a PropertyChanges, with no level: the position of a value among those the object
     /// assigns (from 1), and above it whether it is a binding rather than a literal.
     pub seq: u32,
+}
+
+bits::bit_flags! {
+/// In `World::fresh_bind`: a QQmlPropertyBinding (`PropInfo::qproperty`), which the creation
+/// sets after it enabled every other binding (QQmlObjectCreatorSharedState's
+/// allQPropertyBindings). Until then the property reads the value it holds and no read runs
+/// the binding.
+const QPROPERTY: u8 = 0x80;
 }
 
 /// QQuickItemView's current index on a view whose QML declares its own `currentIndex`.
@@ -2445,6 +2460,7 @@ pub struct World {
     /// Bindings of just-created objects not evaluated yet, and how often each was put back
     /// behind them: Qt enables a component's bindings before any of them notifies, so one
     /// whose inputs are still pending runs once on their final values instead of churning.
+    /// `QPROPERTY` instead for the binding of a property Qt declares BINDABLE.
     pub fresh_bind: HashMap<DKey, u8>,
     /// Paddings and `spacing` of a control whose RESET function ran: the style's value for
     /// them no longer applies (`reset_value`).
@@ -2572,6 +2588,10 @@ pub struct World {
     /// Texts whose `implicitWidth` or `implicitHeight` script has read
     /// (QQuickTextPrivate::requireImplicitSize).
     pub text_implicit_read: HashSet<usize>,
+    /// Texts of a creation whose componentComplete() is still to come, each with whether its
+    /// metrics were read: QQuickText::updateSize waits for it (updateOnComponentComplete), so
+    /// until then the Text has the size it had.
+    pub text_unfinished: HashMap<usize, bool>,
     /// The objects whose palette a script or a binding has read: the ones that have a
     /// QQuickPalette in Qt, which tells of its changes.
     pub palette_made: HashSet<usize>,
@@ -10495,6 +10515,7 @@ impl World {
             active_seq,
             text_dirty,
             text_implicit_read,
+            text_unfinished,
             palette_made,
             palette_taken,
             ipc_taps,
@@ -10962,6 +10983,7 @@ impl World {
         lazy_announcing.retain(|&l| l != i);
         text_dirty.remove(&i);
         text_implicit_read.remove(&i);
+        text_unfinished.remove(&i);
         cursor_items.remove(&i);
         cursor_tracked.remove(&i);
         cursor_dirty.remove(&i);
@@ -12710,6 +12732,14 @@ impl World {
             {
                 self.stamp_connection(c);
             }
+            // QQuickText::componentComplete lays the text out. One whose metrics nothing read
+            // is measured when they are, as before.
+            if !self.text_unfinished.is_empty()
+                && self.text_unfinished.remove(&c) == Some(true)
+                && self.text_dirty.remove(&c)
+            {
+                self.measure_text(c);
+            }
             if self.items[c].types.contains(&shadow) {
                 self.rect_shadows.entry(c).or_default().complete = true;
                 self.rect_shadow_initialize(c);
@@ -14259,8 +14289,18 @@ impl World {
 
     pub fn read_sym(&mut self, item: usize, sym: Sym) -> Option<Value> {
         let name: &str = &sym;
-        if !self.text_dirty.is_empty() && text_metric(name) && self.text_dirty.remove(&item) {
-            self.measure_text(item);
+        if !self.text_dirty.is_empty() && text_metric(name) && self.text_dirty.contains(&item) {
+            if let Some(read) = self.text_unfinished.get_mut(&item) {
+                *read = true;
+                // QQuickTextPrivate::setHAlign does not wait: the hook gives an unfinished
+                // Text its alignment only.
+                if name.ends_with("orizontalAlignment") {
+                    self.measure_text(item);
+                }
+            } else {
+                self.text_dirty.remove(&item);
+                self.measure_text(item);
+            }
         }
         // QQuickTextInput/QQuickTextEdit::cursorRectangle() is computed when read.
         if sym == sym!("cursorRectangle")
@@ -14655,10 +14695,12 @@ impl World {
         // object is finalized: QQmlData::flushPendingBinding has nothing to run for it before,
         // and an object a container is told of while it is made has the property's default.
         let unset = self.bare.is_some_and(|b| item >= b) && self.sync_bindable((item, sym));
+        // QQmlData::flushPendingBinding finds no QQmlPropertyBinding: the creation has yet
+        // to set it, and the property reads what it holds.
         if self.js_reading
             && !unset
             && self.pending_read.is_none()
-            && self.fresh_bind.contains_key(&(item, sym))
+            && (self.fresh_bind.get(&(item, sym))).is_some_and(|n| n & QPROPERTY == 0)
         {
             self.pending_read = Some((item, sym));
         }
@@ -14680,6 +14722,7 @@ impl World {
                         && self.pending_read.is_none()
                         && matches!(v, Value::Undefined)
                         && p.binding.is_some()
+                        && !self.fresh_bind.contains_key(&(item, sym))
                         && self.dirty.contains(&(item, sym))
                         && !self.sched.updating(&(item, sym))
                     {
@@ -16022,6 +16065,7 @@ impl World {
         if self.making > 0 {
             return;
         }
+        self.text_unfinished.clear();
         let mut undefined = std::mem::take(&mut self.held_undefined);
         for key in std::mem::take(&mut self.held_errors).into_iter().rev() {
             if let Some(line) = self.binding_errors.get(&key) {
@@ -19567,6 +19611,20 @@ impl World {
         }
         let p = self.items[item].props.get_mut_sym(sym).unwrap();
         p.value = v;
+        // QQuickItem::setImplicitWidth: the width follows while it is not set, and it is not
+        // while the creation has yet to set its binding; widthChanged comes first.
+        if !self.fresh_bind.is_empty()
+            && let Some(size) = match name {
+                "implicitWidth" => Some(sym!("width")),
+                "implicitHeight" => Some(sym!("height")),
+                _ => None,
+            }
+            && (self.fresh_bind.get(&(item, size))).is_some_and(|n| n & QPROPERTY != 0)
+            && let Some(Value::Num(n)) = self.items[item].props.get_sym(sym).map(|p| &p.value)
+        {
+            let n = *n;
+            self.write(item, size.as_str(), Value::Num(n));
+        }
         if let Some(&svc) = self.write_watch.get(&item)
             && self.native_writer != Some(svc)
             && !self.watched_writes.contains(&(svc, item))
@@ -27510,7 +27568,12 @@ impl Eng<'_> {
     fn finalize_settle(&mut self) {
         {
             let mut w = self.world.borrow_mut();
-            w.dirty.reverse();
+            let w = &mut *w;
+            // QQmlObjectCreator::finalize: allCreatedBindings from the back, then
+            // allQPropertyBindings from the front.
+            let fresh = &w.fresh_bind;
+            w.dirty
+                .enable_order(|k| fresh.get(k).is_some_and(|n| n & QPROPERTY != 0));
             w.finalizing += 1;
         }
         self.settle();
@@ -27982,6 +28045,9 @@ impl Eng<'_> {
                     let mut w = self.world.borrow_mut();
                     let parent = w.item_parent(&[Sym::new(&obj.type_name)], parent);
                     let id = w.new_inst(&obj.type_name, parent);
+                    if obj.type_name == "Text" && w.text_measure.is_some() {
+                        w.text_unfinished.insert(id, false);
+                    }
                     crate::impulse::created(&mut w, id, &obj.type_name);
                     // QQuickFlickablePrivate::init: the contentItem exists from the start.
                     if w.items[id].prop_info("contentY").is_some() {
@@ -29215,7 +29281,13 @@ impl Eng<'_> {
                 }
                 let cause = w.sched.cur();
                 w.dirty.push_pending(k, cause);
-                w.fresh_bind.insert(k, 0);
+                let inst = &w.items[k.0];
+                let cpp = (inst.props.get_sym(k.1)).is_some_and(|p| p.decl == Decl::Cpp);
+                let kind = match inst.prop_info_sym(k.1) {
+                    Some(pi) if pi.qproperty && cpp => QPROPERTY,
+                    _ => 0,
+                };
+                w.fresh_bind.insert(k, kind);
                 if image_size {
                     w.group_populated((id, sym!("sourceSize")));
                 }
@@ -29555,7 +29627,7 @@ impl Eng<'_> {
                 && !w.created_object
                 && deps
                     .iter()
-                    .any(|d| *d != bkey && w.fresh_bind.contains_key(d));
+                    .any(|d| *d != bkey && w.fresh_bind.get(d).is_some_and(|n| n & QPROPERTY == 0));
             if waits {
                 w.fresh_bind.insert(bkey, n + 1);
                 w.created_object = outer_created;
@@ -45286,6 +45358,43 @@ Item {
     }
 
     #[test]
+    fn a_copy_of_a_delegate_has_the_size_of_its_text() {
+        // The second delegate takes the values of the first one's bindings as they were when
+        // its bindings were enabled (`plan::Post`): the Text was not laid out yet then.
+        let mut rt = Runtime::new(None);
+        rt.world.borrow_mut().text_measure = Some(Box::new(|w, i| {
+            let n = match w.read(i, "text") {
+                Some(Value::Str(s)) => s.chars().count(),
+                _ => 0,
+            };
+            w.write(i, "implicitWidth", Value::Num(n as f64 * 7.0));
+        }));
+        let root = rt
+            .load_str(
+                "Item { id: root; property var made: []
+                    Repeater { model: 3; Item {
+                        implicitWidth: t.implicitWidth + 24
+                        Text { id: t; text: \"abcdef\" }
+                        Component.onCompleted: root.made.push(this) } } }",
+            )
+            .unwrap();
+        rt.settle();
+        let Value::Obj(made) = rt.get(root, "made") else {
+            panic!()
+        };
+        let made: Vec<usize> = (made.borrow().array.iter().flatten())
+            .map(|v| match v {
+                Value::Item(i) => *i,
+                v => panic!("{v:?}"),
+            })
+            .collect();
+        let widths: Vec<f64> = (made.iter())
+            .map(|&i| rt.get(i, "implicitWidth").to_number())
+            .collect();
+        assert_eq!(widths, [6.0 * 7.0 + 24.0; 3]);
+    }
+
+    #[test]
     fn binding_loop_report_names_the_site_and_logs_once() {
         let dir = std::env::temp_dir().join(format!("loop-site-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
@@ -47343,7 +47452,7 @@ fn content_resize(types: &[Sym], name: &str) -> bool {
 }
 
 /// Text/TextMetrics outputs that depend on a measure.
-fn text_metric(name: &str) -> bool {
+pub(crate) fn text_metric(name: &str) -> bool {
     matches!(
         name,
         "contentWidth"
