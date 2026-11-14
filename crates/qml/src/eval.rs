@@ -1427,6 +1427,20 @@ fn increment(old_budget: usize) -> GcStep {
                         e.weak.iter().for_each(|(_, v)| val(v, &mut objs));
                         objs.extend(e.members.clone());
                     }
+                    // The handler of a JS file's namespace object holds the file's bindings
+                    // ([`ScriptCtx::new`]), each one a reference to the scope or the frame
+                    // its name lives in. Held by anything else too, they stay unexplained.
+                    if let Some(n) = b.native.as_ref().filter(|n| Rc::strong_count(n) == 1)
+                        && let Some(bindings) = n.downcast_ref::<Bindings>()
+                        && let Ok(bindings) = bindings.0.try_borrow()
+                    {
+                        for (binding, _) in bindings.values() {
+                            match binding {
+                                Binding::Var(sc) => scopes.push(sc.clone()),
+                                Binding::Slot(frame, _) => envs.push(frame.clone()),
+                            }
+                        }
+                    }
                     match &b.call {
                         #[cfg(feature = "interp")]
                         Some(Callable::Closure(_, sc) | Callable::Class(_, sc)) => {
@@ -1464,6 +1478,13 @@ fn increment(old_budget: usize) -> GcStep {
                     objs.extend(b.type_proto.clone());
                     if let Some(r) = &b.symbol_realm {
                         objs.extend(r.objs());
+                    }
+                    // The context of the JS file the frame is the top-level scope of: the
+                    // frame's alone unless something else holds the file too.
+                    if let Some(s) = b.script.as_ref().filter(|s| Rc::strong_count(s) == 1)
+                        && let Some(c) = &s.ctx
+                    {
+                        objs.extend([c.exports.clone(), c.vars.clone(), c.handler.clone()]);
                     }
                     true
                 }
@@ -1569,6 +1590,8 @@ fn increment(old_budget: usize) -> GcStep {
                     b.accessors.take(),
                     std::mem::take(&mut b.internal),
                     b.ext.take(),
+                    // A namespace handler's bindings: the references the walk counted.
+                    b.native.take_if(|n| n.is::<Bindings>()),
                 )));
             }
             N::F(f) => {
@@ -1580,6 +1603,7 @@ fn increment(old_budget: usize) -> GcStep {
                     b.this.take(),
                     b.class.take(),
                     b.args.take(),
+                    b.script.take(),
                 )));
             }
             // `parent` and `scope` are not cleared: a dead parent env or scope frame is a
