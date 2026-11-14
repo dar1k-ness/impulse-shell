@@ -192,7 +192,8 @@ Usage: rusty-impulse [-c NAME | -p PATH]                 run the shell (default 
        rusty-impulse [SELECT] kill
        rusty-impulse list [-a | -c NAME | -p PATH] [-j] [--show-dead]
        rusty-impulse log [FILE | SELECT] [-t N] [-f] [-r RULES]
-       rusty-impulse wallpick pick | like | dislike [--next] | style | reset-taste
+       rusty-impulse wallpick pick [--desktop | --words TEXT] | like | dislike [--next] |
+                              revert | keep | style | reset-taste
 SELECT: -c,--config NAME | -p,--path PATH | -i,--id ID | --pid PID, -n,--newest, --any-display
 ";
 

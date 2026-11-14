@@ -55,7 +55,7 @@ Loader {
             StyledText {
                 Layout.maximumWidth: 300
                 elide: Text.ElideRight
-                text: StyleReview.status.length > 0 ? StyleReview.status : StyleReview.busy ? Translation.tr("Looking...") : Translation.tr("Arrange the widgets, then confirm")
+                text: StyleReview.status.length > 0 ? StyleReview.status : StyleReview.busy ? Translation.tr("Looking...") : Translation.tr("Confirm to keep it, Esc puts the old look back")
                 color: StyleReview.failed ? Appearance.colors.colError : Appearance.colors.colSubtext
                 font.pixelSize: Appearance.font.pixelSize.smaller
             }
@@ -80,6 +80,15 @@ Loader {
             onClicked: StyleReview.dislike()
             StyledToolTip {
                 text: Translation.tr("Less like this, and pick another")
+            }
+        }
+        IconAndTextToolbarButton {
+            focusPolicy: Qt.NoFocus
+            iconText: "undo"
+            text: Translation.tr("Put it back")
+            onClicked: StyleReview.cancel()
+            StyledToolTip {
+                text: Translation.tr("Back to the look from before the pick (Esc)")
             }
         }
         IconAndTextToolbarButton {

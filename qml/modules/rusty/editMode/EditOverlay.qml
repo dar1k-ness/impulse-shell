@@ -133,7 +133,15 @@ PanelWindow {
                 event.accepted = true;
                 return;
             }
+            // Esc leaves the edit mode unless it drops a drag (EditController): leaving so backs
+            // out of a style review (services/StyleReview.qml), told before the controller
+            // turns the edit mode off.
+            const leaves = event.key === Qt.Key_Escape && controller.active && !controller.dragging;
+            if (leaves)
+                StyleReview.leaving(true);
             event.accepted = controller.key(event.key, event.modifiers);
+            if (leaves && !event.accepted)
+                StyleReview.leaving(false);
             if (event.accepted && [Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down].includes(event.key))
                 root.placedByHand();
         }

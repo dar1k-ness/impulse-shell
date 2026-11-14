@@ -725,11 +725,20 @@
   "Weak": "Слабая",
   "New style": "Новый стиль",
   "Picking another style": "Подбираю другой стиль",
-  "Arrange the widgets, then confirm": "Расставьте виджеты и подтвердите",
+  "Confirm to keep it, Esc puts the old look back": "«Подтвердить» оставит стиль, Esc вернёт прежний",
+  "Put it back": "Вернуть как было",
+  "Back to the look from before the pick (Esc)": "Вернуть оформление, которое было до подбора (Esc)",
+  "What should the new style go by?": "На основе чего подобрать новый стиль?",
+  "My desktop as it is now": "Мой рабочий стол как сейчас",
+  "Looks for wallpapers like the one on the desktop now": "Ищет обои, похожие на те, что стоят сейчас",
+  "Or describe it in your words": "Или опишите своими словами",
+  "night city in the rain": "ночной город под дождём",
+  "By these words": "По этим словам",
   "Like": "Нравится",
   "Liked": "Понравилось",
   "Dislike": "Не нравится",
   "More like this": "Больше такого",
   "Less like this, and pick another": "Меньше такого, подобрать другой",
-  "Looking...": "Ищу..."
+  "Looking...": "Ищу...",
+  "Pick for me": "Подобрать стиль"
 }

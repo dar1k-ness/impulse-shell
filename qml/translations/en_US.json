@@ -768,7 +768,6 @@
   "Width": "Width",
   "Bar zone": "Bar zone",
   "Columns taken": "Columns taken",
-  "Arrange the widgets, then confirm": "Arrange the widgets, then confirm",
   "Dislike": "Dislike",
   "Like": "Like",
   "Liked": "Liked",
@@ -783,5 +782,14 @@
   "Options": "Options",
   "Size": "Size",
   "Height": "Height",
-  "From %1 to %2": "From %1 to %2"
+  "From %1 to %2": "From %1 to %2",
+  "Back to the look from before the pick (Esc)": "Back to the look from before the pick (Esc)",
+  "By these words": "By these words",
+  "Confirm to keep it, Esc puts the old look back": "Confirm to keep it, Esc puts the old look back",
+  "Looks for wallpapers like the one on the desktop now": "Looks for wallpapers like the one on the desktop now",
+  "My desktop as it is now": "My desktop as it is now",
+  "Put it back": "Put it back",
+  "What should the new style go by?": "What should the new style go by?",
+  "Or describe it in your words": "Or describe it in your words",
+  "night city in the rain": "night city in the rain"
 }

@@ -21,7 +21,11 @@ impl Taste {
         self.pos.len() + self.neg.len()
     }
 
+    /// A candidate that was scored; one that is scored again counts once.
     pub(crate) fn add_seen(&mut self, e: &[f32]) {
+        if self.seen.iter().any(|s| s == e) {
+            return;
+        }
         self.seen.push(e.to_vec());
         if self.seen.len() > SEEN_CAP {
             let extra = self.seen.len() - SEEN_CAP;

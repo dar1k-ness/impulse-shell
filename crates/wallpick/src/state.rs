@@ -19,10 +19,21 @@ pub(crate) struct Current {
     pub emb: Vec<f32>,
 }
 
+/// What the last pick went by instead of the text preferences; a pick "by the same" reuses it.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub(crate) enum Basis {
+    /// The wallpaper that was on the desktop: its embedding and the searches that suit it.
+    Desktop { emb: Vec<f32>, queries: Vec<String> },
+    /// The user's own words, English.
+    Words { text: String },
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub(crate) struct State {
     pub current: Option<Current>,
+    pub basis: Option<Basis>,
     /// Candidate ids already shown, oldest first; never offered again.
     pub history: Vec<String>,
     /// Downloads made by wallpick, oldest first.
@@ -67,17 +78,20 @@ pub(crate) fn update<T>(dir: &Path, f: impl FnOnce(&mut State) -> Result<T>) -> 
 impl State {
     /// Makes `cur` the current wallpaper, remembers what was shown and deletes the oldest
     /// downloads beyond `keep`; liked files and the current one are never deleted, and only files
-    /// inside `downloads` are touched.
+    /// inside `downloads` are touched. `scored` are the candidates `cur` was picked from: none
+    /// of them comes again, or only `cur` does not when `again` (the next pick asks for the
+    /// same thing and may take the next best of them).
     pub(crate) fn record(
         &mut self,
         cur: Current,
-        shown: &[(String, Vec<f32>)],
+        scored: &[(String, Vec<f32>)],
+        again: bool,
         downloads: &Path,
         keep: usize,
     ) {
-        for (id, emb) in shown {
+        for (id, emb) in scored {
             self.taste.add_seen(emb);
-            if !self.history.contains(id) {
+            if (!again || *id == cur.id) && !self.history.contains(id) {
                 self.history.push(id.clone());
             }
         }
@@ -128,11 +142,11 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         let d = tmp.path();
         let mut s = State::default();
-        s.record(cur(d, "a"), &[("a".into(), vec![1.0, 0.0])], d, 2);
+        s.record(cur(d, "a"), &[("a".into(), vec![1.0, 0.0])], false, d, 2);
         s.vote(true).unwrap();
-        s.record(cur(d, "b"), &[("b".into(), vec![0.0, 1.0])], d, 2);
-        s.record(cur(d, "c"), &[], d, 2);
-        s.record(cur(d, "d"), &[], d, 2);
+        s.record(cur(d, "b"), &[("b".into(), vec![0.0, 1.0])], false, d, 2);
+        s.record(cur(d, "c"), &[], false, d, 2);
+        s.record(cur(d, "d"), &[], false, d, 2);
         assert!(d.join("a.jpg").exists(), "liked");
         assert!(!d.join("b.jpg").exists());
         assert!(d.join("c.jpg").exists() && d.join("d.jpg").exists());
@@ -146,8 +160,26 @@ mod tests {
             ..State::default()
         };
         std::fs::write(other.path().join("x.jpg"), b"x").unwrap();
-        s.record(cur(d, "e"), &[], d, 1);
+        s.record(cur(d, "e"), &[], false, d, 1);
         assert!(other.path().join("x.jpg").exists());
+    }
+
+    /// A pick that asked for something leaves the candidates it did not take for the next
+    /// pick by the same; they are scored once for the taste all the same.
+    #[test]
+    fn a_pick_to_be_asked_again_keeps_the_others_for_later() {
+        let tmp = tempfile::tempdir().unwrap();
+        let d = tmp.path();
+        let scored = [
+            ("a".to_string(), vec![1.0, 0.0]),
+            ("b".to_string(), vec![0.0, 1.0]),
+        ];
+        let mut s = State::default();
+        s.record(cur(d, "a"), &scored, true, d, 2);
+        assert_eq!(s.history, ["a"]);
+        s.record(cur(d, "b"), &scored, true, d, 2);
+        assert_eq!(s.history, ["a", "b"]);
+        assert_eq!(s.taste.seen.len(), 2);
     }
 
     #[test]

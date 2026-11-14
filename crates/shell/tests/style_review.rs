@@ -1,17 +1,19 @@
 //! The review of a style the wallpaper picker has put on the screen (qml services/StyleReview.qml
 //! and the bar it adds to the edit overlay, editMode/StyleReviewBar.qml): a pick that ends well
 //! asks the shell for the review, the review opens the edit mode with like, dislike and confirm
-//! at the top of the overlay, and it ends with the edit mode. Without a pick the overlay is the
-//! one it always was.
+//! at the top of the overlay, and it ends with the edit mode: confirmed, the style stays; left
+//! with Esc or "Put it back", the look from before the pick comes back. Without a pick the
+//! overlay is the one it always was.
 #![cfg(feature = "interp")]
 
 use qml::edit_mode::WinRect;
 use qml::runtime::Runtime;
 use qml::value::Value;
-use shell::{input::Pointer, scene};
+use shell::{input::Pointer, keys::Keyboard, scene};
 use std::path::{Path, PathBuf};
 
 const BTN_LEFT: u32 = 0x110;
+const KEY_ESC: u32 = 0xff1b;
 const W: f64 = 1280.0;
 const H: f64 = 720.0;
 
@@ -280,25 +282,40 @@ impl Review {
         self.frames(3);
     }
 
+    /// Esc, pressed in the overlay.
+    fn esc(&mut self) {
+        let mut kb = Keyboard::default();
+        kb.win = self.overlay;
+        kb.sync(&mut self.rt);
+        kb.key(&mut self.rt, KEY_ESC, None, true, false);
+        kb.key(&mut self.rt, KEY_ESC, None, false, false);
+        self.frames(3);
+    }
+
     /// Runs frames until the picker's job in progress has ended, sleeping between two of them
     /// as the shell does: until an event or the runtime's next deadline.
     fn idle(&mut self) {
         while self.state().split(',').nth(2) == Some("true") {
-            let next = self.rt.next_deadline(self.now);
-            let slept = std::time::Instant::now();
-            let woke = self.wake.wait(
-                self.rt.process_fd(),
-                next.is_finite()
-                    .then(|| std::time::Duration::from_secs_f64(next / 1000.0)),
-            );
-            self.now += slept.elapsed().as_secs_f64() * 1000.0;
-            if woke.fd {
-                self.rt.process_fd_ready();
-            }
-            self.rt.poll_native();
-            self.frames(1);
+            self.turn();
         }
         self.frames(3);
+    }
+
+    /// One frame after what the shell sleeps until: an event or the runtime's next deadline.
+    fn turn(&mut self) {
+        let next = self.rt.next_deadline(self.now);
+        let slept = std::time::Instant::now();
+        let woke = self.wake.wait(
+            self.rt.process_fd(),
+            next.is_finite()
+                .then(|| std::time::Duration::from_secs_f64(next / 1000.0)),
+        );
+        self.now += slept.elapsed().as_secs_f64() * 1000.0;
+        if woke.fd {
+            self.rt.process_fd_ready();
+        }
+        self.rt.poll_native();
+        self.frames(1);
     }
 }
 
@@ -364,9 +381,19 @@ fn only_a_pick_that_ended_well_asks_for_a_review() {
     let open = vec![("styleReview".to_string(), "open".to_string())];
     assert_eq!(asked(&mut r, &["pick"], 0.0), open);
     assert_eq!(asked(&mut r, &["dislike", "--next"], 0.0), open);
+    assert_eq!(asked(&mut r, &["pick", "--desktop"], 0.0), open);
+    assert_eq!(asked(&mut r, &["pick", "--words", "night city"], 0.0), open);
     assert_eq!(asked(&mut r, &["pick"], 1.0), vec![]);
+    assert_eq!(asked(&mut r, &["pick", "--desktop"], 1.0), vec![]);
     assert_eq!(asked(&mut r, &["dislike", "--next"], 1.0), vec![]);
-    for other in [&["like"][..], &["style"], &["reset-taste"], &["dislike"]] {
+    for other in [
+        &["like"][..],
+        &["style"],
+        &["reset-taste"],
+        &["dislike"],
+        &["keep"],
+        &["revert"],
+    ] {
         assert_eq!(asked(&mut r, other, 0.0), vec![], "{other:?}");
     }
     assert_eq!(r.state(), "[false,false,false,false]");
@@ -385,10 +412,15 @@ fn the_overlay_has_no_review_bar_without_a_review() {
     for (icon, label) in [
         ("thumb_up", "Like"),
         ("thumb_down", "Dislike"),
+        ("undo", "Put it back"),
         ("check", "Confirm"),
     ] {
         assert!(r.find(icon, label).is_none(), "{icon} {label}");
     }
+    // Esc leaves the edit mode as it always did: the picker is not asked for anything.
+    r.esc();
+    assert!(!r.active());
+    assert_eq!(r.state(), "[false,false,false,false]");
     assert!(r.rt.errors().is_empty(), "{:?}", r.rt.errors());
 }
 
@@ -431,6 +463,7 @@ fn the_review_bar_likes_and_confirms() {
 
     r.click(confirm);
     assert!(!r.active(), "Confirm left the edit mode on");
+    r.idle();
     assert_eq!(r.state(), "[false,false,false,false]");
     // The next review starts unrated.
     r.ipc_open();
@@ -473,6 +506,125 @@ fn dislike_picks_another_and_done_ends_the_review() {
     let done = r.button("check", "Done");
     r.click(done);
     assert!(!r.active());
+    r.idle();
     assert_eq!(r.state(), "[false,false,false,false]");
+    assert!(r.rt.errors().is_empty(), "{:?}", r.rt.errors());
+}
+
+const BAR_BEFORE: &str = r#"{"left":["workspaces"],"center":["clock"],"right":["media"]}"#;
+const BAR_PICKED: &str = r#"{"left":["media"],"center":[],"right":["clock","workspaces"]}"#;
+
+fn config_file(home: &Path) -> PathBuf {
+    home.join(".config/rusty-impulse/config.json")
+}
+
+fn before_file(home: &Path) -> PathBuf {
+    state_file(home).with_file_name("before.json")
+}
+
+/// A pick that asked first is on the screen: it rearranged the bar, and the picker holds the
+/// look from before it.
+fn picked_over(home: &Path) {
+    picked(home);
+    let config = config_file(home);
+    std::fs::create_dir_all(config.parent().unwrap()).unwrap();
+    let now = serde_json::json!({
+        "bar": {"layout": layout(BAR_PICKED)},
+        "background": {"wallpaperPath": home.join("w1.jpg")},
+    });
+    std::fs::write(&config, now.to_string()).unwrap();
+    let was = serde_json::json!({
+        "wallpaperPath": "", "accentColor": "", "barLayout": layout(BAR_BEFORE),
+        "clock": {"placementStrategy": null, "x": null, "y": null}, "layout": null,
+    });
+    std::fs::write(before_file(home), was.to_string()).unwrap();
+}
+
+/// config.json's bar layout and wallpaper once the picker's run has ended and the shell has
+/// saved what it changed. The layout is compared as JSON: the order of its keys in the file is
+/// not the look.
+fn look(r: &mut Review, home: &Path, bar: &str) -> (serde_json::Value, String) {
+    r.idle();
+    let bar = layout(bar);
+    let read = || {
+        let v: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(config_file(home)).unwrap_or_default())
+                .unwrap_or_default();
+        let wall = v["background"]["wallpaperPath"].as_str().unwrap_or("?");
+        (v["bar"]["layout"].clone(), wall.to_string())
+    };
+    while read().0 != bar && r.rt.next_deadline(r.now).is_finite() {
+        r.turn();
+    }
+    read()
+}
+
+fn layout(bar: &str) -> serde_json::Value {
+    serde_json::from_str(bar).unwrap()
+}
+
+/// Esc in a review is not a confirmation: the edit mode ends and the look from before the pick
+/// is back.
+#[test]
+fn esc_puts_the_look_from_before_the_pick_back() {
+    const TEST: &str = concat!(
+        module_path!(),
+        "::esc_puts_the_look_from_before_the_pick_back"
+    );
+    let Some(home) = own_home(TEST) else { return };
+    picked_over(&home);
+    let mut r = Review::new("esc");
+    r.ipc_open();
+    r.show_overlay();
+    r.esc();
+    assert!(!r.active(), "Esc left the edit mode on");
+    assert_eq!(
+        look(&mut r, &home, BAR_BEFORE),
+        (layout(BAR_BEFORE), "".into())
+    );
+    assert_eq!(r.state(), "[false,false,false,false]");
+    assert!(!before_file(&home).exists());
+    assert!(r.rt.errors().is_empty(), "{:?}", r.rt.errors());
+}
+
+/// "Put it back" on the review bar does what Esc does.
+#[test]
+fn put_it_back_ends_the_review_with_the_look_from_before_the_pick() {
+    const TEST: &str = concat!(
+        module_path!(),
+        "::put_it_back_ends_the_review_with_the_look_from_before_the_pick"
+    );
+    let Some(home) = own_home(TEST) else { return };
+    picked_over(&home);
+    let mut r = Review::new("back");
+    r.ipc_open();
+    r.show_overlay();
+    let back = r.button("undo", "Put it back");
+    r.click(back);
+    assert!(!r.active());
+    assert_eq!(
+        look(&mut r, &home, BAR_BEFORE),
+        (layout(BAR_BEFORE), "".into())
+    );
+    assert!(!before_file(&home).exists());
+    assert!(r.rt.errors().is_empty(), "{:?}", r.rt.errors());
+}
+
+/// Confirm keeps the picked style: nothing is put back, and nothing is left to put back.
+#[test]
+fn confirm_keeps_the_picked_look() {
+    const TEST: &str = concat!(module_path!(), "::confirm_keeps_the_picked_look");
+    let Some(home) = own_home(TEST) else { return };
+    picked_over(&home);
+    let wall = home.join("w1.jpg").to_string_lossy().into_owned();
+    let mut r = Review::new("keep");
+    r.ipc_open();
+    r.show_overlay();
+    let confirm = r.button("check", "Confirm");
+    r.click(confirm);
+    assert!(!r.active());
+    assert_eq!(look(&mut r, &home, BAR_PICKED), (layout(BAR_PICKED), wall));
+    assert_eq!(r.state(), "[false,false,false,false]");
+    assert!(!before_file(&home).exists());
     assert!(r.rt.errors().is_empty(), "{:?}", r.rt.errors());
 }

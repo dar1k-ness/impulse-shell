@@ -110,6 +110,19 @@ pub enum Vote {
     Dislike,
 }
 
+/// What a pick goes by.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum By<'a> {
+    /// The text preferences and searches of [`Prefs`].
+    Prefs,
+    /// The look of this image, the wallpaper on the desktop.
+    Desktop(&'a Path),
+    /// These words (English) instead of [`Prefs::like`] and the configured searches.
+    Words(&'a str),
+    /// What the pick before went by.
+    Same,
+}
+
 /// Picks, downloads and records a new wallpaper (it becomes the current one for [`vote`]);
 /// keeps the `keep` newest downloads plus every liked one.
 pub fn pick(
@@ -118,7 +131,19 @@ pub fn pick(
     progress: &dyn Fn(Stage),
     cancel: &Cancel,
 ) -> Result<Picked> {
+    pick_by(By::Prefs, prefs, dirs, progress, cancel)
+}
+
+/// [`pick`] going by `by`, which is remembered for a later [`By::Same`].
+pub fn pick_by(
+    by: By,
+    prefs: &Prefs,
+    dirs: &Dirs,
+    progress: &dyn Fn(Stage),
+    cancel: &Cancel,
+) -> Result<Picked> {
     pick_with(
+        by,
         prefs,
         dirs,
         &Endpoints::official(),
@@ -128,10 +153,104 @@ pub fn pick(
     )
 }
 
+/// Searches wallhaven knows, one per kind of picture: the ones nearest to the desktop's
+/// wallpaper are where its likes are looked for.
+const SEARCHES: [&str; 32] = [
+    "landscape",
+    "mountains",
+    "forest",
+    "ocean",
+    "beach",
+    "lake",
+    "desert",
+    "snow",
+    "sky",
+    "clouds",
+    "sunset",
+    "night",
+    "stars",
+    "space",
+    "city",
+    "street",
+    "architecture",
+    "minimalism",
+    "abstract",
+    "digital art",
+    "fantasy art",
+    "science fiction",
+    "cyberpunk",
+    "pixel art",
+    "anime",
+    "anime girls",
+    "flowers",
+    "animals",
+    "cars",
+    "video games",
+    "dark",
+    "pastel",
+];
+const NEAREST_SEARCHES: usize = 3;
+
+/// The basis for the wallpaper at `path`: wallpapers tagged like it when it is wallhaven's own,
+/// then the [`SEARCHES`] it looks most like.
+fn desktop_basis(clip: &Clip, path: &Path) -> Result<state::Basis> {
+    let emb = clip
+        .images(&[open_image(path)?], &mut |_| {})?
+        .pop()
+        .unwrap_or_default();
+    let prompts: Vec<String> = SEARCHES
+        .iter()
+        .map(|s| score::WALLPAPER.replace("{}", s))
+        .collect();
+    let mut near: Vec<(f32, &str)> = clip
+        .texts(&prompts)?
+        .iter()
+        .map(|t| dot(&emb, t))
+        .zip(SEARCHES)
+        .collect();
+    near.sort_by(|a, b| b.0.total_cmp(&a.0));
+    let own = path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .and_then(|s| s.strip_prefix("wallhaven-"))
+        .filter(|id| !id.is_empty() && id.bytes().all(|b| b.is_ascii_alphanumeric()))
+        .map(|id| format!("like:{id}"));
+    let queries = own
+        .into_iter()
+        .chain(
+            near.iter()
+                .take(NEAREST_SEARCHES)
+                .map(|(_, s)| (*s).to_string()),
+        )
+        .collect();
+    Ok(state::Basis::Desktop { emb, queries })
+}
+
+/// The searches for the user's words: all of them, then each word that says something.
+fn word_searches(text: &str) -> Vec<String> {
+    let words: Vec<&str> = text
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|w| w.chars().count() > 2 && !["the", "and", "with", "for"].contains(w))
+        .collect();
+    let mut out = vec![text.trim().to_string()];
+    if words.len() > 1 {
+        out.extend(words.iter().map(|w| (*w).to_string()));
+    }
+    out
+}
+
+/// wallhaven's general and anime categories on top of the configured ones: what the user
+/// asks for by words or by the desktop is looked for in both.
+fn wide_categories(c: &str) -> String {
+    let bit = |i: usize| c.as_bytes().get(i) == Some(&b'1');
+    format!("11{}", if bit(2) { '1' } else { '0' })
+}
+
 /// Downloads that fail are replaced by the next sampled candidate this many times.
 const DOWNLOAD_ATTEMPTS: usize = 3;
 
 fn pick_with(
+    by: By,
     prefs: &Prefs,
     dirs: &Dirs,
     ep: &Endpoints,
@@ -142,17 +261,35 @@ fn pick_with(
     progress(Stage::Model);
     let clip = Clip::new(&dirs.cache, &ep.hf, cancel);
     clip.vision()?;
-    let scorer = score::Scorer::new(&clip, prefs)?;
+    let basis = match by {
+        By::Prefs => None,
+        By::Desktop(path) => Some(desktop_basis(&clip, path)?),
+        By::Words(text) => Some(state::Basis::Words {
+            text: text.trim().to_string(),
+        }),
+        By::Same => state::load(&dirs.state)?.basis,
+    };
+    let mut prefs = prefs.clone();
+    let searches = match &basis {
+        None => None,
+        Some(state::Basis::Desktop { queries, .. }) => Some(queries.clone()),
+        Some(state::Basis::Words { text }) => {
+            prefs.like = vec![text.clone()];
+            Some(word_searches(text))
+        }
+    };
+    if basis.is_some() {
+        prefs.wallhaven_categories = wide_categories(&prefs.wallhaven_categories);
+    }
+    let prefs = &prefs;
+    let mut scorer = score::Scorer::new(&clip, prefs)?;
+    if let Some(state::Basis::Desktop { emb, .. }) = &basis {
+        scorer.like = vec![emb.clone()];
+    }
 
     progress(Stage::Candidates);
     let shown = state::load(&dirs.state)?.history;
-    let mut cands = sources::candidates(ep, prefs, rng, cancel)?;
-    cands.retain(|c| !shown.contains(&c.id));
-    if cands.is_empty() {
-        return Err(Error::NoCandidates(
-            "everything the sources returned was shown before".into(),
-        ));
-    }
+    let cands = sources::candidates(ep, prefs, searches.as_deref(), &shown, rng, cancel)?;
     let (cands, imgs): (Vec<_>, Vec<_>) = sources::thumbnails(cands, cancel)?.into_iter().unzip();
     if imgs.is_empty() {
         return Err(Error::NoCandidates(
@@ -237,7 +374,8 @@ fn pick_with(
     };
     let seen: Vec<(String, Vec<f32>)> = cands.iter().map(|c| c.id.clone()).zip(embs).collect();
     state::update(&dirs.state, |st| {
-        st.record(cur, &seen, &dirs.downloads, prefs.keep);
+        st.record(cur, &seen, basis.is_some(), &dirs.downloads, prefs.keep);
+        st.basis = basis;
         Ok(())
     })?;
     Ok(Picked {
@@ -488,5 +626,45 @@ mod tests {
             .save(&grey)
             .unwrap();
         assert_eq!(accent_for(&grey, &Prefs::default(), &d).unwrap(), "#5a5a5a");
+    }
+}
+
+#[cfg(test)]
+mod basis_tests {
+    use super::*;
+
+    #[test]
+    fn words_are_searched_whole_first_then_one_by_one() {
+        assert_eq!(
+            word_searches(" night city with the rain "),
+            ["night city with the rain", "night", "city", "rain"]
+        );
+        assert_eq!(word_searches("forest"), ["forest"]);
+    }
+
+    #[test]
+    fn an_asked_pick_looks_in_general_and_anime_and_keeps_people() {
+        assert_eq!(wide_categories("100"), "110");
+        assert_eq!(wide_categories("011"), "111");
+        assert_eq!(wide_categories("junk"), "110");
+    }
+
+    #[test]
+    fn the_basis_of_a_pick_survives_in_the_state() {
+        let t = tempfile::tempdir().unwrap();
+        let basis = state::Basis::Words {
+            text: "night city".into(),
+        };
+        state::update(t.path(), |st| {
+            st.basis = Some(basis.clone());
+            Ok(())
+        })
+        .unwrap();
+        assert_eq!(state::load(t.path()).unwrap().basis, Some(basis));
+        let text = std::fs::read_to_string(t.path().join("state.json")).unwrap();
+        assert!(
+            text.contains(r#""basis":{"words":{"text":"night city"}}"#),
+            "{text}"
+        );
     }
 }

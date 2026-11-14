@@ -204,6 +204,8 @@ Singleton {
                 }
                 property JsonObject wallpick: JsonObject {
                     property list<string> sources: ["wallhaven"] // "wallhaven", "konachan"
+                    // What "Pick for me" was last asked for in the user's own words
+                    property string request: ""
                     // Plain descriptions the image model compares candidates against
                     property list<string> like: ["dark minimalist wallpaper", "night landscape with mountains", "calm nature scenery with soft colors"]
                     property list<string> dislike: ["people and faces", "text, logos and watermarks", "bright cluttered busy image"]

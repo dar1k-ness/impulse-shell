@@ -260,10 +260,18 @@ SettingsPage {
                         buttonRadius: Appearance.rounding.full
                         colBackground: Appearance.colors.colLayer3
                         colBackgroundHover: Appearance.colors.colLayer3Hover
-                        onClicked: Wallpick.pick()
+                        // The picker asks what to go by before it looks
+                        onClicked: wallpickAsk.visible = !wallpickAsk.visible
                         StyledToolTip {
                             text: Translation.tr("Find a wallpaper that matches your taste on Wallhaven or Konachan\nImage is saved to ~/Pictures/Wallpapers")
                         }
+                    }
+                    WallpickAsk {
+                        id: wallpickAsk
+                        visible: false
+                        Layout.preferredWidth: 268
+                        Layout.maximumWidth: 268
+                        onAsked: visible = false
                     }
                     StyledText {
                         visible: Wallpick.status.length > 0

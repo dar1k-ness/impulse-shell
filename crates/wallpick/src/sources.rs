@@ -106,26 +106,35 @@ pub(crate) fn parse_wallhaven(v: &Value) -> (Vec<Candidate>, Option<String>, u64
     (out, seed, last)
 }
 
+/// Up to `n` candidates not in `shown`, looked for four pages deep, with those in `shown`
+/// that came on the way.
 fn wallhaven_query(
     base: &str,
     p: &Prefs,
     q: &str,
     n: usize,
+    shown: &[String],
     cancel: &Cancel,
 ) -> Result<Vec<Candidate>> {
     let mut out: Vec<Candidate> = Vec::new();
+    let mut new = 0;
     let mut seed = None;
     for page in 1..=4 {
         let v = http::json(&wallhaven_url(base, p, q, page, seed.as_deref()), cancel)?;
         let (cands, s, last) = parse_wallhaven(&v);
         seed = s.or(seed);
         let empty = cands.is_empty();
-        out.extend(cands);
-        if empty || out.len() >= n || u64::from(page) >= last {
+        for c in cands {
+            let old = shown.contains(&c.id);
+            if old || new < n {
+                new += usize::from(!old);
+                out.push(c);
+            }
+        }
+        if empty || new >= n || u64::from(page) >= last {
             break;
         }
     }
-    out.truncate(n);
     Ok(out)
 }
 
@@ -177,15 +186,17 @@ fn konachan_query(
     cancel: &Cancel,
 ) -> Result<Vec<Candidate>> {
     let v = http::json(&konachan_url(base, p, tag, n), cancel)?;
-    let mut out = parse_konachan(&v, p, base);
-    out.truncate(n);
-    Ok(out)
+    Ok(parse_konachan(&v, p, base))
 }
 
-/// Tries the queries in random order until at least half of `n` distinct candidates arrived.
+/// Tries the queries, in random order when `shuffle`, until at least half of `n` distinct
+/// candidates not in `shown` arrived; `old` counts those in `shown` that were left out.
 fn try_queries(
     list: &[String],
+    shuffle: bool,
     n: usize,
+    shown: &[String],
+    old: &mut usize,
     rng: &mut StdRng,
     mut query: impl FnMut(&str, usize) -> Result<Vec<Candidate>>,
 ) -> Result<Vec<Candidate>> {
@@ -193,14 +204,18 @@ fn try_queries(
     if qs.is_empty() {
         qs.push("");
     }
-    qs.shuffle(rng);
+    if shuffle {
+        qs.shuffle(rng);
+    }
     let mut out: Vec<Candidate> = Vec::new();
     let mut err = None;
     for q in qs {
         match query(q, n - out.len()) {
             Ok(v) => {
                 for c in v {
-                    if !out.iter().any(|o| o.id == c.id) {
+                    if shown.contains(&c.id) {
+                        *old += 1;
+                    } else if out.len() < n && !out.iter().any(|o| o.id == c.id) {
                         out.push(c);
                     }
                 }
@@ -218,11 +233,14 @@ fn try_queries(
     }
 }
 
-/// About `prefs.candidates` candidates split over the configured sources; a failing source is
-/// skipped while another one still delivers.
+/// About `prefs.candidates` candidates not in `shown`, split over the configured sources; a
+/// failing source is skipped while another one still delivers. `searches` are wallhaven
+/// searches to try in their order instead of one of `prefs.wallhaven_queries` at random.
 pub(crate) fn candidates(
     ep: &Endpoints,
     p: &Prefs,
+    searches: Option<&[String]>,
+    shown: &[String],
     rng: &mut StdRng,
     cancel: &Cancel,
 ) -> Result<Vec<Candidate>> {
@@ -234,14 +252,23 @@ pub(crate) fn candidates(
     let per = p.candidate_count().div_ceil(sources.len());
     let mut out = Vec::new();
     let mut errors = Vec::new();
+    let mut old = 0;
     for s in sources {
         let r = match s {
-            Source::Wallhaven => try_queries(&p.wallhaven_queries, per, rng, |q, n| {
-                wallhaven_query(&ep.wallhaven, p, q, n, cancel)
-            }),
-            Source::Konachan => try_queries(&p.konachan_tags, per, rng, |t, n| {
-                konachan_query(&ep.konachan, p, t, n, cancel)
-            }),
+            Source::Wallhaven => try_queries(
+                searches.unwrap_or(&p.wallhaven_queries),
+                searches.is_none(),
+                per,
+                shown,
+                &mut old,
+                rng,
+                |q, n| wallhaven_query(&ep.wallhaven, p, q, n, shown, cancel),
+            ),
+            Source::Konachan => {
+                try_queries(&p.konachan_tags, true, per, shown, &mut old, rng, |t, n| {
+                    konachan_query(&ep.konachan, p, t, n, cancel)
+                })
+            }
         };
         match r {
             Ok(v) => out.extend(v),
@@ -250,10 +277,12 @@ pub(crate) fn candidates(
         }
     }
     if out.is_empty() {
-        let why = if errors.is_empty() {
-            "sources returned nothing".into()
-        } else {
+        let why = if !errors.is_empty() {
             errors.join("; ")
+        } else if old > 0 {
+            "everything the sources returned was shown before".into()
+        } else {
+            "sources returned nothing".into()
         };
         return Err(Error::NoCandidates(why));
     }
@@ -436,7 +465,7 @@ mod tests {
             ..Prefs::default()
         };
         let mut rng = StdRng::seed_from_u64(3);
-        let c = candidates(&ep, &p, &mut rng, &Cancel::new()).unwrap();
+        let c = candidates(&ep, &p, None, &[], &mut rng, &Cancel::new()).unwrap();
         let ids: Vec<&str> = c.iter().map(|c| c.id.as_str()).collect();
         assert_eq!(ids, ["wallhaven-abc123", "wallhaven-zz9", "konachan-7"]);
         let hits = srv.hits.lock().unwrap().clone();
@@ -458,6 +487,93 @@ mod tests {
     }
 
     #[test]
+    fn given_searches_are_tried_in_their_order() {
+        let list: Vec<String> = ["a b", "a", "b"].iter().map(|s| s.to_string()).collect();
+        let mut asked = Vec::new();
+        let mut rng = StdRng::seed_from_u64(7);
+        let got = try_queries(&list, false, 4, &[], &mut 0, &mut rng, |q, _| {
+            asked.push(q.to_string());
+            Ok(if q == "a b" {
+                Vec::new()
+            } else {
+                parse_wallhaven(&serde_json::from_slice(&wallhaven_page("http://h")).unwrap()).0
+            })
+        })
+        .unwrap();
+        assert_eq!(asked, ["a b", "a"]);
+        assert_eq!(got.len(), 2);
+    }
+
+    /// "Dislike" asks for the same again: a search whose answers were all shown before is
+    /// not the end, the next one is tried.
+    #[test]
+    fn a_search_that_was_all_shown_before_gives_way_to_the_next() {
+        let page = |ids: &[&str]| -> Vec<Candidate> {
+            ids.iter()
+                .map(|id| Candidate {
+                    id: id.to_string(),
+                    thumb: String::new(),
+                    full: String::new(),
+                    page: String::new(),
+                })
+                .collect()
+        };
+        let list: Vec<String> = ["a b", "a", "b"].iter().map(|s| s.to_string()).collect();
+        let shown: Vec<String> = ["1", "2", "3"].iter().map(|s| s.to_string()).collect();
+        let mut asked = Vec::new();
+        let mut old = 0;
+        let mut rng = StdRng::seed_from_u64(7);
+        let got = try_queries(&list, false, 4, &shown, &mut old, &mut rng, |q, _| {
+            asked.push(q.to_string());
+            Ok(match q {
+                "a b" => page(&["1", "2"]),
+                "a" => page(&["3", "4", "5"]),
+                _ => page(&["6"]),
+            })
+        })
+        .unwrap();
+        assert_eq!(asked, ["a b", "a"]);
+        let ids: Vec<&str> = got.iter().map(|c| c.id.as_str()).collect();
+        assert_eq!(ids, ["4", "5"]);
+        assert_eq!(old, 3);
+    }
+
+    #[test]
+    fn nothing_but_what_was_shown_before_is_said_so() {
+        let routes = std::sync::Arc::new(std::sync::Mutex::new(HashMap::new()));
+        let srv = fake::serve_dynamic(routes.clone());
+        routes.lock().unwrap().insert(
+            "/api/v1/search".to_string(),
+            (200, wallhaven_page(&srv.base)),
+        );
+        let ep = Endpoints {
+            wallhaven: format!("{}/api/v1", srv.base),
+            konachan: srv.base.clone(),
+            hf: srv.base.clone(),
+        };
+        let p = Prefs {
+            sources: vec![Source::Wallhaven],
+            candidates: 8,
+            ..Prefs::default()
+        };
+        let searches = ["night city".to_string(), "night".to_string()];
+        let mut rng = StdRng::seed_from_u64(3);
+        let some = ["wallhaven-abc123".to_string()];
+        let c = candidates(&ep, &p, Some(&searches), &some, &mut rng, &Cancel::new()).unwrap();
+        let ids: Vec<&str> = c.iter().map(|c| c.id.as_str()).collect();
+        assert_eq!(ids, ["wallhaven-zz9"]);
+        let all = ["wallhaven-abc123".to_string(), "wallhaven-zz9".to_string()];
+        let err = candidates(&ep, &p, Some(&searches), &all, &mut rng, &Cancel::new()).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            Error::NoCandidates("everything the sources returned was shown before".into())
+                .to_string()
+        );
+        let hits = srv.hits.lock().unwrap().clone();
+        assert!(hits.iter().any(|h| h.ends_with("&q=night")), "{hits:?}");
+    }
+
+    #[test]
     fn all_sources_failing_is_an_error_not_a_panic() {
         let srv = fake::serve(HashMap::from([(
             "/api/v1/search".to_string(),
@@ -469,14 +585,15 @@ mod tests {
             hf: srv.base.clone(),
         };
         let mut rng = StdRng::seed_from_u64(0);
-        let err = candidates(&ep, &Prefs::default(), &mut rng, &Cancel::new()).unwrap_err();
+        let err =
+            candidates(&ep, &Prefs::default(), None, &[], &mut rng, &Cancel::new()).unwrap_err();
         assert!(matches!(err, Error::NoCandidates(_)), "{err}");
         let p = Prefs {
             sources: vec![],
             ..Prefs::default()
         };
         assert!(matches!(
-            candidates(&ep, &p, &mut rng, &Cancel::new()),
+            candidates(&ep, &p, None, &[], &mut rng, &Cancel::new()),
             Err(Error::NoCandidates(_))
         ));
     }

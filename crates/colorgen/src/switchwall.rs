@@ -401,7 +401,8 @@ pub struct Request {
     pub scheme: String,
     /// What to do with the accent color the colors are made from instead of the wallpaper.
     pub accent: Option<Accent>,
-    /// Make the colors again for the wallpaper in use instead of switching (`--noswitch`).
+    /// Make the colors again for the wallpaper in use instead of switching (`--noswitch`):
+    /// [`Request::image`] when it is given, the configured one otherwise.
     pub keep_wallpaper: bool,
 }
 
@@ -481,7 +482,11 @@ pub fn request_io(req: &Request, p: &Paths, sys: &Arc<dyn Sys>, io: Io) -> i32 {
     };
     if req.keep_wallpaper {
         s.noswitch = true;
-        s.imgpath = r.wallpaper_in_use();
+        // A caller that has just set the wallpaper names it: the shell's Config saves it to
+        // the file only after the run, where reading it back gave the old one.
+        if s.imgpath.is_empty() {
+            s.imgpath = r.wallpaper_in_use();
+        }
     }
     match &req.accent {
         Some(Accent::Set(color)) => r.set_accent(&mut s, color),

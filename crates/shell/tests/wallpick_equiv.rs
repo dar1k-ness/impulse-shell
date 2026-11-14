@@ -86,7 +86,7 @@ fn wallpick_proc_matches_the_rusty_impulse_wallpick_process() {
     session(&home);
     let mut out = vec![command(&["reset-taste"]), command(&["like"])];
     write_config();
-    out.push(command(&["pick"]));
+    out.push(command(&["pick", "--desktop"]));
     got.push(out);
     {
         session(&home);
@@ -100,7 +100,7 @@ fn wallpick_proc_matches_the_rusty_impulse_wallpick_process() {
             &f,
             "import QtQuick\nimport ri.services\nItem {\n\
              function run(a) { if (a === \"reset\") Wallpick.resetTaste(); \
-             else if (a === \"like\") Wallpick.like(); else Wallpick.pick() }\n\
+             else if (a === \"like\") Wallpick.like(); else Wallpick.pickByDesktop() }\n\
              function state() { return JSON.stringify([Wallpick.busy, Wallpick.status, Wallpick.failed]) }\n}\n",
         )
         .unwrap();

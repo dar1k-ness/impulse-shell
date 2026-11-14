@@ -123,6 +123,16 @@ impl Env {
     }
 }
 
+/// `text` in English, whatever language it is in: for a job that reads English only.
+pub(crate) fn to_english(text: &str) -> Result<String, String> {
+    let env = Env::from_env();
+    match google_brief(text, "auto", "en", "en", &env, &|_| {}) {
+        Ok(Some(t)) if !js_trim(&t).is_empty() => Ok(js_trim(&t).to_string()),
+        Ok(_) => Err("the translator gave no answer".into()),
+        Err(e) => Err(e.trim().to_string()),
+    }
+}
+
 /// JS `String.prototype.trim`.
 pub(crate) fn js_trim(s: &str) -> &str {
     s.trim_matches(|c: char| (c.is_whitespace() && c != '\u{85}') || c == '\u{feff}')

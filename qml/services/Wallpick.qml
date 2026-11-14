@@ -23,8 +23,29 @@ Singleton {
     // A run of `args` ended, `ok` without an error.
     signal ended(var args, bool ok)
 
-    function pick() {
-        root.run(["pick"]);
+    // A run to start once the one that is being stopped has ended.
+    property var next: null
+
+    // A pick goes by the wallpaper on the desktop or by the user's own words; "dislike" picks
+    // again by the same. The look from before the pick is kept until keep() or revert().
+    function pickByDesktop() {
+        root.run(["pick", "--desktop"]);
+    }
+    function pickByWords(words) {
+        root.run(["pick", "--words", words]);
+    }
+    // The picked style stays.
+    function keep() {
+        root.run(["keep"]);
+    }
+    // The look from before the pick comes back; a pick still running is stopped first.
+    function revert() {
+        if (proc.running) {
+            root.next = ["revert"];
+            proc.running = false;
+        } else {
+            root.run(["revert"]);
+        }
     }
     function like() {
         root.run(["like"]);
@@ -49,7 +70,11 @@ Singleton {
     function finished(args, exitCode) {
         root.failed = exitCode !== 0;
         root.ended(args, !root.failed);
-        if (!root.failed && (args[0] === "pick" || args[1] === "--next"))
+        const next = root.next;
+        root.next = null;
+        if (next)
+            root.run(next);
+        else if (!root.failed && (args[0] === "pick" || args[1] === "--next"))
             ShellControl.ipcCall("styleReview", "open");
     }
 

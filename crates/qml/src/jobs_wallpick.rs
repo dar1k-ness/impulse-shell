@@ -118,7 +118,7 @@ pub(crate) fn job(w: &mut World, p: usize) -> Option<Job> {
 pub fn cli(args: &[String], root: &Path) -> i32 {
     let Some(action) = Action::parse(args) else {
         elog::eprintln!(
-            "usage: rusty-impulse wallpick pick | like | dislike [--next] | style | reset-taste | arrange LEFT CENTER RIGHT"
+            "usage: rusty-impulse wallpick pick [--desktop | --words TEXT] | like | dislike [--next] | revert | keep | style | reset-taste | arrange LEFT CENTER RIGHT"
         );
         return 2;
     };
@@ -128,7 +128,13 @@ pub fn cli(args: &[String], root: &Path) -> i32 {
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum Action {
-    Pick,
+    Pick {
+        by: By,
+    },
+    /// Puts back the look the desktop had before the picks since the last [`Action::Keep`].
+    Revert,
+    /// The picked look stays: there is nothing to put back any more.
+    Keep,
     Like,
     Dislike {
         next: bool,
@@ -141,11 +147,30 @@ pub enum Action {
     },
 }
 
+/// What a pick goes by (`wallpick::By`).
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum By {
+    /// The settings' text preferences: the pick of a script or a keybind, which nobody reviews.
+    Prefs,
+    /// The wallpaper on the desktop.
+    Desktop,
+    /// The user's own words, in any language.
+    Words(String),
+    /// What the pick before went by.
+    Same,
+}
+
 impl Action {
     pub fn parse(args: &[String]) -> Option<Action> {
         let a: Vec<&str> = args.iter().map(String::as_str).collect();
         Some(match a.as_slice() {
-            ["pick"] => Action::Pick,
+            ["pick"] => Action::Pick { by: By::Prefs },
+            ["pick", "--desktop"] => Action::Pick { by: By::Desktop },
+            ["pick", "--words", words] if !words.trim().is_empty() => Action::Pick {
+                by: By::Words(words.trim().to_string()),
+            },
+            ["revert"] => Action::Revert,
+            ["keep"] => Action::Keep,
             ["like"] => Action::Like,
             ["dislike"] => Action::Dislike { next: false },
             ["dislike", "--next"] => Action::Dislike { next: true },
@@ -205,7 +230,12 @@ fn try_run(c: &Ctx, action: Action, cancel: &wallpick::Cancel, io: Io) -> Result
     let dirs = c.dirs();
     let e = |e: wallpick::Error| e.to_string();
     match action {
-        Action::Pick => pick(c, &dirs, cancel, io),
+        Action::Pick { by } => pick(c, &dirs, by, cancel, io),
+        Action::Revert => revert(c, &dirs, io),
+        Action::Keep => {
+            before::forget(&dirs.state);
+            Ok(())
+        }
         Action::Like => {
             wallpick::vote(&dirs, wallpick::Vote::Like).map_err(e)?;
             say(io, "Noted: more like this");
@@ -214,12 +244,12 @@ fn try_run(c: &Ctx, action: Action, cancel: &wallpick::Cancel, io: Io) -> Result
         Action::Dislike { next } => {
             wallpick::vote(&dirs, wallpick::Vote::Dislike).map_err(e)?;
             if next {
-                return pick(c, &dirs, cancel, io);
+                return pick(c, &dirs, By::Same, cancel, io);
             }
             say(io, "Noted: less like this");
             Ok(())
         }
-        Action::Style => style(c, &dirs, io),
+        Action::Style => style(c, &dirs, None, io),
         Action::Arrange { parts } => {
             say(io, "Arranging");
             arrange(c, &parts)?;
@@ -243,8 +273,47 @@ fn prefs(c: &Ctx) -> Result<wallpick::Prefs, String> {
     serde_json::from_value(section).map_err(|e| format!("Wallpaper picker settings: {e}"))
 }
 
-fn pick(c: &Ctx, dirs: &wallpick::Dirs, cancel: &wallpick::Cancel, io: Io) -> Result<(), String> {
+/// The user's words as the image model reads them: English. Words in another script go
+/// through the translator of the sidebar.
+fn english(words: &str, io: Io) -> Result<String, String> {
+    if words.is_ascii() {
+        return Ok(words.to_string());
+    }
+    say(io, "Translating the request");
+    crate::jobs_wall_gcloud_trans::trans::to_english(words)
+        .map_err(|e| format!("Could not translate the request, write it in English ({e})"))
+}
+
+fn pick(
+    c: &Ctx,
+    dirs: &wallpick::Dirs,
+    by: By,
+    cancel: &wallpick::Cancel,
+    io: Io,
+) -> Result<(), String> {
     let prefs = prefs(c)?;
+    // The picture on the desktop: of a video wallpaper, its still (Background.qml).
+    let cfg = c.config()?;
+    let at = |p: &str| cfg.pointer(p).and_then(J::as_str).unwrap_or_default();
+    let video = ["mp4", "webm", "mkv", "avi", "mov"];
+    let wall = match Path::new(at("/background/wallpaperPath")).extension() {
+        Some(e) if video.iter().any(|v| e.eq_ignore_ascii_case(v)) => {
+            at("/background/thumbnailPath")
+        }
+        _ => at("/background/wallpaperPath"),
+    }
+    .to_string();
+    let words;
+    let by = match &by {
+        By::Prefs => wallpick::By::Prefs,
+        By::Same => wallpick::By::Same,
+        By::Desktop if Path::new(&wall).is_file() => wallpick::By::Desktop(Path::new(&wall)),
+        By::Desktop => return Err("The desktop has no wallpaper picture to go by".into()),
+        By::Words(w) => {
+            words = english(w, io)?;
+            wallpick::By::Words(&words)
+        }
+    };
     let progress = |s: wallpick::Stage| {
         let line = match s {
             wallpick::Stage::Model => "Loading the image model".to_string(),
@@ -255,7 +324,12 @@ fn pick(c: &Ctx, dirs: &wallpick::Dirs, cancel: &wallpick::Cancel, io: Io) -> Re
         };
         say(io, &line);
     };
-    let picked = wallpick::pick(&prefs, dirs, &progress, cancel).map_err(|e| e.to_string())?;
+    let picked =
+        wallpick::pick_by(by, &prefs, dirs, &progress, cancel).map_err(|e| e.to_string())?;
+    match by {
+        wallpick::By::Prefs => before::forget(&dirs.state),
+        _ => before::remember(c, &dirs.state)?,
+    }
     say(io, "Applying");
     apply(c, &picked.path, picked.accent.as_deref(), io)?;
     if !c
@@ -266,29 +340,167 @@ fn pick(c: &Ctx, dirs: &wallpick::Dirs, cancel: &wallpick::Cancel, io: Io) -> Re
         .trim()
         .is_empty()
     {
-        style(c, dirs, io)?;
+        style(c, dirs, Some(&picked.path), io)?;
     }
     say(io, &picked.page);
     Ok(())
+}
+
+/// The look of the desktop before the picks that are still to be kept or put back.
+mod before {
+    use super::{Ctx, J};
+    use serde_json::json;
+    use std::path::{Path, PathBuf};
+
+    fn file(state: &Path) -> PathBuf {
+        state.join("before.json")
+    }
+
+    /// What a pick changes, as it is now; kept as it is when an earlier pick is still not
+    /// kept: that one's "before" is the look to go back to.
+    pub(super) fn remember(c: &Ctx, state: &Path) -> Result<(), String> {
+        let file = file(state);
+        if file.exists() {
+            return Ok(());
+        }
+        let cfg = c.config()?;
+        let at = |p: &str| cfg.pointer(p).cloned().unwrap_or(J::Null);
+        let saved = json!({
+            "wallpaperPath": at("/background/wallpaperPath"),
+            "accentColor": at("/appearance/palette/accentColor"),
+            "barLayout": at("/bar/layout"),
+            "clock": {
+                "placementStrategy": at("/background/widgets/clock/placementStrategy"),
+                "x": at("/background/widgets/clock/x"),
+                "y": at("/background/widgets/clock/y"),
+            },
+            "layout": std::fs::read_to_string(c.layout_file()).ok(),
+        });
+        let e = |e: std::io::Error| format!("Could not save {}: {e}", file.display());
+        std::fs::create_dir_all(state).map_err(e)?;
+        std::fs::write(&file, saved.to_string()).map_err(e)
+    }
+
+    pub(super) fn forget(state: &Path) {
+        let _ = std::fs::remove_file(file(state));
+    }
+
+    /// The remembered look, taken: `None` when no pick is waiting to be kept.
+    pub(super) fn take(state: &Path) -> Option<J> {
+        let v = serde_json::from_str(&std::fs::read_to_string(file(state)).ok()?).ok();
+        forget(state);
+        v
+    }
+}
+
+/// Puts back what [`before::remember`] saved: the bar's groups, the desktop clock's place,
+/// the layout file with what was arranged since, then the wallpaper and its colors.
+fn revert(c: &Ctx, dirs: &wallpick::Dirs, io: Io) -> Result<(), String> {
+    let Some(was) = before::take(&dirs.state) else {
+        return Err("There is no earlier style to put back".into());
+    };
+    say(io, "Putting the previous style back");
+    let file = c.config_file();
+    for side in ["left", "center", "right"] {
+        if let Some(groups) = was["barLayout"].get(side).filter(|g| g.is_array()) {
+            crate::shell_config::set_json(&file, &["bar", "layout", side], groups.clone());
+        }
+    }
+    for key in ["placementStrategy", "x", "y"] {
+        if let Some(v) = was["clock"].get(key).filter(|v| !v.is_null()) {
+            let path = ["background", "widgets", "clock", key];
+            crate::shell_config::set_json(&file, &path, v.clone());
+        }
+    }
+    if let Some(text) = was["layout"].as_str() {
+        let e = |e: std::io::Error| format!("Could not put the layout back: {e}");
+        let old = dirs.state.join("before-layout.toml");
+        std::fs::write(&old, text).map_err(e)?;
+        let (_, loaded) = crate::layout_model::Store::open(&old);
+        let _ = std::fs::remove_file(&old);
+        crate::layout_model::arrange::in_file(&c.layout_file(), |l| {
+            let changed = *l != loaded.layout;
+            *l = loaded.layout;
+            changed
+        })
+        .map_err(e)?;
+    }
+    let accent = was["accentColor"].as_str().filter(|a| !a.is_empty());
+    match was["wallpaperPath"].as_str().unwrap_or_default() {
+        // No wallpaper was chosen before: the shell shows its own again.
+        "" => {
+            crate::shell_config::set(&file, &["background", "wallpaperPath"], "");
+            let hex = accent.unwrap_or_default();
+            crate::shell_config::set(&file, &["appearance", "palette", "accentColor"], hex);
+            own_colors(c, accent, io)?;
+        }
+        wall if Path::new(wall).is_file() => apply(c, Path::new(wall), accent, io)?,
+        _ => return Err("The previous wallpaper is no longer there".into()),
+    }
+    say(io, "The previous style is back");
+    Ok(())
+}
+
+/// The colors of a desktop with no wallpaper chosen: the accent's, or those of the shell's own
+/// wallpaper. The run is told all of it: config.json still has the picked wallpaper and
+/// accent until the shell's Config saves, and the scheme in use is the picked wallpaper's.
+fn own_colors(c: &Ctx, accent: Option<&str>, io: Io) -> Result<(), String> {
+    use colorgen::switchwall::{Accent, Request};
+    let p = paths(c);
+    // The shell's tree (`colors_dir` is its `scripts/colors`), then where an install by
+    // hand keeps it, as switchwall itself looks.
+    let own = "assets/images/default_wallpaper.png";
+    let own = [
+        c.colors_dir.join("../..").join(own),
+        p.qs_config_dir().join(own),
+    ]
+    .into_iter()
+    .find(|f| f.is_file());
+    if own.is_none() && accent.is_none() {
+        return Ok(());
+    }
+    let config: J = std::fs::read(c.config_file())
+        .ok()
+        .and_then(|b| serde_json::from_slice(&b).ok())
+        .unwrap_or_default();
+    let scheme = config["appearance"]["palette"]["type"].as_str();
+    let req = Request {
+        image: own.map(|f| f.display().to_string()).unwrap_or_default(),
+        scheme: scheme.filter(|s| !s.is_empty()).unwrap_or("auto").into(),
+        keep_wallpaper: true,
+        accent: Some(accent.map_or(Accent::Clear, |hex| Accent::Set(hex.into()))),
+        ..Default::default()
+    };
+    match colorgen::switchwall::run(&req, &p, &c.sys, io) {
+        0 => Ok(()),
+        code => Err(format!(
+            "Could not make the previous colors again (exit {code})"
+        )),
+    }
+}
+
+fn paths(c: &Ctx) -> colorgen::switchwall::Paths {
+    colorgen::switchwall::Paths {
+        config_home: c.config_home.clone(),
+        cache_home: c.cache_home.clone(),
+        state_home: c.state_home.clone(),
+        script_dir: c.colors_dir.clone(),
+        home: c.home.clone(),
+    }
 }
 
 /// The wallpaper and its colors, like `switchwall.sh --image <path>`; with an accent the
 /// wallpaper is set first and the colors are generated from that accent instead.
 pub fn apply(c: &Ctx, path: &Path, accent: Option<&str>, io: Io) -> Result<(), String> {
     colorgen::switchwall::CATEGORIZE.get_or_init(|| crate::jobs_ai::categorize::for_switchwall);
-    let p = colorgen::switchwall::Paths {
-        config_home: c.config_home.clone(),
-        cache_home: c.cache_home.clone(),
-        state_home: c.state_home.clone(),
-        script_dir: c.colors_dir.clone(),
-        home: c.home.clone(),
-    };
+    let p = paths(c);
     let path = path.display().to_string();
     let req = match accent {
         Some(hex) => {
             c.sys
                 .set_config(&c.config_file(), &["background", "wallpaperPath"], &path);
             colorgen::switchwall::Request {
+                image: path,
                 keep_wallpaper: true,
                 accent: Some(colorgen::switchwall::Accent::Set(hex.into())),
                 ..Default::default()
@@ -308,7 +520,7 @@ pub fn apply(c: &Ctx, path: &Path, accent: Option<&str>, io: Io) -> Result<(), S
 }
 
 /// The bar arrangement from the layout wish and a calm spot for the desktop clock.
-fn style(c: &Ctx, dirs: &wallpick::Dirs, io: Io) -> Result<(), String> {
+fn style(c: &Ctx, dirs: &wallpick::Dirs, wall: Option<&Path>, io: Io) -> Result<(), String> {
     let cfg = c.config()?;
     let file = c.config_file();
     let wish = cfg
@@ -322,13 +534,15 @@ fn style(c: &Ctx, dirs: &wallpick::Dirs, io: Io) -> Result<(), String> {
         };
         arrange(c, &[names(&l.left), names(&l.center), names(&l.right)])?;
     }
-    let wall = cfg
-        .pointer("/background/wallpaperPath")
-        .and_then(J::as_str)
-        .unwrap_or_default();
-    if !wall.is_empty() && Path::new(wall).is_file() {
-        let (x, y) = wallpick::clock_spot(Path::new(wall), c.screen, CLOCK_SIZE, dirs)
-            .map_err(|e| e.to_string())?;
+    // A wallpaper applied in this run is given: the shell's Config saves it to the file only
+    // after the run, which still names the one before.
+    let wall = wall.map(Path::to_path_buf).unwrap_or_else(|| {
+        let at = cfg.pointer("/background/wallpaperPath");
+        at.and_then(J::as_str).unwrap_or_default().into()
+    });
+    if wall.is_file() {
+        let (x, y) =
+            wallpick::clock_spot(&wall, c.screen, CLOCK_SIZE, dirs).map_err(|e| e.to_string())?;
         let clock = ["background", "widgets", "clock"];
         let at = |k: &'static str| [clock[0], clock[1], clock[2], k];
         crate::shell_config::set(&file, &at("placementStrategy"), "free");
@@ -363,7 +577,7 @@ const CLOCK_SIZE: (u32, u32) = (230, 230);
 
 #[cfg(test)]
 mod tests {
-    use super::Action;
+    use super::{Action, By};
 
     fn parse(a: &[&str]) -> Option<Action> {
         Action::parse(&a.iter().map(|s| s.to_string()).collect::<Vec<_>>())
@@ -372,6 +586,7 @@ mod tests {
     use super::{Ctx, run};
     use colorgen::switchwall::Io;
     use serde_json::{Value, json};
+    use std::path::Path;
     use std::sync::Mutex;
 
     fn ctx(home: &std::path::Path, config: Value) -> Ctx {
@@ -403,7 +618,7 @@ mod tests {
         let t = tempfile::tempdir().unwrap();
         let c = ctx(t.path(), json!({}));
         std::fs::write(c.config_file(), "{\"background\": {}}}").unwrap();
-        let (code, _, err) = exec(&c, Action::Pick);
+        let (code, _, err) = exec(&c, Action::Pick { by: By::Prefs });
         assert_ne!(code, 0);
         assert!(err.contains("config.json"), "{err}");
     }
@@ -472,6 +687,122 @@ mod tests {
     }
 
     #[test]
+    fn revert_puts_back_what_was_there_before_the_first_pick_not_yet_kept() {
+        let t = tempfile::tempdir().unwrap();
+        let before = json!({
+            "bar": {"layout": {"left": ["workspaces"], "center": ["clock"], "right": ["media"]}},
+            "background": {"widgets": {"clock": {"placementStrategy": "leastBusy", "x": 10, "y": 20}}},
+        });
+        let c = ctx(t.path(), before.clone());
+        let state = c.dirs().state;
+        super::before::remember(&c, &state).unwrap();
+        // What a pick with a layout wish changes; a second pick's "before" is not taken.
+        let after = json!({
+            "bar": {"layout": {"left": ["media"], "center": [], "right": ["clock", "workspaces"]}},
+            "background": {"widgets": {"clock": {"placementStrategy": "free", "x": 700, "y": 300}}},
+        });
+        std::fs::write(c.config_file(), after.to_string()).unwrap();
+        super::before::remember(&c, &state).unwrap();
+
+        // No wallpaper was chosen before: none is chosen again, and the rest is back.
+        let (code, out, err) = exec(&c, Action::Revert);
+        assert_eq!(code, 0, "{out}{err}");
+        assert!(out.contains("The previous style is back"), "{out}");
+        let now = config(&c);
+        assert_eq!(now["bar"], before["bar"]);
+        assert_eq!(
+            now["background"]["widgets"],
+            before["background"]["widgets"]
+        );
+        assert_eq!(now["background"]["wallpaperPath"], "");
+
+        let (code, _, err) = exec(&c, Action::Revert);
+        assert_eq!(code, 1);
+        assert!(err.contains("no earlier style"), "{err}");
+
+        // A wallpaper that was deleted since cannot come back; the run says so.
+        std::fs::write(
+            c.config_file(),
+            json!({"background": {"wallpaperPath": "/gone.png"}}).to_string(),
+        )
+        .unwrap();
+        super::before::remember(&c, &state).unwrap();
+        let (code, _, err) = exec(&c, Action::Revert);
+        assert_eq!(code, 1);
+        assert!(err.contains("no longer there"), "{err}");
+    }
+
+    /// Esc after a pick on a desktop that had no wallpaper chosen: the colors are again those
+    /// of the shell's own wallpaper, not the picked wallpaper's that the files still name.
+    #[test]
+    fn revert_to_no_wallpaper_makes_the_colors_of_the_shells_own_again() {
+        let t = tempfile::tempdir().unwrap();
+        let mut c = ctx(t.path(), json!({}));
+        let pics = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../colorgen/tests/switchwall/fixture/home/Pictures/Wallpapers"
+        );
+        // A shell tree: the terminal templates the colors need, and its own wallpaper.
+        let shell = t.path().join("shell");
+        c.colors_dir = shell.join("scripts/colors");
+        let (terminal, images) = (c.colors_dir.join("terminal"), shell.join("assets/images"));
+        std::fs::create_dir_all(&terminal).unwrap();
+        std::fs::create_dir_all(&images).unwrap();
+        let shipped = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../qml/scripts/colors/terminal"
+        );
+        for f in std::fs::read_dir(shipped).unwrap() {
+            let f = f.unwrap();
+            std::fs::copy(f.path(), terminal.join(f.file_name())).unwrap();
+        }
+        let own = images.join("default_wallpaper.png");
+        std::fs::copy(format!("{pics}/syn_gray.png"), own).unwrap();
+        let generated = c.state_home.join("rustshell/user/generated");
+        let colors = || std::fs::read_to_string(generated.join("material_colors.scss")).unwrap();
+        let io = Io {
+            out: &|_| {},
+            err: &|_| {},
+        };
+        super::own_colors(&c, None, io).unwrap();
+        let was = colors();
+        assert!(was.contains("$primary"), "{was}");
+
+        let state = c.dirs().state;
+        super::before::remember(&c, &state).unwrap();
+        let picked = format!("{pics}/syn_grad.jpg");
+        super::apply(&c, Path::new(&picked), Some("#FDB975"), io).unwrap();
+        assert_ne!(colors(), was);
+        assert_eq!(config(&c)["background"]["wallpaperPath"], picked);
+
+        let (code, out, err) = exec(&c, Action::Revert);
+        assert_eq!(code, 0, "{out}{err}");
+        assert_eq!(colors(), was);
+    }
+
+    #[test]
+    fn keep_and_an_unreviewed_pick_leave_nothing_to_put_back() {
+        let t = tempfile::tempdir().unwrap();
+        let c = ctx(t.path(), json!({}));
+        let state = c.dirs().state;
+        super::before::remember(&c, &state).unwrap();
+        assert_eq!(exec(&c, Action::Keep).0, 0);
+        assert!(super::before::take(&state).is_none());
+    }
+
+    #[test]
+    fn a_pick_by_the_desktop_needs_a_wallpaper_picture() {
+        let t = tempfile::tempdir().unwrap();
+        let c = ctx(
+            t.path(),
+            json!({"background": {"wallpaperPath": "/nowhere.png"}}),
+        );
+        let (code, _, err) = exec(&c, Action::Pick { by: By::Desktop });
+        assert_eq!(code, 1);
+        assert!(err.contains("no wallpaper picture"), "{err}");
+    }
+
+    #[test]
     fn like_without_a_pick_fails_with_a_message() {
         let t = tempfile::tempdir().unwrap();
         let c = ctx(t.path(), json!({}));
@@ -490,7 +821,21 @@ mod tests {
 
     #[test]
     fn actions() {
-        assert_eq!(parse(&["pick"]), Some(Action::Pick));
+        assert_eq!(parse(&["pick"]), Some(Action::Pick { by: By::Prefs }));
+        assert_eq!(
+            parse(&["pick", "--desktop"]),
+            Some(Action::Pick { by: By::Desktop })
+        );
+        assert_eq!(
+            parse(&["pick", "--words", " ночной город "]),
+            Some(Action::Pick {
+                by: By::Words("ночной город".into())
+            })
+        );
+        assert_eq!(parse(&["pick", "--words", " "]), None);
+        assert_eq!(parse(&["pick", "--words"]), None);
+        assert_eq!(parse(&["revert"]), Some(Action::Revert));
+        assert_eq!(parse(&["keep"]), Some(Action::Keep));
         assert_eq!(
             parse(&["arrange", "", "workspaces,clock", "media"]),
             Some(Action::Arrange {

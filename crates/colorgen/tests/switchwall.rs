@@ -385,6 +385,48 @@ fn accent_asked_for_is_used_before_config_is_saved() {
     }
 }
 
+/// A request that keeps the wallpaper and names it goes by that picture, not by the one in
+/// config.json: the caller has just set it, and the shell's Config saves it only after the
+/// run. The "auto" scheme of a wallpaper put back was the one of the wallpaper it replaced.
+#[test]
+fn kept_wallpaper_named_by_the_request_is_the_one_used() {
+    let scheme_for = |image: &str| {
+        let (home, _, _, paths) = prepare(&Path::new(DIR).join("expected/noswitch_color"));
+        let wall = |name: &str| format!("{}/Pictures/Wallpapers/{name}", home.display());
+        let config = home.join(".config/rusty-impulse/config.json");
+        colorgen::switchwall::jq_set(
+            &config,
+            &["background", "wallpaperPath"],
+            &wall("syn_gray.png"),
+        );
+        colorgen::switchwall::jq_set(&config, &["appearance", "palette", "type"], "auto");
+        let sys: Arc<dyn Sys> = Arc::new(Fake {
+            home: home.clone(),
+            log: Mutex::new(Vec::new()),
+            edits: Some(Mutex::new(Vec::new())),
+        });
+        let req = Request {
+            image: if image.is_empty() {
+                String::new()
+            } else {
+                wall(image)
+            },
+            keep_wallpaper: true,
+            accent: Some(Accent::Set("#A52F48".into())),
+            ..Default::default()
+        };
+        assert_eq!(run(&req, &paths, &sys, Io::STD), 0);
+        wait_background();
+        let scheme = home.join(".local/state/rustshell/user/generated/scheme_type.txt");
+        let scheme = std::fs::read_to_string(scheme).unwrap();
+        let _ = std::fs::remove_dir_all(&home);
+        scheme.trim().to_string()
+    };
+    assert_eq!(scheme_for(""), "scheme-neutral");
+    assert_eq!(scheme_for("syn_gray.png"), "scheme-neutral");
+    assert_eq!(scheme_for("syn_grad.jpg"), "scheme-tonal-spot");
+}
+
 /// switchwall edits the shell config only through `Sys::set_config` (which the shell routes
 /// through its Config singleton), never by writing config.json behind Config's back.
 #[test]
