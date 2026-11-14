@@ -15,24 +15,27 @@ mod frames;
 const BTN_LEFT: u32 = 0x110;
 
 /// Desktop boxes: id, type, width and height (0: no size, the widget's own).
-const BOXES: [(&str, &str, u32, u32); 17] = [
+const BOXES: [(&str, &str, u32, u32); 20] = [
     ("media-own", "media", 0, 0),
     ("media-64x64", "media", 64, 64),
     ("media-110x110", "media", 110, 110),
     ("media-200x64", "media", 200, 64),
     ("media-420x140", "media", 420, 140),
     ("media-280x400", "media", 280, 400),
-    ("media-1200x400", "media", 1200, 400),
+    ("media-640x240", "media", 640, 240),
     ("resources-own", "resources", 0, 0),
     ("resources-160x80", "resources", 160, 80),
-    ("resources-160x400", "resources", 160, 400),
-    ("resources-1000x500", "resources", 1000, 500),
+    ("resources-160x360", "resources", 160, 360),
+    ("resources-640x360", "resources", 640, 360),
     ("notes-200x200", "notes", 200, 200),
     ("notes-320x350", "notes", 320, 350),
     ("calendar-own", "calendar", 0, 0),
     ("calendar-160x160", "calendar", 160, 160),
     ("calendar-400x160", "calendar", 400, 160),
     ("calendar-340x340", "calendar", 340, 340),
+    ("weather-own", "weather", 0, 0),
+    ("weather-100x100", "weather", 100, 100),
+    ("weather-360x360", "weather", 360, 360),
 ];
 
 /// Sidebar grid cells: id, type and width in cells of the five the sidebar has.
@@ -151,6 +154,12 @@ struct Loaded {
 }
 
 fn load(tag: &str, mpris: Option<&str>) -> Loaded {
+    load_with(tag, mpris, &[])
+}
+
+/// As `load`, with these options of `Config.options.background.widgets` set once Config has
+/// read its file: (widget, key, value).
+fn load_with(tag: &str, mpris: Option<&str>, options: &[(&str, &str, Value)]) -> Loaded {
     let d = tree(tag, mpris);
     let mut rt = Runtime::new(Some(d.clone()));
     let mut frames = frames::Frames::new(&mut rt);
@@ -194,6 +203,17 @@ fn load(tag: &str, mpris: Option<&str>) -> Loaded {
     let mut layout =
         |rt: &mut Runtime| scene::layout_window(rt, &mut fonts, main, [2560.0, 1440.0]);
     frames.until_config(&mut rt, &mut layout);
+    for (widget, key, v) in options {
+        let mut w = rt.world.borrow_mut();
+        let mut o = *w.singletons.get("Config").expect("the Config singleton");
+        for k in ["options", "background", "widgets", widget] {
+            o = match w.read(o, k) {
+                Some(Value::Item(i)) => i,
+                v => panic!("{k}: {v:?}"),
+            };
+        }
+        w.write(o, key, v.clone());
+    }
     frames.frames(&mut rt, &mut layout, 60);
     let errors = rt.errors();
     let mut widgets = vec![];
@@ -256,7 +276,7 @@ impl Loaded {
             .widgets
             .iter()
             .find(|h| h.id == id)
-            .unwrap_or_else(|| panic!("no widget {id}"));
+            .unwrap_or_else(|| panic!("no widget {id}: {:#?}", self.errors));
         assert_eq!(widget.error, "", "{id}");
         widget
     }
@@ -447,7 +467,7 @@ const MEDIA_FORMS: [(&str, &str); 7] = [
     ("media-200x64", "row"),
     ("media-420x140", "full"),
     ("media-280x400", "tall"),
-    ("media-1200x400", "full"),
+    ("media-640x240", "full"),
 ];
 
 fn media_takes_the_form_its_box_has_room_for(tag: &str, mpris: Option<&str>) {
@@ -466,7 +486,8 @@ fn media_takes_the_form_its_box_has_room_for(tag: &str, mpris: Option<&str>) {
     for id in ["media-own", "media-420x140"] {
         assert_eq!(l.num(l.part(id, "MediaCard"), "zoom"), 1.0, "{id}");
     }
-    assert!(l.num(l.part("media-1200x400", "MediaCard"), "zoom") > 2.0);
+    // The largest box the type allows draws the card larger.
+    assert!(l.num(l.part("media-640x240", "MediaCard"), "zoom") > 1.5);
     // The circle is the box's smaller side.
     assert_eq!(
         l.num(l.part("media-64x64", "MediaCard"), "circleSize"),
@@ -492,8 +513,8 @@ fn resources_gauges_take_the_arrangement_their_box_draws_largest() {
     for (id, arrangement) in [
         ("resources-own", (false, false, false)),
         ("resources-160x80", (false, false, true)),
-        ("resources-160x400", (true, false, false)),
-        ("resources-1000x500", (false, false, false)),
+        ("resources-160x360", (true, false, false)),
+        ("resources-640x360", (false, false, false)),
     ] {
         let card = l.part(id, "ResourcesCard");
         let got = (
@@ -519,9 +540,9 @@ fn resources_gauges_take_the_arrangement_their_box_draws_largest() {
     let own = l.part("resources-own", "ResourcesCard");
     assert_eq!((l.num(own, "zoom"), l.num(own, "scale")), (1.0, 1.0));
     // A large box draws the gauges larger; the scale is only what that leaves over.
-    let large = l.part("resources-1000x500", "ResourcesCard");
+    let large = l.part("resources-640x360", "ResourcesCard");
     let (zoom, scale) = (l.num(large, "zoom"), l.num(large, "scale"));
-    assert!(zoom > 2.0 && scale < 1.5, "zoom {zoom}, scale {scale}");
+    assert!(zoom > 1.3 && scale < 1.5, "zoom {zoom}, scale {scale}");
 }
 
 #[test]
@@ -599,6 +620,48 @@ fn calendar_in_a_box_too_small_for_the_month_is_the_week_or_the_day() {
     assert!(l.num(week, "weekScale") >= 0.75);
     for id in ["calendar-160x160", "calendar-400x160"] {
         assert_eq!(l.texts_outside(id), Vec::<String>::new(), "{id}");
+    }
+}
+
+/// The weather in a box of another size is drawn at that size: the shape, the temperature and
+/// the icon are that many times the original's, and nothing is stretched (`scale` stays 1).
+/// Placed by the wallpaper it is the original's size in any box.
+#[test]
+fn weather_is_drawn_at_the_size_of_its_box() {
+    let on = ("weather", "enable", Value::Bool(true));
+    let placed = |by: &str| ("weather", "placementStrategy", Value::Str(by.into()));
+    for (tag, options, zooms) in [
+        (
+            "weather-free",
+            vec![on.clone(), placed("free")],
+            [1.0, 0.5, 1.8],
+        ),
+        ("weather-wallpaper", vec![on, placed("leastBusy")], [1.0; 3]),
+    ] {
+        let l = load_with(tag, None, &options);
+        let errors: Vec<&String> = l.errors.iter().filter(|e| e.contains("eather")).collect();
+        assert!(errors.is_empty(), "{tag}: {errors:#?}");
+        for (id, zoom) in ["weather-own", "weather-100x100", "weather-360x360"]
+            .into_iter()
+            .zip(zooms)
+        {
+            let weather = l.part(id, "WeatherWidget");
+            assert_eq!(l.num(weather, "zoom"), zoom, "{tag} {id}");
+            assert_eq!(l.num(weather, "scale"), 1.0, "{tag} {id}");
+            let icon = l.part(id, "MaterialSymbol");
+            assert_eq!(l.num(icon, "iconSize"), (80.0 * zoom).round(), "{tag} {id}");
+            if tag == "weather-free" {
+                let side = 200.0 * zoom;
+                assert_eq!(
+                    (l.num(weather, "width"), l.num(weather, "height")),
+                    (side, side),
+                    "{tag} {id}"
+                );
+                let widget = l.widget(id);
+                assert_eq!((widget.width, widget.height), (side, side), "{tag} {id}");
+                assert_eq!(l.texts_outside(id), Vec::<String>::new(), "{tag} {id}");
+            }
+        }
     }
 }
 

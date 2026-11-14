@@ -5,7 +5,7 @@
 
 use super::{
     Container, Edit, EditError, Editor, Layout, LoadError, LoadSource, MonitorId, MonitorLayout,
-    Store, store::Polled,
+    Place, Store, store::Polled,
 };
 use std::path::{Path, PathBuf};
 
@@ -122,6 +122,42 @@ impl Live {
                 Err(e) => Some(format!("{at}: removed, and not written back: {e}")),
             },
         }
+    }
+
+    /// Brings each desktop widget's size down to the largest its type allows (`largest`, by
+    /// type name; `None` for a type without a limit): a layout written when the limit was
+    /// higher, or by hand, shows the widget no larger than the edit mode would let it grow.
+    /// The file keeps what it holds until the next edit writes the layout. Returns whether a
+    /// size changed; the generation then moves on.
+    pub fn cap_desktop_sizes(&mut self, largest: impl Fn(&str) -> Option<(u32, u32)>) -> bool {
+        let changed = self.editor.amend(|l| {
+            let mut changed = false;
+            for wd in l
+                .monitors
+                .iter_mut()
+                .flat_map(|m| m.containers.iter_mut())
+                .flat_map(|c| c.widgets.iter_mut())
+            {
+                let Place::Desktop {
+                    size: Some((w, h)), ..
+                } = &mut wd.place
+                else {
+                    continue;
+                };
+                let Some((mw, mh)) = largest(&wd.r#type) else {
+                    continue;
+                };
+                if *w > mw || *h > mh {
+                    (*w, *h) = ((*w).min(mw), (*h).min(mh));
+                    changed = true;
+                }
+            }
+            changed
+        });
+        if changed {
+            self.generation += 1;
+        }
+        changed
     }
 
     /// Applies `edits` as one undo step and writes the file. A failed write leaves the edit

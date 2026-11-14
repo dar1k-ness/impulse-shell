@@ -3,8 +3,8 @@ import ri.modules.common
 
 /**
  * the original's background weather widget as a desktop-container widget: the container places it, at
- * the widget's own size as the original draws it; a box resized in edit mode has the widget fill it
- * scaled to fit. When the original's weather placement setting is "leastBusy" or "mostBusy" it goes
+ * the widget's own size as the original draws it; a box resized in edit mode has the widget fill it,
+ * drawn at that size. When the original's weather placement setting is "leastBusy" or "mostBusy" it goes
  * where the original puts it, by the wallpaper, at its own size. With "free" ("Draggable" in the
  * settings) the pointer drags it, as in the original, and the layout keeps where it was dropped.
  */
@@ -30,8 +30,8 @@ Item {
     // Where the widget rests in this item; a drag moves it away from there until it is dropped.
     readonly property real restX: root.wallpaperPlaced ? root.fitted.x - root.screenX : (root.width - weather.width) / 2
     readonly property real restY: root.wallpaperPlaced ? root.fitted.y - root.screenY : (root.height - weather.height) / 2
-    implicitWidth: weather.implicitWidth
-    implicitHeight: weather.implicitHeight
+    implicitWidth: weather.naturalSize
+    implicitHeight: weather.naturalSize
     // Where the widget draws on the monitor when it places itself (null when the layout does):
     // the container's cell, and so its edit-mode frame, follows it.
     readonly property var placedAt: root.wallpaperPlaced ? root.fitted : null
@@ -79,7 +79,9 @@ Item {
         savesPlace: false
         x: root.restX
         y: root.restY
-        scale: (root.wallpaperPlaced ? 1 : Math.min(root.width / Math.max(1, weather.implicitWidth), root.height / Math.max(1, weather.implicitHeight))) * (weather.draggable && weather.containsPress ? 1.05 : 1)
+        // A box of another size draws the widget at that size (text and icon drawn that large,
+        // not stretched); placed by the wallpaper it keeps the original's.
+        zoom: root.wallpaperPlaced || root.width <= 0 || root.height <= 0 ? 1 : Math.min(root.width, root.height) / weather.naturalSize
         onReleased: root.dropped()
     }
 }

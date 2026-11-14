@@ -175,6 +175,20 @@ impl Editor {
         true
     }
 
+    /// Changes the layout and every step of its history the same way, as the attached monitors
+    /// do: not an undo step, since going back would undo it. Returns whether the layout shown
+    /// changed.
+    pub fn amend(&mut self, f: impl Fn(&mut Layout) -> bool) -> bool {
+        for l in self.undo.iter_mut().chain(self.redo.iter_mut()) {
+            f(l);
+        }
+        let changed = f(&mut self.layout);
+        if changed {
+            self.revision += 1;
+        }
+        changed
+    }
+
     /// The monitor index for each connected output: stored layouts are matched
     /// ([`Layout::resolve`]), a monitor found by EDID on another port takes that port's
     /// name, and never-seen monitors are added with a copy of the primary layout. None of

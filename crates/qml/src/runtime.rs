@@ -3978,6 +3978,24 @@ impl World {
         self.widgets_revision += 1;
         self.deleg_gen += 1;
         self.revision += 1;
+        self.cap_layout_sizes();
+    }
+
+    /// The layout shows no desktop widget larger than its type's largest desktop size
+    /// ([`crate::layout_model::Live::cap_desktop_sizes`]): after the layout is read and after
+    /// the registry that holds the limits is.
+    pub(crate) fn cap_layout_sizes(&mut self) {
+        let Some(live) = self.layout.as_mut() else {
+            return;
+        };
+        let widgets = self.widgets.clone();
+        let px = |v: f64| v.max(1.0).min(u32::MAX as f64) as u32;
+        live.cap_desktop_sizes(|ty| {
+            let v = widgets
+                .get(ty)?
+                .variant(crate::widgets::Placement::Desktop)?;
+            Some((px(v.size.max.w), px(v.size.max.h)))
+        });
     }
 
     /// Qt 6.12's change signals for editor `item` going to `text`/`cursor`/`sel`.
@@ -38233,6 +38251,7 @@ impl World {
         live.set_outputs(&self.outputs);
         crate::fswatch::path_changed(self, "layout", live.path());
         self.layout = Some(live);
+        self.cap_layout_sizes();
     }
 
     /// On the first run (no layout file yet) makes the layout from the user's configuration
@@ -38308,6 +38327,7 @@ impl Runtime {
         if let Some(msg) = w.layout.as_mut().unwrap().reload() {
             w.errors.push(format!("layout: {msg}"));
         }
+        w.cap_layout_sizes();
         true
     }
 }

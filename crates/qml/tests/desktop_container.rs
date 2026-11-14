@@ -361,6 +361,46 @@ fn external_edits_to_the_file_are_picked_up() {
     assert_eq!(rect(&rt, id, "clock"), (700, 100, 300, 150));
 }
 
+/// A size the layout holds above the type's largest (written when the limit was higher, or by
+/// hand) is shown at the largest, at the start and after the file changes; the file keeps
+/// its numbers until an edit writes the layout, and going back over that edit does not bring
+/// the oversize back.
+#[test]
+fn a_stored_size_over_the_limit_is_shown_at_the_limit() {
+    // Type max is 800x400.
+    let big = LAYOUT.replace("w = 300\nh = 150", "w = 1600\nh = 1000");
+    assert_ne!(big, LAYOUT);
+    let d = root("oversize", Some(&big));
+    let (mut rt, id) = start(&d);
+    assert_eq!(rect(&rt, id, "clock"), (100, 100, 800, 400));
+    assert_eq!(shown(&rt, id, "clock"), (100, 100, 800, 400));
+    // One side over only: the other is left as stored.
+    assert_eq!(rect(&rt, id, "weather"), (1000, 600, 200, 100));
+    let on_disk = || std::fs::read_to_string(d.join("layout.toml")).unwrap();
+    assert_eq!(on_disk(), big, "the start rewrote the file");
+
+    let mut lp = Loop::new(&mut rt);
+    edit_layout(
+        &mut rt,
+        &mut lp,
+        &d,
+        &big.replace("w = 200\nh = 100", "w = 900\nh = 100"),
+        |rt| rect(rt, id, "weather").2 == 800,
+    );
+    assert_eq!(rect(&rt, id, "weather"), (1000, 600, 800, 100));
+    assert_eq!(rect(&rt, id, "clock"), (100, 100, 800, 400));
+
+    // An edit writes what is shown.
+    call(&mut rt, id, "mv", vec![s("clock"), n(40.0), n(40.0)]).to_js_string();
+    lp.drain(&mut rt);
+    assert!(!on_disk().contains("1600"), "{}", on_disk());
+    assert!(on_disk().contains("w = 800\nh = 400"), "{}", on_disk());
+    let undone = rt.world.borrow_mut().layout.as_mut().unwrap().undo();
+    assert_eq!(undone, Ok(true));
+    rt.settle();
+    assert_eq!(rect(&rt, id, "clock"), (100, 100, 800, 400));
+}
+
 /// The original's `LayoutState.hasContainer("desktop")` (the switch between Background.qml's own widgets
 /// and this container) follows the layout natively.
 #[test]

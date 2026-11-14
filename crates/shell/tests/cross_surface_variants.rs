@@ -22,7 +22,8 @@ const DRAWS: [(&str, &str); 4] = [
     ("notes", "TodoWidget"),
 ];
 
-/// Each type twice on the desktop: without a size (natural) and in a 600x400 box.
+/// Each type twice on the desktop: without a size (natural) and in a 500x240 box, a size every
+/// type's limits allow.
 fn layout() -> String {
     let mut s = String::from(
         "version = 5\n[[monitor]]\nconnector = \"DP-1\"\nprimary = true\n\n\
@@ -36,7 +37,7 @@ fn layout() -> String {
         let x = 20 + (i % 3) * 620;
         let y = 480 + (i / 3) * 420;
         s += &format!(
-            "\n[[monitor.container.widget]]\nid = \"{t}-box\"\ntype = \"{t}\"\nx = {x}\ny = {y}\nw = 600\nh = 400\n"
+            "\n[[monitor.container.widget]]\nid = \"{t}-box\"\ntype = \"{t}\"\nx = {x}\ny = {y}\nw = 500\nh = 240\n"
         );
     }
     s += "\n[[monitor.container]]\nid = \"right\"\nkind = \"sidebar\"\nside = \"right\"\ncolumns = 5\n";
@@ -260,7 +261,7 @@ fn check(tag: &str, mpris: Option<&str>) {
             }
             assert!(iw > 0.0 && ih > 0.0, "{id}: natural size {iw}x{ih}");
             if id.ends_with("-box") {
-                assert_eq!((w, ht), (600.0, 400.0), "{id}: fills its box");
+                assert_eq!((w, ht), (500.0, 240.0), "{id}: fills its box");
             } else {
                 assert_eq!((w, ht), (iw, ih), "{id}: natural size");
             }
