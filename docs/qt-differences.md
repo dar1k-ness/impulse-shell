@@ -1025,85 +1025,104 @@ Held by `an_unchanged_frame_is_not_committed_and_the_transition_ends_on_time`,
 
 ## A frame that comes late while an animation runs
 
-Compared with Quickshell 0.3.2 on Qt 6.12.0 under headless sway at 60 Hz, on `bce73cbf`
-(the fixes of the animation clock of `3755216a` are in it as the same patches; `13c2f4d9`,
-a repeating Timer due exactly now, is not, and the fixtures have no repeating Timer). A
-NumberAnimation of 300 ms; the handlers of the steps named keep the thread busy. The time
-from `start()` to `finished` on the wall clock, 10 runs each. Without a busy handler it is
-304 ms under Quickshell and 302 ms in rusty-impulse when the steps draw (one run), and was 292 to
-310 ms and 317 ms when they do not (two runs, on an earlier head).
+Compared with Quickshell 0.3.2 on Qt 6.12.0 under headless sway at 60 Hz. A NumberAnimation
+of 300 ms; the handlers of the steps named keep the thread busy. The time from `start()` to
+`finished` on the wall clock, 10 runs each. Without a busy handler it is 307 to 327 ms under
+Quickshell and 317 to 318 ms in rusty-impulse when the steps change nothing the window shows,
+and 314 to 332 ms against 291 to 296 ms (once 309) when they do.
 
 The same in both: the animation clock moves one vsync (16.67 ms) per step whatever the wall
-clock did, in every run of every row below but the one named last, so the time a late step
-took is lost to the animation, and to the Timers that count on its clock. Neither skips a
-step. Held by `the_animation_clock_moves_one_vsync_a_step_whatever_the_late_step_took`.
+clock did, so the time a late step took is lost to the animation, and to the Timers that
+count on its clock. Neither skips a step. Held by
+`the_animation_clock_moves_one_vsync_a_step_whatever_the_late_step_took`.
+
+The same in both since the fix named below: the steps the late ones kept waiting are taken at
+once when the late ones are over, three at most. A busy step of 30 ms makes the animation no
+later, one of 100 ms some 50 ms later, two of 100 ms some 130 ms later.
 
 An animation that changes nothing the window shows:
 
-| Busy steps | Quickshell | rusty-impulse |
-|---|---|---|
-| 100 ms, steps 2 and 3 | 427 to 446 ms | 515 to 517 ms |
-| 100 ms, step 5 | 340 to 362 ms | 416 to 417 ms |
-| 100 ms, steps 5 and 6 | 424 to 445 ms | 516 to 517 ms |
-| 30 ms, step 5 | 285 to 302 ms | 346 to 347 ms |
+| Busy steps | Quickshell | rusty-impulse | Steps within 10 ms after the late ones |
+|---|---|---|---|
+| 100 ms, steps 2 and 3 | 443 to 451 ms | 449 to 450 ms | 3 in both, in every run |
+| 100 ms, step 5 | 341 to 373 ms | 366 to 367 ms | Qt 3 in 7 runs of 10, else 2; rusty-impulse 3 |
+| 100 ms, steps 5 and 6 | 447 to 453 ms | 449 to 450 ms | 3 in both, in every run |
+| 30 ms, step 5 | 291 to 338 ms | 317 to 318 ms | Qt 2, twice 3; rusty-impulse 2, once 1 |
 
-A busy step of 30 ms makes the animation no later under Qt and 30 ms later in rusty-impulse; one
-of 100 ms some 50 ms later under Qt and 100 ms later in rusty-impulse. Why: rusty-impulse sends
-no frame that changes no pixel, so such an animation steps by a vsync timer, and a tick missed
-during a late step is armed again one interval after the late step ended (`frame_deadline` in
-`crates/shell/src/sched.rs`, `AnimClock::arm`): the step after a late one comes a whole interval
-after it. Qt sends a frame for every step and steps by the frame callbacks: the callback of the
-frame before came during the late step, so the next step is taken as soon as the late one is
-over, and more follow at once as in the second table. The steps of one run each, in ms since the
-step before: Quickshell `17 100 1 2 17`, rusty-impulse `17 116 17`.
+The steps of one run each, in ms since the step before, from the first late one: Quickshell
+`100 100 1 2 18 16`, rusty-impulse `100 100 0 0 16 17`.
 
 An animation whose every step changes what the window shows:
 
 | Busy steps | Quickshell | rusty-impulse | Steps within 10 ms after the late ones |
 |---|---|---|---|
-| 100 ms, steps 2 and 3 (20 runs) | 425 to 445 ms | 455 to 459 ms, twice 487 and 488 | Qt 3, rusty-impulse 2, in every run |
-| 100 ms, steps 5 and 6 | 439 to 445 ms | 441 to 445 ms | Qt 3, rusty-impulse 2, in every run |
-| 100 ms, step 5 | 345 to 362 ms | 356 to 359 ms | Qt 3 in 5 runs of 10, else 2; rusty-impulse 2 |
-| 30 ms, step 5 | 287 to 303 ms | 284 to 290 ms | Qt 2, once 3; rusty-impulse 2 |
+| 100 ms, steps 2 and 3 | 449 to 468 ms | 444 to 458 ms, once 489 | 3 in both, 2 in one run of 10 of each |
+| 100 ms, step 5 | 367 to 394 ms | 346 to 357 ms | Qt 3 in 7 runs of 10, else 2; rusty-impulse 3 in 8, else 2 |
+| 100 ms, steps 5 and 6 | 449 to 462 ms | 433 to 447 ms, once 471 | 3 in both, in every run |
+| 30 ms, step 5 | 311 to 318 ms | 293 to 302 ms | 2 in both, in every run |
 
-Here rusty-impulse steps by the frame callbacks too and is one step (16.7 ms) behind Qt after two
-late steps in a row. Why, from the Qt sources and the Wayland traces of both: Qt computes a
-step two frames ahead of the screen. Its render thread waits for the frame callback inside
-the swap (`QWaylandGLContext::swapBuffers`, `waitForFrameSync`), and the main thread steps
-the animations right after the render thread took a frame over
+The steps of one run each: Quickshell `100 100 2 4 16 17`, rusty-impulse `103 103 0 3 17 16`.
+
+Still different: when the steps draw, rusty-impulse ends some 15 to 25 ms earlier than
+Quickshell in every row, and as much earlier with no busy step at all (291 to 296 ms against
+314 to 332). It is not the late step: the third step of such a run comes 4 ms after the second
+in rusty-impulse (once 6) and 16 to 17 ms after it under Quickshell, and the second 12 to 13 ms
+after the first (three times 16 to 29) against 14 to 19. The same before the fix below. Not
+looked into further and held by no test.
+
+Why three steps at once, from the Qt sources and the Wayland traces of both. Qt sends a frame
+for every step, whatever changed, and computes a step two frames ahead of the screen: its
+render thread waits for the frame callback inside the swap
+(`QWaylandGLContext::swapBuffers`, `waitForFrameSync`), and the main thread steps the
+animations right after the render thread took a frame over
 (`QSGThreadedRenderLoop::polishAndSync`). A step that finds no frame callback outstanding
 posts an update request to the main thread (`QWaylandWindow::requestUpdate`), and a frame
-callback that arrives posts another (`handleFrameCallback`). After two late steps in a row
-both wait in the queue of the main thread, so two steps are taken at once, and a third with
-the answer of sway to the frame they send: `100 100 1 2 17`. rusty-impulse takes one step for the
-callback that came meanwhile and one with the answer of sway: `101 101 2 16`. Under sway the
-end differs only when the late steps are the second and third, where they swallow the extra
-step rusty-impulse takes at the start.
+callback that arrives posts another (`handleFrameCallback`). After a late step both wait in
+the queue of the main thread, so two steps are taken at once, and a third with the answer of
+sway to the frame they send. After one late step the second update request is delivered only
+when the main thread is back in its event loop before the render thread has sent the next
+frame: a race of Qt's two threads, won in 7 runs of 10 here and in 15 of 20 on another day.
 
-After one late step Qt's second update request is delivered only when the main thread is
-back in its event loop before the render thread has sent the next frame: a race of Qt's two
-threads, won in 5 runs of 10. rusty-impulse takes the two steps of the other 5.
+What rusty-impulse does for the same count (it has one thread, and sends no frame that
+changes no pixel):
 
-In 3 runs of 70 with steps 2 and 3 busy (the first run of each series: of 10, 10 and 50; none
-in 50 more with `RI_LOG=ri::frames`) rusty-impulse took 20 steps instead of 19
-and ended after 487 to 488 ms: its second step came 22 to 24 ms after the first instead of 8
-to 10 (a cold start), which made three late steps in a row, and the clock went over to the
-wall clock (steps of 2, 17, 23 and 8 ms on the animation clock). That is the rule of
-`QSGDefaultAnimationDriver::advance` (more than two late frames in a row and more than 10
-intervals of lag), which `AnimClock::advance` follows; under Quickshell the second step was
-never late in these runs. Not looked into further.
+- An animation that sends no frame steps by a vsync timer. A tick missed during a late step
+  stays on the grid of the ticks before it, so the ticks missed are due at once when the late
+  step is over, three at most (`frame_deadline` in `crates/shell/src/sched.rs`). Before, the
+  tick was armed again one interval after the late step ended: 515 to 517 ms in the first row
+  of the first table, 416 to 417 in the second, 346 to 347 in the last.
+- An animation that sends frames steps by the frame callbacks. A turn that took two vsyncs
+  or more is followed by steps due at once with no callback to wait for: one when a frame
+  callback was outstanding as its step began, two when none was (`AnimClock::arm`; the frames
+  Qt's render thread would have had in flight). And each frame callback is a step of its own:
+  sway answers at once the frame drawn as a late callback came, and the two were one step
+  before (`AnimClock::callback`). Before, two steps followed two late ones where Qt takes
+  three, in every run.
+
+In one run of 10 with steps 2 and 3 busy (3 of 70 on an earlier head, none in 50 more with
+`RI_LOG=ri::frames`) rusty-impulse took 20 steps instead of 19 and ended after 487 to 489 ms:
+its second step came 22 to 24 ms after the first instead of 8 to 10 (a cold start), which made
+three late steps in a row, and the clock went over to the wall clock (steps of 2, 17, 23 and
+8 ms on the animation clock). That is the rule of `QSGDefaultAnimationDriver::advance` (more
+than two late frames in a row and more than 10 intervals of lag), which `AnimClock::advance`
+follows; under Quickshell the second step was never late in these runs. Not looked into
+further.
 
 Code: the main loop and `AnimClock` in `crates/shell/src/main.rs`, `frame_deadline` in
 `crates/shell/src/sched.rs`.
 
-Not held by tests that fail when it changes. Three tests of
-`crates/shell/tests/timer_clock_equiv.rs` are ignored and fail when run:
+Held by three tests of `crates/shell/tests/timer_clock_equiv.rs`, which count steps by the
+order of events and compare no wall time with Quickshell's:
 `late_frames_make_an_animation_as_late_as_under_quickshell` (nothing drawn, steps 2 and 3)
 and `a_late_step_makes_an_animation_that_draws_nothing_as_late_as_under_quickshell` (step 5)
-compare the end of the animation and pass within 30 ms of Quickshell;
-`two_late_steps_in_a_row_are_followed_by_as_many_steps_at_once_as_under_quickshell` counts
-the steps after steps 5 and 6. What the Timers do once such an animation ended is the same
-as in Qt and is held by the other tests of that file.
+count Quickshell's steps before its second frame callback after the late ones and the steps
+rusty-impulse takes within half a vsync of the end of the late one, on the fixture's clock;
+`two_late_steps_in_a_row_are_followed_by_as_many_steps_at_once_as_under_quickshell` (steps
+drawn, steps 5 and 6) counts the steps of both before the fourth frame callback after the
+late ones, five. With every core of the machine busy a Quickshell thread that got no
+processor for a frame took the third step after the second callback in one run of 20, and
+had taken five by the fourth in all of them. What the Timers do once such an animation ended
+is the same as in Qt and is held by the other tests of that file.
 
 ## A Repeater's model written while the Repeater builds
 

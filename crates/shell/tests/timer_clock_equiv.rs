@@ -201,26 +201,6 @@ fn a_repeating_timer_is_triggered_once_for_the_intervals_the_clock_was_behind() 
     );
 }
 
-/// A known difference (docs/qt-differences.md, "A frame that comes late"). The animation of
-/// 300 ms changes nothing the window shows; its second and its third step take 100 ms each. It
-/// ends after 427 to 446 ms under Quickshell and after 515 to 517 ms here: here each late step
-/// is followed by the next one vsync after it ended, under Quickshell by three at once.
-#[test]
-#[ignore = "known difference, see docs/qt-differences.md: two late steps of 100 ms make an \
-            animation that draws nothing end after 516 ms here, after 427 to 446 ms under \
-            Quickshell (the missed vsync timer tick is armed again from the end of a late step)"]
-fn late_frames_make_an_animation_as_late_as_under_quickshell() {
-    let Some(runs) = both("two", 100) else {
-        return;
-    };
-    let [qt, ours] = &runs;
-    let (qt_end, our_end) = (at(qt, "end"), at(ours, "end"));
-    assert!(
-        (our_end - qt_end).abs() < 30.0,
-        "the animation ended after {our_end} ms here, after {qt_end} ms under Quickshell"
-    );
-}
-
 /// A NumberAnimation of 300 ms that says each of its steps: the wall clock and the animation's
 /// own clock, in ms since `start()`. The steps `LATE` each keep the thread busy for `BUSY` ms.
 /// With `PAINT` each step changes what the window shows.
@@ -253,8 +233,11 @@ FloatingWindow {
     onVChanged: {
         frames++
         seen.push((Date.now() - t0) + ":" + Math.round(v / 10))
-        if (LATE)
+        console.log("STEP " + frames)
+        if (LATE) {
             busy(BUSY)
+            console.log("late step over " + (Date.now() - t0))
+        }
     }
     Timer {
         interval: 500
@@ -269,6 +252,19 @@ type Run = (Vec<(f64, f64)>, f64);
 
 /// One run of [`STEPS`] under `bin`.
 fn steps(bin: &str, dir: &Path, late: &str, busy: u32, paint: bool) -> Run {
+    steps_logged(bin, dir, late, busy, paint, false).0
+}
+
+/// One run of [`STEPS`] under `bin`, and its log: the lines `STEP n` and `late step over` and,
+/// with `trace`, the Wayland requests and events (`WAYLAND_DEBUG`), in the order they happened.
+fn steps_logged(
+    bin: &str,
+    dir: &Path,
+    late: &str,
+    busy: u32,
+    paint: bool,
+    trace: bool,
+) -> (Run, String) {
     let qml = (STEPS.replace("LATE", late))
         .replace("BUSY", &busy.to_string())
         .replace("PAINT", &paint.to_string());
@@ -283,6 +279,9 @@ fn steps(bin: &str, dir: &Path, late: &str, busy: u32, paint: bool) -> Run {
         .stdin(Stdio::null())
         .stdout(w.try_clone().unwrap())
         .stderr(w);
+    if trace {
+        c.env("WAYLAND_DEBUG", "1");
+    }
     let _k = Kill(c.spawn().unwrap());
     drop(c);
     let log = Log::capture(r);
@@ -291,7 +290,8 @@ fn steps(bin: &str, dir: &Path, late: &str, busy: u32, paint: bool) -> Run {
     if let Err(s) = log.wait(|s| line(s).is_some()) {
         panic!("{bin}: exited before the animation ended; log:\n{s}");
     }
-    let line = line(&log.text()).unwrap();
+    let text = log.text();
+    let line = line(&text).unwrap();
     let (steps, end) = line.rsplit_once(" end=").unwrap();
     let steps = (steps.split(' '))
         .map(|e| {
@@ -299,7 +299,35 @@ fn steps(bin: &str, dir: &Path, late: &str, busy: u32, paint: bool) -> Run {
             (wall.parse().unwrap(), clock.parse().unwrap())
         })
         .collect();
-    (steps, end.parse().unwrap())
+    ((steps, end.parse().unwrap()), text)
+}
+
+/// How many steps a run of [`STEPS`] took between the end of its last late step and the
+/// `nth` frame callback after it, of the frames the window asked for once the late step was
+/// over. Counted by the order of the lines in `log`, no clock.
+fn steps_by_callback(log: &str, nth: usize) -> usize {
+    let lines: Vec<&str> = log.lines().collect();
+    let end = (lines.iter().rposition(|l| l.contains("late step over"))).expect("a late step");
+    let id = |l: &str, before: &str| {
+        let at = l.find(before)?;
+        let from = l[..at].rfind("wl_callback#")? + "wl_callback#".len();
+        l[from..at].parse::<u32>().ok()
+    };
+    let (mut asked, mut answered, mut steps) = (Vec::new(), 0, 0);
+    for l in &lines[end + 1..] {
+        if l.contains(".frame(new id wl_callback#") {
+            asked.extend(id(l, ")"));
+        } else if let Some(k) = id(l, ".done(").and_then(|n| asked.iter().position(|&a| a == n)) {
+            asked.remove(k);
+            answered += 1;
+            if answered == nth {
+                return steps;
+            }
+        } else if l.contains("STEP ") {
+            steps += 1;
+        }
+    }
+    panic!("no {nth} frame callbacks after the late step; log:\n{log}");
 }
 
 /// [`STEPS`] under Quickshell and under the native shell.
@@ -353,61 +381,114 @@ fn the_animation_clock_moves_one_vsync_a_step_whatever_the_late_step_took() {
     }
 }
 
-/// A known difference (docs/qt-differences.md, "A frame that comes late"). The steps change
-/// nothing the window shows; the handler of the fifth keeps the thread busy for 100 ms. Under
-/// Quickshell the sixth step is taken as soon as the fifth is over (the frame callback came
-/// meanwhile) and the animation ends after 340 to 362 ms. Here such an animation steps by the
-/// vsync timer, whose missed tick is armed again one interval after the late step ended: the
-/// sixth step is 116 ms after the fifth, the end after 416 to 417 ms.
+/// [`STEPS`] with steps of 100 ms under Quickshell, with its trace, and under the native shell,
+/// with its trace when its frames are sent (`paint`).
+fn late_steps(late: &str, paint: bool) -> Option<[(Run, String); 2]> {
+    if !testenv::require("qs") {
+        return None;
+    }
+    if std::env::var_os("WAYLAND_DISPLAY").is_none() {
+        testenv::unavailable("no Wayland compositor (WAYLAND_DISPLAY)");
+        return None;
+    }
+    let base = tempfile::tempdir().unwrap();
+    let qt = steps_logged("qs", &base.path().join("orig"), late, 100, paint, true);
+    let ours = env!("CARGO_BIN_EXE_rusty-impulse");
+    let ours = steps_logged(ours, &base.path().join("native"), late, 100, paint, paint);
+    Some([qt, ours])
+}
+
+/// How many steps a run of [`STEPS`] that sends no frame took at once when its last late step
+/// was over: less than half a vsync after it, on the fixture's own clock.
+fn steps_at_once((steps, _): &Run, log: &str) -> usize {
+    let (_, over) = (log.lines().rev())
+        .find_map(|l| l.split_once("late step over "))
+        .expect("a late step");
+    let digits = over.find(|c: char| !c.is_ascii_digit());
+    let over: f64 = over[..digits.unwrap_or(over.len())].parse().unwrap();
+    (steps.iter())
+        .filter(|(wall, _)| (over..over + 8.0).contains(wall))
+        .count()
+}
+
+/// The steps change nothing the window shows; the handlers of the second and of the third keep
+/// the thread busy for 100 ms each. Three steps follow at once. Under Quickshell (it sends a
+/// frame each step whatever changed): the step of the frame callback that came meanwhile,
+/// the one of the update request that found no callback to wait for, and the one of sway's
+/// answer to the frame they sent, all before the callback of the second frame sent after the
+/// late steps; counted by the order of the lines of its trace. Here no frame is sent: the
+/// three ticks of the vsync timer that were missed are due at once, and the animation ends as
+/// late as there (docs/qt-differences.md, "A frame that comes late").
 #[test]
-#[ignore = "known difference, see docs/qt-differences.md: after a late step an animation that \
-            draws nothing takes its next step one vsync later here (the missed timer tick is \
-            armed again from the end of the late step), at once under Qt; the animation ends \
-            after 416 ms here, after 340 to 362 ms under Quickshell"]
-fn a_late_step_makes_an_animation_that_draws_nothing_as_late_as_under_quickshell() {
-    let Some(runs) = both_steps("frames == 5", 100, false) else {
+#[cfg_attr(not(feature = "interp"), ignore = "temp tree; AOT-only refuses it")]
+fn late_frames_make_an_animation_as_late_as_under_quickshell() {
+    let Some([(_, qt), (ours, our_log)]) = late_steps("frames == 2 || frames == 3", false) else {
         return;
     };
-    let [(qt, qt_end), (ours, our_end)] = &runs;
-    let sixth = |s: &[(f64, f64)]| s[5].0 - s[4].0;
-    assert!(
-        sixth(qt) < 110.0,
-        "Quickshell: the sixth step as soon as the fifth, of 100 ms, is over: {qt:?}"
+    let (qt_steps, our_steps) = (steps_by_callback(&qt, 2), steps_at_once(&ours, &our_log));
+    assert_eq!(
+        qt_steps, 3,
+        "Quickshell: three steps after the two of 100 ms before the second frame callback; \
+         log:\n{qt}"
     );
-    assert!(
-        sixth(ours) < 110.0,
-        "the sixth step as soon as the fifth, of 100 ms, is over: here {ours:?}, under \
-         Quickshell {qt:?}"
-    );
-    assert!(
-        (our_end - qt_end).abs() < 30.0,
-        "the animation ended after {our_end} ms here, after {qt_end} ms under Quickshell"
+    assert_eq!(
+        our_steps, qt_steps,
+        "steps at once after the two of 100 ms: {our_steps} here, {qt_steps} under Quickshell; \
+         here {ours:?}"
     );
 }
 
-/// A known difference (docs/qt-differences.md, "A frame that comes late"). Each step changes
-/// what the window shows; the handlers of the fifth and of the sixth keep the thread busy for
-/// 100 ms each. Under Quickshell three steps follow at once (within 10 ms): two update requests
-/// wait in the queue of the main thread, and sway answers the frame they send at once. Here
-/// two do: the step of the frame callback that came meanwhile, and sway's answer.
+/// The steps change nothing the window shows; the handler of the fifth keeps the thread busy
+/// for 100 ms. The sixth step is taken as soon as the fifth is over, and two more at once.
+/// Under Quickshell the second of them is its main thread asking for an update before its
+/// render thread has asked for the next frame callback (QWaylandWindow::requestUpdate): three
+/// steps before the second frame callback in 15 runs of 20, two in 5. Here the ticks of the
+/// vsync timer that were missed are due at once, three of them: as many as Quickshell takes
+/// at most.
 #[test]
-#[ignore = "known difference, see docs/qt-differences.md: after two late steps in a row three \
-            steps follow at once under Qt (two update requests queued on the main thread), two \
-            here"]
-fn two_late_steps_in_a_row_are_followed_by_as_many_steps_at_once_as_under_quickshell() {
-    let Some(runs) = both_steps("frames == 5 || frames == 6", 100, true) else {
+#[cfg_attr(not(feature = "interp"), ignore = "temp tree; AOT-only refuses it")]
+fn a_late_step_makes_an_animation_that_draws_nothing_as_late_as_under_quickshell() {
+    let Some([(_, qt), (ours, our_log)]) = late_steps("frames == 5", false) else {
         return;
     };
-    let at_once = |s: &[(f64, f64)]| s[6..].iter().filter(|(w, _)| w - s[6].0 <= 10.0).count();
-    let [(qt, _), (ours, _)] = &runs;
-    assert_eq!(
-        at_once(qt),
-        3,
-        "Quickshell: three steps within 10 ms after the two of 100 ms: {qt:?}"
+    let (qt_steps, our_steps) = (steps_by_callback(&qt, 2), steps_at_once(&ours, &our_log));
+    assert!(
+        qt_steps == 2 || qt_steps == 3,
+        "Quickshell: two or three steps after the one of 100 ms before the second frame \
+         callback, not {qt_steps}; log:\n{qt}"
     );
     assert_eq!(
-        at_once(ours),
-        at_once(qt),
-        "steps within 10 ms after the two of 100 ms: here {ours:?}, under Quickshell {qt:?}"
+        our_steps, 3,
+        "steps at once after the one of 100 ms: {our_steps} here, {qt_steps} under Quickshell \
+         in this run, three at most; here {ours:?}"
+    );
+}
+
+/// Each step changes what the window shows; the handlers of the fifth and of the sixth keep
+/// the thread busy for 100 ms each. Three steps follow at once, before the compositor has
+/// answered the second frame sent after them: under Quickshell an update request and the
+/// callback of the frame sent between the two wait in the queue of the main thread, and sway
+/// answers the frame they send at once; here the callback's step, the one owed for the frames
+/// that were in flight, and sway's answer. Then one step per frame callback: five by the
+/// fourth callback, which is what is compared. A thread that got no processor for a frame
+/// takes the third of them after the second callback instead of before it (seen under
+/// Quickshell with every core busy), and has taken as many by the fourth. Counted by the
+/// order of the lines of both traces.
+#[test]
+#[cfg_attr(not(feature = "interp"), ignore = "temp tree; AOT-only refuses it")]
+fn two_late_steps_in_a_row_are_followed_by_as_many_steps_at_once_as_under_quickshell() {
+    let Some([(_, qt), (_, ours)]) = late_steps("frames == 5 || frames == 6", true) else {
+        return;
+    };
+    let [qt_steps, our_steps] = [&qt, &ours].map(|log| steps_by_callback(log, 4));
+    assert_eq!(
+        qt_steps, 5,
+        "Quickshell: five steps after the two of 100 ms before the fourth frame callback; \
+         log:\n{qt}"
+    );
+    assert_eq!(
+        our_steps, qt_steps,
+        "steps after the two of 100 ms before the fourth frame callback: {our_steps} here, \
+         {qt_steps} under Quickshell; log:\n{ours}"
     );
 }

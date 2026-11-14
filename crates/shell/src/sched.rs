@@ -86,9 +86,12 @@ pub const FRAME_CALLBACK_TIMEOUT_MS: f64 = 100.0;
 /// [`FRAME_CALLBACK_TIMEOUT_MS`] and is waited for no longer (`None`: an endless animation of
 /// a window not shown rests until its callback). Otherwise (an animating window can draw, was
 /// given up on, or the animation is shown in no window) the driver steps on a repeating vsync
-/// timer kept on its grid like a Qt::PreciseTimer: `timer` is its last deadline, and a missed
-/// one re-arms one interval from now (no catch-up). A new timer fires one vsync after the
-/// last frame (`last_frame`), or after `now`.
+/// timer kept on its grid: `timer` is its last deadline. Ticks that came due while the turn
+/// ran are due at once, one a turn and three at most (the answer is then at or before `now`):
+/// Qt computes a step two frames ahead of the screen, and after a step that outlasted them it
+/// takes the step that waited and the two it is behind by without waiting for a frame. The
+/// grid goes on from the last of them. A new timer fires one vsync after the last frame
+/// (`last_frame`), or after `now`.
 pub fn frame_deadline(
     now: f64,
     animating: bool,
@@ -106,8 +109,7 @@ pub fn frame_deadline(
     }
     let at = match timer {
         Some(t) if t > now => t,
-        Some(t) if t + vsync >= now => t + vsync,
-        Some(_) => now + vsync,
+        Some(t) => (t + vsync).max(now - 2.0 * vsync),
         None => last_frame.map_or(now + vsync, |w| (w + vsync).max(now)),
     };
     Some((at, Due::Frame))
@@ -286,10 +288,37 @@ mod tests {
             Some((10.0, Due::Frame)),
             "an early wakeup keeps the armed deadline"
         );
-        assert_eq!(
-            frame_deadline(100.0, true, false, None, Some(10.0), Some(10.0), v),
-            Some((100.0 + v, Due::Frame)),
-            "missed timeouts are not caught up"
+    }
+
+    /// Ticks missed while a turn ran: QSGThreadedRenderLoop is two frames ahead of the screen.
+    #[test]
+    fn ticks_missed_during_a_turn_are_due_at_once_three_at_most() {
+        let v = 50.0 / 3.0;
+        // The turn of the tick at 10 took 30 ms: the tick of 26.67 is due, the next is on
+        // the grid.
+        let late = frame_deadline(40.0, true, false, None, Some(10.0), Some(10.0), v).unwrap();
+        assert!(
+            (late.0 - (10.0 + v)).abs() < 1e-9 && late.0 <= 40.0,
+            "{late:?}"
         );
+        let next = frame_deadline(40.1, true, false, None, Some(late.0), Some(40.0), v).unwrap();
+        assert!(
+            (next.0 - (10.0 + 2.0 * v)).abs() < 1e-9 && next.0 > 40.1,
+            "{next:?}"
+        );
+        // It took 100 ms, six ticks: three steps at once, the fourth a vsync after them.
+        let (mut at, mut now, mut at_once) = (10.0, 110.0, 0);
+        loop {
+            at = frame_deadline(now, true, false, None, Some(at), Some(now), v)
+                .unwrap()
+                .0;
+            if at > now {
+                break;
+            }
+            at_once += 1;
+            now += 0.1;
+        }
+        assert_eq!(at_once, 3);
+        assert!((at - (110.0 + v)).abs() < 1e-9, "{at}");
     }
 }
