@@ -285,6 +285,61 @@ fn the_original_registers_every_sidebar_widget_with_its_component() {
     }
 }
 
+/// The quick toggles get to the sidebar by the pencil of its quick toggles: "Add widget" offers
+/// them for the bar only, and the sidebar's other widgets as before.
+#[test]
+fn the_catalog_offers_no_quick_toggle_for_the_sidebar() {
+    use qml::widgets::Placement::{Panel, Sidebar};
+    let ri = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../qml");
+    let mut reg = qml::widgets::Registry::default();
+    let errors = reg.load_manifest_file(&ri.join("widgets.toml"));
+    assert!(errors.is_empty(), "{errors:?}");
+    let mut offered: Vec<&str> = reg
+        .for_placement(Sidebar)
+        .filter(|t| t.listed(Sidebar))
+        .map(|t| t.id.as_str())
+        .collect();
+    offered.sort_unstable();
+    assert_eq!(
+        offered,
+        [
+            "calendar",
+            "calendarTasks",
+            "clock",
+            "media",
+            "notes",
+            "notificationCenter",
+            "quickToggles",
+            "resources",
+            "sliders",
+            "weather",
+        ]
+    );
+    // The ones left out are the pencil's own list.
+    let panel = std::fs::read_to_string(
+        ri.join("modules/rusty/sidebarRight/quickToggles/AndroidQuickPanel.qml"),
+    )
+    .unwrap();
+    let list = panel
+        .lines()
+        .find_map(|l| l.split_once("availableToggleTypes: [")?.1.split_once(']'))
+        .expect("no availableToggleTypes")
+        .0;
+    let mut pencil: Vec<&str> = list
+        .split(',')
+        .map(|t| t.trim().trim_matches('"'))
+        .collect();
+    pencil.sort_unstable();
+    let mut left_out = vec![];
+    for t in reg.for_placement(Sidebar).filter(|t| !t.listed(Sidebar)) {
+        assert!(t.listed(Panel), "{}", t.id);
+        left_out.push(t.id.as_str());
+    }
+    left_out.sort_unstable();
+    assert_eq!(left_out.len(), 17);
+    assert_eq!(left_out, pencil);
+}
+
 /// Each cell's `id: settings.label (settingErrors count)`, in order.
 fn cell_settings(rt: &Runtime, c: usize) -> Vec<String> {
     let get = |v: &Value, k: &str| -> Value {

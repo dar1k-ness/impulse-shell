@@ -606,6 +606,35 @@ fn panel_drop_picks_zone_and_index_from_neighbours() {
     );
 }
 
+/// A widget that draws nothing (weather that is off) has no frame; a drop past it lands where
+/// the marker stands, not one place short.
+#[test]
+fn a_panel_drop_counts_the_widgets_that_draw_nothing() {
+    let l = Layout::parse(&LAYOUT.replacen(
+        "[[monitor.container.widget]]\nid = \"b\"",
+        "[[monitor.container.widget]]\nid = \"hidden\"\ntype = \"bar-only\"\nzone = \"start\"\n\n\
+         [[monitor.container.widget]]\nid = \"b\"",
+        1,
+    ))
+    .unwrap();
+    let reg = registry();
+    let s = scene(&l, &reg);
+    let bar = &s.regions[0];
+    // The layout's start zone is a, hidden, b; only a and b are drawn.
+    assert_eq!(s.panel_slot(bar, "x", 5.0, 20.0).1, 0);
+    assert_eq!(s.panel_slot(bar, "x", 45.0, 20.0).1, 2);
+    assert_eq!(s.panel_slot(bar, "x", 85.0, 20.0).1, 3);
+    let (_, e) = drag(&s, "c", Mode::Move, (950.0, 20.0), (85.0, 20.0));
+    let mut ed = crate::layout_model::Editor::new(l.clone());
+    assert!(ed.apply(e.unwrap()).unwrap());
+    let ids: Vec<&str> = ed.layout().monitors[0].containers[0]
+        .widgets
+        .iter()
+        .map(|w| w.id.as_str())
+        .collect();
+    assert_eq!(ids, ["a", "hidden", "b", "c"]);
+}
+
 #[test]
 fn widgets_move_between_panel_desktop_and_sidebar() {
     let l = layout();
@@ -1072,4 +1101,39 @@ fn a_widget_that_places_itself_is_resized_where_it_shows() {
             ..
         })
     ));
+}
+
+/// A surface whose manifest table says `listed = false` is not offered by the catalog; the
+/// type still goes there (a quick toggle, by the pencil of the sidebar's quick toggles).
+#[test]
+fn the_catalog_leaves_out_the_surfaces_a_type_is_not_listed_for() {
+    let mut reg = Registry::default();
+    let errors = reg.load_manifest(
+        r#"
+        [[widget]]
+        type = "wifi"
+        name = "Wi-Fi"
+        icon = "wifi"
+
+        [widget.panel]
+        component = "C.qml"
+        size = { min = [24, 24], default = [24, 24] }
+
+        [widget.sidebar]
+        component = "C.qml"
+        size = { min = [1, 1], default = [1, 1] }
+        listed = false
+        "#,
+        std::path::Path::new("/nonexistent"),
+    );
+    assert!(errors.is_empty(), "{errors:?}");
+    let entries = catalog(&reg);
+    let [Value::Obj(wifi)] = &entries[..] else {
+        panic!("{} entries", entries.len());
+    };
+    let offered = |surface: &str| wifi.borrow().props.get(surface).is_some_and(Value::truthy);
+    assert!(offered("panel"));
+    assert!(!offered("sidebar"));
+    assert!(!offered("desktop"));
+    assert!(reg.get("wifi").unwrap().allows(Placement::Sidebar));
 }

@@ -56,10 +56,6 @@ Singleton {
     function restyle() {
         root.run(["style"]);
     }
-    // the original's bar groups per part of the bar, as bar.layout holds them.
-    function arrange(left, center, right) {
-        root.run(["arrange", left.join(","), center.join(","), right.join(",")]);
-    }
     function resetTaste() {
         root.run(["reset-taste"]);
     }

@@ -298,6 +298,9 @@ pub struct Variant {
     /// anything but `"free"` there and the widget draws where it puts itself, not where the
     /// layout has it. `None`: the layout places it.
     pub placed_by: Option<String>,
+    /// Whether the edit mode's catalog offers the widget for this surface. `false`: it gets
+    /// there another way (a quick toggle by the pencil of the sidebar's quick toggles).
+    pub listed: bool,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -316,6 +319,11 @@ pub struct WidgetType {
 impl WidgetType {
     pub fn allows(&self, p: Placement) -> bool {
         self.variants.contains_key(&p)
+    }
+
+    /// Whether the edit mode's catalog offers the type for `p`.
+    pub fn listed(&self, p: Placement) -> bool {
+        self.variant(p).is_some_and(|v| v.listed)
     }
 
     pub fn placements(&self) -> impl Iterator<Item = Placement> + '_ {
@@ -590,6 +598,12 @@ struct ManifestVariant {
     enabled_by: Option<String>,
     #[serde(default, rename = "placedBy")]
     placed_by: Option<String>,
+    #[serde(default = "yes")]
+    listed: bool,
+}
+
+fn yes() -> bool {
+    true
 }
 
 #[derive(Deserialize)]
@@ -737,6 +751,7 @@ impl ManifestWidget {
                         pill: v.pill,
                         enabled_by: flag("enabledBy", v.enabled_by)?,
                         placed_by: flag("placedBy", v.placed_by)?,
+                        listed: v.listed,
                     };
                     variants.insert(p, variant);
                 }
@@ -751,6 +766,7 @@ impl ManifestWidget {
                 pill: self.pill.unwrap_or(false),
                 enabled_by: flag("enabledBy", self.enabled_by)?,
                 placed_by: flag("placedBy", self.placed_by)?,
+                listed: true,
             };
             for p in self.placements {
                 variants.insert(p, variant.clone());
@@ -791,6 +807,7 @@ mod tests {
                         pill: false,
                         enabled_by: None,
                         placed_by: None,
+                        listed: true,
                     };
                     (p, v)
                 })
@@ -1158,6 +1175,31 @@ mod tests {
             );
             assert!(r.get("w").is_none());
         }
+    }
+
+    #[test]
+    fn manifest_reads_which_surfaces_the_catalog_offers_a_type_for() {
+        let mut r = Registry::default();
+        let errs = r.load_manifest(
+            r#"
+            [[widget]]
+            type = "w"
+            name = "W"
+            [widget.panel]
+            component = "W.qml"
+            size = { min = [1, 1], default = [1, 1] }
+            [widget.sidebar]
+            component = "W.qml"
+            size = { min = [1, 1], default = [1, 1] }
+            listed = false
+            "#,
+            Path::new("."),
+        );
+        assert!(errs.is_empty(), "{errs:?}");
+        let w = r.get("w").unwrap();
+        assert!(w.listed(Placement::Panel));
+        assert!(w.allows(Placement::Sidebar) && !w.listed(Placement::Sidebar));
+        assert!(!w.listed(Placement::Desktop));
     }
 
     #[test]

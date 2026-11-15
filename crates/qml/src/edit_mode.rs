@@ -1262,7 +1262,9 @@ impl Scene<'_> {
 
     /// The zone and the index in it for a drop at (x, y) on a panel, and the insertion marker.
     /// The centre zone spans its widgets (the middle third of the panel when it has none);
-    /// the start and end zones take the rest on either side.
+    /// the start and end zones take the rest on either side. The index counts every widget the
+    /// layout has in the zone, also one that draws nothing now (weather that is off, a battery
+    /// on a desktop PC): the drop goes right before the drawn widget the marker stands before.
     pub fn panel_slot(&self, region: &Region, id: &str, x: f64, y: f64) -> (Zone, usize, Rect) {
         let v = region.vertical;
         let along = |r: &Rect| {
@@ -1327,6 +1329,24 @@ impl Scene<'_> {
                 Zone::Center => (c_lo + c_hi) / 2.0,
                 Zone::End => hi,
             },
+        };
+        let order: Vec<&str> = self
+            .layout
+            .monitors
+            .get(self.monitor)
+            .and_then(|m| m.containers.iter().find(|c| c.id == region.container))
+            .map(|c| {
+                c.widgets
+                    .iter()
+                    .filter(|w| w.id != id && zone_of(&w.id) == Some(zone))
+                    .map(|w| w.id.as_str())
+                    .collect()
+            })
+            .unwrap_or_default();
+        let at = |f: &&Frame| order.iter().position(|w| *w == f.id);
+        let index = match peers.get(index) {
+            Some(next) => at(next).unwrap_or(index),
+            None => peers.last().and_then(at).map_or(index, |i| i + 1),
         };
         let t = 3.0;
         let marker = if v {
@@ -2436,9 +2456,9 @@ fn add_widget(w: &mut World, item: usize, ty: &str, kind: &str) -> Option<String
     Some(id)
 }
 
-/// The types the catalog offers, by name: what each is called, its icon, the surfaces it may
-/// go on, and the config flag that shows it on the desktop and the option it places itself by
-/// there.
+/// The types the catalog offers, by name: what each is called, its icon, the surfaces it is
+/// offered for, and the config flag that shows it on the desktop and the option it places
+/// itself by there.
 fn catalog(registry: &Registry) -> Vec<Value> {
     let mut types: Vec<_> = registry.iter().collect();
     types.sort_by_key(|t| t.name.to_lowercase());
@@ -2456,9 +2476,9 @@ fn catalog(registry: &Registry) -> Vec<Value> {
                 ("type", Value::str(&t.id)),
                 ("name", Value::str(&t.name)),
                 ("icon", Value::str(&t.icon)),
-                ("desktop", Value::Bool(t.allows(Placement::Desktop))),
-                ("panel", Value::Bool(t.allows(Placement::Panel))),
-                ("sidebar", Value::Bool(t.allows(Placement::Sidebar))),
+                ("desktop", Value::Bool(t.listed(Placement::Desktop))),
+                ("panel", Value::Bool(t.listed(Placement::Panel))),
+                ("sidebar", Value::Bool(t.listed(Placement::Sidebar))),
                 ("enabledBy", Value::str(enabled_by)),
                 ("placedBy", Value::str(placed_by)),
             ])

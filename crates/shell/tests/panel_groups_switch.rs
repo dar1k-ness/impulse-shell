@@ -1,7 +1,6 @@
 //! The bar's groups (media, workspaces, clock) moved to other parts of the bar and back while
-//! the shell runs (`impulse-shell wallpick arrange`, the settings' "Group layout") end where
-//! they started: the same widgets at the same places and lengths as before the first move, and
-//! the same layout.
+//! the shell runs (`impulse-shell wallpick arrange`) end where they started: the same widgets
+//! at the same places and lengths as before the first move, and the same layout.
 #![cfg(feature = "interp")]
 
 use qml::layout_model::arrange;

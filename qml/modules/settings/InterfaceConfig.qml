@@ -86,15 +86,6 @@ SettingsPage {
                 stepSize: 1
                 onUserChanged: value => Config.options.lock.blur.extraZoom = value / 100
             }
-            SettingsSegmentedRow {
-                title: Translation.tr("Clock style when locked")
-                currentValue: Config.options.background.widgets.clock.styleLocked
-                onSelected: value => Config.options.background.widgets.clock.styleLocked = value
-                options: [
-                    { label: Translation.tr("Digital"), value: "digital" },
-                    { label: Translation.tr("Cookie"), value: "cookie" }
-                ]
-            }
             SettingsSwitchRow {
                 title: Translation.tr("Center clock")
                 checked: Config.options.lock.centerClock

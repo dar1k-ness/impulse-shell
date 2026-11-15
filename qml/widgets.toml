@@ -3,7 +3,8 @@
 # a type on several has a `[widget.panel]` / `[widget.desktop]` / `[widget.sidebar]` table each,
 # with that surface's component and size, and one settings schema for all of them. Sizes are
 # logical pixels [width, height], except on the sidebar, where width is cells of its grid's
-# `columns`.
+# `columns`. `listed = false` in a surface table keeps the type out of edit mode's "Add widget"
+# for that surface: the quick toggles get to the sidebar by the pencil of its quick toggles.
 
 # --- panel -----------------------------------------------------------------------------------
 
@@ -178,6 +179,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/AntiFlashbangToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "audio"
@@ -192,6 +194,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/AudioToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "bluetooth"
@@ -206,6 +209,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/BluetoothToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "cloudflareWarp"
@@ -220,6 +224,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/CloudflareWarpToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "colorPicker"
@@ -234,6 +239,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/ColorPickerToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "darkMode"
@@ -248,6 +254,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/DarkModeToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "easyEffects"
@@ -262,6 +269,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/EasyEffectsToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "gameMode"
@@ -276,6 +284,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/GameModeToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "idleInhibitor"
@@ -290,6 +299,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/IdleInhibitorToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "mic"
@@ -304,6 +314,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/MicToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "musicRecognition"
@@ -318,6 +329,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/MusicRecognitionToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "network"
@@ -332,6 +344,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/NetworkToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "nightLight"
@@ -346,6 +359,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/NightLightToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "notifications"
@@ -360,6 +374,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/NotificationsToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "onScreenKeyboard"
@@ -374,6 +389,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/OnScreenKeyboardToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "powerProfile"
@@ -388,6 +404,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/PowerProfileToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "screenSnip"
@@ -402,6 +419,7 @@ pill = true
 [widget.sidebar]
 component = "modules/rusty/sidebarRight/widgets/ScreenSnipToggleWidget.qml"
 size = { min = [1, 1], max = [2, 1], default = [1, 1] }
+listed = false
 
 [[widget]]
 type = "sliders"
