@@ -24,15 +24,20 @@ mkdir -p "$XDG_RUNTIME_DIR" "$HOME/bin" "$src/tools" "$kit" "$HOME/.local/bin" "
     "$HOME/.config/$was" "$hypr/hyprland" "$HOME/.config/systemd/user"
 chmod 700 "$XDG_RUNTIME_DIR"
 program() { printf '#!/bin/bash\n%s\n' "$2" >"$1" && chmod 755 "$1"; }
+# started PROGRAM ARG...: the program in a session of its own. It runs under its name when this
+# returns (Popen returns when the exec is done), so what looks for it by name next finds it.
+program "$HOME/bin/started" 'exec python3 -c "import subprocess, sys
+n = subprocess.DEVNULL
+subprocess.Popen(sys.argv[1:], start_new_session=True, stdin=n, stdout=n, stderr=n)" "$@"'
 
-new_shell='setsid "$HOME/.local/bin/impulse-shell" infinity >/dev/null 2>&1 &'
+new_shell='started "$HOME/.local/bin/impulse-shell" infinity'
 [ "$case" != fails ] || new_shell=:
 program "$HOME/bin/hyprctl" 'echo "hyprctl $*" >>"$HOME/calls"
 case "$*" in
     version) echo Hyprland ;;
     reload) echo ok ;;
     "layers -j") if pgrep -x impulse-shell >/dev/null; then echo "{\"M\":{\"levels\":{\"0\":[{\"namespace\":\"rustshell:bar\"}]}}}"; else echo "{}"; fi ;;
-    dispatch*'"$was"'-shell*) setsid "$HOME/.local/bin/'"$was"'" infinity >/dev/null 2>&1 &
+    dispatch*'"$was"'-shell*) started "$HOME/.local/bin/'"$was"'" infinity
         echo ok ;;
     dispatch*impulse-shell*) '"$new_shell"'
         echo ok ;;
@@ -51,9 +56,7 @@ echo '{"bar":{"bottom":true}}' >"$HOME/.config/$was/config.json"
 : >"$hypr/hyprland.lua"
 printf '%s\n' "hl.exec_cmd(\"\$HOME/.local/bin/$was-shell\")" >"$hypr/hyprland/execs.lua"
 printf '%s\n' "hl.bind(\"CTRL + SUPER + R\", hl.dsp.exec_cmd(\"killall qs quickshell $was; \$HOME/.local/bin/$was-shell\"))" >"$hypr/hyprland/keybinds.lua"
-setsid "$HOME/.local/bin/$was" infinity >/dev/null 2>&1 &
-disown
-sleep 0.3
+started "$HOME/.local/bin/$was" infinity
 
 args=(--no-packages)
 [ "$case" != later ] || args+=(--no-start)
@@ -61,7 +64,6 @@ RI_START_WAIT=3 timeout 120 bash "$src/install.sh" "${args[@]}" >"$HOME/install.
 rc=$?
 echo "install: status $rc"
 sed 's/^/install: /' "$HOME/install.out"
-sleep 0.5
 echo "new shell: $(pgrep -x impulse-shell >/dev/null && echo runs || echo does not run)"
 echo "old shell: $(pgrep -x "$was" >/dev/null && echo runs || echo does not run)"
 sed 's/^/execs.lua: /' "$hypr/hyprland/execs.lua"

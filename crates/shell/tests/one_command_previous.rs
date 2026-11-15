@@ -19,7 +19,7 @@ const WAS: &str = concat!("rusty", "-impulse");
 
 /// Runs install.sh in a new home (`case`: see run.sh). `None` when a tool is missing.
 fn install(case: &str) -> Option<String> {
-    if !testenv::require_all(&["unshare", "jq", "pgrep", "setsid"]) {
+    if !testenv::require_all(&["unshare", "jq", "pgrep", "python3"]) {
         return None;
     }
     let home = tempfile::tempdir().unwrap();
