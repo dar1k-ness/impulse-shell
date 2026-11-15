@@ -52,8 +52,13 @@ ButtonMouseArea {
         const position = root.vertical ? mouseY : mouseX;
         return Math.floor(position / root.workspaceButtonWidth);
     }
+    // The dots take their own length from the widget's start; a wider widget (a fixed or
+    // stretched width in the layout) has no workspace in the room after them.
+    readonly property bool hoverOnDots: containsMouse && hoverIndex >= 0 && hoverIndex < wsModel.shownCount
 
     function switchWorkspaceToHovered() {
+        if (!hoverOnDots)
+            return;
         Hyprland.dispatch(`hl.dsp.focus({workspace = ${wsModel.getWorkspaceIdAt(hoverIndex)}})`);
     }
 
@@ -79,7 +84,11 @@ ButtonMouseArea {
     // Indications
     Item {
         id: regularWorkspaces
-        anchors.fill: parent
+        // As long as the dots, not as the widget: the occupied marks are centered in it, the
+        // dots and the indicators count from its start, and all of them stay on the same dots
+        // when the layout gives the widget another length.
+        width: root.vertical ? parent.width : occupiedIndicators.implicitWidth
+        height: root.vertical ? occupiedIndicators.implicitHeight : parent.height
 
         scale: 1 - 0.08 * root.specialBlur
         layer.smooth: true
@@ -169,14 +178,14 @@ ButtonMouseArea {
         TrailingIndicator {
             id: interactionIndicator
             z: 3
-            index: root.containsMouse ? root.hoverIndex : root.workspaceIndexInGroup
+            index: root.hoverOnDots ? root.hoverIndex : root.workspaceIndexInGroup
             color: "transparent"
             StateOverlay {
                 id: hoverOverlay
                 anchors.fill: interactionIndicator.indicatorRectangle
                 radius: root.activeWorkspaceSize / 2
-                hover: root.containsMouse
-                press: root.containsPress
+                hover: root.hoverOnDots
+                press: root.hoverOnDots && root.containsPress
                 drag: true // There are too many layers so we need to force this to be a lil more opaque
                 contentColor: Appearance.colors.colPrimary
             }
@@ -284,7 +293,7 @@ ButtonMouseArea {
     }
 
     FadeLoader {
-        anchors.centerIn: parent
+        anchors.centerIn: regularWorkspaces
         shown: wsModel.specialWorkspaceActive
         scale: 0.8 + 0.2 * root.specialBlur
 

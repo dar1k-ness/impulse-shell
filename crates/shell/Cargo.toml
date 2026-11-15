@@ -408,6 +408,10 @@ name = "panel_fixed_length"
 required-features = ["interp"]
 
 [[test]]
+name = "panel_workspaces_length"
+required-features = ["interp"]
+
+[[test]]
 name = "sidebar_right_reset"
 required-features = ["interp"]
 
