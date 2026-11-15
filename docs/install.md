@@ -30,6 +30,14 @@ git clone https://github.com/dar1k-ness/impulse-shell.git && impulse-shell/insta
   clone that is there, and installs that.
 - Running it again updates: it builds what the checkout has now and installs it as a new
   release. A shell that already runs the installed build is left running.
+- Over a home that runs this shell under the name it had before (its tree is
+  `~/.config/rustshell/<that name>`): the settings come over from that build, and the files
+  that started it start `impulse-shell`, by `~/.local/bin/impulse-shell-start` where they
+  named that build's start script (`install.sh` puts the script there). Step 4 stops that
+  build's shell, and first turns off the rollback watch that looked after it
+  (`tools/pc/rollback-watch`): left on, the watch would start that build again. If the new
+  shell does not come up, that build and its watch run again. Nothing of that build is
+  removed, and `install.sh` installs no watch of its own; its last lines say how to go back.
 - Back to the original: `tools/carry-over.sh --dots old`, then log in again.
   `tools/install.sh --uninstall` removes the build.
 
