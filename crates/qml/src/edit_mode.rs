@@ -287,6 +287,9 @@ pub struct Gesture {
     /// Past [`DRAG_DISTANCE`].
     pub dragging: bool,
     pub preview: Option<Preview>,
+    /// Where the widget shows now, once the drag began: its frame stays where the drag
+    /// started ([`gather`]), the widget itself may follow the drag.
+    pub shown: Option<Rect>,
 }
 
 /// Edit mode state, shared by every monitor's overlay.
@@ -375,7 +378,9 @@ pub fn resizable(registry: &Registry, ty: &str, kind: Kind, vertical: bool) -> b
     match kind {
         Kind::Desktop => w || h,
         Kind::Panel if vertical => h,
-        Kind::Panel | Kind::Sidebar => w,
+        Kind::Panel => w,
+        // One that needs the whole grid whatever its columns has no other size.
+        Kind::Sidebar => w && min.w < crate::layout_model::MAX_COLUMNS as f64,
     }
 }
 
@@ -505,6 +510,34 @@ pub fn snap_resize(
 fn sidebar_span(lim: Limits, cols: u32) -> (u32, u32) {
     let lo = lim.min.0.clamp(1, cols);
     (lo, lim.max.0.clamp(lo, cols))
+}
+
+/// The fewest columns a sidebar of `cols` columns gives a widget of type `ty`: its sidebar
+/// variant's least width, the whole grid for one whose least is no less than the most columns
+/// a sidebar may have.
+pub(crate) fn sidebar_least(registry: &Registry, ty: &str, cols: u32) -> u32 {
+    registry
+        .get(ty)
+        .and_then(|t| t.variant(Placement::Sidebar))
+        .map_or(1, |v| (v.size.min.w.max(1.0) as u32).clamp(1, cols.max(1)))
+}
+
+/// `layout` with every sidebar widget in at least the columns its type needs
+/// ([`crate::layout_model::sidebar::fit`]), as the sidebar shows them; borrowed when none
+/// asks for fewer.
+fn fitted<'a>(layout: &'a Layout, registry: &Registry) -> std::borrow::Cow<'a, Layout> {
+    let mut out = std::borrow::Cow::Borrowed(layout);
+    for (mi, m) in layout.monitors.iter().enumerate() {
+        for (ci, c) in m.containers.iter().enumerate() {
+            let mut c = c.clone();
+            if crate::layout_model::sidebar::fit(&mut c, |ty, cols| {
+                sidebar_least(registry, ty, cols)
+            }) {
+                out.to_mut().monitors[mi].containers[ci] = c;
+            }
+        }
+    }
+    out
 }
 
 /// How far inside the thickness its panel's widgets take the outline of one of them is drawn.
@@ -2073,10 +2106,11 @@ fn gather(w: &mut World, connector: &str) -> (Vec<Frame>, Vec<Region>) {
     if let Some(g) = w
         .edit
         .gesture
-        .as_ref()
+        .as_mut()
         .filter(|g| g.dragging && g.connector == connector)
         && let Some(f) = frames.iter_mut().find(|f| f.id == g.id)
     {
+        g.shown = Some(f.rect);
         f.rect = g.start;
     }
     for f in &mut frames {
@@ -2114,6 +2148,31 @@ pub(crate) fn live_desktop(
     })
 }
 
+/// The columns a widget of the sidebar `container` spans while a resize pulls it: what the
+/// resize would give it, so the widget itself takes the form of that size at once, as a
+/// desktop widget does ([`live_desktop`]), and its text is gone by the time its outline is a
+/// circle's; nothing is written until the drop.
+pub(crate) fn live_sidebar(
+    w: &World,
+    container: &crate::layout_model::Container,
+) -> Option<(String, u32)> {
+    let g = w
+        .edit
+        .gesture
+        .as_ref()
+        .filter(|g| g.dragging && g.mode == Mode::Resize)?;
+    let p = g.preview.as_ref().filter(|p| p.valid)?;
+    let d = p.drop.as_ref().filter(|d| d.container == container.id)?;
+    let Place::Sidebar { size } = d.place else {
+        return None;
+    };
+    container
+        .widgets
+        .iter()
+        .any(|wd| wd.id == g.id)
+        .then(|| (g.id.clone(), size))
+}
+
 /// The monitor size for the controller's overlay: its window, else the desktop's.
 fn bounds(w: &mut World, item: usize, regions: &[Region]) -> (f64, f64) {
     if let Some(win) = shown_window(w, item) {
@@ -2148,9 +2207,9 @@ fn with_scene<R>(w: &mut World, item: usize, f: impl FnOnce(&Scene) -> R) -> Opt
             placed.extend(n.shown_elsewhere().map(|(id, s)| (id.clone(), s)));
         }
     }
-    let layout = w.layout.as_ref()?.editor().layout();
+    let layout = fitted(w.layout.as_ref()?.editor().layout(), &registry);
     let scene = Scene {
-        layout,
+        layout: &layout,
         monitor,
         registry: &registry,
         frames,
@@ -2242,6 +2301,7 @@ fn press(w: &mut World, item: usize, x: f64, y: f64) -> bool {
                 kind: f.kind,
                 dragging: false,
                 preview: None,
+                shown: None,
             });
             true
         }
@@ -2613,6 +2673,7 @@ pub(crate) fn sync(w: &mut World) -> bool {
             .as_ref()
             .filter(|g| g.connector == connector)
             .cloned();
+        let shown = held.as_ref().and_then(|g| g.shown);
         let (selected_frame, hovered, handle, size_hint, selected_place) = if active
             && !connector.is_empty()
         {
@@ -2625,10 +2686,15 @@ pub(crate) fn sync(w: &mut World) -> bool {
                     .as_ref()
                     .filter(|g| g.dragging && g.mode == Mode::Resize);
                 let selected_frame = sel.map(|f| {
+                    // A sidebar widget pulled to another size is laid out at it at once
+                    // ([`live_sidebar`]): the outline is around the widget as it shows.
                     let rect = resizing
                         .and_then(|g| g.preview.as_ref())
                         .filter(|p| p.valid)
-                        .map_or(f.rect, |p| p.ghost);
+                        .map_or(f.rect, |p| match shown {
+                            Some(r) if f.kind == Kind::Sidebar => r,
+                            _ => p.ghost,
+                        });
                     (s.outline(f, &rect), f.resizable, f.kind, s.vertical(f))
                 });
                 let handle = match (&held, sel, pointer) {

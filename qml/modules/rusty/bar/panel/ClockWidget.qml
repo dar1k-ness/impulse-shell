@@ -9,6 +9,7 @@ MouseArea {
     property bool vertical: parent?.vertical ?? false
     property bool zoneHovered: parent?.zoneHovered ?? false
     property int shortened: parent?.shortened ?? 0
+    property real fixedLength: parent?.fixedLength ?? -1
     width: parent?.width ?? implicitWidth
     height: parent?.height ?? implicitHeight
     property bool showDate: true
@@ -27,6 +28,7 @@ MouseArea {
         id: horizontalClock
         Bar.ClockWidget {
             showDate: root.showDate && Config.options.bar.verbose && root.shortened < 2
+            room: root.fixedLength
         }
     }
     Component {

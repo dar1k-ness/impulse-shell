@@ -11,6 +11,9 @@ import Impulse
 MouseArea {
     id: root
     property bool hovered: false
+    // The length the bar fixes it at, -1 when it takes its own: the temperature goes when it
+    // has no room there.
+    property real room: -1
     implicitWidth: rowLayout.implicitWidth + 10 * 2
     implicitHeight: Appearance.sizes.barHeight
 
@@ -33,6 +36,7 @@ MouseArea {
         anchors.centerIn: parent
 
         MaterialSymbol {
+            id: icon
             fill: 0
             text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
             iconSize: Appearance.font.pixelSize.large
@@ -41,7 +45,8 @@ MouseArea {
         }
 
         StyledText {
-            visible: true
+            id: temp
+            visible: root.room < 0 || root.room >= icon.implicitWidth + temp.implicitWidth + rowLayout.spacing
             font.pixelSize: Appearance.font.pixelSize.small
             color: Appearance.colors.colOnLayer1
             text: Weather.data?.temp ?? "--°"

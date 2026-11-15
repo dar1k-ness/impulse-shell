@@ -3608,7 +3608,9 @@ impl WidgetHostSynced {
 pub type LayoutStateSynced = Shown<(), (Vec<&'static str>, Vec<(String, &'static str)>)>;
 /// What a `SidebarContainer` or `DesktopContainer` showed: connector, container id, for a
 /// desktop its size and the revision of its natural sizes, the widget registry revision, and
-/// for a desktop the widget shown mid-drag ([`crate::edit_mode::live_desktop`]); the container
+/// for a desktop the widget shown mid-drag ([`crate::edit_mode::live_desktop`]) and for a
+/// sidebar the one resized, the columns it spans as the rect's width
+/// ([`crate::edit_mode::live_sidebar`]); the container
 /// they found and, for a desktop, the unplugged monitors' containers it shows meanwhile
 /// ([`crate::desktop_container::Guests`]).
 pub type LayoutViewSynced = Shown<
@@ -33278,23 +33280,44 @@ impl Eng<'_> {
                 Some(Value::Str(s)) => s.to_string(),
                 _ => String::new(),
             };
+            let (connector, cid) = (text(&mut w, "connector"), text(&mut w, "containerId"));
+            let found = match (&w.layout, cid.as_str()) {
+                (None, _) => None,
+                (Some(_), "") => w.layout_container(&connector, "sidebar"),
+                (Some(l), cid) => l.container_by_id(&connector, "sidebar", cid),
+            };
+            // Mid-resize in edit mode the widget spans what the resize would give it.
+            let live = found.and_then(|c| crate::edit_mode::live_sidebar(&w, c));
+            let span = |size: u32| crate::layout_model::desktop::Rect {
+                x: 0,
+                y: 0,
+                w: size,
+                h: 0,
+            };
             let inputs = (
-                text(&mut w, "connector"),
-                text(&mut w, "containerId"),
+                connector,
+                cid,
                 (0, 0),
                 0,
                 w.widgets_revision,
-                None,
+                live.as_ref()
+                    .map(|(id, size)| (id.clone(), span(*size), true)),
             );
             if Shown::fresh(w.layout_synced.get(&id), generation, &inputs) {
                 continue;
             }
-            let container = match (&w.layout, inputs.1.as_str()) {
-                (None, _) => None,
-                (Some(_), "") => w.layout_container(&inputs.0, "sidebar"),
-                (Some(l), cid) => l.container_by_id(&inputs.0, "sidebar", cid),
+            let mut container = found.cloned();
+            if let Some(c) = container.as_mut() {
+                let reg = w.widgets.clone();
+                crate::layout_model::sidebar::fit(c, |ty, cols| {
+                    crate::edit_mode::sidebar_least(&reg, ty, cols)
+                });
             }
-            .cloned();
+            if let (Some(c), Some((id, size))) = (container.as_mut(), live)
+                && let Some(wd) = c.widgets.iter_mut().find(|wd| wd.id == id)
+            {
+                wd.place = crate::layout_model::Place::Sidebar { size };
+            }
             let content = (container, Vec::new());
             if !Shown::same(w.layout_synced.get(&id), &inputs, &content) {
                 let (columns, sections) = content

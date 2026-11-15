@@ -13,6 +13,8 @@ Item {
     id: root
     property bool borderless: Config.options.bar.borderless
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
+    // Off where the bar gives it no room for the title: the progress ring alone.
+    property bool showTitle: true
     readonly property string cleanedTitle: StringUtils.cleanMusicTitle(activePlayer?.trackTitle) || Translation.tr("No media")
 
     Layout.fillHeight: true
@@ -73,7 +75,7 @@ Item {
         }
 
         StyledText {
-            visible: Config.options.bar.verbose
+            visible: Config.options.bar.verbose && root.showTitle
             width: rowLayout.width - (CircularProgress.size + rowLayout.spacing * 2)
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: true // Ensures the text takes up available space

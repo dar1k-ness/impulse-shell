@@ -400,6 +400,14 @@ name = "sidebar_layout_content"
 required-features = ["interp"]
 
 [[test]]
+name = "sidebar_live_resize"
+required-features = ["interp"]
+
+[[test]]
+name = "panel_fixed_length"
+required-features = ["interp"]
+
+[[test]]
 name = "sidebar_right_reset"
 required-features = ["interp"]
 

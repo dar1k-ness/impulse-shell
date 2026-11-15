@@ -3,8 +3,10 @@
 # a type on several has a `[widget.panel]` / `[widget.desktop]` / `[widget.sidebar]` table each,
 # with that surface's component and size, and one settings schema for all of them. Sizes are
 # logical pixels [width, height], except on the sidebar, where width is cells of its grid's
-# `columns`. `listed = false` in a surface table keeps the type out of edit mode's "Add widget"
-# for that surface: the quick toggles get to the sidebar by the pencil of its quick toggles.
+# `columns`; a least width of 64 there (the most columns a sidebar may have) is the whole width
+# of any sidebar: a block with no form for a row of cells. `listed = false` in a surface table
+# keeps the type out of edit mode's "Add widget" for that surface: the quick toggles get to the
+# sidebar by the pencil of its quick toggles.
 
 # --- panel -----------------------------------------------------------------------------------
 
@@ -427,7 +429,7 @@ name = "Sliders"
 icon = "tune"
 placements = ["sidebar"]
 component = "modules/rusty/sidebarRight/widgets/SlidersWidget.qml"
-size = { min = [1, 1], default = [5, 1] }
+size = { min = [64, 1], default = [64, 1] }
 
 [[widget]]
 type = "quickToggles"
@@ -435,7 +437,7 @@ name = "Quick toggles"
 icon = "toggle_on"
 placements = ["sidebar"]
 component = "modules/rusty/sidebarRight/widgets/QuickTogglesWidget.qml"
-size = { min = [1, 1], default = [5, 1] }
+size = { min = [64, 1], default = [64, 1] }
 
 [[widget]]
 type = "notificationCenter"
@@ -443,7 +445,7 @@ name = "Notifications"
 icon = "notifications"
 placements = ["sidebar"]
 component = "modules/rusty/sidebarRight/widgets/NotificationCenterWidget.qml"
-size = { min = [1, 1], default = [5, 1] }
+size = { min = [64, 1], default = [64, 1] }
 
 [[widget]]
 type = "calendarTasks"
@@ -451,7 +453,7 @@ name = "Calendar & tasks"
 icon = "calendar_month"
 placements = ["sidebar"]
 component = "modules/rusty/sidebarRight/widgets/CalendarTasksWidget.qml"
-size = { min = [1, 1], default = [5, 1] }
+size = { min = [64, 1], default = [64, 1] }
 
 [[widget]]
 type = "calendar"

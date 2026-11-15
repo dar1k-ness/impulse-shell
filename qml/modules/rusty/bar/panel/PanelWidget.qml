@@ -41,13 +41,16 @@ WidgetHost {
     Layout.fillHeight: vertical ? entry.width === "stretch" : (item?.fillThickness ?? true)
     Layout.preferredWidth: !vertical && entry.width === "px" ? entry.px : -1
     Layout.preferredHeight: vertical && entry.width === "px" ? entry.px : -1
+    // The length the layout fixes it at, -1 when it takes its own or stretches: a widget shows
+    // what fits that length, as the player does with its title.
+    readonly property real fixedLength: entry.width === "px" ? entry.px : -1
     // Along the panel a widget never gets less than its natural length (or the length it was
     // given); a stretching one gives way down to the registry's least size for it (the
-    // spacer's is 0), never asking for more than its natural length, and paints no further
-    // than the length it got.
+    // spacer's is 0), never asking for more than its natural length. Neither one paints
+    // further than the length it got, so nothing of it lies over its neighbours.
     readonly property real naturalLength: vertical ? implicitHeight : implicitWidth
     readonly property real minimumLength: entry.width === "stretch" ? Math.min(vertical ? entry.minHeight : entry.minWidth, naturalLength) : entry.width === "px" ? entry.px : naturalLength
-    clip: entry.width === "stretch" && (vertical ? height < implicitHeight : width < implicitWidth)
+    clip: entry.width !== "auto" && (vertical ? height < implicitHeight : width < implicitWidth)
     Layout.minimumWidth: vertical ? -1 : minimumLength
     Layout.minimumHeight: vertical ? minimumLength : -1
     // A widget may ask for room before it along the panel (the original's vertical sidebar button sits in a square).

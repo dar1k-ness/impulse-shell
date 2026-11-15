@@ -59,6 +59,28 @@ pub fn sections(c: &Container) -> Option<(u32, Vec<Section>)> {
     Some((columns, out))
 }
 
+/// Gives every widget of a sidebar container at least the columns its type needs there
+/// (`least`, by type and the grid's columns): a layout written by hand, or before the type
+/// needed that many, may ask for fewer, and a widget in fewer cells than it has a form for
+/// draws over its neighbours. Returns whether any widget was widened.
+pub fn fit(c: &mut Container, least: impl Fn(&str, u32) -> u32) -> bool {
+    let ContainerKind::Sidebar(props) = &c.kind else {
+        return false;
+    };
+    let columns = props.columns.max(1);
+    let mut widened = false;
+    for w in &mut c.widgets {
+        if let Place::Sidebar { size } = &mut w.place {
+            let lo = least(&w.r#type, columns).clamp(1, columns);
+            if *size < lo {
+                *size = lo;
+                widened = true;
+            }
+        }
+    }
+    widened
+}
+
 /// The spacing a sidebar lays its sections out with, as SidebarLayoutContent reports it.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Metrics {
@@ -215,6 +237,32 @@ mod tests {
                 vec![v(&[("darkMode", 1)])],
             ]
         );
+    }
+
+    #[test]
+    fn fit_widens_what_asks_for_fewer_columns_than_its_type_needs() {
+        let mut c = sidebar(
+            5,
+            &[("sliders", 1), ("mic", 1), ("clock", 1), ("sliders", 5)],
+        );
+        let least = |ty: &str, cols: u32| match ty {
+            "sliders" => cols,
+            "clock" => 2,
+            _ => 1,
+        };
+        assert!(fit(&mut c, least));
+        let sizes: Vec<u32> = c
+            .widgets
+            .iter()
+            .map(|w| match w.place {
+                Place::Sidebar { size } => size,
+                _ => 0,
+            })
+            .collect();
+        assert_eq!(sizes, [5, 1, 2, 5]);
+        assert!(!fit(&mut c, least), "nothing left to widen");
+        let (_, s) = sections(&c).unwrap();
+        assert!(matches!(s[0], Section::Block(_)), "{s:?}");
     }
 
     #[test]

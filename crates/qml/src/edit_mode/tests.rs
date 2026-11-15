@@ -230,6 +230,7 @@ fn gesture(s: &Scene, id: &str, mode: Mode, x: f64, y: f64) -> Gesture {
         kind: f.kind,
         dragging: true,
         preview: None,
+        shown: None,
     }
 }
 
