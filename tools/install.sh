@@ -198,8 +198,8 @@ optional() {
         echo "install.sh: note: libthai (libthai.so.0) is not installed: Thai text is broken at spaces only, as Qt breaks it without the library; with libthai it is broken between words" >&2
 }
 # The desktop entry of the shell's own windows: the one Quickshell's package has for its app
-# id (in its assets/), under this shell's app id. NoDisplay: it names the icon and is not an
-# application to start.
+# id (in its assets/), under this shell's app id and with the name the screen shows for this
+# shell. NoDisplay: it names the icon and is not an application to start.
 app_entry_text() {
     cat <<EOF
 [Desktop Entry]
@@ -207,7 +207,7 @@ Version=1.5
 Type=Application
 NoDisplay=true
 
-Name=Rustshell
+Name=Impulse
 Icon=$app_id
 EOF
 }

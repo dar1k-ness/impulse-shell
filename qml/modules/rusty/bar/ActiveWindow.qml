@@ -32,8 +32,8 @@ Item {
             color: Appearance.colors.colSubtext
             elide: Text.ElideRight
             text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ? 
-                root.activeWindow?.appId :
-                (root.biggestWindow?.class) ?? Translation.tr("Desktop")
+                AppSearch.shownClass(root.activeWindow?.appId) :
+                AppSearch.shownClass(root.biggestWindow?.class) ?? Translation.tr("Desktop")
 
         }
 

@@ -972,6 +972,40 @@ fn app_icon_files(data: &Path) -> (PathBuf, PathBuf) {
     )
 }
 
+/// Where the bar, the overview and the region selector name a window by its class, the
+/// shell's own windows are named as the screen names the shell everywhere else, not by the
+/// engine's app id. qml/services/AppSearch.qml holds that app id for the comparison: it is
+/// the one the binary gives its windows, or the name is never shown.
+#[test]
+fn the_shells_own_windows_are_named_by_the_shell_not_by_their_app_id() {
+    let qml = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../qml");
+    let read = |rel: &str| std::fs::read_to_string(qml.join(rel)).unwrap();
+    let search = read("services/AppSearch.qml");
+    let own = format!("readonly property string ownAppId: \"{}\"", app_id());
+    assert!(search.contains(&own), "no `{own}` in AppSearch.qml");
+    assert!(search.contains("readonly property string ownName: \"Impulse\""));
+    for (file, shown) in [
+        (
+            "modules/rusty/bar/ActiveWindow.qml",
+            "AppSearch.shownClass(root.activeWindow?.appId)",
+        ),
+        (
+            "modules/rusty/bar/ActiveWindow.qml",
+            "AppSearch.shownClass(root.biggestWindow?.class)",
+        ),
+        (
+            "modules/rusty/overview/OverviewWidget.qml",
+            "AppSearch.shownClass(windowData?.class)",
+        ),
+        (
+            "modules/rusty/regionSelector/RegionSelection.qml",
+            "AppSearch.shownClass(modelData.class)",
+        ),
+    ] {
+        assert!(read(file).contains(shown), "no `{shown}` in {file}");
+    }
+}
+
 /// The bar, the overview and the dock show for a window the icon that the desktop entry of
 /// its app id names. For the original's own windows Quickshell's package has that entry and
 /// the icon, under Quickshell's app id; nothing has them for this shell's, so its own windows
@@ -989,7 +1023,13 @@ fn an_install_writes_the_icon_of_the_shells_own_windows() {
     let entry_text = std::fs::read_to_string(&entry).unwrap();
     let lines: Vec<&str> = entry_text.lines().collect();
     assert_eq!(lines[0], "[Desktop Entry]", "{entry_text}");
-    for line in ["Type=Application", "NoDisplay=true", &format!("Icon={id}")] {
+    // The name is the one the screen shows for the shell, not the engine's.
+    for line in [
+        "Type=Application",
+        "NoDisplay=true",
+        "Name=Impulse",
+        &format!("Icon={id}"),
+    ] {
         assert!(lines.contains(&line), "no `{line}` in:\n{entry_text}");
     }
     let svg = std::fs::read_to_string(&icon).unwrap();

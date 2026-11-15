@@ -434,7 +434,7 @@ PanelWindow {
                 opacity: root.draggedAway ? 0 : root.targetRegionOpacity
                 borderColor: root.windowBorderColor
                 fillColor: targeted ? root.windowFillColor : "transparent"
-                text: `${modelData.class}`
+                text: `${AppSearch.shownClass(modelData.class)}`
                 radius: Appearance.rounding.windowRounding
             }
         }
