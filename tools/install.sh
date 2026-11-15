@@ -811,9 +811,14 @@ put_back_by_hand() {
 # its old names, and no install or rollback here touches it. (The old names are put together
 # from halves, so that tools/rename/rename.py, which renames them everywhere, leaves them here.)
 old_names_note() {
-    local bin=ii tree=ii word=quick
-    bin+=-rs word+=shell
-    [ -e "$bin_dir/$bin" ] || [ -e "$PREFIX/lib/$bin/current" ] || return 0
+    local bin=ii tree=ii word=quick was=rusty
+    bin+=-rs word+=shell was+=-impulse
+    # The shell under its previous name is the build before this one where it is installed.
+    if [ -e "$bin_dir/$was" ] || [ -e "$PREFIX/lib/$was/current" ]; then
+        bin=$was tree=$was word=rustshell
+    elif [ ! -e "$bin_dir/$bin" ] && [ ! -e "$PREFIX/lib/$bin/current" ]; then
+        return 0
+    fi
     echo "; the build from before the rename is still installed under its old names ($bin_dir/$bin, $config_home/$word/$tree): this script does not switch to it. What starts it again is the rollback-now that tools/pc/switch filled in, in the build directory switch was run from (~/pcbuild/stable-<sha>/rollback-now); tools/pc/rollback-now of a checkout has no rollback copies and does nothing"
 }
 
