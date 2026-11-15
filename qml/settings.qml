@@ -565,4 +565,12 @@ ApplicationWindow {
             }
         }
     }
+
+    // What "Pick for me" (Quick page) asks before it picks, over the whole window
+    Loader {
+        anchors.fill: parent
+        z: 10
+        active: Config.ready
+        source: "modules/settings/WallpickAsk.qml"
+    }
 }

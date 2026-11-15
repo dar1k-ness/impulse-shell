@@ -19,6 +19,8 @@ Singleton {
     // The step being worked on while busy, the outcome of the last run otherwise
     property string status: ""
     property bool failed: false
+    // "Pick for me" is asking what to go by (settings/WallpickAsk.qml)
+    property bool asking: false
 
     // A run of `args` ended, `ok` without an error.
     signal ended(var args, bool ok)

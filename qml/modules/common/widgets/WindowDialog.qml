@@ -14,6 +14,8 @@ Rectangle {
     property real backgroundHeight: contentColumn.implicitHeight + dialogBackground.radius * 2
     property real backgroundWidth: 350
     property real backgroundAnimationMovementDistance: 60
+    // The content is cut at the edge of the dialog while it opens and closes
+    property alias clipsContent: dialogBackground.clip
     
     signal dismiss()
     Keys.onPressed: (event) => {

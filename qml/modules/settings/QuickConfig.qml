@@ -260,22 +260,20 @@ SettingsPage {
                         buttonRadius: Appearance.rounding.full
                         colBackground: Appearance.colors.colLayer3
                         colBackgroundHover: Appearance.colors.colLayer3Hover
-                        // The picker asks what to go by before it looks
-                        onClicked: wallpickAsk.visible = !wallpickAsk.visible
+                        // The picker asks what to go by before it looks (WallpickAsk.qml, a dialog
+                        // over the window)
+                        onClicked: Wallpick.asking = true
                         StyledToolTip {
+                            // Not over the question the press opens
+                            extraVisibleCondition: !Wallpick.asking
                             text: Translation.tr("Find a wallpaper that matches your taste on Wallhaven or Konachan\nImage is saved to ~/Pictures/Wallpapers")
                         }
-                    }
-                    WallpickAsk {
-                        id: wallpickAsk
-                        visible: false
-                        Layout.preferredWidth: 268
-                        Layout.maximumWidth: 268
-                        onAsked: visible = false
                     }
                     StyledText {
                         visible: Wallpick.status.length > 0
                         Layout.maximumWidth: 268
+                        wrapMode: Text.WordWrap
+                        maximumLineCount: 3
                         elide: Text.ElideRight
                         text: Wallpick.status
                         color: Wallpick.failed ? Appearance.colors.colError : Appearance.colors.colSubtext
