@@ -21,6 +21,13 @@
 //! per keyboard and starts a new one on the first, and `hyprctl switchxkblayout all next`
 //! moves each from where it is, so a keyboard left there while the real one is on the second
 //! stays a step apart, and the window gets the layout of whichever was moved last.
+//! While no keys are sent the keyboard follows the real one too: when Hyprland's event socket
+//! reports a layout of a real keyboard or a new configuration and `j/devices` then shows a
+//! virtual keyboard on another layout than the real one (the real keyboard was switched alone:
+//! `switchxkblayout current next`, an xkb `grp:` option), this keyboard goes to the real one's
+//! layout at once, so the next switch of all keyboards moves them from the same place. With
+//! all of them on the real one's layout already (the switch moved every keyboard) it sends
+//! nothing.
 //! The seat's `wl_keyboard` stays bound, so its keymap is the current one whenever it changes
 //! (wl_keyboard.keymap may come at any time). `j/devices` is read again only when Hyprland's
 //! event socket reported a layout or configuration change (`activelayout>>`,
@@ -61,6 +68,9 @@ enum Msg {
     Keys(Vec<(u32, bool)>, Option<Sender<bool>>),
     /// Release every key this keyboard holds down.
     ReleaseAll,
+    /// Hyprland reported a real keyboard's layout or a new configuration: back to the real
+    /// keyboard's layout, when a virtual keyboard is on another one.
+    Follow,
 }
 
 /// The channel to the thread that owns the connection, started on first use.
@@ -68,20 +78,29 @@ struct Port {
     tx: Mutex<Option<Sender<Msg>>>,
     connect: fn() -> Option<Kb>,
     layout: Layout,
+    wake: fn(),
 }
 
 /// The real keyboard's keymap names, layout and locks, from the state kept between batches;
 /// with `true`, its lock state as it is now (read again unless read for this batch already).
 type Layout = fn(&mut Hyprland, bool) -> Option<RealKb>;
 
-static PORT: Port = Port::new(Kb::connect, Hyprland::real_keyboard);
+static PORT: Port = Port::new(Kb::connect, Hyprland::real_keyboard, follow);
+
+/// What the thread that reads Hyprland's events calls for one that concerns a real keyboard.
+fn follow() {
+    PORT.post(Msg::Follow);
+}
 
 impl Port {
-    const fn new(connect: fn() -> Option<Kb>, layout: Layout) -> Port {
+    /// `wake` is called (on the events thread) for a keyboard event of Hyprland's; it posts
+    /// [`Msg::Follow`] to this port.
+    const fn new(connect: fn() -> Option<Kb>, layout: Layout, wake: fn()) -> Port {
         Port {
             tx: Mutex::new(None),
             connect,
             layout,
+            wake,
         }
     }
 
@@ -98,10 +117,10 @@ impl Port {
         };
         // First use, or the worker died: start a fresh one.
         let (tx, rx) = channel();
-        let (connect, layout) = (self.connect, self.layout);
+        let (connect, layout, wake) = (self.connect, self.layout, self.wake);
         if let Err(e) = std::thread::Builder::new()
             .name("ri-port-vkbd".into())
-            .spawn(move || worker(rx, connect, layout))
+            .spawn(move || worker(rx, connect, layout, wake))
         {
             // Refused by the system (`EAGAIN`): these keys are not sent. `tx` has no receiver
             // then, so the next call's send fails and comes here to start the thread again.
@@ -266,6 +285,9 @@ struct RealKb {
     active: Option<String>,
     /// `capsLock` and `numLock`, when reported.
     locks: Option<Locks>,
+    /// A virtual keyboard is on another layout index than this keyboard, in a `j/devices`
+    /// read for this call (not in one kept from before).
+    apart: bool,
 }
 
 /// Which of CapsLock and NumLock are on: `XKB_MOD_NAME_CAPS` and `XKB_MOD_NAME_NUM` locked,
@@ -348,6 +370,8 @@ struct Hyprland {
     /// `devices` was read for the batch being sent.
     current: bool,
     events: Option<Subscription>,
+    /// Called by the thread that reads `events` for an event of a real keyboard.
+    wake: Option<fn()>,
 }
 
 /// An event after which a keyboard's keymap or layout may differ: a layout switch (also sent
@@ -356,11 +380,25 @@ fn keyboard_event(line: &[u8]) -> bool {
     line.starts_with(b"activelayout>>") || line.starts_with(b"configreloaded>>")
 }
 
+/// A [`keyboard_event`] that is not the layout of a virtual keyboard (`activelayout>>NAME,LAYOUT`):
+/// this keyboard's own moves, which follow those of a real one, are not followed in turn.
+fn real_keyboard_event(line: &[u8]) -> bool {
+    match line.strip_prefix(b"activelayout>>") {
+        Some(rest) => {
+            let name = rest.split(|&b| b == b',').next().unwrap_or_default();
+            !std::str::from_utf8(name).is_ok_and(crate::hypr::is_virtual_keyboard)
+        }
+        None => keyboard_event(line),
+    }
+}
+
 /// Hyprland's event socket (non-blocking), read by the `ri-vkbd-events` thread whenever it
 /// is readable, and by each batch for what arrived up to then.
 struct Events {
     sock: UnixStream,
     st: Mutex<EventsSt>,
+    /// Called by the reading thread after a [`real_keyboard_event`].
+    wake: Option<fn()>,
 }
 
 #[derive(Default)]
@@ -369,6 +407,8 @@ struct EventsSt {
     partial: Vec<u8>,
     /// A keyboard event arrived since the last batch took this.
     changed: bool,
+    /// A [`real_keyboard_event`] arrived since the reading thread last woke the keyboard.
+    real: bool,
     /// Hyprland closed the socket, or reading it failed.
     closed: bool,
 }
@@ -385,6 +425,7 @@ impl Events {
                     st.partial.extend_from_slice(&chunk[..n]);
                     while let Some(i) = st.partial.iter().position(|&b| b == b'\n') {
                         st.changed |= keyboard_event(&st.partial[..i]);
+                        st.real |= real_keyboard_event(&st.partial[..i]);
                         st.partial.drain(..=i);
                     }
                 }
@@ -410,8 +451,16 @@ impl Events {
                 self.st.lock().unwrap_or_else(|e| e.into_inner()).closed = true;
                 return;
             }
-            if self.drain().closed {
+            let mut st = self.drain();
+            if st.closed {
                 return;
+            }
+            // Whichever thread read the event: a batch that took it has followed already,
+            // and the keyboard then finds nothing changed.
+            let real = std::mem::take(&mut st.real);
+            drop(st);
+            if let (true, Some(wake)) = (real, self.wake) {
+                wake();
             }
         }
     }
@@ -422,12 +471,13 @@ impl Events {
 struct Subscription(Arc<Events>);
 
 impl Subscription {
-    fn connect(dir: &Path) -> Option<Subscription> {
+    fn connect(dir: &Path, wake: Option<fn()>) -> Option<Subscription> {
         let sock = UnixStream::connect(dir.join(".socket2.sock")).ok()?;
         sock.set_nonblocking(true).ok()?;
         let ev = Arc::new(Events {
             sock,
             st: Mutex::default(),
+            wake,
         });
         let reader = ev.clone();
         // Without the thread nobody would read between batches: no subscription then, and
@@ -462,7 +512,7 @@ impl Hyprland {
             drop(st);
             self.events = None;
         }
-        self.events = Subscription::connect(dir);
+        self.events = Subscription::connect(dir, self.wake);
         true
     }
 
@@ -476,14 +526,18 @@ impl Hyprland {
         } else if !self.current {
             self.devices = None;
         }
-        if self.keyboards_changed(&dir) || self.devices.is_none() {
+        let read = self.keyboards_changed(&dir) || self.devices.is_none();
+        if read {
             self.devices = crate::hypr::request(&dir, "j/devices");
             self.current = true;
         }
-        let kb = real_keyboard(self.devices.as_deref()?, &mut self.last);
-        if kb.is_none() {
+        let mut kb = real_keyboard(self.devices.as_deref()?, &mut self.last);
+        match &mut kb {
+            // Once per reply: this keyboard goes to the real one's layout for it, and what
+            // another program's keyboard is on does not change by that.
+            Some(kb) => kb.apart &= read,
             // An error reply is not kept.
-            self.devices = None;
+            None => self.devices = None,
         }
         kb
     }
@@ -493,16 +547,16 @@ impl Hyprland {
 /// typed) is main, the real keyboard `last` named, else the first.
 fn real_keyboard(devices: &str, last: &mut Option<String>) -> Option<RealKb> {
     let devices: serde_json::Value = serde_json::from_str(devices).ok()?;
-    let real: Vec<&serde_json::Value> = devices
+    let (real, virt): (Vec<&serde_json::Value>, Vec<&serde_json::Value>) = devices
         .get("keyboards")?
         .as_array()?
         .iter()
-        .filter(|k| {
+        .filter(|k| k["name"].is_string())
+        .partition(|k| {
             k["name"]
                 .as_str()
                 .is_some_and(|n| !crate::hypr::is_virtual_keyboard(n))
-        })
-        .collect();
+        });
     let kb = real
         .iter()
         .find(|k| k["main"] == true)
@@ -513,6 +567,7 @@ fn real_keyboard(devices: &str, last: &mut Option<String>) -> Option<RealKb> {
         .or_else(|| real.first())?;
     *last = kb["name"].as_str().map(str::to_owned);
     let s = |k: &str| kb[k].as_str().unwrap_or_default().to_owned();
+    let index = &kb["active_layout_index"];
     Some(RealKb {
         names: [
             s("rules"),
@@ -521,12 +576,15 @@ fn real_keyboard(devices: &str, last: &mut Option<String>) -> Option<RealKb> {
             s("variant"),
             s("options"),
         ],
-        index: u32::try_from(kb["active_layout_index"].as_u64()?).ok()?,
+        index: u32::try_from(index.as_u64()?).ok()?,
         active: kb["active_keymap"].as_str().map(str::to_owned),
         locks: match (kb["capsLock"].as_bool(), kb["numLock"].as_bool()) {
             (Some(caps), Some(num)) => Some(Locks { caps, num }),
             _ => None,
         },
+        // Hyprland does not tell which virtual keyboard is this one (`misc:name_vk_after_proc`
+        // off names them all alike), so any of them counts.
+        apart: virt.iter().any(|v| v["active_layout_index"] != *index),
     })
 }
 
@@ -641,6 +699,7 @@ impl Kb {
         if self.q.roundtrip(&mut self.st).is_err() {
             return false;
         }
+        let apart = real.as_ref().is_some_and(|r| r.apart);
         let Some((km, group)) = self.choose(real.as_ref()) else {
             return false;
         };
@@ -652,7 +711,8 @@ impl Kb {
                 .as_ref()
                 .is_some_and(|(_, x)| x.serialize_layout(xkb::STATE_LAYOUT_EFFECTIVE) == g)
         };
-        if let Some(g) = group.filter(|&g| uploaded || !on(g)) {
+        // What this keyboard last sent is not where Hyprland has it once Hyprland moved it.
+        if let Some(g) = group.filter(|&g| uploaded || apart || !on(g)) {
             self.set_layout(g, locks);
         }
         true
@@ -673,6 +733,18 @@ impl Kb {
             }
         }
         self.sync()
+    }
+
+    /// After a keyboard event of Hyprland's, with no keys to send: on the real keyboard's keymap
+    /// and layout again when Hyprland has a virtual keyboard on another layout. A keyboard
+    /// that has typed nothing yet has no layout of its own to correct.
+    fn follow(&mut self, hypr: &mut Hyprland, layout: Layout) -> bool {
+        let real = layout(hypr, false);
+        if self.keymap.is_none() || !real.as_ref().is_some_and(|r| r.apart) {
+            return true;
+        }
+        let mut locks = || layout(hypr, true).and_then(|r| r.locks);
+        self.prepare(real, &mut locks) && self.sync()
     }
 
     /// Takes the real keyboard's `locks` when they changed since this keyboard last took them,
@@ -772,11 +844,15 @@ impl Kb {
     }
 }
 
-fn worker(rx: Receiver<Msg>, connect: fn() -> Option<Kb>, layout: Layout) {
+fn worker(rx: Receiver<Msg>, connect: fn() -> Option<Kb>, layout: Layout, wake: fn()) {
     let mut kb: Option<Kb> = None;
-    let mut hypr = Hyprland::default();
+    let mut hypr = Hyprland {
+        wake: Some(wake),
+        ..Hyprland::default()
+    };
     for m in rx {
-        if kb.is_none() {
+        // Keys make the keyboard; a layout to follow does not.
+        if kb.is_none() && !matches!(m, Msg::Follow) {
             kb = connect();
         }
         let ok = match (&mut kb, m) {
@@ -793,6 +869,7 @@ fn worker(rx: Receiver<Msg>, connect: fn() -> Option<Kb>, layout: Layout) {
                 let up: Vec<(u32, bool)> = k.down.iter().map(|&c| (c, false)).collect();
                 k.batch(&up, &mut hypr, layout)
             }
+            (Some(k), Msg::Follow) => k.follow(&mut hypr, layout),
             (None, Msg::Keys(_, Some(d))) => {
                 let _ = d.send(false);
                 true
@@ -897,6 +974,8 @@ mod tests {
                 caps: false,
                 num: true,
             }),
+            // The shell's keyboard is on the first layout, the real one on the second.
+            apart: true,
         };
         let mut last = None;
         assert_eq!(real_keyboard(&devices(true), &mut last), Some(usb.clone()));
@@ -935,6 +1014,7 @@ mod tests {
             index,
             active: Some(active.into()),
             locks: None,
+            apart: false,
         };
         let usru = kb("us,ru", 1, "Russian");
         let km = usru.compile(&ctx).unwrap();
@@ -1059,10 +1139,89 @@ mod tests {
         assert_eq!(ev.read(&mut [0u8; 64]).unwrap(), 0, "unsubscribed");
     }
 
+    /// A virtual keyboard on another layout than the real one is told once per `j/devices`
+    /// reply, and not when every keyboard is on the real one's layout (as after a switch of
+    /// all keyboards) or when the only keyboards are real.
+    #[test]
+    fn a_virtual_keyboard_on_another_layout_is_apart() {
+        let devices = |real: u32, virt: u32| {
+            format!(
+                r#"{{"keyboards":[
+                {{"name":"usb-keyboard","main":true,"layout":"us,ru","active_layout_index":{real}}},
+                {{"name":"power-button","main":false,"layout":"us,ru","active_layout_index":0}},
+                {{"name":"hl-virtual-keyboard-rusty-impulse","main":false,"active_layout_index":{virt}}}]}}"#
+            )
+        };
+        let apart = |d: &str| real_keyboard(d, &mut None).unwrap().apart;
+        assert!(apart(&devices(1, 0)));
+        assert!(apart(&devices(0, 1)));
+        assert!(!apart(&devices(1, 1)));
+        assert!(!apart(&devices(0, 0)));
+        assert!(!apart(
+            r#"{"keyboards":[{"name":"usb-keyboard","main":true,"active_layout_index":1},
+            {"name":"power-button","main":false,"active_layout_index":0}]}"#
+        ));
+    }
+
+    /// The thread that reads Hyprland's events wakes the keyboard for the layout of a real
+    /// keyboard and for a config reload, while no keys are sent; not for other events, nor
+    /// for the layout of a virtual keyboard (this one's own move would wake it again).
+    #[test]
+    fn a_real_keyboards_layout_event_wakes_the_keyboard() {
+        use std::io::Write;
+        use std::sync::mpsc::{Sender, channel};
+        static WOKEN: Mutex<Option<Sender<()>>> = Mutex::new(None);
+        let (tx, rx) = channel();
+        *WOKEN.lock().unwrap() = Some(tx);
+        let dir = tempfile::tempdir().unwrap();
+        let s2 = std::os::unix::net::UnixListener::bind(dir.path().join(".socket2.sock")).unwrap();
+        let mut h = Hyprland {
+            wake: Some(|| {
+                if let Some(tx) = &*WOKEN.lock().unwrap() {
+                    let _ = tx.send(());
+                }
+            }),
+            ..Hyprland::default()
+        };
+        assert!(h.keyboards_changed(dir.path()));
+        let (mut ev, _) = s2.accept().unwrap();
+        ev.write_all(
+            b"workspace>>2\nactivelayout>>hl-virtual-keyboard-rusty-impulse,Russian\n\
+              activelayout>>hl-virtual-keyboard,Russian\n",
+        )
+        .unwrap();
+        ev.write_all(b"activelayout>>usb-keyboard,Russian\n")
+            .unwrap();
+        rx.recv().unwrap();
+        ev.write_all(b"configreloaded>>\n").unwrap();
+        rx.recv().unwrap();
+        // Only those two woke it.
+        drop(h);
+        assert_eq!(ev.read(&mut [0u8; 64]).unwrap(), 0);
+        *WOKEN.lock().unwrap() = None;
+        assert!(rx.recv().is_err(), "woken for an event of no real keyboard");
+    }
+
+    #[test]
+    fn real_keyboard_events_are_those_of_no_virtual_keyboard() {
+        assert!(real_keyboard_event(b"activelayout>>usb-keyboard,Russian"));
+        assert!(real_keyboard_event(
+            b"activelayout>>at-translated-set-2-keyboard,English (US)"
+        ));
+        assert!(real_keyboard_event(b"configreloaded>>"));
+        assert!(!real_keyboard_event(
+            b"activelayout>>hl-virtual-keyboard-rusty-impulse,Russian"
+        ));
+        assert!(!real_keyboard_event(
+            b"activelayout>>hl-virtual-keyboard,Russian"
+        ));
+        assert!(!real_keyboard_event(b"activewindow>>kitty,~"));
+    }
+
     #[test]
     fn poisoned_sender_lock_does_not_panic_the_caller() {
         // Its own port with no compositor, whatever display the test environment has.
-        let port = Port::new(|| None, |_, _| None);
+        let port = Port::new(|| None, |_, _| None, || ());
         std::thread::scope(|s| {
             let _ = s
                 .spawn(|| {
@@ -1093,6 +1252,7 @@ mod tests {
                 None
             },
             |_, _| None,
+            || (),
         );
         // On a thread of its own: the refusal holds for the thread that asks for it and the
         // ones it starts, and this one must be able to start the worker afterwards.
@@ -1146,7 +1306,7 @@ mod tests {
             crate::testenv::run_in_own_process(TEST, [("LC_ALL", "C")]);
             return;
         }
-        let port = Port::new(|| None, |_, _| None);
+        let port = Port::new(|| None, |_, _| None, || ());
         crate::testenv::refuse_new_threads();
         let (sent, text) =
             crate::testenv::stderr_with(|| port.send_wait(&[(30, true), (30, false)]));

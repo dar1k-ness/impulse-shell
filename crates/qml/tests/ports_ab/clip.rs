@@ -1427,6 +1427,46 @@ fn vkbd_keys_keep_the_real_keyboards_lock_state() {
     );
 }
 
+/// The real keyboard switched alone while the port sends no keys (`switchxkblayout current
+/// next`, an xkb `grp:` option: Hyprland keeps a layout per keyboard and leaves the port's on
+/// the first): the port's keyboard goes to the real one's layout at Hyprland's event, not with
+/// its next keys, so a later switch of all keyboards moves both from the same layout.
+#[test]
+fn vkbd_follows_the_real_keyboard_switched_alone() {
+    use std::io::Write;
+    if !wayland()
+        || !own_seat(
+            concat!(
+                module_path!(),
+                "::vkbd_follows_the_real_keyboard_switched_alone"
+            ),
+            true,
+        )
+    {
+        return;
+    }
+    let _seat = seat();
+    let h = FakeHypr::start();
+    h.set("us,ru", 0, "English (US)");
+    let keys = window::keys().expect("the key window never got the keyboard focus");
+    window::touch(&keys);
+    assert!(qml::ports::vkbd::send_wait(&[(30, true), (30, false)]));
+    window::wait_for(|| keys.lock().unwrap().contains(&(30, false)));
+    let mut ev = h
+        .events()
+        .expect("the keyboard follows Hyprland's event socket");
+    keys.lock().unwrap().clear();
+    window::GROUPS.lock().unwrap().clear();
+    // `j/devices` now has the real keyboard on the second layout and the port's on the first.
+    h.set("us,ru", 1, "Russian");
+    ev.write_all(b"activelayout>>usb-keyboard,Russian\n")
+        .unwrap();
+    // Nothing but the port's keyboard sends this window a layout from here on.
+    window::wait_for(|| window::GROUPS.lock().unwrap().last() == Some(&1));
+    assert_eq!(h.reads(), 2, "one read of j/devices for the event");
+    assert!(keys.lock().unwrap().is_empty(), "following sends no keys");
+}
+
 /// Releasing the keys the port's keyboard holds (the on-screen keyboard closing with Shift
 /// held) goes out on the real keyboard's current layout: the released Shift's modifiers event
 /// does not move the window back to the layout of the last batch.
