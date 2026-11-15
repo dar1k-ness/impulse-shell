@@ -17,7 +17,7 @@
 | `install.sh` | The whole install by one command on Arch Linux: packages, build, install, the user's settings and Hyprland files, the start (docs/install.md). |
 | `tools/install.sh` | Build and install. |
 | `tools/testenv` | The test image (`Containerfile`) and the gate script (`ri-gate`). |
-| `tools/build.sh`, `tools/carry-over.sh` | The build alone; a user's data and own files from the names of the original to this project's. |
+| `tools/build.sh`, `tools/carry-over.sh` | The build alone; a user's data and own files from the names of the original, or from the shell's previous name, to this project's. |
 | `tools/ci` | The gate as run on a checkout (`gate`), the image's tag, the jobs of the workflows. |
 | `tools/parity`, `tools/stress`, `bench` | Pixel comparison with the original, stability runs, VM benchmarks. Each has its own README or header. |
 | `tools/reference` | Scripts that record what the original, Quickshell, KDE or another GPU does, for the tests that compare with it. |

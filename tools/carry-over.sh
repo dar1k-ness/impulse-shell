@@ -3,6 +3,12 @@
 # new ones (impulse-shell, rustshell). Nothing under an old name is changed or removed, so the
 # old build still finds everything it reads: going back to it loses nothing.
 #
+# A home that ran the shell under its previous name (its tree is ~/.config/rustshell/<that
+# name>) is carried over from that build instead: its settings, cache, icon and keyring item,
+# and the user's own files that name it. The engine's word is the same for both, so the state
+# and the caches under it (~/.local/state/rustshell, ~/.cache/rustshell) are one place the two
+# builds share: nothing is copied there.
+#
 #   tools/carry-over.sh              copy the data: settings, state, caches, the icon, the keyring
 #                                    item. What is already there under a new name is left alone
 #                                    (a keyring item that is there gets what it lacks, see below)
@@ -36,6 +42,17 @@ config=$(xdg XDG_CONFIG_HOME .config)
 state=$(xdg XDG_STATE_HOME .local/state)
 cache=$(xdg XDG_CACHE_HOME .cache)
 data=$(xdg XDG_DATA_HOME .local/share)
+# The build this home ran last: the shell under its previous name where its tree is there,
+# else the one from before both renames, named above. (The previous name is put together from
+# halves: tools/rename/rename.py renames it wherever it stands whole.)
+was=rusty
+was+=-impulse
+if [ -e "$config/$NEW_WORD/$was" ]; then
+    OLD_APP=$was OLD_BIN=$was OLD_TREE=$was OLD_WORD=$NEW_WORD
+    # Its start script, and the prefix of its variables in the user's environment.
+    OLD_START=$was-shell OLD_ENV=RUSTY
+    OLD_ENV+=_IMPULSE_
+fi
 runtime=${XDG_RUNTIME_DIR-}
 [[ $runtime == /* ]] || runtime=/run/user/$(id -u)
 
@@ -101,6 +118,16 @@ rewrite() {
         -e "s#(-c[ \"',]+|qsConfig[\"']?[ ]*[=,][ ]*[\"'])$OLD_TREE([^[:alnum:]_-]|\$)#\\1$NEW_TREE\\2#g" \
         -e "s#\\x01#$OLD_TREE#g"
 }
+# From the previous name the engine's word stays, so only whole names change. The start script
+# goes first: its new name is not the old one with the new name put in.
+if [ "$OLD_WORD" = "$NEW_WORD" ]; then
+    rewrite() {
+        sed -E \
+            -e "s#(^|[^[:alnum:]_.-])$OLD_START([^[:alnum:]_.-]|\$)#\\1$NEW_BIN-start\\2#g" \
+            -e "s#$OLD_APP#$NEW_APP#g" \
+            -e "s#$OLD_ENV#IMPULSE_SHELL_#g"
+    }
+fi
 names_old() { ! rewrite <"$1" | cmp -s - "$1"; }
 # A file something reads: by its suffix, or a script without one. Copies kept beside the files
 # (execs.lua.pre-native-default, hypridle.conf.new, *.bak) are not rewritten.
@@ -121,8 +148,8 @@ rewrite_file() {
     cp -p -- "$f" "$tmp" && rewrite <"$f" >"$tmp" && mv -f -- "$tmp" "$f" || { rm -f -- "$tmp"; return 1; }
 }
 
-# Both folders are there (the old build already keeps layout.toml in ~/.config/impulse-shell):
-# what the new one lacks is copied in, nothing in it is replaced.
+# Both folders are there (the new one was made before the data was carried over): what the new
+# one lacks is copied in, nothing in it is replaced.
 add_missing() {
     local old=$1 new=$2 rel n=0 kept=0
     while IFS= read -r -d '' rel; do
@@ -419,10 +446,11 @@ put_text() {
 }
 
 # The desktop widgets' layout (layout.toml, and the previous copy the shell keeps beside it) is
-# one file for both builds, in ~/.config/impulse-shell. The new build reads what the old one
-# wrote; the old one cannot read what the new one saves (edge = "rusty"): it writes "unknown
-# variant" to its log and shows its default layout. So --dots new keeps each of the two files
-# as it is at that moment, or that it is not there, and --dots old puts exactly that back.
+# in ~/.config/impulse-shell. While the settings were one folder for both builds, the old one
+# could not read what the new one saved there (edge = "rusty"), so --dots new keeps each of the
+# two files as it is at that moment, or that it is not there, and --dots old puts exactly that
+# back. The old build has a folder of its own now and reads neither file; the two steps are
+# made as before, and going back and forth leaves the new build its layout.
 # What the new build saved is not lost: it stays beside the file as <name>.from-impulse-shell,
 # and the next --dots new makes it the file again when the file still is what --dots old put
 # there. A copy with that name that holds something else is kept under a name with the time;
@@ -546,6 +574,10 @@ dots_old() {
 status() {
     local old new f found rc2
     while IFS= read -r old && IFS= read -r new; do
+        if [ "$old" = "$new" ]; then
+            printf '%-8s %s\n' "$([ -e "$old" ] && echo both || echo -)" "$old"
+            continue
+        fi
         printf '%-8s %s\n' "$([ -e "$old" ] && echo old || echo -)" "$old"
         printf '%-8s %s\n' "$([ -e "$new" ] && echo new || echo -)" "$new"
     done < <(pairs)
@@ -588,7 +620,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 [ "$(id -u)" != 0 ] || die "run this as the user whose data it is, not as root"
-[ "$NEW_WORD" != "$OLD_WORD" ] || die "RI_WORD is $OLD_WORD: that is the old name"
+[ "$NEW_WORD" != quickshell ] || die "RI_WORD is quickshell: that is the old name"
 [[ $NEW_WORD =~ ^[a-z][a-z0-9-]*$ ]] || die "RI_WORD=$NEW_WORD is not a name"
 $mode
 [ "$failed" = 0 ] || exit "$failed"
