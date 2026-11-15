@@ -645,7 +645,7 @@ qs::io::ipc::IpcHandler	onSignalTriggered	1	throws	0	0	0	IpcHandler
 qs::menu::QsMenuAnchor	close	1	throws	0	9	0	
 qs::menu::QsMenuAnchor	onMenuChanged	1	throws	0	0	0	
 qs::menu::QsMenuAnchor	onMenuDestroyed	1	throws	0	0	0	
-qs::menu::QsMenuAnchor	open	1	throws	0	0	0	
+qs::menu::QsMenuAnchor	open	1	throws	0	1	0	
 qs::menu::QsMenuEntry	display	1	throws	0	0	0	QsMenuEntry
 qs::menu::QsMenuOpener	onMenuDestroyed	1	throws	0	0	0	QsMenuOpener
 qs::network::Network	connect	1	throws	0	2	0	
