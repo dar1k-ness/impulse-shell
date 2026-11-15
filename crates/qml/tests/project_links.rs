@@ -1,4 +1,4 @@
-//! The links that mean "this project" open the rusty-impulse repository: "Source" and "Report
+//! The links that mean "this project" open the impulse-shell repository: "Source" and "Report
 //! issue" on the settings About page, "GitHub" in the welcome window. No link of the tree sends
 //! a bug report or a question to another project's tracker.
 use qml::runtime::Runtime;
@@ -6,7 +6,7 @@ use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const REPO: &str = "https://github.com/dar1k-ness/rusty-impulse";
+const REPO: &str = "https://github.com/dar1k-ness/impulse-shell";
 
 fn ri() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../qml")
@@ -85,8 +85,8 @@ fn button(rt: &Runtime, text: &str) -> usize {
 }
 
 #[test]
-fn project_links_open_rusty_impulse() {
-    const TEST: &str = concat!(module_path!(), "::project_links_open_rusty_impulse");
+fn project_links_open_impulse_shell() {
+    const TEST: &str = concat!(module_path!(), "::project_links_open_impulse_shell");
     // An `xdg-open` first on PATH that reports its argument through a FIFO, no session bus (so
     // no portal takes the URL), and a home of its own, in a process that has them in its
     // environment.
@@ -95,8 +95,8 @@ fn project_links_open_rusty_impulse() {
         let d = dir.path();
         let (bin, home) = (d.join("bin"), d.join("home"));
         std::fs::create_dir_all(&bin).unwrap();
-        std::fs::create_dir_all(home.join(".config/rusty-impulse")).unwrap();
-        std::fs::write(home.join(".config/rusty-impulse/config.json"), "{}\n").unwrap();
+        std::fs::create_dir_all(home.join(".config/impulse-shell")).unwrap();
+        std::fs::write(home.join(".config/impulse-shell/config.json"), "{}\n").unwrap();
         let calls = d.join("xdg-open.calls");
         assert!(
             Command::new("mkfifo")

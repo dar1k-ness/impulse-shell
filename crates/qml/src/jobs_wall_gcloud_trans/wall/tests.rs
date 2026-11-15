@@ -140,7 +140,7 @@ fn fixture(tag: &str, api: impl Fn(&str, &str) -> Resp + Send + Sync + 'static) 
         }
     }
     let dir = testutil::tmpdir(tag);
-    let random = dir.join("rusty-impulse/scripts/colors/random");
+    let random = dir.join("impulse-shell/scripts/colors/random");
     std::fs::create_dir_all(&random).unwrap();
     for s in ["random_konachan_wall.sh", "random_osu_wall.sh"] {
         std::fs::copy(
@@ -149,7 +149,7 @@ fn fixture(tag: &str, api: impl Fn(&str, &str) -> Resp + Send + Sync + 'static) 
         )
         .unwrap();
     }
-    let sw = dir.join("rusty-impulse/scripts/colors/switchwall.sh");
+    let sw = dir.join("impulse-shell/scripts/colors/switchwall.sh");
     crate::testenv::install_script(&sw, SWITCHWALL);
     let srv = testutil::serve(move |r| {
         let base = r
@@ -173,7 +173,7 @@ fn fixture(tag: &str, api: impl Fn(&str, &str) -> Resp + Send + Sync + 'static) 
         ),
     );
     let home = dir.join("home");
-    std::fs::create_dir_all(home.join(".config/rusty-impulse")).unwrap();
+    std::fs::create_dir_all(home.join(".config/impulse-shell")).unwrap();
     Some(Fixture {
         dir,
         home,
@@ -343,7 +343,7 @@ fn konachan(img: &'static str) -> impl Fn(&str, &str) -> Resp + Send + Sync {
 }
 
 fn write_config(f: &Fixture, json: &str) {
-    std::fs::write(f.home.join(".config/rusty-impulse/config.json"), json).unwrap();
+    std::fs::write(f.home.join(".config/impulse-shell/config.json"), json).unwrap();
 }
 
 fn user_dirs(f: &Fixture) {
@@ -528,7 +528,7 @@ fn wall_bench() {
     user_dirs(&f);
     write_config(&f, r#"{"networking":{"userAgent":"UA"}}"#);
     std::fs::write(
-        f.dir.join("rusty-impulse/scripts/colors/switchwall.sh"),
+        f.dir.join("impulse-shell/scripts/colors/switchwall.sh"),
         "#!/usr/bin/env bash\necho done\n",
     )
     .unwrap();
@@ -618,7 +618,7 @@ fn wall_runs_switchwall_in_process() {
     let img: &'static [u8] =
         include_bytes!("../../../../colorgen/tests/switchwall/fixture/thumb.jpg");
     let dir = testutil::tmpdir("sw-native");
-    let colors = dir.join("rusty-impulse/scripts/colors");
+    let colors = dir.join("impulse-shell/scripts/colors");
     let random = colors.join("random");
     std::fs::create_dir_all(&random).unwrap();
     copy_tree(
@@ -642,11 +642,11 @@ fn wall_runs_switchwall_in_process() {
         }
     });
     let home = dir.join("home");
-    for d in [".config/rusty-impulse", ".config/rustshell/rusty-impulse"] {
+    for d in [".config/impulse-shell", ".config/rustshell/impulse-shell"] {
         std::fs::create_dir_all(home.join(d)).unwrap();
     }
     std::fs::write(
-        home.join(".config/rusty-impulse/config.json"),
+        home.join(".config/impulse-shell/config.json"),
         r#"{"background":{"wallpaperPath":"/x.png"},"appearance":{"wallpaperTheming":{"enableTerminal":true}}}"#,
     )
     .unwrap();

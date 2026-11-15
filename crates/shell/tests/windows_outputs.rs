@@ -1,4 +1,4 @@
-//! Windows across monitors, checked on the Wayland requests rusty-impulse sends to a headless sway
+//! Windows across monitors, checked on the Wayland requests impulse-shell sends to a headless sway
 //! (`WAYLAND_DEBUG`): a monitor connected while the session is locked gets its own lock surface,
 //! a destroyed lock holder leaves the session locked for the next `WlSessionLock`, the bar maps
 //! through the PanelWindow path (its `screen`, layer and margins), a shown PanelWindow follows a
@@ -142,7 +142,7 @@ impl Drop for Output {
     }
 }
 
-/// rusty-impulse (or Quickshell) running `shell.qml` with its Wayland traffic logged, and for rusty-impulse its
+/// impulse-shell (or Quickshell) running `shell.qml` with its Wayland traffic logged, and for impulse-shell its
 /// loop turns.
 struct Shell {
     child: Child,
@@ -163,7 +163,7 @@ impl Shell {
 
     /// On the compositor at `display` (None: WAYLAND_DISPLAY's).
     fn start_on(qml: &str, display: Option<&Path>) -> Self {
-        let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
         cmd.env("RI_INTERP", "1").env("RI_LOG", "ri::sched=debug");
         Self::run(cmd, qml, display, false)
     }
@@ -172,7 +172,7 @@ impl Shell {
     fn start_in(qml: &str, runtime: &Path) -> Self {
         let shared = std::env::var_os("XDG_RUNTIME_DIR").unwrap();
         let display = Path::new(&shared).join(std::env::var_os("WAYLAND_DISPLAY").unwrap());
-        let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
         cmd.env("RI_INTERP", "1")
             .env("RI_LOG", "ri::sched=debug")
             .env("XDG_RUNTIME_DIR", runtime);
@@ -190,7 +190,7 @@ impl Shell {
 
     /// As `start_on`, with the tree's QML (`qs.modules…`, `qs.services`) beside `shell.qml`.
     fn start_in_tree(qml: &str, display: &Path) -> Self {
-        let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
         cmd.env("RI_INTERP", "1").env("RI_LOG", "ri::sched=debug");
         Self::run_in(cmd, qml, Some(display), false, true)
     }
@@ -254,7 +254,7 @@ impl Shell {
         self.log.text().replace('@', "#")
     }
 
-    /// Waits for `f(log)`; panics with the log if rusty-impulse exits first.
+    /// Waits for `f(log)`; panics with the log if impulse-shell exits first.
     fn wait(&mut self, what: &str, f: impl Fn(&str) -> bool) -> String {
         if let Err(s) = self.log.wait(|s| f(&s.replace('@', "#"))) {
             panic!(
@@ -267,7 +267,7 @@ impl Shell {
     }
 
     /// Runs `target.probe()` (it logs `PROBE`) and waits until the loop blocks with nothing due
-    /// after it: whatever the events that reached rusty-impulse before the call started has run its
+    /// after it: whatever the events that reached impulse-shell before the call started has run its
     /// course (the loop dispatches every ready source before it blocks).
     fn settle(&mut self, target: &str) -> String {
         self.probe(target);
@@ -1463,7 +1463,7 @@ fn panel_created_while_its_screen_is_unplugged_is_closed() {
     assert_eq!(on, wl_output);
     out.unplug();
     // Quickshell.screens without it: the shell's loop has read the removal (`global_remove` in
-    // the log can be another connection of rusty-impulse reading it first).
+    // the log can be another connection of impulse-shell reading it first).
     sh.wait("the screen's removal", |s| {
         s.lines()
             .rev()

@@ -1,5 +1,5 @@
 //! AVIF and CMYK / YCCK JPEG wallpapers against the original scripts and the libraries they
-//! read images with (Pillow, OpenCV; tools/testenv has them in $RUSTY_IMPULSE_VIRTUAL_ENV):
+//! read images with (Pillow, OpenCV; tools/testenv has them in $IMPULSE_SHELL_VIRTUAL_ENV):
 //! the decoded pixels, the source colour of generate_colors_material.py and the colourfulness
 //! of scheme_for_image.py. Fixtures: crates/qsg/tests/fixtures/{formats,heif}.
 use std::path::{Path, PathBuf};
@@ -48,7 +48,7 @@ fn script(name: &str) -> PathBuf {
 
 /// The scripts' python; `None` (reported) without it or its libraries.
 fn python() -> Option<String> {
-    let v = std::env::var("RUSTY_IMPULSE_VIRTUAL_ENV").unwrap_or_default();
+    let v = std::env::var("IMPULSE_SHELL_VIRTUAL_ENV").unwrap_or_default();
     let py = format!("{v}/bin/python3");
     let ok = !v.is_empty()
         && Command::new(&py)
@@ -56,7 +56,7 @@ fn python() -> Option<String> {
             .status()
             .is_ok_and(|s| s.success());
     if !ok {
-        testenv::unavailable("RUSTY_IMPULSE_VIRTUAL_ENV with materialyoucolor, pillow, opencv");
+        testenv::unavailable("IMPULSE_SHELL_VIRTUAL_ENV with materialyoucolor, pillow, opencv");
         return None;
     }
     if !heif::avif::available() {

@@ -1,10 +1,10 @@
-//! token-from-key-venv.sh (google-auth in the venv named by RUSTY_IMPULSE_VIRTUAL_ENV)
+//! token-from-key-venv.sh (google-auth in the venv named by IMPULSE_SHELL_VIRTUAL_ENV)
 //! against the Rust job, with `token_uri` pointing at a local fake token endpoint.
 use super::super::testutil::{self, Resp, Server};
 use super::*;
 
 fn venv() -> Option<String> {
-    let v = std::env::var("RUSTY_IMPULSE_VIRTUAL_ENV").unwrap_or_default();
+    let v = std::env::var("IMPULSE_SHELL_VIRTUAL_ENV").unwrap_or_default();
     let ok = !v.is_empty()
         && std::process::Command::new(format!("{v}/bin/python"))
             .args([
@@ -14,7 +14,7 @@ fn venv() -> Option<String> {
             .output()
             .is_ok_and(|o| o.status.success());
     if !ok {
-        crate::testenv::unavailable("RUSTY_IMPULSE_VIRTUAL_ENV has no google-auth venv");
+        crate::testenv::unavailable("IMPULSE_SHELL_VIRTUAL_ENV has no google-auth venv");
     }
     ok.then_some(v)
 }
@@ -87,7 +87,7 @@ fn original(venv: &str, key: &str, srv: &Server) -> Run {
             .arg("-c")
             .arg(format!("{} \"$SERVICE_KEY_CONTENT\"", script.display()))
             .env("SERVICE_KEY_CONTENT", key)
-            .env("RUSTY_IMPULSE_VIRTUAL_ENV", venv),
+            .env("IMPULSE_SHELL_VIRTUAL_ENV", venv),
     );
     elog::eprintln!("original stderr: {err}");
     Run {
@@ -310,7 +310,7 @@ fn check_env(case: &str, venv: &str, key: &str, pem: &str, srv: &Server, env: &[
     c.arg("-c")
         .arg(format!("{} \"$SERVICE_KEY_CONTENT\"", script.display()))
         .env("SERVICE_KEY_CONTENT", key)
-        .env("RUSTY_IMPULSE_VIRTUAL_ENV", venv);
+        .env("IMPULSE_SHELL_VIRTUAL_ENV", venv);
     for (k, v) in env {
         c.env(k, v);
     }
@@ -462,7 +462,7 @@ fn gcloud_token_trust_boundary_ignored() {
     }
 }
 
-/// `RUSTY_IMPULSE_VIRTUAL_ENV=… cargo test --features live -p qml --release gcloud_bench --
+/// `IMPULSE_SHELL_VIRTUAL_ENV=… cargo test --features live -p qml --release gcloud_bench --
 /// --nocapture --test-threads=1`
 #[test]
 #[cfg_attr(
@@ -484,7 +484,7 @@ fn gcloud_bench() {
                 .arg("-c")
                 .arg(format!("{} \"$SERVICE_KEY_CONTENT\"", script.display()))
                 .env("SERVICE_KEY_CONTENT", &k)
-                .env("RUSTY_IMPULSE_VIRTUAL_ENV", &venv),
+                .env("IMPULSE_SHELL_VIRTUAL_ENV", &venv),
         );
         ow += w;
         oc += c;

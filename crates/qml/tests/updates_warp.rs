@@ -206,8 +206,8 @@ fn updates_and_warp_toggle() {
         let bin = home.join("bin");
         std::fs::create_dir_all(&bin).unwrap();
         std::fs::create_dir_all(home.join("qml")).unwrap();
-        std::fs::create_dir_all(home.join(".config/rusty-impulse")).unwrap();
-        std::fs::write(home.join(".config/rusty-impulse/config.json"), "{}").unwrap();
+        std::fs::create_dir_all(home.join(".config/impulse-shell")).unwrap();
+        std::fs::write(home.join(".config/impulse-shell/config.json"), "{}").unwrap();
         std::fs::write(home.join("qml/main.qml"), MAIN).unwrap();
         // `which checkupdates` finds the script; the count comes from checkupdates' own steps
         // over the pacman it finds (a native check does not run the script itself).
@@ -422,8 +422,8 @@ fn songrec_notifications() {
         let bin = home.join("bin");
         std::fs::create_dir_all(&bin).unwrap();
         std::fs::create_dir_all(home.join("qml")).unwrap();
-        std::fs::create_dir_all(home.join(".config/rusty-impulse")).unwrap();
-        std::fs::write(home.join(".config/rusty-impulse/config.json"), "{}").unwrap();
+        std::fs::create_dir_all(home.join(".config/impulse-shell")).unwrap();
+        std::fs::write(home.join(".config/impulse-shell/config.json"), "{}").unwrap();
         std::fs::write(home.join("qml/main.qml"), SONGREC).unwrap();
         // `xdg-open` reports its argument through a FIFO; no `songrec` on PATH.
         let opened = home.join("opened");

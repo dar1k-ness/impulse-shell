@@ -1,4 +1,4 @@
-//! The original's process/directory probes against the original commands (`qs -c rusty-impulse` runs them through
+//! The original's process/directory probes against the original commands (`qs -c impulse-shell` runs them through
 //! bash): the same fake processes and directories go through `bash -c "<the original's line>"` and
 //! `qml::probe`, and stdout, stderr and exit code must match. Run with Arch's procps-ng /
 //! psmisc / coreutils / util-linux (Ubuntu's `pidof` is sysvinit's).

@@ -1,7 +1,7 @@
 //! A FrameAnimation is triggered once per step of the animation driver (QFrameAnimationJob is
 //! an animation of 1 ms that loops, QQuickFrameAnimationPrivate::maybeTick runs when its loop
 //! changes): 60 times a second on a 60 Hz output, whatever else wakes the loop. The real
-//! quickshell running the fixture vs the native shell (`rusty-impulse -p`): the triggers in the second
+//! quickshell running the fixture vs the native shell (`impulse-shell -p`): the triggers in the second
 //! a Timer counts, alone, next to a `Qt.callLater` function that calls `Qt.callLater` with
 //! itself, next to it while every trigger moves an item of the window, in an item that is not
 //! visible, in a window that is not, while the pointer moves over the window as often as the
@@ -354,7 +354,7 @@ fn same_as_quickshell(mode: &str) {
     };
     let (Some(qt), Some(here)) = (
         counted("qs", "orig"),
-        counted(env!("CARGO_BIN_EXE_rusty-impulse"), "native"),
+        counted(env!("CARGO_BIN_EXE_impulse-shell"), "native"),
     ) else {
         testenv::unavailable("compositor lacks zwlr_virtual_pointer_v1");
         return;
@@ -380,7 +380,7 @@ fn same_as_quickshell(mode: &str) {
     // Once per step of the animation driver, under both. Not as many a second of the wall
     // clock as under Quickshell: it commits a frame per step whether or not anything changed,
     // so on a loaded machine the second its Timer counts is 60 frames that took 1.0 to 1.8 s
-    // (or 36 to 61 steps, once late frames put its driver on wall time), while rusty-impulse commits
+    // (or 36 to 61 steps, once late frames put its driver on wall time), while impulse-shell commits
     // no frame that changes nothing and steps by its own timer then.
     for (who, s) in [("Quickshell", &qt), ("here", &here)] {
         assert!(
@@ -403,7 +403,7 @@ fn same_as_quickshell(mode: &str) {
         );
     }
     // And once per frame where each step changes what the window shows: the first trigger
-    // comes with `start()`, each later one with a wl_surface.commit. rusty-impulse draws and steps in
+    // comes with `start()`, each later one with a wl_surface.commit. impulse-shell draws and steps in
     // one thread; Qt's render thread commits on its own time, a commit before or after.
     for (who, s, slack) in [("Quickshell", &qt, 2), ("here", &here, 1)] {
         if let Some(commits) = s.commits {
@@ -566,7 +566,7 @@ fn late_start(bin: &str, dir: &Path) -> Vec<[f64; 3]> {
 /// it (one run in ten on a busy machine: `b` then joins a step later). Nor how soon the next
 /// frame comes: 50.04 ms under Quickshell, once.
 ///
-/// Under Quickshell a trigger sees `b` one step behind `a`, in rusty-impulse at the same step.
+/// Under Quickshell a trigger sees `b` one step behind `a`, in impulse-shell at the same step.
 #[test]
 #[cfg_attr(not(feature = "interp"), ignore = "temp tree; AOT-only refuses it")]
 fn animations_started_long_after_a_late_frame_step_the_running_ones_first() {
@@ -576,7 +576,7 @@ fn animations_started_long_after_a_late_frame_step_the_running_ones_first() {
     let base = tempfile::tempdir().unwrap();
     let qt = late_start("qs", &base.path().join("orig"));
     let here = late_start(
-        env!("CARGO_BIN_EXE_rusty-impulse"),
+        env!("CARGO_BIN_EXE_impulse-shell"),
         &base.path().join("native"),
     );
     for (who, t) in [("Quickshell", &qt), ("here", &here)] {

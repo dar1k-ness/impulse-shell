@@ -321,7 +321,7 @@ pub(super) fn run(
     if let Err(e) = std::fs::create_dir_all(&walls) {
         err(format!("random wallpaper: {walls}: {}\n", io_reason(&e)));
     }
-    let cfg = config(&format!("{}/.config/rusty-impulse/config.json", c.home));
+    let cfg = config(&format!("{}/.config/impulse-shell/config.json", c.home));
     let (link, ua) = match site {
         Site::Konachan => {
             let page = 1 + random_below(1000);
@@ -439,7 +439,7 @@ pub(super) fn native_switchwall(c: &Ctx, req: &Request, io: Io) -> i32 {
     colorgen::switchwall::run(req, &p, &c.sys, io)
 }
 
-/// The first argument of the shell binary run in switchwall.sh's place: `rusty-impulse
+/// The first argument of the shell binary run in switchwall.sh's place: `impulse-shell
 /// __ri-switchwall DIR [ARGS]` is `DIR/switchwall.sh ARGS` ([`switchwall_serve`]). The tree's
 /// `scripts/colors/switchwall.sh`, the file the original's Hyprland keybind names, runs it.
 pub const SWITCHWALL_ARG: &str = "__ri-switchwall";

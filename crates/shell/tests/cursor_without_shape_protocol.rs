@@ -1,6 +1,6 @@
-//! The cursor on a compositor without wp_cursor_shape_v1: rusty-impulse sets it the way every Wayland
+//! The cursor on a compositor without wp_cursor_shape_v1: impulse-shell sets it the way every Wayland
 //! client did before that protocol, `wl_pointer.set_cursor` with a surface holding the image of
-//! the XCURSOR theme. Sway has the protocol, so rusty-impulse talks to it through `proxy::Hide`, which
+//! the XCURSOR theme. Sway has the protocol, so impulse-shell talks to it through `proxy::Hide`, which
 //! leaves the `wp_cursor_shape_manager_v1` global out of the registry.
 
 use std::process::{Child, Command, Stdio};
@@ -138,7 +138,7 @@ fn attached<'a>(log: &'a str, surface: &str) -> Vec<&'a str> {
         .collect()
 }
 
-/// Before the fix rusty-impulse set a cursor only through wp_cursor_shape_v1, so without the protocol
+/// Before the fix impulse-shell set a cursor only through wp_cursor_shape_v1, so without the protocol
 /// it sent nothing after `wl_pointer.enter` and the compositor kept whatever image the last
 /// client left.
 #[test]
@@ -181,7 +181,7 @@ fn cursor_is_set_from_the_theme_without_the_shape_protocol() {
     let xdg = dir.path().join("xdg");
     let (r, out) = std::io::pipe().unwrap();
     let sh = Shell(
-        Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(dir.path())
             .env("RI_INTERP", "1")
@@ -239,7 +239,7 @@ fn cursor_is_set_from_the_theme_without_the_shape_protocol() {
     drop(sh);
 }
 
-/// A Wayland proxy between rusty-impulse and sway that forwards every message and fd unchanged, except
+/// A Wayland proxy between impulse-shell and sway that forwards every message and fd unchanged, except
 /// the `wl_registry.global` events of one interface, which it drops.
 mod proxy {
     use std::collections::HashSet;

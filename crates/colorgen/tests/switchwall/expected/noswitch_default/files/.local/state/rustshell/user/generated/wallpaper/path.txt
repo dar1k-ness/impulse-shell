@@ -1,1 +1,1 @@
-@HOME@/.config/rustshell/rusty-impulse/assets/images/default_wallpaper.png
+@HOME@/.config/rustshell/impulse-shell/assets/images/default_wallpaper.png

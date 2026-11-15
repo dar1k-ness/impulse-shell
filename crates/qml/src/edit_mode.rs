@@ -1828,7 +1828,7 @@ fn num(w: &mut World, item: usize, k: &str) -> f64 {
 }
 
 /// The window an item is shown in (its top-level item when no window type is above it, as
-/// for a bare `rusty-impulse -p` root), unless it or an ancestor is hidden.
+/// for a bare `impulse-shell -p` root), unless it or an ancestor is hidden.
 fn shown_window(w: &mut World, item: usize) -> Option<usize> {
     let mut cur = Some(item);
     let mut top = item;

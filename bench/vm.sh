@@ -3,12 +3,12 @@
 #   bench/vm.sh create        download and verify the image, first boot, provision (guest-setup.sh)
 #   bench/vm.sh start|stop    boot / power off the guest (ssh on host port $VM_SSH_PORT, VNC :5)
 #   bench/vm.sh ssh [CMD...]  run CMD in the guest as dar1k (no CMD: a shell)
-#   bench/vm.sh sync          copy this checkout to guest ~/rusty-impulse, install its qml as the
-#                             config `rusty-impulse`, build + install rusty-impulse (tools/install.sh), unpack
+#   bench/vm.sh sync          copy this checkout to guest ~/impulse-shell, install its qml as the
+#                             config `impulse-shell`, build + install impulse-shell (tools/install.sh), unpack
 #                             the original as guest ~/parity-original (tools/parity/orig.sh) and
 #                             install what tools/parity and tools/stress run (provision.sh,
 #                             tools/stress/setup.sh): after it the scenarios need no more
-#   bench/vm.sh copy          the first step of sync alone: the checkout to guest ~/rusty-impulse
+#   bench/vm.sh copy          the first step of sync alone: the checkout to guest ~/impulse-shell
 # Host needs qemu-system-x86_64 with KVM, qemu-img, cloud-localds (cloud-image-utils), ssh, curl.
 # State lives in $VM_DIR (default ~/work/vm). VM_CPUS / VM_MEM change the guest's size: CPU
 # numbers are only comparable between runs with the same VM_CPUS on the same host.
@@ -66,21 +66,21 @@ wait_session() {
     guest 'until ls /run/user/$(id -u)/hypr/*/hyprland.lock >/dev/null 2>&1; do sleep 1; done'
 }
 
-# This checkout (without target/ and .git) to guest ~/rusty-impulse, with its commit in ~/rusty-impulse/.commit
+# This checkout (without target/ and .git) to guest ~/impulse-shell, with its commit in ~/impulse-shell/.commit
 # and, as the build names it (the guest's binary is then the same file as a build of this
-# checkout anywhere else), in ~/rusty-impulse/.build-commit;
+# checkout anywhere else), in ~/impulse-shell/.build-commit;
 # the guest's target/ is kept. The files arrive with the times they have here, and cargo knows
 # a changed file by its time alone: a tree older than the guest's last build (an older commit,
 # a file removed from a directory a build script lists) would keep that build. So, as the gate
 # does for its checkouts, tools/ci/tree-times gives what differs from the tree built last a
-# new time (its record: ~/rusty-impulse/target/ri-gate-tree), and the build equals a clean one.
+# new time (its record: ~/impulse-shell/target/ri-gate-tree), and the build equals a clean one.
 copy() {
     tar -C "$repo" -czf - --exclude=./target --exclude=./.git . |
-        guest 'mkdir -p ~/rusty-impulse/target && cd ~/rusty-impulse &&
+        guest 'mkdir -p ~/impulse-shell/target && cd ~/impulse-shell &&
             find . -mindepth 1 -maxdepth 1 ! -name target -exec rm -rf {} + && tar xzf -'
-    git -C "$repo" describe --always --dirty --abbrev=12 | guest 'cat >~/rusty-impulse/.commit'
-    "$repo/tools/build.sh" --commit | guest 'cat >~/rusty-impulse/.build-commit'
-    guest 'python3 ~/rusty-impulse/tools/ci/tree-times ~/rusty-impulse ~/rusty-impulse/target/ri-gate-tree'
+    git -C "$repo" describe --always --dirty --abbrev=12 | guest 'cat >~/impulse-shell/.commit'
+    "$repo/tools/build.sh" --commit | guest 'cat >~/impulse-shell/.build-commit'
+    guest 'python3 ~/impulse-shell/tools/ci/tree-times ~/impulse-shell ~/impulse-shell/target/ri-gate-tree'
 }
 
 # What the scenarios of tools/parity and tools/stress run that guest-setup.sh does not install
@@ -89,7 +89,7 @@ copy() {
 # Both scripts leave alone what is there already. provision.sh first takes the clock back from
 # the date tools/parity pins: under that date no package or crate downloads.
 tools() {
-    guest 'bash ~/rusty-impulse/tools/parity/provision.sh && ~/rusty-impulse/tools/stress/setup.sh'
+    guest 'bash ~/impulse-shell/tools/parity/provision.sh && ~/impulse-shell/tools/stress/setup.sh'
 }
 
 case ${1:-} in
@@ -120,7 +120,7 @@ EOF
     snapshot=$(grep -o 'archive.archlinux.org/repos/[0-9/]*' "$repo/tools/testenv/Containerfile" |
         cut -d/ -f3-5)
     copy
-    guest "~/rusty-impulse/bench/guest-setup.sh $snapshot"
+    guest "~/impulse-shell/bench/guest-setup.sh $snapshot"
     # Reboot into the installed kernel, Mesa and the autologin session. `tools` comes after it:
     # the kernel that booted the image has lost its modules to the upgrade, and provision.sh
     # loads one (uinput).
@@ -148,9 +148,9 @@ sync)
     copy
     tools
     # install.sh compiles the checkout's qml into the binary and makes
-    # ~/.config/rustshell/rusty-impulse a copy of it, as on the PC.
-    guest 'rm -rf ~/.config/rustshell/rusty-impulse ~/.local/state/rusty-impulse && cd ~/rusty-impulse && tools/install.sh'
-    # The original, which the benchmarks measure rusty-impulse against: the tree tools/parity
+    # ~/.config/rustshell/impulse-shell a copy of it, as on the PC.
+    guest 'rm -rf ~/.config/rustshell/impulse-shell ~/.local/state/impulse-shell && cd ~/impulse-shell && tools/install.sh'
+    # The original, which the benchmarks measure impulse-shell against: the tree tools/parity
     # compares the view with, unpacked the same way (guest ~/parity-original).
     "$repo/tools/parity/orig.sh"
     ;;

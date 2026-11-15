@@ -61,7 +61,7 @@ pub fn run(
     let script_dir = normalize(Path::new(script).parent().unwrap_or(Path::new("/")));
     let home = env("HOME").unwrap_or_default();
     let config_home = gemini::var_or(env, "XDG_CONFIG_HOME", &format!("{home}/.config"));
-    let shell_dir = format!("{config_home}/rusty-impulse");
+    let shell_dir = format!("{config_home}/impulse-shell");
     let config = format!("{shell_dir}/config.json");
     let translations = normalize(&script_dir.join("../../translations"));
     let target_dir = format!("{shell_dir}/translations");

@@ -1,4 +1,4 @@
-//! What the built `rusty-impulse` holds: no JavaScript parser, IR or tree-walking evaluator unless qml
+//! What the built `impulse-shell` holds: no JavaScript parser, IR or tree-walking evaluator unless qml
 //! was built with `interp`. release_without_interp.rs checks what cargo resolves; this reads
 //! the linked binary (its symbol names and panic locations) and runs it.
 //! `RI_COMMIT=<word> cargo test --release -p shell --no-default-features --test shipped_binary`
@@ -7,7 +7,7 @@
 //! feature unification in a workspace build), and the same marks must then all be found, so
 //! a renamed mark fails there instead of passing here.
 
-const BIN: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const BIN: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 /// Names only the interpreter puts into the binary: the oxc crates (parser, AST, arena), the
 /// module that uses them (`qml::ir`, the JS IR lowered from the oxc AST, as a mangled path

@@ -1,4 +1,4 @@
-//! `Impulse/ShellControl` in the running shell (`rusty-impulse -p`), on a fixture shell with a
+//! `Impulse/ShellControl` in the running shell (`impulse-shell -p`), on a fixture shell with a
 //! `settings.qml` next to it, in the headless sway:
 //!
 //! - `ShellControl.ipcCall` in the shell runs the shell's `IpcHandler` function;
@@ -186,7 +186,7 @@ fn shell_control_calls_reach_the_shell_and_open_one_window() {
         &format!("#!/bin/sh\necho \"$@\" >> '{}'\n", marker.display()),
     );
     let path = std::env::var("PATH").unwrap_or_default();
-    let exe = Path::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let exe = Path::new(env!("CARGO_BIN_EXE_impulse-shell"));
     let mut rs = Command::new(exe);
     rs.arg("-p")
         .arg(dir.path())

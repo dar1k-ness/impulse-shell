@@ -51,14 +51,14 @@ fn startup_keeps_existing_config() {
     if !testenv::in_own_process(TEST) {
         let dir = tempfile::tempdir().unwrap();
         let home = dir.path();
-        let cfg_dir = home.join(".config/rusty-impulse");
+        let cfg_dir = home.join(".config/impulse-shell");
         std::fs::create_dir_all(&cfg_dir).unwrap();
         std::fs::write(cfg_dir.join("config.json"), TEXT).unwrap();
         testenv::run_in_own_process(TEST, testenv::home_vars(home));
         return;
     }
     let home = PathBuf::from(std::env::var_os("HOME").unwrap());
-    let cfg = home.join(".config/rusty-impulse/config.json");
+    let cfg = home.join(".config/impulse-shell/config.json");
     let mut rt = Runtime::new(Some(ri()));
     let keep = ["Directories", "Config", "FileUtils", "StringUtils"];
     let dirs = ["modules/common", "modules/common/functions"].map(|d| ri().join(d));

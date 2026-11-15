@@ -1,6 +1,6 @@
 //! A fresh install, with neither `layout.toml` nor the original's config.json: the first outputs the
 //! shell learns seed `layout.toml` from the original's defaults, so `LayoutState.containerKinds` lists
-//! the panel and the desktop and edit mode (loaded by RustyImpulseFamily.qml once the
+//! the panel and the desktop and edit mode (loaded by ImpulseShellFamily.qml once the
 //! layout has containers) has its target from the first frame on.
 use qml::runtime::Runtime;
 use qml::value::Value;

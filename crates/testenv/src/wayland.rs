@@ -1,8 +1,8 @@
-//! Readers of an rusty-impulse log (`WAYLAND_DEBUG=1` plus `RI_LOG` targets on one stderr, in the order
+//! Readers of an impulse-shell log (`WAYLAND_DEBUG=1` plus `RI_LOG` targets on one stderr, in the order
 //! the loop wrote them) for tests that wait on what the shell and the compositor did, via
 //! [`crate::Log::wait`], never on time.
 
-/// A commit rusty-impulse made after the last line `mark` matches is on screen: the
+/// A commit impulse-shell made after the last line `mark` matches is on screen: the
 /// wp_presentation_feedback it requested for it (under `RI_LOG=ri::present`) was `presented`.
 /// A feedback ends with its `presented` or `discarded`, and only then may its id be reused, so
 /// the first of those after the request is its own. False while no line matches `mark`.

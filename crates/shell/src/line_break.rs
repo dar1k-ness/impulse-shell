@@ -842,7 +842,7 @@ fn lib_thai() -> Option<&'static LibThai> {
     .as_ref()
 }
 
-/// libthai is installed: Thai is broken between words. `rusty-impulse --version` says so, and
+/// libthai is installed: Thai is broken between words. `impulse-shell --version` says so, and
 /// tools/install.sh tells the user when it is not.
 pub fn thai_library() -> bool {
     lib_thai().is_some()

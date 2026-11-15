@@ -210,7 +210,7 @@ fn paste_waits_for_the_owner_without_blocking_the_loop() {
             .stdin(Stdio::null());
     };
     let (r, out) = std::io::pipe().unwrap();
-    let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
     shell_env(&mut cmd);
     let _sh = Shell(
         cmd.env("WAYLAND_DEBUG", "1")
@@ -221,7 +221,7 @@ fn paste_waits_for_the_owner_without_blocking_the_loop() {
     );
     let log = Log::capture(r);
     let call = |f: &str| {
-        let mut c = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+        let mut c = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
         shell_env(&mut c);
         let o = c.args(["ipc", "call", "t", f]).output().unwrap();
         assert!(o.status.success(), "ipc call t {f}: {o:?}");

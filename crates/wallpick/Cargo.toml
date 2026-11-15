@@ -1,7 +1,7 @@
 [package]
 name = "wallpick"
 version = "0.1.0"
-description = "Wallpaper and accent picker for rusty-impulse: MobileCLIP-S0 scoring against text preferences and a learned taste model"
+description = "Wallpaper and accent picker for impulse-shell: MobileCLIP-S0 scoring against text preferences and a learned taste model"
 edition.workspace = true
 license.workspace = true
 

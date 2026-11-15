@@ -7,7 +7,7 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$HERE/../../../.." && pwd)
 II=$REPO/qml
 # the original's switchwall.sh and its helpers, kept with the tests: the shell ships a switchwall.sh of its
-# own, which runs rusty-impulse, and the terminal templates.
+# own, which runs impulse-shell, and the terminal templates.
 UNSHIPPED=$REPO/crates/qml/tests/fixtures/original-unshipped
 : "${VENV:?}"
 OUT=$HERE/expected
@@ -45,16 +45,16 @@ case_() {
   local H=$WORK/$name
   rm -rf "$H"; mkdir -p "$H"
   cp -r "$HERE/fixture/home/." "$H/"
-  mkdir -p "$H/.config/rustshell/rusty-impulse/assets/images" "$H/pts"
-  cp -r "$II/scripts" "$H/.config/rustshell/rusty-impulse/"
-  cp -r "$UNSHIPPED/scripts/." "$H/.config/rustshell/rusty-impulse/scripts/"
-  cp "$II/assets/images/default_wallpaper.png" "$H/.config/rustshell/rusty-impulse/assets/images/"
-  sed -i "s|/dev/pts/\*|\$SW_PTS/*|; s|\^/dev/pts/|^\$SW_PTS/|" "$H/.config/rustshell/rusty-impulse/scripts/colors/applycolor.sh"
+  mkdir -p "$H/.config/rustshell/impulse-shell/assets/images" "$H/pts"
+  cp -r "$II/scripts" "$H/.config/rustshell/impulse-shell/"
+  cp -r "$UNSHIPPED/scripts/." "$H/.config/rustshell/impulse-shell/scripts/"
+  cp "$II/assets/images/default_wallpaper.png" "$H/.config/rustshell/impulse-shell/assets/images/"
+  sed -i "s|/dev/pts/\*|\$SW_PTS/*|; s|\^/dev/pts/|^\$SW_PTS/|" "$H/.config/rustshell/impulse-shell/scripts/colors/applycolor.sh"
   : > "$H/pts/0"; : > "$H/pts/1"; : > "$H/pts/ptmx"
-  local W=$H/Pictures/Wallpapers CFG=$H/.config/rusty-impulse/config.json GEN=$H/.local/state/rustshell/user/generated
+  local W=$H/Pictures/Wallpapers CFG=$H/.config/impulse-shell/config.json GEN=$H/.local/state/rustshell/user/generated
   (cd "$H" && W=$W CFG=$CFG GEN=$GEN bash -c "$setup")
   mkdir -p "$OUT/$name/pre"
-  (cd "$H" && find .config/rusty-impulse .local -type f 2>/dev/null) | while read -r f; do
+  (cd "$H" && find .config/impulse-shell .local -type f 2>/dev/null) | while read -r f; do
     mkdir -p "$OUT/$name/pre/$(dirname "$f")"; sed "s|$H|@HOME@|g" "$H/$f" > "$OUT/$name/pre/$f"
   done
   local args=()
@@ -64,14 +64,14 @@ case_() {
   # Every process the script starts inherits fd 3, the pipe into `cat`: the pipeline ends once
   # the script's background jobs (`&`, `& disown`) have exited too.
   (cd "$H" && env -i HOME="$H" PATH="$WORK/bin:$HOME/.cargo/bin:/usr/bin:/bin" SW_LOG="$H/calls.log" SW_PTS="$H/pts" SW_FIX="$HERE/fixture" VENV="$VENV" \
-    RUSTY_IMPULSE_VIRTUAL_ENV="$VENV" bash "$H/.config/rustshell/rusty-impulse/scripts/colors/switchwall.sh" "${args[@]}" >/dev/null 2>"$H/stderr.log"; echo $? > "$H/rc") 3>&1 | cat
+    IMPULSE_SHELL_VIRTUAL_ENV="$VENV" bash "$H/.config/rustshell/impulse-shell/scripts/colors/switchwall.sh" "${args[@]}" >/dev/null 2>"$H/stderr.log"; echo $? > "$H/rc") 3>&1 | cat
   local O=$OUT/$name
   mkdir -p "$O"
   printf '%s\n' "$@" > "$O/args"
   printf '%s\n' "$setup" > "$O/setup"
   cp "$H/rc" "$O/rc"
   grep -v '^hyprctl \|^gsettings get\|^identify ' "$H/calls.log" | sed "s|$H|@HOME@|g" | sort > "$O/calls"
-  (cd "$H" && find .local .cache .config/hypr .config/fuzzel .config/gtk-3.0 .config/gtk-4.0 .config/rusty-impulse .config/Code .config/Cursor pts -type f 2>/dev/null | sort) | while read -r f; do
+  (cd "$H" && find .local .cache .config/hypr .config/fuzzel .config/gtk-3.0 .config/gtk-4.0 .config/impulse-shell .config/Code .config/Cursor pts -type f 2>/dev/null | sort) | while read -r f; do
     mkdir -p "$O/files/$(dirname "$f")"
     if grep -Iq . "$H/$f" || [ ! -s "$H/$f" ]; then sed "s|$H|@HOME@|g; s|^# Time: .*|# Time: @DATE@|" "$H/$f" > "$O/files/$f"; else cp "$H/$f" "$O/files/$f"; fi
   done

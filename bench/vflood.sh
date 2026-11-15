@@ -4,10 +4,10 @@ export XDG_RUNTIME_DIR=/run/user/1000 WAYLAND_DISPLAY=wayland-1 HYPRLAND_INSTANC
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
 N=${2:-9400}; K=${3:-20}
 # The original, which ORIG runs: `bench/vm.sh sync` unpacks it here (tools/parity/orig.sh). The
-# `rusty-impulse` config is the project's own tree, which Quickshell cannot load.
+# `impulse-shell` config is the project's own tree, which Quickshell cannot load.
 T=${ORIG_TREE:-$HOME/parity-original}
 # SIGTERM every shell process and return when they have exited (SIGKILL after 10 s without an exit)
-stop_shell() { local n='qs|quickshell|rusty-impulse'; pkill -x "$n" || return 0
+stop_shell() { local n='qs|quickshell|impulse-shell'; pkill -x "$n" || return 0
   timeout 10 pidwait -x "$n"; [ $? != 124 ] || { pkill -9 -x "$n"; pidwait -x "$n"; }; return 0; }
 pkill hyprlock; pkill hypridle; stop_shell
 python3 - "$N" <<'PY'
@@ -19,8 +19,8 @@ PY
 # The native shell reads its history under its own name for the directory.
 mkdir -p ~/.cache/rustshell/notifications && cp ~/.cache/quickshell/notifications/notifications.json ~/.cache/rustshell/notifications/
 if [ "$1" = ORIG ]; then setsid quickshell -p "$T" > /tmp/vf.log 2>&1 < /dev/null &
-else cd ~/rusty-impulse; setsid ${BIN:-target/release/rusty-impulse} -c rusty-impulse > /tmp/vf.log 2>&1 < /dev/null & fi
-[ "$1" = ORIG ] && { S='quickshell|qs'; C="-p $T"; Q=qs; } || { S=rusty-impulse; C="-c rusty-impulse"; Q=${BIN:-target/release/rusty-impulse}; }
+else cd ~/impulse-shell; setsid ${BIN:-target/release/impulse-shell} -c impulse-shell > /tmp/vf.log 2>&1 < /dev/null & fi
+[ "$1" = ORIG ] && { S='quickshell|qs'; C="-p $T"; Q=qs; } || { S=impulse-shell; C="-c impulse-shell"; Q=${BIN:-target/release/impulse-shell}; }
 sleep ${WAIT:-40}; P=$(pgrep -x "$S" | head -1); [ -n "$P" ] || { echo "$1: no $S process, see /tmp/vf.log" >&2; exit 1; }
 t(){ awk '{print $14+$15}' /proc/$P/stat; }
 ipc(){ local s=$(date +%s%N); timeout 300 $Q $C ipc call cliphistService update >/dev/null 2>&1; echo $(( ($(date +%s%N)-s)/1000000 )); }

@@ -1,5 +1,5 @@
 #!/bin/bash
-# setup.sh: run in the guest, from the checkout in ~/rusty-impulse; `bench/vm.sh sync` runs it.
+# setup.sh: run in the guest, from the checkout in ~/impulse-shell; `bench/vm.sh sync` runs it.
 # Copies these scripts to ~/h and writes ~/henv: the environment of the Hyprland session, which
 # a script started over ssh does not have.
 set -eu

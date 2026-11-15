@@ -443,7 +443,7 @@ fn layout_state_reports_the_desktop_container() {
 #[test]
 fn layout_created_after_startup_is_picked_up() {
     let d = root("late", None);
-    let dir = d.join("config/rusty-impulse");
+    let dir = d.join("config/impulse-shell");
     let mut rt = Runtime::new(Some(d.clone()));
     rt.world.borrow_mut().open_layout(dir.join("layout.toml"));
     let id = rt.load_file(&d.join("main.qml")).unwrap();

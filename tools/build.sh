@@ -1,5 +1,5 @@
 #!/bin/bash
-# tools/build.sh: builds the shipped rusty-impulse (release, no JavaScript interpreter) from
+# tools/build.sh: builds the shipped impulse-shell (release, no JavaScript interpreter) from
 # this checkout and prints the path of the binary; tools/install.sh installs what it builds.
 #
 #   tools/build.sh            build; the path of the binary on stdout
@@ -8,7 +8,7 @@
 #
 # One commit and one QML tree give one file, byte for byte, wherever the checkout, Cargo's
 # home and the target directory are: the binary names its commit and the checksum of its QML
-# tree (`rusty-impulse --version`) and none of this machine's directories. A build that cannot
+# tree (`impulse-shell --version`) and none of this machine's directories. A build that cannot
 # tell its commit, or whose binary names such a directory, fails. What the script does not
 # fix, and what therefore still gives another file: another Rust toolchain than
 # rust-toolchain.toml's, another C compiler or linker, another version of a system library a
@@ -36,7 +36,7 @@ tree_sum() {
     ) | sha256sum | cut -d' ' -f1
 }
 repo=$(cd "$(dirname "$0")/.." && pwd)
-# The commit `rusty-impulse --version` names: this checkout's, "+changes" when a file differs
+# The commit `impulse-shell --version` names: this checkout's, "+changes" when a file differs
 # from it or is not in it (ignored files apart). A directory that is not the top of a git
 # checkout (a copy without .git, also one inside another repository) cannot tell: the caller
 # names the commit the copy was made from, or the copy's .build-commit does.
@@ -136,8 +136,8 @@ else
 fi
 bin=$(cd "$repo" && cargo build --locked --release -p shell "${config[@]}" \
     --message-format=json-render-diagnostics |
-    jq -r 'select(.reason == "compiler-artifact" and .target.name == "rusty-impulse" and .executable != null) | .executable')
-[ -x "$bin" ] || die "the build made no rusty-impulse"
+    jq -r 'select(.reason == "compiler-artifact" and .target.name == "impulse-shell" and .executable != null) | .executable')
+[ -x "$bin" ] || die "the build made no impulse-shell"
 # The binary tells whether it is what was asked for. A target.<triple or cfg>.rustflags entry
 # of Cargo's configuration replaces build.rustflags, and the script cannot read it; code that
 # asks for its own directory at compile time is not covered by the flags at all. A directory

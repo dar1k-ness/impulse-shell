@@ -1,4 +1,4 @@
-//! rusty-impulse creates a zwp_primary_selection_device like Qt's QWaylandPrimarySelectionDeviceManagerV1:
+//! impulse-shell creates a zwp_primary_selection_device like Qt's QWaylandPrimarySelectionDeviceManagerV1:
 //! Hyprland resets the seat's primary selection whenever the pointer-focused client has none,
 //! so without it `wl-copy --primary foo; wl-paste -p` prints "Nothing is copied".
 
@@ -24,7 +24,7 @@ fn native_binds_primary_selection_device() {
     )
     .unwrap();
     let (r, w) = std::io::pipe().unwrap();
-    let mut child = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
         .arg("-p")
         .arg(dir.path())
         .env("RI_INTERP", "1")
@@ -34,7 +34,7 @@ fn native_binds_primary_selection_device() {
         .spawn()
         .unwrap();
     let log = testenv::Log::capture(r);
-    // Err once rusty-impulse exits without it.
+    // Err once impulse-shell exits without it.
     let found = log.wait(|s| {
         s.lines().any(|l| {
             l.contains("-> zwp_primary_selection_device_manager_v1") && l.contains(".get_device(")
@@ -44,6 +44,6 @@ fn native_binds_primary_selection_device() {
     let _ = child.wait();
     assert!(
         found.is_ok(),
-        "rusty-impulse never created a zwp_primary_selection_device"
+        "impulse-shell never created a zwp_primary_selection_device"
     );
 }

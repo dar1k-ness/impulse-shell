@@ -2,7 +2,7 @@
 # vis.sh OUTDIR: (arch-pc, from ~/h; needs ydotool, grim, python3) visual checks on the running native: overview preview icons, clock popup, tray menu, sidebar,
 # Settings About (switch time + logo), waffle Creativity folder. Restores config.json and closes what it opened.
 . ~/henv; . ~/h/common.sh; V=$1; mkdir -p $V; export YDOTOOL_SOCKET=/run/user/1000/.ydotool_socket
-Q=${BIN:-$HOME/.local/bin/rusty-impulse}; C=~/.config/rusty-impulse/config.json; cp -p $C $V/config.bak
+Q=${BIN:-$HOME/.local/bin/impulse-shell}; C=~/.config/impulse-shell/config.json; cp -p $C $V/config.bak
 cat > $V/traypos.py <<'PYEOF'
 #!/usr/bin/env python3
 """traypos.py: print "X Y" of the right-most tray icon on the bar, or nothing.
@@ -79,18 +79,18 @@ mv_ 1230 19; sleep 2; grim $V/clock_popup.png; mv_ 960 600; sleep 1
 # tray icon: found on screen (left of the bar's unpinned dot); vis7's fixed 1789,20 hit empty bar
 T=$(grim -t ppm -g "1200,0 720x40" - | python3 $V/traypos.py 1200); echo "vis.tray at=${T:-none}" >> $V/vis.txt
 [ -n "$T" ] && click $T 0xC1; sleep 2; grim $V/tray_menu.png; ydotool key 1:1 1:0 >/dev/null; sleep 1
-$Q -c rusty-impulse ipc call sidebarRight open >/dev/null; sleep 2; grim $V/sidebar.png; $Q -c rusty-impulse ipc call sidebarRight close >/dev/null; sleep 1
-hyprctl dispatch "hl.dsp.exec_cmd(\"setsid $Q -p $HOME/.config/rustshell/rusty-impulse/settings.qml\")" >/dev/null; sleep 6
-SP=$(for p in $(pgrep -f "(bin/qs|rusty-impulse) -p .*settings.qml"); do [ "$(readlink /proc/$p/exe)" = $HOME/.local/bin/rusty-impulse ] && echo $p; done | head -1)
+$Q -c impulse-shell ipc call sidebarRight open >/dev/null; sleep 2; grim $V/sidebar.png; $Q -c impulse-shell ipc call sidebarRight close >/dev/null; sleep 1
+hyprctl dispatch "hl.dsp.exec_cmd(\"setsid $Q -p $HOME/.config/rustshell/impulse-shell/settings.qml\")" >/dev/null; sleep 6
+SP=$(for p in $(pgrep -f "(bin/qs|impulse-shell) -p .*settings.qml"); do [ "$(readlink /proc/$p/exe)" = $HOME/.local/bin/impulse-shell ] && echo $p; done | head -1)
 mv_ 507 779; c0=$(cputicks $SP); t0=$(date +%s%N); ydotool click 0xC0 >/dev/null; last=; lt=0
 while :; do m=$(grim -g "760,240 600x120" - | md5sum | cut -c1-8); ms=$(( ($(date +%s%N)-t0)/1000000 ))
   [ "$m" != "$last" ] && { last=$m; lt=$ms; }; [ $((ms-lt)) -gt 3000 ] || [ $ms -gt 30000 ] && break; sleep 0.1; done
 echo "$(date +%s) vis.about settle_ms=$lt cpu=$(( $(cputicks $SP)-c0 ))" | tee -a $V/vis.txt; grim $V/settings_about.png; kill $SP
-$Q -c rusty-impulse ipc call panelFamily cycle >/dev/null; sleep 8; grim $V/waffle_bar.png
+$Q -c impulse-shell ipc call panelFamily cycle >/dev/null; sleep 8; grim $V/waffle_bar.png
 # Creativity: click its label button (opens the folder like Qt); vis7's 1085,647 hit the gap under the tile
 click 872 1055; sleep 3; grim $V/waffle_start.png; m0=$(grim -g "740,400 440x240" - | md5sum)
 click 1052 664; sleep 2; grim $V/waffle_creativity.png
 [ "$(grim -g "740,400 440x240" - | md5sum)" != "$m0" ] && echo "vis.creativity opened" >> $V/vis.txt || echo "vis.creativity NOT opened" >> $V/vis.txt
-$Q -c rusty-impulse ipc call search close >/dev/null; sleep 1; $Q -c rusty-impulse ipc call panelFamily cycle >/dev/null; sleep 6
+$Q -c impulse-shell ipc call search close >/dev/null; sleep 1; $Q -c impulse-shell ipc call panelFamily cycle >/dev/null; sleep 6
 cmp -s $V/config.bak $C && echo "vis.config same" >> $V/vis.txt || { cp -p $C $V/config.post; cp -p $V/config.bak $C; echo "vis.config restored" >> $V/vis.txt; }
 grim $V/back_rusty.png; echo VISDONE >> $V/vis.txt

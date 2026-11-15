@@ -1,11 +1,11 @@
-# Parity report: native rusty-impulse against the original
+# Parity report: native impulse-shell against the original
 
 What the last full run of the matrix measured, what it found, and what the tool leaves out. How to
 run it and how a shot is judged is in [README.md](README.md).
 
 ## The run
 
-- Native: `rusty-impulse` built in the guest from `298224946daa` (`build.txt`). That is a local merge of
+- Native: `impulse-shell` built in the guest from `298224946daa` (`build.txt`). That is a local merge of
   `main` at `5121c13f` (#67) with `bb01d676`, the head of #156 before this report was added to it
   (tree `5b0cfe16`); the commit is not in the repository. It runs the checkout's `qml`.
 - Original: Quickshell 0.3.2 (Qt 6.12.0) running the original's own QML, `ref/ii` of `c33d2c5f`, the last
@@ -114,7 +114,7 @@ the shots and are not compared.
   notification, the wavy slider of the welcome window: `masks.json`, one line each with the reason.
   With no cpufreq in the guest the overlay's Resources widget says `of NaN GHz` in the original and
   `of --` in native, inside the same mask.
-- **Renamed on purpose (masked).** Native is `rusty-impulse` under `org.rustshell`, the original
+- **Renamed on purpose (masked).** Native is `impulse-shell` under `org.rustshell`, the original
   has its own name under `org.quickshell`. The bar shows both for the shell's own windows
   (`settings`, `ptr_hold_settingsClose*`, `welcome`; `killDialog` the app id only), and the
   Assistant hint of the left sidebar names the config folder twice (`sidebarLeft`,

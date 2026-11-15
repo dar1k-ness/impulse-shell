@@ -1,10 +1,10 @@
-//! tools/install.sh builds the repository's tree and makes the rusty-impulse config a copy of it, keeps
+//! tools/install.sh builds the repository's tree and makes the impulse-shell config a copy of it, keeps
 //! the release it replaces (the binary and the tree it was compiled from), `--rollback`
 //! switches back to it, and an install whose binary was not compiled from the tree replaces
-//! nothing. Each test installs into a prefix, a home and a rusty-impulse config of its own, from a tree
-//! of its own; `rusty-impulse --check-tree` is what the script asks, so the real binary answers it
+//! nothing. Each test installs into a prefix, a home and an impulse-shell config of its own, from a tree
+//! of its own; `impulse-shell --check-tree` is what the script asks, so the real binary answers it
 //! here too. Whether the installed shell starts is asked the way Hyprland starts it,
-//! `rusty-impulse -c rusty-impulse` ([`Sandbox::starts`]).
+//! `impulse-shell -c impulse-shell` ([`Sandbox::starts`]).
 
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::time::{Duration, SystemTime};
 
-/// A throwaway prefix, home, rusty-impulse config and tree to install.
+/// A throwaway prefix, home, impulse-shell config and tree to install.
 struct Sandbox {
     dir: PathBuf,
 }
@@ -32,12 +32,12 @@ impl Sandbox {
     }
 
     fn lib(&self) -> PathBuf {
-        self.prefix().join("lib/rusty-impulse")
+        self.prefix().join("lib/impulse-shell")
     }
 
-    /// The rusty-impulse config `rusty-impulse -c rusty-impulse` runs.
+    /// The impulse-shell config `impulse-shell -c impulse-shell` runs.
     fn config(&self) -> PathBuf {
-        self.dir.join("config/rustshell/rusty-impulse")
+        self.dir.join("config/rustshell/impulse-shell")
     }
 
     /// The tree an install is given as the repository's (`RI_ROOT`).
@@ -95,9 +95,9 @@ impl Sandbox {
         self.script(&["--rollback"], None)
     }
 
-    /// `$PREFIX/bin/rusty-impulse ARGS` with this sandbox's home and config directories.
+    /// `$PREFIX/bin/impulse-shell ARGS` with this sandbox's home and config directories.
     fn installed_command(&self, args: &[&str]) -> Command {
-        let mut cmd = Command::new(self.prefix().join("bin/rusty-impulse"));
+        let mut cmd = Command::new(self.prefix().join("bin/impulse-shell"));
         cmd.args(args)
             .env("HOME", self.dir.join("home"))
             .env("XDG_CONFIG_HOME", self.dir.join("config"))
@@ -105,17 +105,17 @@ impl Sandbox {
         cmd
     }
 
-    /// Whether the installed binary, started as Hyprland starts it (`rusty-impulse -c rusty-impulse`), finds the
-    /// rusty-impulse config and runs it.
+    /// Whether the installed binary, started as Hyprland starts it (`impulse-shell -c impulse-shell`), finds the
+    /// impulse-shell config and runs it.
     fn starts(&self) -> bool {
-        self.installed_command(&["-c", "rusty-impulse", "--check-tree"])
+        self.installed_command(&["-c", "impulse-shell", "--check-tree"])
             .output()
             .is_ok_and(|out| out.status.success())
     }
 
-    /// The installed `rusty-impulse`, read through its links.
+    /// The installed `impulse-shell`, read through its links.
     fn installed(&self) -> Vec<u8> {
-        std::fs::read(self.prefix().join("bin/rusty-impulse")).unwrap()
+        std::fs::read(self.prefix().join("bin/impulse-shell")).unwrap()
     }
 
     /// The release directory the link `name` (current, previous) points at.
@@ -128,22 +128,22 @@ impl Sandbox {
         names(&self.lib().join("releases"))
     }
 
-    /// A stand-in for an `rusty-impulse` compiled from the tree [`write_tree`] writes for `tree`: it
-    /// answers `--check-tree -p DIR` and `-c rusty-impulse --check-tree` as the real one does and does
+    /// A stand-in for an `impulse-shell` compiled from the tree [`write_tree`] writes for `tree`: it
+    /// answers `--check-tree -p DIR` and `-c impulse-shell --check-tree` as the real one does and does
     /// nothing else.
     fn fake(&self, name: &str, tree: &str) -> PathBuf {
         self.executable(
             name,
             &format!(
                 "#!/bin/sh\n# {name}\n\
-                 if [ \"$1\" = --version ]; then echo 'rusty-impulse {name}'; echo 'JavaScript interpreter: none'; exit 0; fi\n\
+                 if [ \"$1\" = --version ]; then echo 'impulse-shell {name}'; echo 'JavaScript interpreter: none'; exit 0; fi\n\
                  {AS_LAUNCHED}\
                  [ \"$1\" = --check-tree ] && [ \"$2\" = -p ] || exit 2\n\
                  if [ \"$(cat \"$3/shell.qml\")\" = '// tree {tree}' ]; then\n\
-                 \x20   echo \"rusty-impulse: $3 has the scripts this binary was compiled from\"\n\
+                 \x20   echo \"impulse-shell: $3 has the scripts this binary was compiled from\"\n\
                  \x20   exit 0\n\
                  fi\n\
-                 echo \"rusty-impulse: $3 differs from the tree this binary was compiled from:\" >&2\n\
+                 echo \"impulse-shell: $3 differs from the tree this binary was compiled from:\" >&2\n\
                  exit 1\n"
             ),
         )
@@ -181,16 +181,16 @@ fn writable_again(dir: &Path) {
     }
 }
 
-/// What a stand-in `rusty-impulse` does with `-c rusty-impulse --check-tree`: the real one's lookup of the config
-/// named rusty-impulse (Quickshell's `locateConfigFile`, with the XDG Base Directory Specification's rule
+/// What a stand-in `impulse-shell` does with `-c impulse-shell --check-tree`: the real one's lookup of the config
+/// named impulse-shell (Quickshell's `locateConfigFile`, with the XDG Base Directory Specification's rule
 /// for a relative `XDG_CONFIG_HOME`), then the same answer as for `--check-tree -p` on it.
-const AS_LAUNCHED: &str = r#"if [ "$1 $2 $3" = '-c rusty-impulse --check-tree' ]; then
+const AS_LAUNCHED: &str = r#"if [ "$1 $2 $3" = '-c impulse-shell --check-tree' ]; then
     case ${XDG_CONFIG_HOME-} in /*) base=$XDG_CONFIG_HOME ;; *) base=$HOME/.config ;; esac
-    if [ -f "$base/rustshell/shell.qml" ] || [ ! -f "$base/rustshell/rusty-impulse/shell.qml" ]; then
-        echo 'Could not find "rusty-impulse" config directory in any valid config path.' >&2
+    if [ -f "$base/rustshell/shell.qml" ] || [ ! -f "$base/rustshell/impulse-shell/shell.qml" ]; then
+        echo 'Could not find "impulse-shell" config directory in any valid config path.' >&2
         exit 255
     fi
-    set -- --check-tree -p "$(realpath "$base/rustshell/rusty-impulse")"
+    set -- --check-tree -p "$(realpath "$base/rustshell/impulse-shell")"
 fi
 "#;
 
@@ -270,7 +270,7 @@ fn refused(out: &Output, why: &str) {
 }
 
 /// libthai is optional: an install on a machine without it goes through and says what the
-/// user gets without it, in the binary's own words (`rusty-impulse --version`, which
+/// user gets without it, in the binary's own words (`impulse-shell --version`, which
 /// `line_break_equiv` checks on a machine with the library and on one without). With the
 /// library, or with a binary from before it told, nothing is said.
 #[test]
@@ -279,22 +279,22 @@ fn an_install_names_a_missing_libthai_and_goes_on() {
         "libthai (libthai.so.0) is not installed: Thai text is broken at spaces only";
     let s = Sandbox::new("libthai");
     write_tree(&s.source(), "A");
-    let fake = std::fs::read_to_string(s.fake("rusty-impulse-a", "A")).unwrap();
+    let fake = std::fs::read_to_string(s.fake("impulse-shell-a", "A")).unwrap();
     let telling = |name: &str, thai: &str| {
         let says =
             format!("echo 'JavaScript interpreter: none'; echo 'Thai line breaking: {thai}'");
         let script = fake.replace("echo 'JavaScript interpreter: none'", &says);
         s.executable(
             name,
-            &script.replace("# rusty-impulse-a", &format!("# {name}")),
+            &script.replace("# impulse-shell-a", &format!("# {name}")),
         )
     };
     let without = telling(
-        "rusty-impulse-without",
+        "impulse-shell-without",
         "at spaces only (libthai.so.0 is not installed)",
     );
-    let with = telling("rusty-impulse-with", "between words (libthai)");
-    let silent = s.fake("rusty-impulse-silent", "A");
+    let with = telling("impulse-shell-with", "between words (libthai)");
+    let silent = s.fake("impulse-shell-silent", "A");
 
     let out = s.install(&without);
     ok(&out);
@@ -321,12 +321,12 @@ fn an_install_names_a_missing_libthai_and_goes_on() {
 fn first_install_links_the_release_and_has_nothing_to_roll_back_to() {
     let s = Sandbox::new("first");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
-    let link = std::fs::read_link(s.prefix().join("bin/rusty-impulse")).unwrap();
+    let link = std::fs::read_link(s.prefix().join("bin/impulse-shell")).unwrap();
     assert_eq!(
         link,
-        Path::new("../lib/rusty-impulse/current/rusty-impulse")
+        Path::new("../lib/impulse-shell/current/impulse-shell")
     );
     assert_eq!(s.installed(), std::fs::read(&a).unwrap());
     let current = s.release("current").unwrap();
@@ -342,11 +342,11 @@ fn first_install_links_the_release_and_has_nothing_to_roll_back_to() {
 fn install_replaces_nothing_when_the_binary_was_not_compiled_from_the_tree() {
     let s = Sandbox::new("refused");
     write_tree(&s.source(), "A");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     refused(&s.install(&b), "nothing was installed");
     assert!(!s.prefix().exists(), "{:?}", listing(&s.prefix()));
     assert!(!s.config().exists(), "{:?}", listing(&s.config()));
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     let before = listing(&s.dir);
     refused(&s.install(&b), "nothing was installed");
     assert_eq!(listing(&s.dir), before);
@@ -357,11 +357,11 @@ fn rollback_restores_the_binary_and_its_tree_and_rolls_forward_again() {
     let s = Sandbox::new("rollback");
     write_tree(&s.source(), "A");
     let mode = std::fs::metadata(s.source()).unwrap().permissions().mode();
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     let tree_a = listing(&s.config());
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     ok(&s.install(&b));
     let tree_b = listing(&s.config());
     assert_eq!(s.installed(), std::fs::read(&b).unwrap());
@@ -382,14 +382,14 @@ fn rollback_restores_the_binary_and_its_tree_and_rolls_forward_again() {
     assert_eq!(s.release("current").unwrap(), release_a);
     assert_eq!(s.release("previous").unwrap(), release_b);
     // The installed binary runs the config it now finds.
-    let check = Command::new(s.prefix().join("bin/rusty-impulse"))
+    let check = Command::new(s.prefix().join("bin/impulse-shell"))
         .args(["--check-tree", "-p"])
         .arg(s.config())
         .output()
         .unwrap();
     assert!(check.status.success(), "{}", text(&check.stderr));
     // The replaced tree was release B's as stored: nothing else is left behind.
-    assert_eq!(names(s.config().parent().unwrap()), ["rusty-impulse"]);
+    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
     assert!(!s.state().exists(), "{:?}", listing(&s.state()));
 
     ok(&s.rollback());
@@ -421,7 +421,7 @@ fn modified(p: &Path) -> SystemTime {
 /// A stand-in for cargo with cargo's rule for compiling the QML tree again (Cargo Book, build
 /// scripts, `rerun-if-changed` and `rerun-if-env-changed`): a file of RI_ROOT is newer than
 /// the last build, or RI_ROOT or RI_ROOT_SUM has another value than at the last build. Its
-/// `rusty-impulse` runs the tree whose shell.qml it compiled and names the commit and the tree's
+/// `impulse-shell` runs the tree whose shell.qml it compiled and names the commit and the tree's
 /// checksum the last build was given, as the real one does (`--version`). It logs each call
 /// and each compilation, and of the last build its arguments and its CARGO_ENCODED_RUSTFLAGS.
 const CARGO: &str = r#"#!/bin/sh
@@ -431,7 +431,7 @@ if [ "$1" = metadata ]; then printf '{"target_directory":"%s"}\n' "$d/target"; e
 [ "$1" = build ] || exit 0
 printf '%s\n' "$*" > "$d/build-args"
 printf %s "${CARGO_ENCODED_RUSTFLAGS-unset}" > "$d/build-flags"
-printf 'rusty-impulse 0.1.0 (commit %s)\nQML tree: sum %s\n' "${RI_COMMIT-unknown}" "${RI_ROOT_SUM-unknown}" > "$d/version"
+printf 'impulse-shell 0.1.0 (commit %s)\nQML tree: sum %s\n' "${RI_COMMIT-unknown}" "${RI_ROOT_SUM-unknown}" > "$d/version"
 key="$RI_ROOT ${RI_ROOT_SUM-unset}"
 if [ ! -e "$d/last" ] || [ "$(cat "$d/last")" != "$key" ] || [ -n "$(find "$RI_ROOT" -newer "$d/last")" ]; then
     echo compile >> "$d/calls"
@@ -445,12 +445,12 @@ if [ ! -e "$d/last" ] || [ "$(cat "$d/last")" != "$key" ] || [ -n "$(find "$RI_R
 EOS
         echo '[ "$1" = --check-tree ] && [ "$2" = -p ] || exit 2'
         echo "[ \"\$(cat \"\$3/shell.qml\")\" = '$(cat "$RI_ROOT/shell.qml")' ] || exit 1"
-        echo 'echo "rusty-impulse: $3 has the scripts this binary was compiled from"'
-    } > "$d/rusty-impulse"
-    chmod +x "$d/rusty-impulse"
+        echo 'echo "impulse-shell: $3 has the scripts this binary was compiled from"'
+    } > "$d/impulse-shell"
+    chmod +x "$d/impulse-shell"
     printf %s "$key" > "$d/last"
 fi
-printf '{"reason":"compiler-artifact","target":{"name":"rusty-impulse"},"executable":"%s"}\n' "$d/rusty-impulse"
+printf '{"reason":"compiler-artifact","target":{"name":"impulse-shell"},"executable":"%s"}\n' "$d/impulse-shell"
 "#;
 
 /// The commit the installs of a [`Building`] name.
@@ -532,7 +532,7 @@ impl Building {
         std::fs::read_to_string(self.s.dir.join("cargo/calls")).unwrap()
     }
 
-    /// Whether the installed binary runs the rusty-impulse config.
+    /// Whether the installed binary runs the impulse-shell config.
     fn runs_the_config(&self) -> bool {
         self.s.starts()
     }
@@ -606,9 +606,9 @@ fn a_tree_with_older_file_times_than_the_last_build_is_built() {
 fn rollback_leaves_a_config_the_older_binary_runs_alone() {
     let s = Sandbox::new("same-tree");
     write_tree(&s.source(), "A");
-    let first = s.fake("rusty-impulse-first", "A");
+    let first = s.fake("impulse-shell-first", "A");
     ok(&s.install(&first));
-    ok(&s.install(&s.fake("rusty-impulse-second", "A")));
+    ok(&s.install(&s.fake("impulse-shell-second", "A")));
     std::fs::write(s.config().join("note.txt"), "mine").unwrap();
     let config = listing(&s.config());
     ok(&s.rollback());
@@ -621,22 +621,22 @@ fn rollback_leaves_a_config_the_older_binary_runs_alone() {
 fn rollback_keeps_a_config_edited_since_its_install() {
     let s = Sandbox::new("edited");
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     let tree_a = listing(&s.config());
     write_tree(&s.source(), "B");
-    ok(&s.install(&s.fake("rusty-impulse-b", "B")));
+    ok(&s.install(&s.fake("impulse-shell-b", "B")));
     std::fs::write(s.config().join("note.txt"), "mine").unwrap();
     let edited = listing(&s.config());
     let out = s.rollback();
     ok(&out);
     assert_eq!(listing(&s.config()), tree_a);
-    let kept = names(&s.state().join("rusty-impulse"));
+    let kept = names(&s.state().join("impulse-shell"));
     assert_eq!(kept.len(), 1, "{kept:?}");
     assert!(kept[0].starts_with("replaced-"), "{kept:?}");
-    let kept = s.state().join("rusty-impulse").join(&kept[0]);
+    let kept = s.state().join("impulse-shell").join(&kept[0]);
     assert_eq!(listing(&kept), edited);
     assert!(text(&out.stdout).contains(kept.to_str().unwrap()));
-    assert_eq!(names(s.config().parent().unwrap()), ["rusty-impulse"]);
+    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
 }
 
 /// An install replaces the config and keeps one edited since its install, as a rollback does.
@@ -644,19 +644,19 @@ fn rollback_keeps_a_config_edited_since_its_install() {
 fn install_keeps_a_config_edited_since_its_install() {
     let s = Sandbox::new("install-edited");
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     std::fs::write(s.config().join("note.txt"), "mine").unwrap();
     let edited = listing(&s.config());
     write_tree(&s.source(), "B");
-    let out = s.install(&s.fake("rusty-impulse-b", "B"));
+    let out = s.install(&s.fake("impulse-shell-b", "B"));
     ok(&out);
     assert_eq!(listing(&s.config()), listing(&s.source()));
-    let kept = names(&s.state().join("rusty-impulse"));
+    let kept = names(&s.state().join("impulse-shell"));
     assert_eq!(kept.len(), 1, "{kept:?}");
-    let kept = s.state().join("rusty-impulse").join(&kept[0]);
+    let kept = s.state().join("impulse-shell").join(&kept[0]);
     assert_eq!(listing(&kept), edited);
     assert!(text(&out.stdout).contains(kept.to_str().unwrap()));
-    assert_eq!(names(s.config().parent().unwrap()), ["rusty-impulse"]);
+    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
 }
 
 /// A config no install put there (the original's own, before the first install) is kept too.
@@ -666,13 +666,13 @@ fn first_install_keeps_the_config_it_replaces() {
     write_tree(&s.config(), "theirs");
     let theirs = listing(&s.config());
     write_tree(&s.source(), "A");
-    let out = s.install(&s.fake("rusty-impulse-a", "A"));
+    let out = s.install(&s.fake("impulse-shell-a", "A"));
     ok(&out);
     assert_eq!(listing(&s.config()), listing(&s.source()));
-    let kept = names(&s.state().join("rusty-impulse"));
+    let kept = names(&s.state().join("impulse-shell"));
     assert_eq!(kept.len(), 1, "{kept:?}");
     assert_eq!(
-        listing(&s.state().join("rusty-impulse").join(&kept[0])),
+        listing(&s.state().join("impulse-shell").join(&kept[0])),
         theirs
     );
     // No install put that config there, and the message does not say one did.
@@ -687,15 +687,15 @@ fn first_install_keeps_the_config_it_replaces() {
 #[test]
 fn install_and_rollback_replace_a_config_that_is_a_link_in_its_target() {
     let s = Sandbox::new("linked");
-    let dots = s.dir.join("dots/rusty-impulse");
+    let dots = s.dir.join("dots/impulse-shell");
     write_tree(&dots, "A");
     write_tree(&s.source(), "A");
     std::fs::create_dir_all(s.config().parent().unwrap()).unwrap();
     std::os::unix::fs::symlink(&dots, s.config()).unwrap();
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     let tree_a = listing(&dots);
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     ok(&s.install(&b));
     assert_eq!(listing(&dots), listing(&s.source()));
     let again = s.install(&b);
@@ -704,7 +704,7 @@ fn install_and_rollback_replace_a_config_that_is_a_link_in_its_target() {
     ok(&s.rollback());
     assert_eq!(std::fs::read_link(s.config()).unwrap(), dots);
     assert_eq!(listing(&dots), tree_a);
-    assert_eq!(names(dots.parent().unwrap()), ["rusty-impulse"]);
+    assert_eq!(names(dots.parent().unwrap()), ["impulse-shell"]);
 }
 
 /// A binary installed by the script before it kept releases: a plain file that does not know
@@ -718,15 +718,15 @@ fn a_binary_installed_before_releases_is_kept_and_rolled_back_to() {
     let ran = s.dir.join("legacy-ran");
     let legacy = format!("#!/bin/sh\n# legacy\ntouch '{}'\n", ran.display());
     std::fs::create_dir_all(s.prefix().join("bin")).unwrap();
-    let installed = s.prefix().join("bin/rusty-impulse");
+    let installed = s.prefix().join("bin/impulse-shell");
     std::fs::write(&installed, &legacy).unwrap();
     std::fs::set_permissions(&installed, std::fs::Permissions::from_mode(0o755)).unwrap();
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     assert_eq!(s.installed(), std::fs::read(&a).unwrap());
     let previous = s.release("previous").unwrap();
     assert_eq!(
-        std::fs::read(previous.join("rusty-impulse")).unwrap(),
+        std::fs::read(previous.join("impulse-shell")).unwrap(),
         legacy.as_bytes()
     );
     assert_eq!(listing(&previous.join("tree")), config);
@@ -737,7 +737,7 @@ fn a_binary_installed_before_releases_is_kept_and_rolled_back_to() {
     assert!(!ran.exists(), "the binary without --check-tree was run");
 }
 
-/// A plain `rusty-impulse` at the name, as an install before releases left it: never run to ask.
+/// A plain `impulse-shell` at the name, as an install before releases left it: never run to ask.
 fn a_binary_from_before_releases(s: &Sandbox) -> String {
     let legacy = "#!/bin/sh\n# legacy\nexit 3\n".to_string();
     std::fs::create_dir_all(s.prefix().join("bin")).unwrap();
@@ -802,7 +802,7 @@ fn a_rollback_puts_the_config_it_kept_back_with_its_links_as_links() {
     let legacy = a_binary_from_before_releases(&s);
 
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     assert_eq!(listing(&s.config()), listing(&s.source()));
 
     ok(&s.rollback());
@@ -846,7 +846,7 @@ fn a_link_out_of_the_config_a_rollback_kept_is_stored_as_its_file() {
     a_binary_from_before_releases(&s);
 
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     let stored = s.release("previous").unwrap().join("tree");
     for name in ["Relative.qml", "Absolute.qml", "Own.qml"] {
         assert!(!stored.join(name).is_symlink(), "{name}");
@@ -867,9 +867,9 @@ fn only_the_current_and_the_previous_release_are_kept() {
     let s = Sandbox::new("pruned");
     write_tree(&s.source(), "A");
     let (a, b, c) = (
-        s.fake("rusty-impulse-a", "A"),
-        s.fake("rusty-impulse-b", "A"),
-        s.fake("rusty-impulse-c", "A"),
+        s.fake("impulse-shell-a", "A"),
+        s.fake("impulse-shell-b", "A"),
+        s.fake("impulse-shell-c", "A"),
     );
     ok(&s.install(&a));
     ok(&s.install(&b));
@@ -885,8 +885,8 @@ fn installing_the_installed_build_again_keeps_the_previous_release() {
     let s = Sandbox::new("again");
     write_tree(&s.source(), "A");
     let (a, b) = (
-        s.fake("rusty-impulse-a", "A"),
-        s.fake("rusty-impulse-b", "A"),
+        s.fake("impulse-shell-a", "A"),
+        s.fake("impulse-shell-b", "A"),
     );
     ok(&s.install(&a));
     ok(&s.install(&b));
@@ -904,8 +904,8 @@ fn status_names_the_releases_and_uninstall_removes_them() {
     let s = Sandbox::new("status");
     write_tree(&s.source(), "A");
     refused(&s.script(&["--status"], None), "nothing is installed");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
-    ok(&s.install(&s.fake("rusty-impulse-b", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-b", "A")));
     let out = s.script(&["--status"], None);
     ok(&out);
     let current = s.release("current").unwrap();
@@ -922,16 +922,16 @@ fn status_names_the_releases_and_uninstall_removes_them() {
     );
     // An edited config that an install replaced is kept, the
     // script never removes these copies, and --status and --uninstall say where they are.
-    // --uninstall leaves the rusty-impulse config and says so.
+    // --uninstall leaves the impulse-shell config and says so.
     std::fs::write(s.config().join("note.txt"), "mine").unwrap();
     write_tree(&s.source(), "C");
-    ok(&s.install(&s.fake("rusty-impulse-c", "C")));
-    let state = s.state().join("rusty-impulse");
+    ok(&s.install(&s.fake("impulse-shell-c", "C")));
+    let state = s.state().join("impulse-shell");
     let status = s.script(&["--status"], None);
     ok(&status);
     let status = text(&status.stdout);
     let copies = format!(
-        "replaced rusty-impulse configs: 1 kept in {}",
+        "replaced impulse-shell configs: 1 kept in {}",
         state.display()
     );
     assert!(status.contains(&copies), "{status}");
@@ -942,7 +942,7 @@ fn status_names_the_releases_and_uninstall_removes_them() {
     assert!(!s.lib().exists());
     assert_eq!(listing(&s.config()), config);
     let said = text(&out.stdout);
-    let left = format!("left: the rusty-impulse config {}", s.config().display());
+    let left = format!("left: the impulse-shell config {}", s.config().display());
     assert!(said.contains(&left), "{said}");
     assert!(said.contains(&format!("in {}", state.display())), "{said}");
     assert_eq!(names(&state).len(), 1);
@@ -984,7 +984,7 @@ fn an_install_writes_the_icon_of_the_shells_own_windows() {
     let id = app_id();
     let (entry, icon) = app_icon_files(&s.data());
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     let entry_text = std::fs::read_to_string(&entry).unwrap();
     let lines: Vec<&str> = entry_text.lines().collect();
@@ -1012,7 +1012,7 @@ fn an_install_writes_the_icon_of_the_shells_own_windows() {
 
     // A rollback leaves them.
     write_tree(&s.source(), "B");
-    ok(&s.install(&s.fake("rusty-impulse-b", "B")));
+    ok(&s.install(&s.fake("impulse-shell-b", "B")));
     ok(&s.rollback());
     assert_eq!(std::fs::read_to_string(&entry).unwrap(), entry_text);
     assert_eq!(std::fs::read_to_string(&icon).unwrap(), svg);
@@ -1046,7 +1046,7 @@ fn an_install_writes_the_icon_of_the_shells_own_windows() {
 fn the_icon_follows_xdg_data_home_and_an_install_does_not_need_it() {
     let s = Sandbox::new("app-icon-data-home");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     let run = |args: &[&str], data_home: &Path| {
         let mut cmd = s.command(args);
         cmd.env("BIN", &a).env("XDG_DATA_HOME", data_home);
@@ -1088,14 +1088,14 @@ fn the_icon_follows_xdg_data_home_and_an_install_does_not_need_it() {
     assert!(!s.lib().exists());
 }
 
-/// Through sudo, $HOME and the rusty-impulse config are root's, not the user's:
+/// Through sudo, $HOME and the impulse-shell config are root's, not the user's:
 /// --status and --uninstall refuse as an install and a rollback do. A stand-in `id` says the
 /// script runs as root.
 #[test]
 fn nothing_runs_through_sudo() {
     let s = Sandbox::new("sudo");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     let before = listing(&s.dir);
     s.executable("id", "#!/bin/sh\necho 0\n");
@@ -1114,9 +1114,9 @@ fn nothing_runs_through_sudo() {
     assert_eq!(listing(&s.dir), before);
 }
 
-/// `rusty-impulse --check-tree -p DIR` with the run dir `run`.
+/// `impulse-shell --check-tree -p DIR` with the run dir `run`.
 fn check_tree(tree: &Path, run: &Path) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+    Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
         .args(["--check-tree", "-p"])
         .arg(tree)
         .env("XDG_RUNTIME_DIR", run)
@@ -1130,7 +1130,7 @@ fn check_tree(tree: &Path, run: &Path) -> Output {
 fn the_shell_checks_the_tree_it_was_compiled_from() {
     const ADDED: &str = "modules/common/functions/added.js";
     let s = Sandbox::new("real");
-    let real = Path::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let real = Path::new(env!("CARGO_BIN_EXE_impulse-shell"));
     let copied = Command::new("cp")
         .arg("-a")
         .arg(ricompiled::ROOT)
@@ -1194,7 +1194,7 @@ fn rollback_restores_a_tree_whose_other_files_changed() {
     std::fs::create_dir_all(s.source().join("assets")).unwrap();
     std::fs::write(s.source().join("assets/icon.svg"), "<svg>a</svg>").unwrap();
     std::fs::write(s.source().join("scripts.sh"), "echo a\n").unwrap();
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     let tree_a = listing(&s.config());
     assert_eq!(tree_a, listing(&s.source()));
@@ -1202,7 +1202,7 @@ fn rollback_restores_a_tree_whose_other_files_changed() {
     std::fs::write(s.source().join("scripts.sh"), "echo b\n").unwrap();
     std::fs::write(s.source().join("added.sh"), "echo added\n").unwrap();
     std::fs::remove_file(s.source().join("modules/Bar.qml")).unwrap();
-    ok(&s.install(&s.fake("rusty-impulse-b", "A")));
+    ok(&s.install(&s.fake("impulse-shell-b", "A")));
     assert_eq!(listing(&s.config()), listing(&s.source()));
     let status = s.script(&["--status"], None);
     ok(&status);
@@ -1234,23 +1234,23 @@ fn an_install_refuses_a_binary_with_the_interpreter() {
     };
     let s = &b.s;
     write_tree(&s.source(), "A");
-    let fake = std::fs::read_to_string(s.fake("rusty-impulse-a", "A")).unwrap();
+    let fake = std::fs::read_to_string(s.fake("impulse-shell-a", "A")).unwrap();
     let linked = s.executable(
-        "rusty-impulse-linked",
+        "impulse-shell-linked",
         &fake.replace(
             "JavaScript interpreter: none",
             "JavaScript interpreter: linked",
         ),
     );
     let silent = s.executable(
-        "rusty-impulse-silent",
+        "impulse-shell-silent",
         &fake.replace("--version ]; then", "--never ]; then"),
     );
     refused(&s.install(&linked), "has a JavaScript interpreter");
     refused(&s.install(&silent), "does not answer --version");
     let target = s.dir.join("cargo/target/release");
     std::fs::create_dir_all(&target).unwrap();
-    std::fs::copy(&linked, target.join("rusty-impulse")).unwrap();
+    std::fs::copy(&linked, target.join("impulse-shell")).unwrap();
     let out = s
         .command(&[])
         .env("PATH", &b.path)
@@ -1268,8 +1268,8 @@ fn the_same_binary_with_another_tree_keeps_the_release_to_roll_back_to() {
     let s = Sandbox::new("same-binary");
     write_tree(&s.source(), "A");
     let (a, b) = (
-        s.fake("rusty-impulse-a", "A"),
-        s.fake("rusty-impulse-b", "A"),
+        s.fake("impulse-shell-a", "A"),
+        s.fake("impulse-shell-b", "A"),
     );
     ok(&s.install(&a));
     let tree_a = listing(&s.config());
@@ -1285,7 +1285,7 @@ fn the_same_binary_with_another_tree_keeps_the_release_to_roll_back_to() {
     );
     let previous = s.release("previous").unwrap();
     assert_eq!(
-        std::fs::read(previous.join("rusty-impulse")).unwrap(),
+        std::fs::read(previous.join("impulse-shell")).unwrap(),
         std::fs::read(&a).unwrap()
     );
     assert_eq!(s.releases().len(), 2, "{:?}", s.releases());
@@ -1300,9 +1300,9 @@ fn the_same_binary_with_another_tree_keeps_the_release_to_roll_back_to() {
 fn a_rollback_that_cannot_keep_the_edited_config_changes_nothing() {
     let s = Sandbox::new("atomic");
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     ok(&s.install(&b));
     std::fs::write(s.config().join("note.txt"), "mine").unwrap();
     let edited = listing(&s.config());
@@ -1312,7 +1312,7 @@ fn a_rollback_that_cannot_keep_the_edited_config_changes_nothing() {
     assert_eq!(listing(&s.config()), edited);
     assert_eq!(s.installed(), std::fs::read(&b).unwrap());
     assert_eq!((s.release("current"), s.release("previous")), links);
-    assert_eq!(names(s.config().parent().unwrap()), ["rusty-impulse"]);
+    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
 }
 
 /// An install that cannot keep the edited config changes nothing either: the release it
@@ -1321,7 +1321,7 @@ fn a_rollback_that_cannot_keep_the_edited_config_changes_nothing() {
 fn an_install_that_cannot_keep_the_edited_config_changes_nothing() {
     let s = Sandbox::new("atomic-install");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     std::fs::write(s.config().join("note.txt"), "mine").unwrap();
     let edited = listing(&s.config());
@@ -1329,20 +1329,20 @@ fn an_install_that_cannot_keep_the_edited_config_changes_nothing() {
     write_tree(&s.source(), "B");
     std::fs::write(s.state(), "not a directory").unwrap();
     refused(
-        &s.install(&s.fake("rusty-impulse-b", "B")),
+        &s.install(&s.fake("impulse-shell-b", "B")),
         "nothing changed",
     );
     assert_eq!(listing(&s.config()), edited);
     assert_eq!((listing(&s.prefix()), s.release("current")), before);
     assert_eq!(s.installed(), std::fs::read(&a).unwrap());
-    assert_eq!(names(s.config().parent().unwrap()), ["rusty-impulse"]);
+    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
 }
 
-/// With no rusty-impulse config (another HOME, or none yet) the install builds the repository's tree and
+/// With no impulse-shell config (another HOME, or none yet) the install builds the repository's tree and
 /// makes the config from it. Without that tree nothing is built, and run through sudo the
 /// script refuses instead of writing root's config.
 #[test]
-fn an_install_without_a_rusty_impulse_config_makes_one_from_the_repository_tree() {
+fn an_install_without_a_impulse_shell_config_makes_one_from_the_repository_tree() {
     let Some(b) = Building::new("no-config") else {
         return;
     };
@@ -1379,7 +1379,7 @@ fn an_install_without_a_rusty_impulse_config_makes_one_from_the_repository_tree(
 }
 
 /// What `git pull` then `tools/install.sh` does: the checkout's tree is newer than the copy
-/// an earlier install left in the rusty-impulse config. The install compiles the checkout's tree, not
+/// an earlier install left in the impulse-shell config. The install compiles the checkout's tree, not
 /// that copy, and the config becomes the new tree.
 #[test]
 fn an_install_builds_the_checkout_tree_not_the_older_copy_in_the_config() {
@@ -1407,7 +1407,7 @@ fn an_install_builds_the_checkout_tree_not_the_older_copy_in_the_config() {
     // The installed binary is the one compiled from tree B: it refuses tree A.
     let previous = s.release("previous").unwrap();
     assert_eq!(listing(&previous.join("tree")), tree_a);
-    let runs_a = Command::new(s.prefix().join("bin/rusty-impulse"))
+    let runs_a = Command::new(s.prefix().join("bin/impulse-shell"))
         .args(["--check-tree", "-p"])
         .arg(previous.join("tree"))
         .status()
@@ -1421,27 +1421,27 @@ fn an_install_builds_the_checkout_tree_not_the_older_copy_in_the_config() {
 #[test]
 fn a_tree_of_relative_links_is_stored_as_files() {
     let s = Sandbox::new("stow");
-    let dots = s.dir.join("dotfiles/rusty-impulse");
+    let dots = s.dir.join("dotfiles/impulse-shell");
     write_tree(&dots, "A");
     std::fs::create_dir_all(s.source().join("modules")).unwrap();
     std::os::unix::fs::symlink(
-        "../dotfiles/rusty-impulse/shell.qml",
+        "../dotfiles/impulse-shell/shell.qml",
         s.source().join("shell.qml"),
     )
     .unwrap();
     std::os::unix::fs::symlink(
-        "../../dotfiles/rusty-impulse/modules/Bar.qml",
+        "../../dotfiles/impulse-shell/modules/Bar.qml",
         s.source().join("modules/Bar.qml"),
     )
     .unwrap();
     assert!(s.source().join("modules/Bar.qml").is_file());
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     let stored = s.release("current").unwrap().join("tree");
     assert_eq!(listing(&stored), listing(&dots));
     assert_eq!(listing(&s.config()), listing(&dots));
     assert!(!s.config().join("shell.qml").is_symlink());
-    ok(&s.install(&s.fake("rusty-impulse-b", "A")));
+    ok(&s.install(&s.fake("impulse-shell-b", "A")));
     ok(&s.rollback());
     assert_eq!(s.installed(), std::fs::read(&a).unwrap());
 }
@@ -1453,9 +1453,9 @@ fn a_rollback_reads_the_releases_under_the_lock() {
     let s = Sandbox::new("lock-order");
     write_tree(&s.source(), "A");
     let (a, b, c) = (
-        s.fake("rusty-impulse-a", "A"),
-        s.fake("rusty-impulse-b", "A"),
-        s.fake("rusty-impulse-c", "A"),
+        s.fake("impulse-shell-a", "A"),
+        s.fake("impulse-shell-b", "A"),
+        s.fake("impulse-shell-c", "A"),
     );
     ok(&s.install(&a));
     ok(&s.install(&b));
@@ -1494,10 +1494,10 @@ fn a_rollback_reads_the_releases_under_the_lock() {
         text(&out.stdout)
     );
     let current = s.release("current").unwrap();
-    assert!(current.join("rusty-impulse").is_file());
+    assert!(current.join("impulse-shell").is_file());
     let previous = s.release("previous").unwrap();
     assert_eq!(
-        std::fs::read(previous.join("rusty-impulse")).unwrap(),
+        std::fs::read(previous.join("impulse-shell")).unwrap(),
         std::fs::read(&c).unwrap()
     );
 }
@@ -1521,8 +1521,8 @@ fn the_command_line_is_checked_before_anything_runs() {
         .env("BIN", s.dir.join("missing"))
         .output()
         .unwrap();
-    refused(&out, "no rusty-impulse binary");
-    let broken = s.executable("rusty-impulse-broken", "#!/nonexistent/interpreter\n");
+    refused(&out, "no impulse-shell binary");
+    let broken = s.executable("impulse-shell-broken", "#!/nonexistent/interpreter\n");
     refused(&s.install(&broken), "cannot run");
     assert!(!s.prefix().exists());
 }
@@ -1551,7 +1551,7 @@ enum Hook<'a> {
 const TO_THE_SWITCH: &str = "ln * releases/.switch */.current.new";
 /// Between the two renames that replace the config: the old one is aside, the new one not
 /// yet in its place.
-const THE_NEW_CONFIG: &str = "mv -T */.ri-restore.?????? */rustshell/rusty-impulse";
+const THE_NEW_CONFIG: &str = "mv -T */.ri-restore.?????? */rustshell/impulse-shell";
 /// The config is replaced, no link is switched.
 const PREVIOUS: &str = "ln */.previous.new";
 /// `current` is made to name a release: the switch's last step (and, before there was a
@@ -1561,11 +1561,11 @@ const TO_A_RELEASE: &str = "ln * releases/[0-9]* */.current.new";
 /// The copy of the QML tree into a new release.
 const THE_RELEASE: &str = "tar -C */source --exclude=.git -chf - .";
 /// The copy of an edited config into the state directory.
-const THE_EDITED_CONFIG: &str = "tar -C */rustshell/rusty-impulse --exclude=.git -c*f - .";
+const THE_EDITED_CONFIG: &str = "tar -C */rustshell/impulse-shell --exclude=.git -c*f - .";
 /// A binary from before releases gives its name to the link to its release.
-const THE_NAME: &str = "mv -Tf */.rusty-impulse.new */bin/rusty-impulse";
+const THE_NAME: &str = "mv -Tf */.impulse-shell.new */bin/impulse-shell";
 /// The undo's first step: the new config goes back beside the config's place.
-const THE_CONFIG_BACK: &str = "mv -T */rustshell/rusty-impulse */.ri-restore.??????";
+const THE_CONFIG_BACK: &str = "mv -T */rustshell/impulse-shell */.ri-restore.??????";
 
 /// `tools/install.sh ARGS` with stand-ins for `ln`, `mv` and `tar` that do what `hook` says.
 fn hooked(s: &Sandbox, hook: &Hook, args: &[&str], bin: Option<&Path>) -> Output {
@@ -1688,7 +1688,7 @@ fn without_the_link(s: &Sandbox, new: &str, args: &[&str], bin: Option<&Path>) -
     hooked(s, &Hook::Fail(&format!("ln */{new}")), args, bin)
 }
 
-/// Whether the installed binary runs the rusty-impulse config.
+/// Whether the installed binary runs the impulse-shell config.
 fn runs_the_config(s: &Sandbox) -> bool {
     s.starts()
 }
@@ -1701,16 +1701,16 @@ fn an_install_that_cannot_switch_the_links_leaves_the_installed_release_running(
     for link in [".current.new", ".previous.new"] {
         let s = Sandbox::new(&format!("links{link}"));
         write_tree(&s.source(), "A");
-        let a = s.fake("rusty-impulse-a", "A");
+        let a = s.fake("impulse-shell-a", "A");
         ok(&s.install(&a));
         write_tree(&s.source(), "B");
-        let b = s.fake("rusty-impulse-b", "B");
+        let b = s.fake("impulse-shell-b", "B");
         ok(&s.install(&b));
         std::fs::write(s.config().join("note.txt"), "mine").unwrap();
         let before = (listing(&s.prefix()), listing(&s.dir.join("config")));
 
         write_tree(&s.source(), "C");
-        let out = without_the_link(&s, link, &[], Some(&s.fake("rusty-impulse-c", "C")));
+        let out = without_the_link(&s, link, &[], Some(&s.fake("impulse-shell-c", "C")));
         assert_eq!(out.status.code(), Some(1), "{link}: {}", text(&out.stderr));
         assert_eq!(s.installed(), std::fs::read(&b).unwrap(), "{link}");
         assert!(
@@ -1722,7 +1722,7 @@ fn an_install_that_cannot_switch_the_links_leaves_the_installed_release_running(
             before,
             "{link}"
         );
-        assert_eq!(names(&s.state().join("rusty-impulse")), [""; 0], "{link}");
+        assert_eq!(names(&s.state().join("impulse-shell")), [""; 0], "{link}");
         refused(&out, "nothing was installed");
 
         ok(&s.rollback());
@@ -1736,7 +1736,7 @@ fn an_install_that_cannot_switch_the_links_leaves_the_installed_release_running(
 fn a_first_install_that_cannot_switch_the_links_installs_nothing() {
     let s = Sandbox::new("first-links");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     let out = without_the_link(&s, ".current.new", &[], Some(&a));
     assert_eq!(out.status.code(), Some(1), "{}", text(&out.stderr));
     assert!(!s.dir.join("config").exists(), "{:?}", listing(&s.config()));
@@ -1768,7 +1768,7 @@ fn modes(dir: &Path) -> Vec<(PathBuf, u32)> {
     out
 }
 
-/// A release is read by the user who runs rusty-impulse, who need not be its owner
+/// A release is read by the user who runs impulse-shell, who need not be its owner
 /// (a prefix of root's). A user with umask 077, whose checkout has files of mode 600, gets a
 /// release everyone can read; the config, the user's own, keeps the user's modes.
 #[test]
@@ -1779,7 +1779,7 @@ fn a_release_installed_with_umask_077_is_readable_by_everyone() {
         let private = std::fs::Permissions::from_mode(mode & 0o700);
         std::fs::set_permissions(s.dir.join(p), private).unwrap();
     }
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     let out = s
         .command_of(Path::new("-c"), &["umask 077 && exec bash \"$0\""])
         .arg(script())
@@ -1790,7 +1790,7 @@ fn a_release_installed_with_umask_077_is_readable_by_everyone() {
     let closed: Vec<_> = modes(&s.prefix())
         .into_iter()
         .filter(|(p, mode)| {
-            let needed = if s.prefix().join(p).is_dir() || p.ends_with("rusty-impulse") {
+            let needed = if s.prefix().join(p).is_dir() || p.ends_with("impulse-shell") {
                 0o555
             } else {
                 0o444
@@ -1809,17 +1809,17 @@ fn a_release_installed_with_umask_077_is_readable_by_everyone() {
     assert!(runs_the_config(&s));
 }
 
-/// A rollback with no rusty-impulse config makes one from the release it switches to,
+/// A rollback with no impulse-shell config makes one from the release it switches to,
 /// as an install does; one that cannot switch the links removes it again.
 #[test]
-fn a_rollback_without_a_rusty_impulse_config_makes_one_from_its_release() {
+fn a_rollback_without_a_impulse_shell_config_makes_one_from_its_release() {
     let s = Sandbox::new("rollback-no-config");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     let tree_a = listing(&s.config());
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     ok(&s.install(&b));
     std::fs::remove_dir_all(s.dir.join("config")).unwrap();
     let before = listing(&s.prefix());
@@ -1913,7 +1913,7 @@ fn a_build_that_cannot_tell_its_commit_installs_nothing() {
     let out = b.script().env_remove("RI_COMMIT").output().unwrap();
     refused(&out, "cannot tell the commit");
     assert!(!b.s.dir.join("cargo/calls").exists(), "cargo ran");
-    let bin = b.s.prefix().join("bin/rusty-impulse");
+    let bin = b.s.prefix().join("bin/impulse-shell");
     assert!(!bin.exists());
     let says = |commit: &str| {
         let version = Command::new(&bin).arg("--version").output().unwrap();
@@ -1962,7 +1962,7 @@ fn a_binary_that_names_the_build_directories_installs_nothing() {
         )
         .unwrap();
         refused(&b.install(), "names this machine's directory");
-        assert!(!b.s.prefix().join("bin/rusty-impulse").exists(), "{dir}");
+        assert!(!b.s.prefix().join("bin/impulse-shell").exists(), "{dir}");
     }
     std::fs::remove_file(b.s.dir.join("cargo/names")).unwrap();
     write_tree(&b.s.source(), "C");
@@ -1971,7 +1971,7 @@ fn a_binary_that_names_the_build_directories_installs_nothing() {
 
 /// The copies of replaced configs the script keeps.
 fn kept(s: &Sandbox) -> Vec<String> {
-    names(&s.state().join("rusty-impulse"))
+    names(&s.state().join("impulse-shell"))
 }
 
 /// The release `c` is installed over `b` whole: the binary, its tree as the config, `b` to
@@ -1979,11 +1979,11 @@ fn kept(s: &Sandbox) -> Vec<String> {
 #[track_caller]
 fn c_is_installed_over_b(s: &Sandbox, b: &Path, c: &Path) {
     assert_eq!(s.installed(), std::fs::read(c).unwrap());
-    let previous = s.release("previous").unwrap().join("rusty-impulse");
+    let previous = s.release("previous").unwrap().join("impulse-shell");
     assert_eq!(std::fs::read(previous).unwrap(), std::fs::read(b).unwrap());
     assert_eq!(listing(&s.config()), listing(&s.source()));
     assert!(runs_the_config(s));
-    assert_eq!(names(s.config().parent().unwrap()), ["rusty-impulse"]);
+    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
     assert_eq!(s.releases().len(), 2, "{:?}", s.releases());
     assert_eq!(kept(s).len(), 1, "{:?}", kept(s));
 }
@@ -2018,15 +2018,15 @@ fn an_install_killed_while_it_switches_leaves_a_shell_that_starts() {
             let step = format!("SIG{signal} at `{at}`");
             let s = Sandbox::new(&format!("kill-install-{signal}-{i}"));
             write_tree(&s.source(), "A");
-            ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+            ok(&s.install(&s.fake("impulse-shell-a", "A")));
             write_tree(&s.source(), "B");
-            let b = s.fake("rusty-impulse-b", "B");
+            let b = s.fake("impulse-shell-b", "B");
             ok(&s.install(&b));
             std::fs::write(s.config().join("note.txt"), "mine").unwrap();
             let before = (listing(&s.prefix()), listing(&s.dir.join("config")));
 
             write_tree(&s.source(), "C");
-            let c = s.fake("rusty-impulse-c", "C");
+            let c = s.fake("impulse-shell-c", "C");
             let out = hooked(&s, &Hook::Kill(at, signal), &[], Some(&c));
             was_killed(&s, &out, signal);
             assert!(
@@ -2063,10 +2063,10 @@ fn a_rollback_killed_while_it_switches_leaves_a_shell_that_starts() {
             let step = format!("SIG{signal} at `{at}`");
             let s = Sandbox::new(&format!("kill-rollback-{signal}-{i}"));
             write_tree(&s.source(), "A");
-            let a = s.fake("rusty-impulse-a", "A");
+            let a = s.fake("impulse-shell-a", "A");
             ok(&s.install(&a));
             write_tree(&s.source(), "B");
-            let b = s.fake("rusty-impulse-b", "B");
+            let b = s.fake("impulse-shell-b", "B");
             ok(&s.install(&b));
             std::fs::write(s.config().join("note.txt"), "mine").unwrap();
             let before = (listing(&s.prefix()), listing(&s.dir.join("config")));
@@ -2100,7 +2100,7 @@ fn a_rollback_killed_while_it_switches_leaves_a_shell_that_starts() {
             assert_ne!(s.release("previous").unwrap(), current, "{step}");
             assert_eq!(
                 names(s.config().parent().unwrap()),
-                ["rusty-impulse"],
+                ["impulse-shell"],
                 "{step}"
             );
             assert_eq!(s.releases().len(), 2, "{step}: {:?}", s.releases());
@@ -2120,7 +2120,7 @@ fn a_first_install_killed_while_it_switches_is_installed_by_the_next() {
             write_tree(&s.config(), "theirs");
             let theirs = listing(&s.config());
             write_tree(&s.source(), "A");
-            let a = s.fake("rusty-impulse-a", "A");
+            let a = s.fake("impulse-shell-a", "A");
             let out = hooked(&s, &Hook::Kill(at, signal), &[], Some(&a));
             was_killed(&s, &out, signal);
             if signal != "KILL" {
@@ -2134,13 +2134,13 @@ fn a_first_install_killed_while_it_switches_is_installed_by_the_next() {
             assert_eq!(listing(&s.config()), listing(&s.source()), "{step}");
             assert_eq!(
                 names(s.config().parent().unwrap()),
-                ["rusty-impulse"],
+                ["impulse-shell"],
                 "{step}"
             );
             assert_eq!(s.releases().len(), 1, "{step}: {:?}", s.releases());
             let copies = kept(&s);
             assert_eq!(copies.len(), 1, "{step}: {copies:?}");
-            let copy = s.state().join("rusty-impulse").join(&copies[0]);
+            let copy = s.state().join("impulse-shell").join(&copies[0]);
             assert_eq!(listing(&copy), theirs, "{step}");
         }
     }
@@ -2153,15 +2153,15 @@ fn a_first_install_killed_while_it_switches_is_installed_by_the_next() {
 fn an_install_that_cannot_put_the_links_back_leaves_a_shell_that_starts() {
     let s = Sandbox::new("links-stuck");
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     ok(&s.install(&b));
     std::fs::write(s.config().join("note.txt"), "mine").unwrap();
     let config = listing(&s.config());
 
     write_tree(&s.source(), "C");
-    let c = s.fake("rusty-impulse-c", "C");
+    let c = s.fake("impulse-shell-c", "C");
     refused(
         &hooked(&s, &Hook::Fail(TO_A_RELEASE), &[], Some(&c)),
         "nor put back what was replaced",
@@ -2178,9 +2178,9 @@ fn an_install_that_cannot_put_the_links_back_leaves_a_shell_that_starts() {
     c_is_installed_over_b(&s, &b, &c);
 }
 
-/// The name `$PREFIX/bin/rusty-impulse`.
+/// The name `$PREFIX/bin/impulse-shell`.
 fn bin_name(s: &Sandbox) -> PathBuf {
-    s.prefix().join("bin/rusty-impulse")
+    s.prefix().join("bin/impulse-shell")
 }
 
 /// Makes the name of the binary a link to `target`, as someone who runs a build from where
@@ -2191,7 +2191,7 @@ fn link_bin_to(s: &Sandbox, target: &Path) {
     std::os::unix::fs::symlink(target, bin_name(s)).unwrap();
 }
 
-/// `$PREFIX/bin/rusty-impulse` is a link to a binary built elsewhere, not
+/// `$PREFIX/bin/impulse-shell` is a link to a binary built elsewhere, not
 /// one an install made. That binary is kept as a release with the config it ran, like a plain
 /// file installed before releases existed, and a rollback goes back to it.
 #[test]
@@ -2203,7 +2203,7 @@ fn a_binary_the_name_links_to_is_kept_and_rolled_back_to() {
     link_bin_to(&s, &theirs);
     assert!(s.starts());
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     assert_eq!(s.installed(), std::fs::read(&a).unwrap());
     assert!(s.starts());
@@ -2211,7 +2211,7 @@ fn a_binary_the_name_links_to_is_kept_and_rolled_back_to() {
         .release("previous")
         .expect("the binary that ran was not kept");
     assert_eq!(
-        std::fs::read(previous.join("rusty-impulse")).unwrap(),
+        std::fs::read(previous.join("impulse-shell")).unwrap(),
         std::fs::read(&theirs).unwrap()
     );
     assert_eq!(listing(&previous.join("tree")), config);
@@ -2240,12 +2240,12 @@ fn a_first_install_over_a_linked_binary_that_fails_leaves_that_binary_running() 
         let theirs = s.fake("built-elsewhere", "L");
         link_bin_to(&s, &theirs);
         write_tree(&s.source(), "A");
-        let a = s.fake("rusty-impulse-a", "A");
+        let a = s.fake("impulse-shell-a", "A");
         let out = hooked(&s, hook, &[], Some(&a));
         assert!(!out.status.success(), "step {i}: {}", text(&out.stdout));
         assert!(
             s.starts(),
-            "step {i}: no rusty-impulse that starts is left (the name: {:?}):\n{}",
+            "step {i}: no impulse-shell that starts is left (the name: {:?}):\n{}",
             std::fs::read_link(bin_name(&s)),
             text(&out.stderr)
         );
@@ -2255,7 +2255,7 @@ fn a_first_install_over_a_linked_binary_that_fails_leaves_that_binary_running() 
             assert_eq!(listing(&s.config()), config, "step {i}");
             assert_eq!(
                 names(s.config().parent().unwrap()),
-                ["rusty-impulse"],
+                ["impulse-shell"],
                 "step {i}"
             );
         }
@@ -2278,7 +2278,7 @@ fn a_binary_the_build_writes_over_is_kept_as_it_was() {
     let s = &b.s;
     write_tree(&s.source(), "A");
     ok(&b.install());
-    let built = s.dir.join("cargo/rusty-impulse");
+    let built = s.dir.join("cargo/impulse-shell");
     let binary_a = std::fs::read(&built).unwrap();
     let config = listing(&s.config());
     ok(&s.script(&["--uninstall"], None));
@@ -2327,10 +2327,10 @@ fn a_failed_first_install_puts_back_a_link_that_led_nowhere() {
     ];
     for (i, hook) in hooks.iter().enumerate() {
         let s = Sandbox::new(&format!("dangling-link-{i}"));
-        let nowhere = s.dir.join("gone/rusty-impulse");
+        let nowhere = s.dir.join("gone/impulse-shell");
         link_bin_to(&s, &nowhere);
         write_tree(&s.source(), "A");
-        let a = s.fake("rusty-impulse-a", "A");
+        let a = s.fake("impulse-shell-a", "A");
         let out = hooked(&s, hook, &[], Some(&a));
         assert!(!out.status.success(), "step {i}: {}", text(&out.stdout));
         if matches!(hook, Hook::Kill(_, "KILL")) {
@@ -2357,10 +2357,10 @@ fn a_failed_first_install_puts_back_a_link_that_led_nowhere() {
 fn a_rollback_keeps_a_binary_put_at_the_name_since_the_install() {
     let s = Sandbox::new("rollback-foreign");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     write_tree(&s.source(), "B");
-    ok(&s.install(&s.fake("rusty-impulse-b", "B")));
+    ok(&s.install(&s.fake("impulse-shell-b", "B")));
     let copied = s.fake("copied-by-hand", "B");
     std::fs::remove_file(bin_name(&s)).unwrap();
     std::fs::copy(&copied, bin_name(&s)).unwrap();
@@ -2388,11 +2388,11 @@ fn a_rollback_keeps_a_binary_put_at_the_name_since_the_install() {
 fn a_rollback_after_the_previous_release_was_put_back_by_hand_goes_to_the_newer_one() {
     let s = Sandbox::new("rollback-by-hand");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     let tree_a = listing(&s.config());
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     ok(&s.install(&b));
     let tree_b = listing(&s.config());
     let (release_a, release_b) = (
@@ -2430,16 +2430,16 @@ fn a_rollback_after_the_previous_release_was_put_back_by_hand_goes_to_the_newer_
 /// rollback still goes to the newer release.
 #[test]
 fn a_rollback_killed_while_it_takes_the_release_put_back_by_hand_still_goes_to_the_newer_one() {
-    let steps = [PREVIOUS, TO_A_RELEASE, "ln */.rusty-impulse.new", THE_NAME];
+    let steps = [PREVIOUS, TO_A_RELEASE, "ln */.impulse-shell.new", THE_NAME];
     for signal in SIGNALS {
         for (i, at) in steps.iter().enumerate() {
             let step = format!("SIG{signal} at `{at}`");
             let s = Sandbox::new(&format!("kill-rollback-by-hand-{signal}-{i}"));
             write_tree(&s.source(), "A");
-            let a = s.fake("rusty-impulse-a", "A");
+            let a = s.fake("impulse-shell-a", "A");
             ok(&s.install(&a));
             write_tree(&s.source(), "B");
-            let b = s.fake("rusty-impulse-b", "B");
+            let b = s.fake("impulse-shell-b", "B");
             ok(&s.install(&b));
             let tree_b = listing(&s.config());
             std::fs::remove_file(bin_name(&s)).unwrap();
@@ -2466,10 +2466,10 @@ fn a_rollback_killed_while_it_takes_the_release_put_back_by_hand_still_goes_to_t
 fn a_copy_of_the_previous_binary_with_another_config_is_kept_as_a_release() {
     let s = Sandbox::new("rollback-by-hand-other-config");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     write_tree(&s.source(), "B");
-    ok(&s.install(&s.fake("rusty-impulse-b", "B")));
+    ok(&s.install(&s.fake("impulse-shell-b", "B")));
     let release_a = s.release("previous").unwrap();
     std::fs::remove_file(bin_name(&s)).unwrap();
     std::fs::copy(&a, bin_name(&s)).unwrap();
@@ -2486,9 +2486,9 @@ fn their_shell_qml(s: &Sandbox) -> PathBuf {
 }
 
 /// A `shell.qml` of the user's own in `~/.config/rustshell` is
-/// their default config, and with it there neither Quickshell nor rusty-impulse looks up a named
-/// config in that directory: `rusty-impulse -c rusty-impulse`, how Hyprland starts the shell, would not find the
-/// rusty-impulse config. A first install says so and installs nothing; with the file moved to where
+/// their default config, and with it there neither Quickshell nor impulse-shell looks up a named
+/// config in that directory: `impulse-shell -c impulse-shell`, how Hyprland starts the shell, would not find the
+/// impulse-shell config. A first install says so and installs nothing; with the file moved to where
 /// Quickshell also finds a default config, it installs.
 #[test]
 fn a_first_install_the_shell_would_not_start_from_installs_nothing() {
@@ -2497,11 +2497,11 @@ fn a_first_install_the_shell_would_not_start_from_installs_nothing() {
     std::fs::write(their_shell_qml(&s), "// mine\n").unwrap();
     let config_dir = listing(&s.dir.join("config"));
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     let out = s.install(&a);
     refused(
         &out,
-        "would not start as `rusty-impulse -c rusty-impulse`; nothing was installed",
+        "would not start as `impulse-shell -c impulse-shell`; nothing was installed",
     );
     let err = text(&out.stderr);
     assert!(
@@ -2531,19 +2531,19 @@ fn a_first_install_the_shell_would_not_start_from_installs_nothing() {
 fn an_install_or_rollback_the_shell_would_not_start_from_changes_nothing() {
     let s = Sandbox::new("own-config");
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     ok(&s.install(&b));
     ok(&s.script(&["--status"], None));
     std::fs::write(their_shell_qml(&s), "// mine\n").unwrap();
     std::fs::write(s.config().join("note.txt"), "mine").unwrap();
     let before = (listing(&s.prefix()), listing(&s.dir.join("config")));
-    const WHY: &str = "would not start as `rusty-impulse -c rusty-impulse`";
+    const WHY: &str = "would not start as `impulse-shell -c impulse-shell`";
 
     write_tree(&s.source(), "C");
     refused(
-        &s.install(&s.fake("rusty-impulse-c", "C")),
+        &s.install(&s.fake("impulse-shell-c", "C")),
         &format!("{WHY}; nothing was installed"),
     );
     let after = (listing(&s.prefix()), listing(&s.dir.join("config")));
@@ -2567,7 +2567,7 @@ fn an_install_or_rollback_the_shell_would_not_start_from_changes_nothing() {
     assert_eq!(status.status.code(), Some(1), "{}", text(&status.stdout));
     let said = text(&status.stderr);
     assert!(
-        said.contains("does not run the rusty-impulse config"),
+        said.contains("does not run the impulse-shell config"),
         "{said}"
     );
 
@@ -2577,15 +2577,15 @@ fn an_install_or_rollback_the_shell_would_not_start_from_changes_nothing() {
     assert!(s.starts());
 }
 
-/// The real binary finds the config named rusty-impulse as the stand-ins of these tests do: in
-/// `$XDG_CONFIG_HOME/rustshell/rusty-impulse`, and not when that directory has a `shell.qml` of its own,
+/// The real binary finds the config named impulse-shell as the stand-ins of these tests do: in
+/// `$XDG_CONFIG_HOME/rustshell/impulse-shell`, and not when that directory has a `shell.qml` of its own,
 /// nor through a relative `XDG_CONFIG_HOME`, which it ignores.
 #[test]
-fn the_shell_finds_the_rusty_impulse_config_as_it_is_started() {
+fn the_shell_finds_the_impulse_shell_config_as_it_is_started() {
     let s = Sandbox::new("real-lookup");
     let asked = |config_home: &Path, cwd: &Path| {
-        Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
-            .args(["-c", "rusty-impulse", "--check-tree"])
+        Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
+            .args(["-c", "impulse-shell", "--check-tree"])
             .current_dir(cwd)
             .env("HOME", s.dir.join("home"))
             .env("XDG_CONFIG_HOME", config_home)
@@ -2603,7 +2603,7 @@ fn the_shell_finds_the_rusty_impulse_config_as_it_is_started() {
     assert_eq!(
         text(&found.stdout),
         format!(
-            "rusty-impulse: {} has the scripts this binary was compiled from\n",
+            "impulse-shell: {} has the scripts this binary was compiled from\n",
             tree.display()
         ),
         "tools/install.sh compares this line"
@@ -2614,7 +2614,7 @@ fn the_shell_finds_the_rusty_impulse_config_as_it_is_started() {
     assert_eq!(hidden.status.code(), Some(255), "{}", text(&hidden.stdout));
     let err = text(&hidden.stderr);
     assert!(
-        err.contains("Could not find \"rusty-impulse\" config directory"),
+        err.contains("Could not find \"impulse-shell\" config directory"),
         "{err}"
     );
     std::fs::remove_file(their_shell_qml(&s)).unwrap();
@@ -2630,14 +2630,14 @@ fn the_shell_finds_the_rusty_impulse_config_as_it_is_started() {
     );
     let home_config = s.dir.join("home/.config/rustshell");
     std::fs::create_dir_all(&home_config).unwrap();
-    std::fs::rename(s.config(), home_config.join("rusty-impulse")).unwrap();
+    std::fs::rename(s.config(), home_config.join("impulse-shell")).unwrap();
     let relative = asked(Path::new("config"), &s.dir);
     assert!(relative.status.success(), "{}", text(&relative.stderr));
 }
 
 /// A relative `XDG_CONFIG_HOME` or `XDG_STATE_HOME` is not valid
-/// (XDG Base Directory Specification) and rusty-impulse ignores it. The script does too, and says so:
-/// the config is made where rusty-impulse looks for it, not in a directory under the one the script
+/// (XDG Base Directory Specification) and impulse-shell ignores it. The script does too, and says so:
+/// the config is made where impulse-shell looks for it, not in a directory under the one the script
 /// was started in.
 #[test]
 fn relative_xdg_directories_are_ignored_as_the_shell_ignores_them() {
@@ -2654,9 +2654,9 @@ fn relative_xdg_directories_are_ignored_as_the_shell_ignores_them() {
         relative(&mut cmd);
         cmd.env("BIN", bin).output().unwrap()
     };
-    let config = s.dir.join("home/.config/rustshell/rusty-impulse");
+    let config = s.dir.join("home/.config/rustshell/impulse-shell");
     write_tree(&s.source(), "A");
-    let out = install(&s.fake("rusty-impulse-a", "A"));
+    let out = install(&s.fake("impulse-shell-a", "A"));
     ok(&out);
     let err = text(&out.stderr);
     for var in ["XDG_CONFIG_HOME=rel ", "XDG_STATE_HOME=rel-state "] {
@@ -2666,17 +2666,17 @@ fn relative_xdg_directories_are_ignored_as_the_shell_ignores_them() {
         );
     }
     assert_eq!(listing(&config), listing(&s.source()));
-    let mut started = s.installed_command(&["-c", "rusty-impulse", "--check-tree"]);
+    let mut started = s.installed_command(&["-c", "impulse-shell", "--check-tree"]);
     relative(&mut started);
     let started = started.output().unwrap();
     assert!(started.status.success(), "{}", text(&started.stderr));
 
-    // An edited config is kept in the state directory rusty-impulse would use.
+    // An edited config is kept in the state directory impulse-shell would use.
     std::fs::write(config.join("note.txt"), "mine").unwrap();
     write_tree(&s.source(), "B");
-    ok(&install(&s.fake("rusty-impulse-b", "B")));
+    ok(&install(&s.fake("impulse-shell-b", "B")));
     assert_eq!(
-        names(&s.dir.join("home/.local/state/rusty-impulse")).len(),
+        names(&s.dir.join("home/.local/state/impulse-shell")).len(),
         1
     );
     assert_eq!(names(&cwd), [""; 0], "made under the starting directory");
@@ -2688,7 +2688,7 @@ fn relative_xdg_directories_are_ignored_as_the_shell_ignores_them() {
     let said = text(&status.stdout);
     assert!(
         said.contains(&format!(
-            "rusty-impulse config: {} is the tree",
+            "impulse-shell config: {} is the tree",
             config.display()
         )),
         "{said}"
@@ -2731,12 +2731,12 @@ fn flushes(steps: &[String], dir: &Path) -> bool {
 fn each_step_of_a_switch_is_on_the_disk_before_the_next() {
     let s = Sandbox::new("flushed");
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     let (prefix, config_dir) = (s.prefix(), s.dir.join("config"));
     let current = prefix
-        .join("lib/rusty-impulse/current")
+        .join("lib/impulse-shell/current")
         .display()
         .to_string();
     let names_current = |l: &str| l.starts_with("mv -Tf ") && l.ends_with(&current);
@@ -2763,7 +2763,7 @@ fn each_step_of_a_switch_is_on_the_disk_before_the_next() {
 
     // One that cannot switch its last link: the config goes back, then the links.
     write_tree(&s.source(), "C");
-    let c = s.fake("rusty-impulse-c", "C");
+    let c = s.fake("impulse-shell-c", "C");
     let out = without_the_link(&s, ".previous.new", &[], Some(&c));
     refused(&out, "nothing was installed");
     let log = steps(&s);
@@ -2806,7 +2806,7 @@ fn a_kept_binary_is_on_the_disk_before_the_name_leads_to_it() {
         &s,
         &Hook::Log,
         &[],
-        Some(&s.fake("rusty-impulse-a", "A")),
+        Some(&s.fake("impulse-shell-a", "A")),
     ));
     let log = steps(&s);
     let lib = s.lib();
@@ -2817,7 +2817,7 @@ fn a_kept_binary_is_on_the_disk_before_the_name_leads_to_it() {
         l.starts_with("mv -Tf ") && l.ends_with("/current")
     });
     let name = step_at(&log, current, "the name of the binary", |l| {
-        l.starts_with("mv -Tf ") && l.ends_with("/bin/rusty-impulse")
+        l.starts_with("mv -Tf ") && l.ends_with("/bin/impulse-shell")
     });
     assert!(flushes(&log[stored..current], &lib), "{}", log.join("\n"));
     assert!(flushes(&log[current..name], &lib), "{}", log.join("\n"));
@@ -2827,10 +2827,10 @@ fn a_kept_binary_is_on_the_disk_before_the_name_leads_to_it() {
 /// install of C that is interrupted start from. Returns the binaries of A and B.
 fn b_is_installed_and_its_config_edited(s: &Sandbox) -> (PathBuf, PathBuf) {
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     ok(&s.install(&b));
     std::fs::write(s.config().join("note.txt"), "mine").unwrap();
     (a, b)
@@ -2853,7 +2853,7 @@ fn executable(p: &Path) -> bool {
     std::fs::metadata(p).unwrap().permissions().mode() & 0o100 != 0
 }
 
-/// The rusty-impulse config is a copy of the tree with the files' executable bits.
+/// The impulse-shell config is a copy of the tree with the files' executable bits.
 /// A tree that differs from the installed one only in that (a commit that makes a script
 /// executable, or takes that away) is installed: the same binary with another tree. --status
 /// names a file of the config whose mode alone is not the release's.
@@ -2864,9 +2864,9 @@ fn a_tree_that_differs_only_in_a_file_mode_is_installed() {
     let script = Path::new("modules/run.sh");
     std::fs::write(s.source().join(script), "#!/bin/sh\n").unwrap();
     set_mode(&s.source().join(script), 0o644);
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
-    let b = s.fake("rusty-impulse-b", "A");
+    let b = s.fake("impulse-shell-b", "A");
     ok(&s.install(&b));
     assert!(!executable(&s.config().join(script)));
 
@@ -2880,7 +2880,7 @@ fn a_tree_that_differs_only_in_a_file_mode_is_installed() {
         let current = s.release("current").unwrap();
         assert_eq!(executable(&current.join("tree").join(script)), now);
         // The same binary: the release to roll back to stays the one before it.
-        let previous = s.release("previous").unwrap().join("rusty-impulse");
+        let previous = s.release("previous").unwrap().join("impulse-shell");
         assert_eq!(std::fs::read(previous).unwrap(), std::fs::read(&a).unwrap());
         assert_eq!(s.releases().len(), 2, "{:?}", s.releases());
         let status = s.script(&["--status"], None);
@@ -2921,7 +2921,7 @@ fn a_signal_undoes_the_switch_when_nothing_can_be_printed() {
             b_is_installed_and_its_config_edited(&s);
             let before = installed_state(&s);
             write_tree(&s.source(), "C");
-            let c = s.fake("rusty-impulse-c", "C");
+            let c = s.fake("impulse-shell-c", "C");
             let path = std::env::var("PATH").unwrap();
             let mut cmd = hooked_command(&s, &Hook::Kill(at, signal), &[], &path);
             cmd.env("BIN", &c);
@@ -2949,7 +2949,7 @@ fn a_signal_undoes_the_switch_when_nothing_can_be_printed() {
 fn an_edited_config_with_a_link_that_leads_nowhere_is_kept_and_replaced() {
     let s = Sandbox::new("dangling");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     let add_links = || {
         let link = std::os::unix::fs::symlink;
@@ -2957,11 +2957,11 @@ fn an_edited_config_with_a_link_that_leads_nowhere_is_kept_and_replaced() {
         link("modules/Bar.qml", s.config().join("bar")).unwrap();
         listing(&s.config())
     };
-    let copy = |name: &String| listing(&s.state().join("rusty-impulse").join(name));
+    let copy = |name: &String| listing(&s.state().join("impulse-shell").join(name));
 
     let edited = add_links();
     write_tree(&s.source(), "B");
-    ok(&s.install(&s.fake("rusty-impulse-b", "B")));
+    ok(&s.install(&s.fake("impulse-shell-b", "B")));
     assert_eq!(listing(&s.config()), listing(&s.source()));
     let first = kept(&s);
     assert_eq!(first.len(), 1, "{first:?}");
@@ -2976,7 +2976,7 @@ fn an_edited_config_with_a_link_that_leads_nowhere_is_kept_and_replaced() {
     assert_eq!(both.len(), 2, "{both:?}");
     let second = both.iter().find(|name| **name != first[0]).unwrap();
     assert_eq!(copy(second), edited);
-    assert_eq!(names(s.config().parent().unwrap()), ["rusty-impulse"]);
+    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
 }
 
 /// replaced-* in the state directory are the configs that were replaced.
@@ -2991,7 +2991,7 @@ fn a_signal_while_the_edited_config_is_copied_leaves_no_copy() {
         let (_, b) = b_is_installed_and_its_config_edited(&s);
         let before = installed_state(&s);
         write_tree(&s.source(), "C");
-        let c = s.fake("rusty-impulse-c", "C");
+        let c = s.fake("impulse-shell-c", "C");
         let out = hooked(&s, &Hook::Kill(THE_EDITED_CONFIG, signal), &[], Some(&c));
         was_killed(&s, &out, signal);
         assert!(runs_the_config(&s), "{step}");
@@ -3003,7 +3003,7 @@ fn a_signal_while_the_edited_config_is_copied_leaves_no_copy() {
         ok(&status);
         let status = text(&status.stdout);
         assert!(
-            !status.contains("replaced rusty-impulse configs"),
+            !status.contains("replaced impulse-shell configs"),
             "{step}: {status}"
         );
 
@@ -3014,7 +3014,7 @@ fn a_signal_while_the_edited_config_is_copied_leaves_no_copy() {
 
 /// The copy of the edited config gets its name when the config is replaced.
 const THE_COPYS_NAME: &str =
-    "mv -T */state/rusty-impulse/.replaced-* */state/rusty-impulse/replaced-*";
+    "mv -T */state/impulse-shell/.replaced-* */state/impulse-shell/replaced-*";
 
 /// The run that finishes a killed install says where the config that
 /// install replaced is kept: the killed one did not get to.
@@ -3025,14 +3025,14 @@ fn the_run_after_a_killed_install_says_where_the_edited_config_is_kept() {
         let (_, b) = b_is_installed_and_its_config_edited(&s);
         let edited = listing(&s.config());
         write_tree(&s.source(), "C");
-        let c = s.fake("rusty-impulse-c", "C");
+        let c = s.fake("impulse-shell-c", "C");
         let out = hooked(&s, &Hook::Kill(at, "KILL"), &[], Some(&c));
         was_killed(&s, &out, "KILL");
 
         let out = s.install(&c);
         ok(&out);
         c_is_installed_over_b(&s, &b, &c);
-        let copy = s.state().join("rusty-impulse").join(&kept(&s)[0]);
+        let copy = s.state().join("impulse-shell").join(&kept(&s)[0]);
         assert_eq!(listing(&copy), edited, "`{at}`");
         let said = text(&out.stdout);
         assert!(said.contains("finished the install"), "`{at}`: {said}");
@@ -3049,7 +3049,7 @@ fn status_tells_a_running_switch_from_an_interrupted_one() {
     let s = Sandbox::new("status-running");
     b_is_installed_and_its_config_edited(&s);
     write_tree(&s.source(), "C");
-    let c = s.fake("rusty-impulse-c", "C");
+    let c = s.fake("impulse-shell-c", "C");
     let path = std::env::var("PATH").unwrap();
     let mut running = hooked_command(&s, &Hook::Pause(TO_A_RELEASE), &[], &path)
         .env("BIN", &c)
@@ -3089,20 +3089,20 @@ fn status_tells_a_running_switch_from_an_interrupted_one() {
 fn a_binary_is_named_by_a_path_of_any_form() {
     let s = Sandbox::new("bin=path");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse", "A");
+    let a = s.fake("impulse-shell", "A");
     let out = s
         .command(&[])
-        .env("BIN", "rusty-impulse")
+        .env("BIN", "impulse-shell")
         .current_dir(&s.dir)
         .output()
         .unwrap();
     ok(&out);
     assert_eq!(s.installed(), std::fs::read(&a).unwrap());
     assert!(runs_the_config(&s));
-    let b = s.fake("rusty-impulse-b", "A");
+    let b = s.fake("impulse-shell-b", "A");
     let out = s
         .command(&[])
-        .env("BIN", "./rusty-impulse-b")
+        .env("BIN", "./impulse-shell-b")
         .current_dir(&s.dir)
         .output()
         .unwrap();
@@ -3114,12 +3114,12 @@ fn a_binary_is_named_by_a_path_of_any_form() {
     ok(&status);
 }
 
-/// --uninstall removes the link an install made, and no rusty-impulse of
+/// --uninstall removes the link an install made, and no impulse-shell of
 /// another origin: it says that it leaves that one.
 #[test]
-fn uninstall_leaves_a_rusty_impulse_it_did_not_install() {
+fn uninstall_leaves_a_impulse_shell_it_did_not_install() {
     let s = Sandbox::new("uninstall-foreign");
-    let name = s.prefix().join("bin/rusty-impulse");
+    let name = s.prefix().join("bin/impulse-shell");
     std::fs::create_dir_all(name.parent().unwrap()).unwrap();
     let theirs = s.executable("theirs", "#!/bin/sh\n# built elsewhere\n");
 
@@ -3143,7 +3143,7 @@ fn uninstall_leaves_a_rusty_impulse_it_did_not_install() {
 
     // Releases are installed and the name was replaced since.
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     std::fs::remove_file(&name).unwrap();
     std::fs::copy(&theirs, &name).unwrap();
     let out = s.script(&["--uninstall"], None);
@@ -3164,7 +3164,7 @@ fn uninstall_leaves_a_rusty_impulse_it_did_not_install() {
     );
 }
 
-/// As root for another user, $HOME and the rusty-impulse config are root's. sudo,
+/// As root for another user, $HOME and the impulse-shell config are root's. sudo,
 /// doas and pkexec name that user in the environment; after su the login name does
 /// (logname). Root with none of them (a login as root) is the user whose shell it is. A
 /// stand-in `id` says the script runs as root, a stand-in `logname` gives $RI_TEST_LOGNAME.
@@ -3172,7 +3172,7 @@ fn uninstall_leaves_a_rusty_impulse_it_did_not_install() {
 fn nothing_runs_as_root_for_another_user() {
     let s = Sandbox::new("root");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     let before = (installed_state(&s), listing(&s.state()));
     let stand_ins = s.dir.join("root-bin");
@@ -3250,20 +3250,20 @@ fn nobuild_installs_the_build_of_a_named_target() {
     std::fs::create_dir_all(target.join("debug")).unwrap();
     let nobuild = || b.install_with(&[("NOBUILD", "1")]);
 
-    refused(&nobuild(), "no rusty-impulse binary at");
-    let built = s.fake("rusty-impulse-named", "A");
-    std::fs::copy(&built, named.join("rusty-impulse")).unwrap();
+    refused(&nobuild(), "no impulse-shell binary at");
+    let built = s.fake("impulse-shell-named", "A");
+    std::fs::copy(&built, named.join("impulse-shell")).unwrap();
     ok(&nobuild());
     assert_eq!(b.calls(), "metadata\nmetadata\n");
     assert_eq!(s.installed(), std::fs::read(&built).unwrap());
 
-    let host = s.fake("rusty-impulse-host", "A");
-    std::fs::copy(&host, target.join("release/rusty-impulse")).unwrap();
+    let host = s.fake("impulse-shell-host", "A");
+    std::fs::copy(&host, target.join("release/impulse-shell")).unwrap();
     let before = listing(&s.prefix());
-    refused(&nobuild(), "more than one build of rusty-impulse");
+    refused(&nobuild(), "more than one build of impulse-shell");
     assert_eq!(listing(&s.prefix()), before);
 
-    std::fs::remove_file(named.join("rusty-impulse")).unwrap();
+    std::fs::remove_file(named.join("impulse-shell")).unwrap();
     ok(&nobuild());
     assert_eq!(s.installed(), std::fs::read(&host).unwrap());
 }
@@ -3278,7 +3278,7 @@ fn a_signal_while_the_release_is_stored_changes_nothing() {
         let (_, b) = b_is_installed_and_its_config_edited(&s);
         let before = installed_state(&s);
         write_tree(&s.source(), "C");
-        let c = s.fake("rusty-impulse-c", "C");
+        let c = s.fake("impulse-shell-c", "C");
         let out = hooked(&s, &Hook::Kill(THE_RELEASE, signal), &[], Some(&c));
         was_killed(&s, &out, signal);
         assert_eq!(s.installed(), std::fs::read(&b).unwrap(), "{step}");
@@ -3307,7 +3307,7 @@ fn a_signal_to_the_script_alone_while_the_release_is_stored_changes_nothing() {
         let before = installed_state(&s);
         write_tree(&s.source(), "C");
         std::fs::write(s.source().join("modules/Big.qml"), vec![b'/'; 1 << 20]).unwrap();
-        let c = s.fake("rusty-impulse-c", "C");
+        let c = s.fake("impulse-shell-c", "C");
         let out = hooked(&s, &Hook::Signal(THE_RELEASE, signal), &[], Some(&c));
         was_killed(&s, &out, signal);
         assert_eq!(installed_state(&s), before, "{step}");
@@ -3333,15 +3333,15 @@ fn a_signal_at_the_copy_changes_nothing(s: &Sandbox, path: &str, signal: &str, g
     };
     let plain = Hook::Fail("");
     write_tree(&s.source(), "A");
-    ok(&install(&plain, &s.fake("rusty-impulse-a", "A")));
+    ok(&install(&plain, &s.fake("impulse-shell-a", "A")));
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     ok(&install(&plain, &b));
     std::fs::write(s.config().join("note.txt"), "mine").unwrap();
     let before = installed_state(s);
     write_tree(&s.source(), "C");
     std::fs::write(s.source().join("modules/Big.qml"), vec![b'/'; 1 << 20]).unwrap();
-    let c = s.fake("rusty-impulse-c", "C");
+    let c = s.fake("impulse-shell-c", "C");
     let hook = if goes_on {
         Hook::Signal(THE_RELEASE, signal)
     } else {
@@ -3414,10 +3414,10 @@ fn a_signal_while_a_binary_from_before_releases_becomes_a_release_keeps_it() {
         let config = listing(&s.config());
         let legacy = "#!/bin/sh\n# legacy\n";
         std::fs::create_dir_all(s.prefix().join("bin")).unwrap();
-        let installed = s.prefix().join("bin/rusty-impulse");
+        let installed = s.prefix().join("bin/impulse-shell");
         std::fs::write(&installed, legacy).unwrap();
         set_mode(&installed, 0o755);
-        let a = s.fake("rusty-impulse-a", "A");
+        let a = s.fake("impulse-shell-a", "A");
         let out = hooked(&s, &Hook::Kill(THE_NAME, signal), &[], Some(&a));
         was_killed(&s, &out, signal);
         assert_eq!(s.installed(), legacy.as_bytes(), "{step}");
@@ -3444,7 +3444,7 @@ fn a_signal_while_a_failed_switch_is_undone_leaves_a_shell_that_starts() {
         let s = Sandbox::new(&format!("kill-undo-{signal}"));
         let (_, b) = b_is_installed_and_its_config_edited(&s);
         write_tree(&s.source(), "C");
-        let c = s.fake("rusty-impulse-c", "C");
+        let c = s.fake("impulse-shell-c", "C");
         let hook = Hook::FailThenKill(TO_A_RELEASE, THE_CONFIG_BACK, signal);
         let out = hooked(&s, &hook, &[], Some(&c));
         was_killed(&s, &out, signal);
@@ -3467,7 +3467,7 @@ fn a_signal_while_a_killed_install_is_finished_leaves_a_shell_that_starts() {
         let s = Sandbox::new(&format!("kill-recover-{signal}"));
         let (_, b) = b_is_installed_and_its_config_edited(&s);
         write_tree(&s.source(), "C");
-        let c = s.fake("rusty-impulse-c", "C");
+        let c = s.fake("impulse-shell-c", "C");
         let out = hooked(&s, &Hook::Kill(PREVIOUS, "KILL"), &[], Some(&c));
         was_killed(&s, &out, "KILL");
         assert!(s.release("current").unwrap().ends_with(".switch"), "{step}");
@@ -3547,7 +3547,7 @@ fn a_prefix_the_user_cannot_write_is_installed_through_sudo() {
     };
 
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&run(&plain, &[], Some(&a)));
     assert!(calls().contains("mkdir -p"), "{}", calls());
     assert_eq!(s.installed(), std::fs::read(&a).unwrap());
@@ -3555,7 +3555,7 @@ fn a_prefix_the_user_cannot_write_is_installed_through_sudo() {
     read_only("the first install");
 
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     ok(&run(&plain, &[], Some(&b)));
     assert_eq!(s.installed(), std::fs::read(&b).unwrap());
     ok(&run(&plain, &["--rollback"], None));
@@ -3575,7 +3575,7 @@ fn a_prefix_the_user_cannot_write_is_installed_through_sudo() {
     // script itself.
     std::fs::write(s.config().join("note.txt"), "mine").unwrap();
     write_tree(&s.source(), "C");
-    let c = s.fake("rusty-impulse-c", "C");
+    let c = s.fake("impulse-shell-c", "C");
     let out = run(&Hook::Kill(THE_NEW_CONFIG, "KILL"), &[], Some(&c));
     was_killed(&s, &out, "KILL");
     assert!(s.release("current").unwrap().ends_with(".switch"));
@@ -3604,7 +3604,7 @@ fn uninstall_after_a_killed_switch_leaves_a_whole_config() {
         b_is_installed_and_its_config_edited(&s);
         let edited = listing(&s.config());
         write_tree(&s.source(), "C");
-        let c = s.fake("rusty-impulse-c", "C");
+        let c = s.fake("impulse-shell-c", "C");
         let out = hooked(&s, &Hook::Kill(at, "KILL"), &[], Some(&c));
         was_killed(&s, &out, "KILL");
 
@@ -3614,7 +3614,7 @@ fn uninstall_after_a_killed_switch_leaves_a_whole_config() {
         assert_eq!(names(&s.prefix().join("bin")), [""; 0], "`{at}`");
         assert_eq!(
             names(s.config().parent().unwrap()),
-            ["rusty-impulse"],
+            ["impulse-shell"],
             "`{at}`"
         );
         let copies = kept(&s);
@@ -3625,7 +3625,7 @@ fn uninstall_after_a_killed_switch_leaves_a_whole_config() {
         } else {
             assert_eq!(listing(&s.config()), listing(&s.source()), "`{at}`");
             assert_eq!(copies.len(), 1, "`{at}`: {copies:?}");
-            let copy = s.state().join("rusty-impulse").join(&copies[0]);
+            let copy = s.state().join("impulse-shell").join(&copies[0]);
             assert_eq!(listing(&copy), edited, "`{at}`");
         }
     }
@@ -3638,18 +3638,18 @@ fn uninstall_after_a_killed_switch_leaves_a_whole_config() {
 fn the_switch_script_passes_the_descriptors_it_was_started_with_on() {
     let s = Sandbox::new("switch-fds");
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     write_tree(&s.source(), "B");
     let out = hooked(
         &s,
         &Hook::Kill(PREVIOUS, "KILL"),
         &[],
-        Some(&s.fake("rusty-impulse-b", "B")),
+        Some(&s.fake("impulse-shell-b", "B")),
     );
     was_killed(&s, &out, "KILL");
     assert!(s.release("current").unwrap().ends_with(".switch"));
     for r in s.releases().iter().filter(|r| *r != ".switch") {
-        let release = s.lib().join("releases").join(r).join("rusty-impulse");
+        let release = s.lib().join("releases").join(r).join("impulse-shell");
         let says = "#!/bin/sh\nfor fd in 3 4 5 6 7 8 9; do [ ! -p /dev/fd/$fd ] || echo \"pipe $fd\"; done\n";
         std::fs::write(release, says).unwrap();
     }
@@ -3657,7 +3657,7 @@ fn the_switch_script_passes_the_descriptors_it_was_started_with_on() {
         let (rd, _wr) = std::io::pipe().unwrap();
         let out = Command::new("bash")
             .args(["-c", &format!("exec \"$0\" {fd}<&0")])
-            .arg(s.prefix().join("bin/rusty-impulse"))
+            .arg(s.prefix().join("bin/impulse-shell"))
             .stdin(rd)
             .output()
             .unwrap();
@@ -3666,7 +3666,7 @@ fn the_switch_script_passes_the_descriptors_it_was_started_with_on() {
     }
 }
 
-/// The running shell `rusty-impulse -p DIR` of [`a_shell_started_through_the_switch_reloads_into_the_release_installed_since`].
+/// The running shell `impulse-shell -p DIR` of [`a_shell_started_through_the_switch_reloads_into_the_release_installed_since`].
 struct Shell {
     child: std::process::Child,
     log: std::sync::Arc<testenv::Log>,
@@ -3704,9 +3704,9 @@ impl Shell {
             .collect()
     }
 
-    /// `rusty-impulse -p DIR ipc call t FUNCTION`.
+    /// `impulse-shell -p DIR ipc call t FUNCTION`.
     fn call(&self, function: &str) {
-        let out = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        let out = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(&self.dir)
             .args(["ipc", "call", "t", function])
@@ -3751,15 +3751,15 @@ fn a_shell_started_through_the_switch_reloads_into_the_release_installed_since()
     };
     let real = |release: &Path| {
         std::fs::copy(
-            env!("CARGO_BIN_EXE_rusty-impulse"),
-            release.join("rusty-impulse"),
+            env!("CARGO_BIN_EXE_impulse-shell"),
+            release.join("impulse-shell"),
         )
         .unwrap();
-        release.join("rusty-impulse")
+        release.join("impulse-shell")
     };
     let s = Sandbox::new("reload-after-switch");
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("rusty-impulse-a", "A")));
+    ok(&s.install(&s.fake("impulse-shell-a", "A")));
     let a = s.release("current").unwrap();
     // Killed once the config is B's and no link is switched: the script starts B.
     write_tree(&s.source(), "B");
@@ -3767,7 +3767,7 @@ fn a_shell_started_through_the_switch_reloads_into_the_release_installed_since()
         &s,
         &Hook::Kill(PREVIOUS, "KILL"),
         &[],
-        Some(&s.fake("rusty-impulse-b", "B")),
+        Some(&s.fake("impulse-shell-b", "B")),
     );
     was_killed(&s, &out, "KILL");
     assert!(s.release("current").unwrap().ends_with(".switch"));
@@ -3818,7 +3818,7 @@ ShellRoot {
     let display = Path::new(&std::env::var_os("XDG_RUNTIME_DIR").unwrap_or_default()).join(display);
     let env = [("XDG_RUNTIME_DIR", run), ("WAYLAND_DISPLAY", display)];
     let (rd, wr) = std::io::pipe().unwrap();
-    let child = Command::new(s.prefix().join("bin/rusty-impulse"))
+    let child = Command::new(s.prefix().join("bin/impulse-shell"))
         .arg("-p")
         .arg(&dir)
         .env("RI_INTERP", "1")
@@ -3841,11 +3841,11 @@ ShellRoot {
     assert_eq!(exe(pid), b, "the switch's script did not start B");
 
     write_tree(&s.source(), "C");
-    ok(&s.install(&s.fake("rusty-impulse-c", "C")));
+    ok(&s.install(&s.fake("impulse-shell-c", "C")));
     let c = real(&s.release("current").unwrap());
-    assert_eq!(s.release("previous").unwrap().join("rusty-impulse"), b);
+    assert_eq!(s.release("previous").unwrap().join("impulse-shell"), b);
     assert_eq!(
-        std::fs::canonicalize(s.prefix().join("bin/rusty-impulse")).unwrap(),
+        std::fs::canonicalize(s.prefix().join("bin/impulse-shell")).unwrap(),
         c
     );
 
@@ -3878,7 +3878,7 @@ fn id_of(s: &Sandbox, name: &str) -> Option<String> {
 fn a_release_marked_good_outlives_two_installs_and_is_rolled_back_to() {
     let s = Sandbox::new("good");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     let tree_a = listing(&s.config());
     let id_a = id_of(&s, "current").unwrap();
@@ -3901,10 +3901,10 @@ fn a_release_marked_good_outlives_two_installs_and_is_rolled_back_to() {
     );
 
     write_tree(&s.source(), "B");
-    ok(&s.install(&s.fake("rusty-impulse-b", "B")));
+    ok(&s.install(&s.fake("impulse-shell-b", "B")));
     let id_b = id_of(&s, "current").unwrap();
     write_tree(&s.source(), "C");
-    let c = s.fake("rusty-impulse-c", "C");
+    let c = s.fake("impulse-shell-c", "C");
     ok(&s.install(&c));
     let id_c = id_of(&s, "current").unwrap();
     // The pair is C and B; A is neither and is still there.
@@ -3947,7 +3947,7 @@ fn mark_good_refuses_another_binary_and_a_later_mark_replaces_the_first() {
     let s = Sandbox::new("mark");
     refused(&s.script(&["--mark-good"], None), "nothing is installed");
     write_tree(&s.source(), "A");
-    let a = s.fake("rusty-impulse-a", "A");
+    let a = s.fake("impulse-shell-a", "A");
     ok(&s.install(&a));
     let id_a = id_of(&s, "current").unwrap();
     let sha = |p: &Path| {
@@ -3955,7 +3955,7 @@ fn mark_good_refuses_another_binary_and_a_later_mark_replaces_the_first() {
         text(&out.stdout)[..64].to_string()
     };
     write_tree(&s.source(), "B");
-    let b = s.fake("rusty-impulse-b", "B");
+    let b = s.fake("impulse-shell-b", "B");
     ok(&s.install(&b));
     let id_b = id_of(&s, "current").unwrap();
     let before = listing(&s.dir);
@@ -3978,7 +3978,7 @@ fn mark_good_refuses_another_binary_and_a_later_mark_replaces_the_first() {
     ok(&cmd.env("SHA256", sha(&b)).output().unwrap());
     assert_eq!(id_of(&s, "good").as_deref(), Some(id_b.as_str()));
     write_tree(&s.source(), "C");
-    ok(&s.install(&s.fake("rusty-impulse-c", "C")));
+    ok(&s.install(&s.fake("impulse-shell-c", "C")));
     assert_eq!(id_of(&s, "good").as_deref(), Some(id_b.as_str()));
     assert_eq!(id_of(&s, "previous").as_deref(), Some(id_b.as_str()));
     assert!(!s.releases().contains(&id_a), "{:?}", s.releases());

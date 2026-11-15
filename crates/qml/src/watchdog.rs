@@ -114,7 +114,7 @@ impl Slot {
             Err(e) => {
                 if !self.refused.swap(true, Ordering::Relaxed) {
                     elog::eprintln!(
-                        "rusty-impulse: js watchdog: cannot arm the timer of thread {}, {then}: {e}",
+                        "impulse-shell: js watchdog: cannot arm the timer of thread {}, {then}: {e}",
                         self.tid
                     );
                 }
@@ -337,7 +337,7 @@ fn watchdog() -> Option<&'static Watchdog> {
                 run(&set, &watched);
             });
         if let Err(e) = spawned {
-            elog::eprintln!("rusty-impulse: js watchdog: cannot start its thread: {e}");
+            elog::eprintln!("impulse-shell: js watchdog: cannot start its thread: {e}");
             return None;
         }
         let tid = rx.recv().ok()?;
@@ -364,7 +364,7 @@ fn register() -> Arc<Slot> {
         let t = Timer::new(libc::CLOCK_MONOTONIC, wd);
         if t.is_none() {
             elog::eprintln!(
-                "rusty-impulse: js watchdog: cannot make the timer of thread {tid}, its scripts run \
+                "impulse-shell: js watchdog: cannot make the timer of thread {tid}, its scripts run \
                  with no time limit: {}",
                 std::io::Error::last_os_error()
             );
@@ -794,7 +794,7 @@ mod tests {
         // SAFETY: gettid(2) has no preconditions.
         let tid = unsafe { libc::gettid() };
         let line = format!(
-            "rusty-impulse: js watchdog: cannot make the timer of thread {tid}, its scripts run with no \
+            "impulse-shell: js watchdog: cannot make the timer of thread {tid}, its scripts run with no \
              time limit: Resource temporarily unavailable (os error 11)"
         );
         assert!(log.lines().any(|l| l == line), "stderr: {log:?}");
@@ -831,7 +831,7 @@ mod tests {
         // SAFETY: gettid(2) has no preconditions.
         let tid = unsafe { libc::gettid() };
         let line = format!(
-            "rusty-impulse: js watchdog: cannot arm the timer of thread {tid}, its scripts run with no \
+            "impulse-shell: js watchdog: cannot arm the timer of thread {tid}, its scripts run with no \
              time limit: Invalid argument (os error 22)"
         );
         assert_eq!(
@@ -862,7 +862,7 @@ mod tests {
             slot()
         });
         assert!(
-            log.contains("rusty-impulse: js watchdog: cannot start its thread:"),
+            log.contains("impulse-shell: js watchdog: cannot start its thread:"),
             "stderr: {log:?}"
         );
         assert!(s.timer.is_none());

@@ -1,7 +1,7 @@
 //! The scripts of `tools/stress`, run without the guest: `$HOME` is a directory holding them
 //! as `~/h`, and `hyprctl`, `pkill` and the other programs they call are scripts. The shell
 //! under test is a process that does nothing; called as its own IPC client
-//! (`rusty-impulse -c rusty-impulse ipc call ...`, which is how the scripts reach it) it answers.
+//! (`impulse-shell -c impulse-shell ipc call ...`, which is how the scripts reach it) it answers.
 //!
 //! What is pinned: a scenario that could not do its work does not end `OK` (a program it
 //! needs is missing, a click was not made, a lock round did not unlock), and `matrix.sh`
@@ -18,7 +18,7 @@ fn script(path: &Path, text: &str) {
     std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755)).unwrap();
 }
 
-/// The program `rusty-impulse`: its IPC client answers every call (after `on_call`, bash run
+/// The program `impulse-shell`: its IPC client answers every call (after `on_call`, bash run
 /// with the call's arguments); started with no arguments it is the shell, which has nothing to
 /// do.
 fn shell(on_call: &str) -> String {
@@ -66,7 +66,7 @@ esac
         // Quickshell's `qs` does not find the native shell: a script that asked it would wait.
         script(&bin.join("qs"), "#!/bin/bash\nexit 255\n");
         // The one shell there is: the process of $RUN/pid. (The real pkill would look for
-        // every `rusty-impulse` of the machine.)
+        // every `impulse-shell` of the machine.)
         script(
             &bin.join("pkill"),
             "#!/bin/bash\np=$(cat \"$RUN/pid\" 2>/dev/null)\n[ -n \"$p\" ] && [ -d /proc/$p ] && kill \"$p\"\n",
@@ -93,7 +93,7 @@ esac
                 "#!/bin/bash\nexec tail -f /dev/null\n",
             );
         }
-        script(&bin.join("rusty-impulse"), &shell(""));
+        script(&bin.join("impulse-shell"), &shell(""));
         Guest { tmp }
     }
 
@@ -121,7 +121,7 @@ esac
             .args(args)
             .env("HOME", self.home())
             .env("PATH", format!("{}:{path}", self.bin().display()))
-            .env("BIN", self.bin().join("rusty-impulse"))
+            .env("BIN", self.bin().join("impulse-shell"))
             .envs(env.iter().copied())
             .output()
             .expect("bash")
@@ -468,9 +468,9 @@ fn the_lock_scenario_fails_unless_every_round_unlocked() {
         ),
     );
     script(
-        &guest.bin().join("rusty-impulse"),
+        &guest.bin().join("impulse-shell"),
         &shell(&format!(
-            "[ \"$*\" = '-c rusty-impulse ipc call lock activate' ] && echo activate >>{}\n",
+            "[ \"$*\" = '-c impulse-shell ipc call lock activate' ] && echo activate >>{}\n",
             seen.display()
         )),
     );

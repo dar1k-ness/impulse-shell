@@ -88,10 +88,10 @@ fn probes_set_what_the_commands_give() {
     let (home, cfg, bin) = (var("HOME"), var("XDG_CONFIG_HOME"), var("PATH"));
     let base = home.parent().unwrap().to_path_buf();
     std::fs::create_dir_all(home.join("Downloads")).unwrap();
-    std::fs::create_dir_all(cfg.join("rusty-impulse")).unwrap();
+    std::fs::create_dir_all(cfg.join("impulse-shell")).unwrap();
     std::fs::create_dir_all(&bin).unwrap();
     std::fs::write(
-        cfg.join("rusty-impulse/config.json"),
+        cfg.join("impulse-shell/config.json"),
         r#"{"conflictKiller": {"autoKillNotificationDaemons": true}, "lock": {"useHyprlock": true}}"#,
     )
     .unwrap();

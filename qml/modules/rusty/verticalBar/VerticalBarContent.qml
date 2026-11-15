@@ -235,7 +235,7 @@ Item { // Bar content region
     }
 
     // A panel of the layout (layout.toml) on this screen replaces the built-in content.
-    // ri-only: Qt never loads it (no panel container there), so `qs -c rusty-impulse` is unchanged.
+    // ri-only: Qt never loads it (no panel container there), so `qs -c impulse-shell` is unchanged.
     Loader {
         id: panelContent
         anchors.fill: parent

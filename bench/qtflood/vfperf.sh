@@ -5,10 +5,10 @@ export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
 export LANG=en_US.UTF-8
 M=$1; O=$2; N=${3:-50}; K=${4:-300}; mkdir -p $O
 # The original, which ORIG runs: `bench/vm.sh sync` unpacks it here (tools/parity/orig.sh). The
-# `rusty-impulse` config is the project's own tree, which Quickshell cannot load.
+# `impulse-shell` config is the project's own tree, which Quickshell cannot load.
 T=${ORIG_TREE:-$HOME/parity-original}
 # SIGTERM every shell process and return when they have exited (SIGKILL after 10 s without an exit)
-stop_shell() { local n='qs|quickshell|rusty-impulse'; pkill -x "$n" || return 0
+stop_shell() { local n='qs|quickshell|impulse-shell'; pkill -x "$n" || return 0
   timeout 10 pidwait -x "$n"; [ $? != 124 ] || { pkill -9 -x "$n"; pidwait -x "$n"; }; return 0; }
 stop_shell
 python3 - "$N" <<'PY'
@@ -20,8 +20,8 @@ PY
 # The native shell reads its history under its own name for the directory.
 mkdir -p ~/.cache/rustshell/notifications && cp ~/.cache/quickshell/notifications/notifications.json ~/.cache/rustshell/notifications/
 if [ "$M" = ORIG ]; then setsid quickshell ${QSARGS} -p "$T" > $O/shell.log 2>&1 < /dev/null &
-else setsid ${BIN:-$HOME/bin/rusty-impulse} ~/.config/rustshell/rusty-impulse > $O/shell.log 2>&1 < /dev/null & fi
-[ "$M" = ORIG ] && { S='quickshell|qs'; C="-p $T"; Q=qs; } || { S=rusty-impulse; C="-c rusty-impulse"; Q=${BIN:-$HOME/bin/rusty-impulse}; }
+else setsid ${BIN:-$HOME/bin/impulse-shell} ~/.config/rustshell/impulse-shell > $O/shell.log 2>&1 < /dev/null & fi
+[ "$M" = ORIG ] && { S='quickshell|qs'; C="-p $T"; Q=qs; } || { S=impulse-shell; C="-c impulse-shell"; Q=${BIN:-$HOME/bin/impulse-shell}; }
 sleep ${WAIT:-40}; P=$(pgrep -x "$S" | head -1); [ -n "$P" ] || { echo "$M: no $S process, see $O/shell.log" >&2; exit 1; }
 t(){ awk '{print $14+$15}' /proc/$P/stat; }
 ipc(){ local s=$(date +%s%N); timeout 300 $Q $C ipc call cliphistService update >/dev/null 2>&1; echo $(( ($(date +%s%N)-s)/1000000 )); }

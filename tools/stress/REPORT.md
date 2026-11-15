@@ -3,8 +3,8 @@
 Guest as below (QEMU Arch, Hyprland 0.56.2, Quickshell 0.3.2, Qt 6.12, llvmpipe, 8 vCPU / 20 GB).
 
 ```
-TAG=gate FLOOD=5000 BIN=~/rusty-impulse-gate ~/h/matrix.sh native; TAG=gate FLOOD=5000 ~/h/matrix.sh orig
-BIN=~/rusty-impulse-gate ~/h/shellcycle.sh native 20; ~/h/shellcycle.sh orig 20
+TAG=gate FLOOD=5000 BIN=~/impulse-shell-gate ~/h/matrix.sh native; TAG=gate FLOOD=5000 ~/h/matrix.sh orig
+BIN=~/impulse-shell-gate ~/h/shellcycle.sh native 20; ~/h/shellcycle.sh orig 20
 ```
 
 ## Verdict
@@ -56,8 +56,8 @@ Native anon RSS steps up within the first round of panel opens and then stays fl
 
 | native build | flood anon MB | panels anon MB (plateau) |
 |---|---|---|
-| #81 (`rusty-impulse-fix`) | 162→222 | 263→468 (457-527) |
-| #87 head (`rusty-impulse-h87`) | 375→1189 | 1189→1188 (1188-1267) |
+| #81 (`impulse-shell-fix`) | 162→222 | 263→468 (457-527) |
+| #87 head (`impulse-shell-h87`) | 375→1189 | 1189→1188 (1188-1267) |
 | ab08bca (#91) | 162→309 | 309→1272 (1205-1293) |
 | 9dbae36 gate (after full flood run) | 200→241 | 789→1105 (1063-1170) |
 
@@ -66,7 +66,7 @@ already reached that level during the flood). Still below the original (1357 ano
 
 ### Guest-only: interpreted fallback
 
-The guest's `~/.config/rustshell/rusty-impulse` is older than `qml` (no assistant chat; `Persistent.qml`,
+The guest's `~/.config/rustshell/impulse-shell` is older than `qml` (no assistant chat; `Persistent.qml`,
 `LauncherSearch.qml`, `LeftSidebarButton.qml`, `SidebarLeftContent.qml`, OSK files differ), so those files run
 interpreted. Builds made later the same day from the same sources (`9dbae36`, `2577151`, `685f425`) then log
 `Persistent is not defined` / `LauncherSearch is not defined` at startup, while the `9dbae36` gate binary built at
@@ -80,7 +80,7 @@ Build: `ee0ad68` (#79-#83 merged), guest workspace `cargo build --release`. Same
 scripts as the gate run below.
 
 ```
-BIN=~/rusty-impulse-head TAG=head FLOOD=5000 ~/h/matrix.sh native; TAG=head FLOOD=5000 ~/h/matrix.sh orig
+BIN=~/impulse-shell-head TAG=head FLOOD=5000 ~/h/matrix.sh native; TAG=head FLOOD=5000 ~/h/matrix.sh orig
 ~/h/shellcycle.sh native 20; ~/h/shellcycle.sh orig 20
 ```
 
@@ -151,8 +151,8 @@ started by Hyprland (`launch.sh` via `exec_cmd`) so they live in the graphical l
 ```
 TAG=long FLOOD=5000 ~/h/matrix.sh native; TAG=long FLOOD=5000 ~/h/matrix.sh orig
 ~/h/shellcycle.sh native 20; ~/h/shellcycle.sh orig 20
-BIN=~/rusty-impulse-base CLEAN=1 TAG=abbase ~/h/matrix.sh native panels osk    # #81 A/B
-BIN=~/rusty-impulse-fix  CLEAN=1 TAG=abfix  ~/h/matrix.sh native panels osk
+BIN=~/impulse-shell-base CLEAN=1 TAG=abbase ~/h/matrix.sh native panels osk    # #81 A/B
+BIN=~/impulse-shell-fix  CLEAN=1 TAG=abfix  ~/h/matrix.sh native panels osk
 ```
 
 Default scenario list now: `notify_flood panels hotplug services netchurn reload windows clip volume mpris config
@@ -246,7 +246,7 @@ rounds, identical in both shells: the scripted click does not land on the dialog
 Native anon RSS rose ~88 MB during the first 4 min of `idle` (bar only) after `osk`, then stayed flat to the byte
 for the remaining 6 min and through the sidebar/overview phases; not a leak. The original grows 68 MB in `idle`.
 
-# Previous run: compiled `rusty-impulse` vs `qs -c ii` (2026-10-28)
+# Previous run: compiled `impulse-shell` vs `qs -c ii` (2026-10-28)
 
 Build: the development branch with `ri-native` merged (local merge `4e01cae`; it differs from the
 official merge `1b4e8b1` only in `types.rs` lookup perf and the `loadFailed` code path, no lifecycle change).
@@ -372,7 +372,7 @@ Original `qs -c ii`:
 | lock | OK | 1536 -> 1598 | 1346 -> 1397 | 73 -> 73 | 41 -> 41 | 414.8 | 184 | 2924/0 | 124s |
 | idle | OK | 1598 -> 2134 | 1397 -> 1941 | 73 -> 73 | 41 -> 41 | 18.3 | 4 | 145/0 | 850s |
 
-Native `rusty-impulse` (startup to first IPC reply 1.55 s):
+Native `impulse-shell` (startup to first IPC reply 1.55 s):
 
 | scenario | result | RSS MB | anon MB | fds | threads | CPU s | errors | max IPC ms/timeouts | dur |
 |---|---|---|---|---|---|---|---|---|---|

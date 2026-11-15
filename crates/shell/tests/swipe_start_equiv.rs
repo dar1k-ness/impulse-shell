@@ -3,7 +3,7 @@
 //! set, and QQmlAnimationTimer::startAnimations steps a clock that is behind to the current
 //! time first (QUnifiedTimer::maybeUpdateAnimationsToCurrentTime). The move begins at that
 //! step, however long ago the step before it was. The real quickshell running the fixture vs
-//! the native shell (`rusty-impulse -p`).
+//! the native shell (`impulse-shell -p`).
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
 
@@ -55,7 +55,7 @@ fn both(qml: &str) -> Option<[Vec<String>; 2]> {
     let base = tempfile::tempdir().unwrap();
     let qt = line("qs", &base.path().join("orig"), qml);
     let ours = line(
-        env!("CARGO_BIN_EXE_rusty-impulse"),
+        env!("CARGO_BIN_EXE_impulse-shell"),
         &base.path().join("native"),
         qml,
     );

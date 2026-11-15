@@ -560,7 +560,7 @@ fn image_downloader_skips_error_pages_and_reports_real_size() {
 /// Run `ImageDownloaderProcess`'s type, `ImageDownload`, for `url` -> `file` under `d`: exit
 /// code and stdout.
 fn run_image_downloader(d: &std::path::Path, url: &str, file: &std::path::Path) -> (f64, String) {
-    let qml_dir = d.join("rusty-impulse/modules/common/utils");
+    let qml_dir = d.join("impulse-shell/modules/common/utils");
     std::fs::create_dir_all(&qml_dir).unwrap();
     let src = format!(
         r#"import QtQuick
@@ -600,7 +600,7 @@ ImageDownload {{
 /// Run PlayerControl's `coverArtDownloader`, a `Download` with `ipv4`, for `url` -> `art` under
 /// `d`; its exit code.
 fn run_cover_art_job(d: &std::path::Path, url: &str, art: &std::path::Path) -> f64 {
-    let qml_dir = d.join("rusty-impulse/modules/rusty/mediaControls");
+    let qml_dir = d.join("impulse-shell/modules/rusty/mediaControls");
     std::fs::create_dir_all(&qml_dir).unwrap();
     let src = format!(
         r#"import QtQuick

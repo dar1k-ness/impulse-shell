@@ -80,7 +80,7 @@ fn wallpaper_switch_waits_for_kdes_lock_off_the_loop() {
     if !testenv::in_own_process(TEST) {
         let dir = tempfile::tempdir().unwrap();
         let home = dir.path();
-        let cfg = home.join(".config/rusty-impulse");
+        let cfg = home.join(".config/impulse-shell");
         std::fs::create_dir_all(&cfg).unwrap();
         // No terminal is recoloured: the run would write to every terminal of this user.
         std::fs::write(
@@ -205,7 +205,7 @@ fn wallpaper_switch_waits_for_kdes_lock_off_the_loop() {
         !home.join(".config/kdeglobals.lock").exists(),
         "the lock is released"
     );
-    let config = std::fs::read_to_string(home.join(".config/rusty-impulse/config.json"));
+    let config = std::fs::read_to_string(home.join(".config/impulse-shell/config.json"));
     let config: serde_json::Value = serde_json::from_str(&config.unwrap()).unwrap();
     assert_eq!(config["background"]["wallpaperPath"], image);
 }

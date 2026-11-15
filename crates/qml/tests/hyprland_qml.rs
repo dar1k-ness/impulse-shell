@@ -121,7 +121,7 @@ fn serve(l: UnixListener, f: &'static Fake, name: &'static str, keep_open: bool)
 
 /// Whether this is `test`'s own process (`testenv::run_in_own_process`), whose
 /// `XDG_RUNTIME_DIR`, `HYPRLAND_INSTANCE_SIGNATURE`, `XDG_CONFIG_HOME` and
-/// `RUSTY_IMPULSE_VIRTUAL_ENV` name a fresh directory for [`fake`]. Elsewhere it runs
+/// `IMPULSE_SHELL_VIRTUAL_ENV` name a fresh directory for [`fake`]. Elsewhere it runs
 /// `test` there and returns false.
 fn own_process(test: &str) -> bool {
     if testenv::in_own_process(test) {
@@ -129,7 +129,7 @@ fn own_process(test: &str) -> bool {
     }
     let rt = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(rt.path().join("hypr/TEST")).unwrap();
-    // hyprconfigurator.py's shebang sources $RUSTY_IMPULSE_VIRTUAL_ENV/bin/activate
+    // hyprconfigurator.py's shebang sources $IMPULSE_SHELL_VIRTUAL_ENV/bin/activate
     // and execs `python`: an empty activate keeps the PATH python.
     let venv = rt.path().join("venv");
     std::fs::create_dir_all(venv.join("bin")).unwrap();
@@ -140,7 +140,7 @@ fn own_process(test: &str) -> bool {
             ("XDG_RUNTIME_DIR", rt.path().as_os_str()),
             ("HYPRLAND_INSTANCE_SIGNATURE", std::ffi::OsStr::new("TEST")),
             ("XDG_CONFIG_HOME", rt.path().join("config").as_os_str()),
-            ("RUSTY_IMPULSE_VIRTUAL_ENV", venv.as_os_str()),
+            ("IMPULSE_SHELL_VIRTUAL_ENV", venv.as_os_str()),
         ],
     );
     false
@@ -194,7 +194,7 @@ const BASE_OVERRIDES: &str = "-- ii shell overrides\nhl.config({general={gaps_in
 /// runs, no write-then-reload) and a shell-overrides file for HyprlandConfig.
 fn reset_files(f: &Fake) {
     let _ = std::fs::remove_dir_all(f.conf());
-    let ri_conf = f.conf().join("rusty-impulse");
+    let ri_conf = f.conf().join("impulse-shell");
     std::fs::create_dir_all(&ri_conf).unwrap();
     std::fs::write(ri_conf.join("config.json"), "{}").unwrap();
     let o = f.overrides();
@@ -402,7 +402,7 @@ fn boot_with(
     sunset: &str,
 ) -> (Runtime, Host, usize, Vec<(&'static str, String)>) {
     reset_files(f);
-    std::fs::write(f.conf().join("rusty-impulse/config.json"), config).unwrap();
+    std::fs::write(f.conf().join("impulse-shell/config.json"), config).unwrap();
     f.take();
     *f.sunset.lock().unwrap() = sunset.into();
     let mut rt = Runtime::new(Some(ri()));
@@ -693,7 +693,7 @@ fn hyprland_xkb_ignores_virtual_keyboards() {
             props: &["currentLayoutName", "osk"],
             events: &[
                 "activelayout>>kb,Russian",
-                "activelayout>>hl-virtual-keyboard-rusty-impulse,English (US)",
+                "activelayout>>hl-virtual-keyboard-impulse-shell,English (US)",
                 "activelayout>>hl-virtual-keyboard,English (US)",
             ],
             ..Default::default()
@@ -717,7 +717,7 @@ fn hyprland_xkb_fetch_skips_virtual_main_keyboard() {
     }
     let f = fake();
     *f.devices.lock().unwrap() = Some(
-        r#"{"mice":[],"keyboards":[{"name":"kb","layout":"us,ru","active_keymap":"Russian","main":false},{"name":"hl-virtual-keyboard-rusty-impulse","layout":"us,ru","active_keymap":"English (US)","main":true}]}"#,
+        r#"{"mice":[],"keyboards":[{"name":"kb","layout":"us,ru","active_keymap":"Russian","main":false},{"name":"hl-virtual-keyboard-impulse-shell","layout":"us,ru","active_keymap":"English (US)","main":true}]}"#,
     );
     let o = run(
         &f,

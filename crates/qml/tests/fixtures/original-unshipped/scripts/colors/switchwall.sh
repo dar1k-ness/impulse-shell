@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-QUICKSHELL_CONFIG_NAME="rusty-impulse"
+QUICKSHELL_CONFIG_NAME="impulse-shell"
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
@@ -8,7 +8,7 @@ CONFIG_DIR="$XDG_CONFIG_HOME/rustshell/$QUICKSHELL_CONFIG_NAME"
 CACHE_DIR="$XDG_CACHE_HOME/rustshell"
 STATE_DIR="$XDG_STATE_HOME/rustshell"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SHELL_CONFIG_FILE="$XDG_CONFIG_HOME/rusty-impulse/config.json"
+SHELL_CONFIG_FILE="$XDG_CONFIG_HOME/impulse-shell/config.json"
 MATUGEN_DIR="$XDG_CONFIG_HOME/matugen"
 terminalscheme="$SCRIPT_DIR/terminal/scheme-base.json"
 
@@ -349,7 +349,7 @@ switch() {
     matugen "${matugen_args[@]}"
     mkdir -p "$STATE_DIR"/user/generated
     local scss="$STATE_DIR/user/generated/material_colors.scss"
-    source "$(eval echo $RUSTY_IMPULSE_VIRTUAL_ENV)/bin/activate"
+    source "$(eval echo $IMPULSE_SHELL_VIRTUAL_ENV)/bin/activate"
     python3 "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
         > "$scss.tmp"
     local gen_status=$?
@@ -393,7 +393,7 @@ main() {
 
     detect_scheme_type_from_image() {
         local img="$1"
-        source "$(eval echo $RUSTY_IMPULSE_VIRTUAL_ENV)/bin/activate"
+        source "$(eval echo $IMPULSE_SHELL_VIRTUAL_ENV)/bin/activate"
         "$SCRIPT_DIR"/scheme_for_image.py "$img" 2>/dev/null | tr -d '\n'
         deactivate
     }

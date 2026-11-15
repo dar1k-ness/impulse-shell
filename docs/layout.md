@@ -2,7 +2,7 @@
 
 | Path | What is in it |
 | --- | --- |
-| `crates/shell` | The `rusty-impulse` binary: Wayland client, layout, scene, GPU renderer, input, IPC, the `qs` command line. |
+| `crates/shell` | The `impulse-shell` binary: Wayland client, layout, scene, GPU renderer, input, IPC, the `qs` command line. |
 | `crates/qml` | QML parser, object model, bindings, signals, JS value model and builtins, and the original's services in Rust (notifications, PipeWire, tray, Hyprland, brightness, ...). |
 | `crates/qsg` | Drawing primitives: rectangles, shadows, shapes, text, blur, SVG, images. |
 | `crates/rigen` | Compiler from the original's JavaScript to Rust source. |
@@ -13,7 +13,7 @@
 | `crates/bits` | Build-time check that the flags of a hand-numbered bit set are distinct single bits, and a test that no such flag in `crates/` is declared outside it. |
 | `crates/testenv` | Test support: what a test does when its reference tool is missing. |
 | `crates/testscenes` | Test support: compiles the QML scenes of the shell's tests (`crates/shell/tests/scenes`) with `rigen`, so they run without the interpreter too. Tests only. |
-| `qml` | The shell's QML: what it is built from and tested against, and what an install copies to `~/.config/rustshell/rusty-impulse`. |
+| `qml` | The shell's QML: what it is built from and tested against, and what an install copies to `~/.config/rustshell/impulse-shell`. |
 | `install.sh` | The whole install by one command on Arch Linux: packages, build, install, the user's settings and Hyprland files, the start (docs/install.md). |
 | `tools/install.sh` | Build and install. |
 | `tools/testenv` | The test image (`Containerfile`) and the gate script (`ri-gate`). |

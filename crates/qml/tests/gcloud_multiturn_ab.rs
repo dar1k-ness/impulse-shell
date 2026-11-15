@@ -289,8 +289,8 @@ fn gcloud_vision_and_translate_match_the_original_commands() {
     if !testenv::in_own_process(TEST) {
         let d = tempfile::tempdir().unwrap();
         let conf = d.path().join("config");
-        std::fs::create_dir_all(conf.join("rusty-impulse")).unwrap();
-        std::fs::write(conf.join("rusty-impulse/config.json"), "{}").unwrap();
+        std::fs::create_dir_all(conf.join("impulse-shell")).unwrap();
+        std::fs::write(conf.join("impulse-shell/config.json"), "{}").unwrap();
         let log = d.path().join("proxy.log");
         std::fs::write(&log, "").unwrap();
         let mut vars: Vec<(&str, OsString)> = [

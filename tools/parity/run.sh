@@ -1,7 +1,7 @@
 #!/bin/bash
-# run.sh [SCENE...]: host side. Copies tools/parity into the guest, builds native rusty-impulse there from
-# the checkout `bench/vm.sh sync` put in ~/rusty-impulse, captures every scene under the original
-# (Quickshell running the tree ORIG names) and under native rusty-impulse, pulls both sets back and
+# run.sh [SCENE...]: host side. Copies tools/parity into the guest, builds native impulse-shell there from
+# the checkout `bench/vm.sh sync` put in ~/impulse-shell, captures every scene under the original
+# (Quickshell running the tree ORIG names) and under native impulse-shell, pulls both sets back and
 # compares them (compare.py).
 # Exit code: 0 every shot passed, 1 a shot differs for real, 2 the tool itself failed (a scene
 # that shot nothing or left something open, a stale build, a missing shot).

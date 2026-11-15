@@ -366,7 +366,7 @@ fn run() -> &'static str {
 }
 
 fn saved_dir() -> std::path::PathBuf {
-    crate::xdg::cache_home().join("rusty-impulse/notification-images")
+    crate::xdg::cache_home().join("impulse-shell/notification-images")
 }
 
 /// The on-disk copy of a source; `None` for anything not shaped like ours.

@@ -30,8 +30,8 @@ fn pick_for_me_asks_what_to_go_by_before_it_picks() {
     if !testenv::in_own_process(TEST) {
         let dir = tempfile::tempdir().unwrap();
         let home = dir.path();
-        std::fs::create_dir_all(home.join(".config/rusty-impulse")).unwrap();
-        std::fs::write(home.join(".config/rusty-impulse/config.json"), "{}\n").unwrap();
+        std::fs::create_dir_all(home.join(".config/impulse-shell")).unwrap();
+        std::fs::write(home.join(".config/impulse-shell/config.json"), "{}\n").unwrap();
         testenv::run_in_own_process(TEST, testenv::home_vars(home));
         return;
     }

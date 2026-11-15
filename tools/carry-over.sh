@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copies what a user keeps under the old names (illogical-impulse, ii, ii-rs, quickshell) to the
-# new ones (rusty-impulse, rustshell). Nothing under an old name is changed or removed, so the
+# new ones (impulse-shell, rustshell). Nothing under an old name is changed or removed, so the
 # old build still finds everything it reads: going back to it loses nothing.
 #
 #   tools/carry-over.sh              copy the data: settings, state, caches, the icon, the keyring
@@ -26,9 +26,9 @@ set -euo pipefail
 shopt -s nullglob dotglob
 
 # The names. WORD is what replaces "quickshell" in the names that are this project's own.
-OLD_APP=illogical-impulse NEW_APP=rusty-impulse
-OLD_BIN=ii-rs NEW_BIN=rusty-impulse
-OLD_TREE=ii NEW_TREE=rusty-impulse
+OLD_APP=illogical-impulse NEW_APP=impulse-shell
+OLD_BIN=ii-rs NEW_BIN=impulse-shell
+OLD_TREE=ii NEW_TREE=impulse-shell
 OLD_WORD=quickshell NEW_WORD=${RI_WORD:-rustshell}
 
 xdg() { local v=${!1-}; [[ $v == /* ]] || v=$HOME/$2; echo "$v"; }
@@ -93,9 +93,9 @@ rewrite() {
         -e "s#((\\.config|\\.local/state|\\.cache|_HOME\\}?|_home|_dir|Home|Dir)[\"' .]*/)$OLD_WORD([^[:alnum:]_-]|\$)#\\1$NEW_WORD\\3#g" \
         -e "s#/tmp/$OLD_WORD([^[:alnum:]_-]|\$)#/tmp/$NEW_WORD\\1#g" \
         -e "s#$OLD_APP#$NEW_APP#g" \
-        -e "s#ILLOGICAL_IMPULSE_#RUSTY_IMPULSE_#g" \
+        -e "s#ILLOGICAL_IMPULSE_#IMPULSE_SHELL_#g" \
         -e "s#(^|[^[:alnum:]_.-])$OLD_BIN([^[:alnum:]_.-]|\\.log|\$)#\\1$NEW_BIN\\2#g" \
-        -e "s#(^|[^[:alnum:]_.-])ii-shell([^[:alnum:]_.-]|\$)#\\1$NEW_BIN-shell\\2#g" \
+        -e "s#(^|[^[:alnum:]_.-])ii-shell([^[:alnum:]_.-]|\$)#\\1$NEW_BIN-start\\2#g" \
         -e "s#hl-virtual-keyboard-$OLD_BIN#hl-virtual-keyboard-$NEW_BIN#g" \
         -e "s#__ii_superIntr#__ri_superIntr#g" \
         -e "s#(-c[ \"',]+|qsConfig[\"']?[ ]*[=,][ ]*[\"'])$OLD_TREE([^[:alnum:]_-]|\$)#\\1$NEW_TREE\\2#g" \
@@ -121,7 +121,7 @@ rewrite_file() {
     cp -p -- "$f" "$tmp" && rewrite <"$f" >"$tmp" && mv -f -- "$tmp" "$f" || { rm -f -- "$tmp"; return 1; }
 }
 
-# Both folders are there (the old build already keeps layout.toml in ~/.config/rusty-impulse):
+# Both folders are there (the old build already keeps layout.toml in ~/.config/impulse-shell):
 # what the new one lacks is copied in, nothing in it is replaced.
 add_missing() {
     local old=$1 new=$2 rel n=0 kept=0
@@ -419,11 +419,11 @@ put_text() {
 }
 
 # The desktop widgets' layout (layout.toml, and the previous copy the shell keeps beside it) is
-# one file for both builds, in ~/.config/rusty-impulse. The new build reads what the old one
+# one file for both builds, in ~/.config/impulse-shell. The new build reads what the old one
 # wrote; the old one cannot read what the new one saves (edge = "rusty"): it writes "unknown
 # variant" to its log and shows its default layout. So --dots new keeps each of the two files
 # as it is at that moment, or that it is not there, and --dots old puts exactly that back.
-# What the new build saved is not lost: it stays beside the file as <name>.from-rusty-impulse,
+# What the new build saved is not lost: it stays beside the file as <name>.from-impulse-shell,
 # and the next --dots new makes it the file again when the file still is what --dots old put
 # there. A copy with that name that holds something else is kept under a name with the time;
 # of those only the newest stays, so they do not add up with every switch.

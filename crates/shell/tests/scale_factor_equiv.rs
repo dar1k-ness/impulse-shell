@@ -25,7 +25,7 @@ impl Drop for Kill {
     }
 }
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 /// The outputs side by side, in sway's layout pixels: 1920x1080 and 2560x1600 at 1.5.
 const LAYOUT: (u32, u32) = (1920 + 1707, 1080);
@@ -324,7 +324,7 @@ fn placed(log: &str) -> bool {
 
 /// Every surface's frame drawn after `t.paint` is on screen: the compositor answered what the
 /// surface asked for after the call, a frame callback (Quickshell) or a presentation feedback
-/// (rusty-impulse under `RI_LOG=ri::present`). Either's id is reused only once it is answered, so the
+/// (impulse-shell under `RI_LOG=ri::present`). Either's id is reused only once it is answered, so the
 /// first answer after the request is its own.
 fn painted(log: &str) -> bool {
     let lines: Vec<&str> = log.lines().collect();

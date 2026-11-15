@@ -893,7 +893,7 @@ fn undo_history_is_bounded() {
 fn default_path_is_under_xdg_config() {
     assert_eq!(
         default_path(),
-        crate::xdg::config_home().join("rusty-impulse/layout.toml")
+        crate::xdg::config_home().join("impulse-shell/layout.toml")
     );
 }
 
@@ -904,7 +904,7 @@ mod store {
 
     fn dir() -> (tempfile::TempDir, std::path::PathBuf) {
         let d = tempfile::tempdir().unwrap();
-        let p = d.path().join("rusty-impulse/layout.toml");
+        let p = d.path().join("impulse-shell/layout.toml");
         (d, p)
     }
 
@@ -1279,7 +1279,7 @@ fn the_migration_places_added_widgets_where_the_original_s_options_put_them() {
     let p = d.path().join("layout.toml");
     std::fs::write(&p, V1_WITHOUT_WEATHER).unwrap();
     let inputs = migrate::Inputs {
-        rusty_impulse_config: Some(config.clone()),
+        impulse_shell_config: Some(config.clone()),
     };
     let (_, loaded) = Store::open_with(&p, inputs);
     assert_eq!(loaded.migrated_from, Some(1));
@@ -1389,7 +1389,7 @@ settings = { placementStrategy = "leastBusy" }
     let p = d.path().join("layout.toml");
     std::fs::write(&p, MANUAL_V2).unwrap();
     let inputs = migrate::Inputs {
-        rusty_impulse_config: None,
+        impulse_shell_config: None,
     };
     let (_, loaded) = Store::open_with(&p, inputs.clone());
     assert_eq!(loaded.migrated_from, Some(2));

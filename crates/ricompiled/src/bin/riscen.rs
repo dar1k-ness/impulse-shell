@@ -60,7 +60,7 @@ fn main() {
     let tmp = std::env::temp_dir().join(format!("riscen-{}", std::process::id()));
     std::fs::create_dir_all(&tmp).unwrap();
     if let Ok(src) = std::env::var("RISCEN_CONFIG") {
-        let d = tmp.join(".config/rusty-impulse");
+        let d = tmp.join(".config/impulse-shell");
         std::fs::create_dir_all(&d).unwrap();
         std::fs::copy(src, d.join("config.json")).unwrap();
     }
@@ -102,7 +102,7 @@ fn main() {
     }
     let mut drv = headless::Driver::new(!qml::debug::on(qml::debug::Switch::NOPOLISH));
     drv.run(&mut rt, 4000.0);
-    let cfg = tmp.join(".config/rusty-impulse/config.json");
+    let cfg = tmp.join(".config/impulse-shell/config.json");
     let o0 = rt.world.borrow().items.len();
     let b0 = qml::runtime::prof_counts();
     let t0 = Instant::now();

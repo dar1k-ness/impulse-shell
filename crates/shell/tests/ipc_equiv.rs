@@ -1,5 +1,5 @@
 //! `qs ipc prop get|listen|wait|call` and `qs kill` from the real quickshell client against the
-//! real quickshell serving a fixture vs the native shell (`rusty-impulse -p`) serving the same one:
+//! real quickshell serving a fixture vs the native shell (`impulse-shell -p`) serving the same one:
 //! same output for typed arguments, return values, properties and signals. Where quickshell
 //! is bad native differs on purpose: a handler that throws is reported as an error.
 use std::path::Path;
@@ -292,7 +292,7 @@ fn ipc_matches_quickshell() {
     let boom_orig = qs(&a, &["ipc", "call", "t", "boom"]);
     killed(&a, k);
 
-    let native_bin = env!("CARGO_BIN_EXE_rusty-impulse");
+    let native_bin = env!("CARGO_BIN_EXE_impulse-shell");
     let k = serve(native_bin, &b);
     let native = transcript(&k, &b);
     // A throwing handler is an error: quickshell's client sees an answer it can't decode, the
@@ -366,7 +366,7 @@ ShellRoot {
 "#,
     )
     .unwrap();
-    let k = serve(env!("CARGO_BIN_EXE_rusty-impulse"), dir);
+    let k = serve(env!("CARGO_BIN_EXE_impulse-shell"), dir);
     let before = listeners_created(&k.log.text());
     let (rd, wr) = std::io::pipe().unwrap();
     let mut l = Kill(
@@ -426,7 +426,7 @@ ShellRoot {
 "#,
     )
     .unwrap();
-    let bin = env!("CARGO_BIN_EXE_rusty-impulse");
+    let bin = env!("CARGO_BIN_EXE_impulse-shell");
     let (rd, wr) = std::io::pipe().unwrap();
     let k = Kill(
         Command::new(bin)
@@ -614,7 +614,7 @@ ShellRoot {
     .unwrap();
     let held = dir.join("wayland-held");
     let listener = UnixListener::bind(&held).unwrap();
-    let bin = env!("CARGO_BIN_EXE_rusty-impulse");
+    let bin = env!("CARGO_BIN_EXE_impulse-shell");
     let cli = || {
         let mut c = Command::new(bin);
         c.arg("-p")

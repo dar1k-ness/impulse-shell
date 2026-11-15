@@ -196,8 +196,8 @@ fn start(main: &str, before: impl FnOnce(&std::path::Path)) -> (T, Daemon) {
     let home = PathBuf::from(std::env::var_os("HOME").unwrap());
     let dir = home.join("qml");
     std::fs::create_dir_all(&dir).unwrap();
-    std::fs::create_dir_all(home.join("config/rusty-impulse")).unwrap();
-    std::fs::write(home.join("config/rusty-impulse/config.json"), "{}").unwrap();
+    std::fs::create_dir_all(home.join("config/impulse-shell")).unwrap();
+    std::fs::write(home.join("config/impulse-shell/config.json"), "{}").unwrap();
     std::fs::write(dir.join("main.qml"), main).unwrap();
     let mut d = Command::new("dbus-daemon")
         .args(["--session", "--nofork", "--nopidfile", "--print-address=1"])
@@ -244,7 +244,7 @@ fn wrapper_lifetime_and_replace() {
     let home = PathBuf::from(std::env::var_os("HOME").unwrap());
     let history = home.join("cache/rustshell/notifications/notifications.json");
     // A notification restored from an earlier run's history, with its saved image copy.
-    let png = home.join("cache/rusty-impulse/notification-images/0-7-1.png");
+    let png = home.join("cache/impulse-shell/notification-images/0-7-1.png");
     std::fs::create_dir_all(png.parent().unwrap()).unwrap();
     std::fs::create_dir_all(history.parent().unwrap()).unwrap();
     let (mut t, _d) = start(MAIN, |_| {
@@ -941,7 +941,7 @@ fn sends_refused_their_threads_go_out_with_the_next_job_of_any_queue() {
             assert_eq!(lines.len(), 2, "{log}");
             for l in lines {
                 assert!(
-                    l.starts_with("rusty-impulse: cannot start a lane thread: ")
+                    l.starts_with("impulse-shell: cannot start a lane thread: ")
                         && l.ends_with("; 1 queued until one starts"),
                     "{log}"
                 );

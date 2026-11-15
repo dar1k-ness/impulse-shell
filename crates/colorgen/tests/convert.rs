@@ -1,7 +1,7 @@
 //! The wallpaper's pixels as the two original scripts read them, on files that Pillow and
 //! OpenCV bring to 8 bits, turn or flatten each in its own way (16 bits per sample, an
 //! Orientation tag, a `tRNS` chunk). Compared live with `generate_colors_material.py` and
-//! `scheme_for_image.py` under the Python of `$RUSTY_IMPULSE_VIRTUAL_ENV` (Pillow 13.0.0,
+//! `scheme_for_image.py` under the Python of `$IMPULSE_SHELL_VIRTUAL_ENV` (Pillow 13.0.0,
 //! OpenCV 4.13.0 in ri-testenv). The files are imgtools' tests/fixtures/convert (its make.py).
 
 use colorgen::{colorfulness, seed};
@@ -21,7 +21,7 @@ fn file(name: &str) -> PathBuf {
 
 /// The venv's Python, with Pillow, materialyoucolor and OpenCV.
 fn python() -> Option<String> {
-    let venv = std::env::var("RUSTY_IMPULSE_VIRTUAL_ENV").unwrap_or_default();
+    let venv = std::env::var("IMPULSE_SHELL_VIRTUAL_ENV").unwrap_or_default();
     let py = format!("{venv}/bin/python3");
     let ok = !venv.is_empty()
         && Command::new(&py)
@@ -29,7 +29,7 @@ fn python() -> Option<String> {
             .status()
             .is_ok_and(|s| s.success());
     if !ok {
-        testenv::unavailable("RUSTY_IMPULSE_VIRTUAL_ENV with pillow, materialyoucolor, cv2");
+        testenv::unavailable("IMPULSE_SHELL_VIRTUAL_ENV with pillow, materialyoucolor, cv2");
         return None;
     }
     Some(py)

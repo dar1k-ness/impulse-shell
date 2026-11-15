@@ -82,7 +82,7 @@ fn picker_env(home: &Path) -> (Vec<(&'static str, std::ffi::OsString)>, PathBuf)
     let fifo = home.join("opened");
     mkfifo(&fifo);
     install(&bin.join("kdialog"), &fake(&fifo));
-    let cfg = home.join(".config/rusty-impulse");
+    let cfg = home.join(".config/impulse-shell");
     std::fs::create_dir_all(&cfg).unwrap();
     std::fs::write(cfg.join("config.json"), "{}").unwrap();
     let mut vars = testenv::home_vars(home);

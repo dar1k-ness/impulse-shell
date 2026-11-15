@@ -27,9 +27,9 @@ fn own_home(test: &str, config: &str, vars: &[(&'static str, &str)]) -> bool {
     }
     let home = tempfile::tempdir().unwrap();
     let h = home.path();
-    std::fs::create_dir_all(h.join(".config/rusty-impulse")).unwrap();
+    std::fs::create_dir_all(h.join(".config/impulse-shell")).unwrap();
     std::fs::create_dir_all(h.join(".local/state/rustshell/user")).unwrap();
-    std::fs::write(h.join(".config/rusty-impulse/config.json"), config).unwrap();
+    std::fs::write(h.join(".config/impulse-shell/config.json"), config).unwrap();
     let mut env = testenv::home_vars(h);
     env.extend(vars.iter().map(|&(k, v)| (k, v.into())));
     testenv::run_in_own_process(test, env);

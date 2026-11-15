@@ -4,8 +4,8 @@ import Impulse
 import ri.modules.common
 
 /**
- * The desktop container of the edit-mode layout (rusty-impulse only: Background.qml loads this file
- * only when the layout has a desktop container, so `qs -c rusty-impulse` never parses it). Widgets sit
+ * The desktop container of the edit-mode layout (impulse-shell only: Background.qml loads this file
+ * only when the layout has a desktop container, so `qs -c impulse-shell` never parses it). Widgets sit
  * where the layout puts them; while `editing`, they can be dragged and resized from the
  * corner handle, and the container answers with the nearest place that fits (no overlaps,
  * on the monitor, on the grid when `gridSize` is set). A right-click on the desktop opens

@@ -38,7 +38,7 @@ fn tree(dir: &Path) -> PathBuf {
         .join("../../qml")
         .canonicalize()
         .unwrap();
-    let d = dir.join("rusty-impulse");
+    let d = dir.join("impulse-shell");
     std::fs::create_dir_all(&d).unwrap();
     for e in std::fs::read_dir(&ri).unwrap() {
         let e = e.unwrap();
@@ -74,7 +74,7 @@ fn keep_awake_stays_off_after_a_login() {
     let watch = DirWatch::new(&state);
 
     let (r, w) = std::io::pipe().unwrap();
-    let mut c = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let mut c = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
     c.arg("-p")
         .arg(tree(base.path()))
         .env("RI_INTERP", "1")
@@ -94,7 +94,7 @@ fn keep_awake_stays_off_after_a_login() {
     watch.until(|| stored() || log.closed());
     assert!(
         stored(),
-        "rusty-impulse exited before it stored its state; log:\n{}",
+        "impulse-shell exited before it stored its state; log:\n{}",
         log.text()
     );
     // The shell printed the tile's lines before it stored the state, but what `log` has read

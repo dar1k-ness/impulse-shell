@@ -121,7 +121,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 textFormat: Text.MarkdownText
                 wrapMode: Text.Wrap
-                text: `**${Translation.tr("Screen Translator")}**\n\n${root.errorMessage}\n\n__[${Translation.tr("See setup instructions on the wiki")} (rusty-impulse)](${root.wikiLink})__`
+                text: `**${Translation.tr("Screen Translator")}**\n\n${root.errorMessage}\n\n__[${Translation.tr("See setup instructions on the wiki")} (Impulse)](${root.wikiLink})__`
                 font.pixelSize: Appearance.font.pixelSize.small * root.scaleFactor
                 color: root.textColor
                 onLinkActivated: (link) => {

@@ -161,7 +161,7 @@ fn replaced_bar_surface_ends_hover() {
     let xdg = dir.path().join("xdg");
     let (r, out) = std::io::pipe().unwrap();
     let sh = Shell(
-        Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(dir.path())
             .env("RI_INTERP", "1")

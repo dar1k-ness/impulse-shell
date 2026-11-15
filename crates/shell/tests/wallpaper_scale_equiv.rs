@@ -20,7 +20,7 @@ impl Drop for Kill {
     }
 }
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 const WALLPAPER: [u8; 3] = [255, 0, 0];
 
 const SHELL: &str = r##"//@ pragma Env QS_NO_RELOAD_POPUP=1
@@ -87,7 +87,7 @@ fn shot(sway: &testenv::Sway, dir: &Path) -> [[u8; 3]; 3] {
 }
 
 /// A frame the shell committed in `log` is on screen: its frame callback was answered
-/// (Quickshell) or its presentation feedback `presented` (rusty-impulse under `RI_LOG=ri::present`).
+/// (Quickshell) or its presentation feedback `presented` (impulse-shell under `RI_LOG=ri::present`).
 fn frame_shown(log: &str) -> bool {
     let lines: Vec<&str> = log.lines().collect();
     let id = |line: &str, request: &str| {
@@ -140,7 +140,7 @@ fn shown(bin: &str) -> Vec<String> {
     for scale in ["1", "1.25", "1.5", "2"] {
         swaymsg(&sway, &format!("output HEADLESS-1 scale {scale}"));
         let ready = format!("WALL status 1 dpr [{scale}]");
-        // rusty-impulse names each decode it starts (`ri::imgdbg`): one per size.
+        // impulse-shell names each decode it starts (`ri::imgdbg`): one per size.
         let again = |l: &str| {
             let loads: Vec<&str> = l.lines().filter(|l| l.contains("imgload ")).collect();
             (loads.iter().enumerate()).any(|(i, a)| loads[..i].contains(a))

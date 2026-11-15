@@ -1196,7 +1196,7 @@ mod tests {
     fn md5() {
         assert_eq!(super::md5_hex(b""), "d41d8cd98f00b204e9800998ecf8427e");
         assert_eq!(
-            super::md5_hex(b"/home/dar1k/.config/rustshell/rusty-impulse/shell.qml").len(),
+            super::md5_hex(b"/home/dar1k/.config/rustshell/impulse-shell/shell.qml").len(),
             32
         );
     }

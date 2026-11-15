@@ -35,7 +35,7 @@ fn fresh_home_writes_config_and_builds_settings_pages() {
         return;
     }
     let home = PathBuf::from(std::env::var_os("HOME").unwrap());
-    let cfg = home.join(".config/rusty-impulse/config.json");
+    let cfg = home.join(".config/impulse-shell/config.json");
     let r = ri();
     let mut rt = Runtime::new(Some(r.clone()));
     let dirs: Vec<PathBuf> = [

@@ -90,7 +90,7 @@ ShellRoot {
 }
 "##;
 
-/// rusty-impulse running `PANEL` under `sway` with `RI_DEBUG=gpuloss=<lose_at>`, its Wayland traffic
+/// impulse-shell running `PANEL` under `sway` with `RI_DEBUG=gpuloss=<lose_at>`, its Wayland traffic
 /// and presentation feedback logged.
 fn shell(sway: &testenv::Sway, lose_at: u32) -> (Kill, tempfile::TempDir, Arc<Log>) {
     let dir = tempfile::tempdir().unwrap();
@@ -112,7 +112,7 @@ fn busy_panel() -> tempfile::TempDir {
     dir
 }
 
-/// rusty-impulse running the shell in `dir` under `sway`, with `RI_DEBUG=gpuloss=<lose_at>` if given; its Wayland
+/// impulse-shell running the shell in `dir` under `sway`, with `RI_DEBUG=gpuloss=<lose_at>` if given; its Wayland
 /// traffic, presentation feedback and crossfades logged. `fixed_step` is Qt's fixed animation
 /// step: every frame moves the animations 16 ms, however long the host took to draw it.
 fn shell_with(
@@ -123,7 +123,7 @@ fn shell_with(
 ) -> (Kill, Arc<Log>) {
     let (r, w) = std::io::pipe().unwrap();
     let debug = lose_at.map_or(String::new(), |n| format!("gpuloss={n}"));
-    let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
     if fixed_step {
         cmd.env("QSG_FIXED_ANIMATION_STEP", "1");
     }
@@ -185,14 +185,14 @@ fn screen(sway: &testenv::Sway, dir: &Path) -> impl Fn(usize, usize) -> [u8; 3] 
 fn on_gpu(log: &Log) -> bool {
     if let Err(s) = log.wait(|s| s.contains("renderer: ")) {
         panic!(
-            "rusty-impulse exited before it chose a renderer:\n{}",
+            "impulse-shell exited before it chose a renderer:\n{}",
             tail(&s)
         );
     }
     let gpu = log.text().contains("renderer: GPU (GLES2, ");
     assert!(
         gpu || std::env::var_os("RI_REQUIRE_GL").is_none(),
-        "rusty-impulse has no GPU renderer under sway"
+        "impulse-shell has no GPU renderer under sway"
     );
     gpu
 }
@@ -202,7 +202,7 @@ fn on_gpu(log: &Log) -> bool {
 fn draws_on_after(sway: &testenv::Sway, dir: &Path, log: &Log, said: &str) {
     if let Err(s) = log.wait(|s| presented_after(s, |l| l.contains(said))) {
         panic!(
-            "rusty-impulse exited before a frame after `{said}` was presented:\n{}",
+            "impulse-shell exited before a frame after `{said}` was presented:\n{}",
             tail(&s)
         );
     }
@@ -286,7 +286,7 @@ fn layer_and_blur(shot: &impl Fn(usize, usize) -> [u8; 3]) -> Vec<[u8; 3]> {
 fn presented(log: &Log, said: &str) {
     if let Err(s) = log.wait(|s| presented_after(s, |l| l.contains(said))) {
         panic!(
-            "rusty-impulse exited before a frame after `{said}` was presented:\n{}",
+            "impulse-shell exited before a frame after `{said}` was presented:\n{}",
             tail(&s)
         );
     }

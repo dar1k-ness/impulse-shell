@@ -302,9 +302,9 @@ fn settings_preload_with_russian_ui() {
     if !testenv::in_own_process(TEST) {
         let dir = tempfile::tempdir().unwrap();
         let home = dir.path();
-        std::fs::create_dir_all(home.join(".config/rusty-impulse")).unwrap();
+        std::fs::create_dir_all(home.join(".config/impulse-shell")).unwrap();
         std::fs::write(
-            home.join(".config/rusty-impulse/config.json"),
+            home.join(".config/impulse-shell/config.json"),
             "{\"language\":{\"ui\":\"ru_RU\"}}\n",
         )
         .unwrap();

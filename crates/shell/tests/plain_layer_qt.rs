@@ -355,8 +355,8 @@ fn workspaces_of_the_bar() {
     }
     let dir = tempfile::tempdir().unwrap();
     let home = dir.path().join("home");
-    std::fs::create_dir_all(home.join(".config/rusty-impulse")).unwrap();
-    std::fs::write(home.join(".config/rusty-impulse/config.json"), BAR_CONFIG).unwrap();
+    std::fs::create_dir_all(home.join(".config/impulse-shell")).unwrap();
+    std::fs::write(home.join(".config/impulse-shell/config.json"), BAR_CONFIG).unwrap();
     for dpr in [1.0, 1.25] {
         let mut vars = testenv::home_vars(&home);
         let shot = bar_quickshell(dir.path(), &vars, dpr);

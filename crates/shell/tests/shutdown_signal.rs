@@ -9,7 +9,7 @@ use std::os::unix::process::{CommandExt, ExitStatusExt};
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 const FIXTURE: &str = r#"import QtQuick
 import Rustshell
@@ -159,7 +159,7 @@ fn ending_line(sig: i32) -> String {
         _ => unreachable!(),
     };
     format!(
-        "rusty-impulse: ending on signal {sig} ({name}) sent by pid {}",
+        "impulse-shell: ending on signal {sig} ({name}) sent by pid {}",
         std::process::id()
     )
 }
@@ -383,7 +383,7 @@ fn sigterm_pending_at_the_reload_exec_ends_the_next_image_in_order() {
     // The signal was sent to the previous image: this one names it without a sender.
     assert!(
         text.lines()
-            .any(|l| l == "rusty-impulse: ending on signal 15 (SIGTERM)"),
+            .any(|l| l == "impulse-shell: ending on signal 15 (SIGTERM)"),
         "the signal that ended the shell is not in its log:\n{text}"
     );
 }

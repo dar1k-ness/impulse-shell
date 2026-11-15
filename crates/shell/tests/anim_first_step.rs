@@ -10,7 +10,7 @@
 //!
 //! What a frame shows is read where each shell decides it: Qt's QQuickWindow::afterAnimating
 //! (the GUI thread, before each sync; its render thread commits on its own time, so the order
-//! of its commits and its steps in one log says nothing), and rusty-impulse's wl_surface.commit (one
+//! of its commits and its steps in one log says nothing), and impulse-shell's wl_surface.commit (one
 //! thread draws and steps). Each shell runs on a sway of its own.
 
 use std::os::unix::net::UnixStream;
@@ -151,7 +151,7 @@ fn presses(log: &str, qt: bool) -> Vec<Press> {
 }
 
 /// The shell has nothing left to do for its window: sway answered every frame callback it
-/// asked for, and after its last commit it went to wait for events. rusty-impulse says so in its loop's
+/// asked for, and after its last commit it went to wait for events. impulse-shell says so in its loop's
 /// turns (`RI_LOG=ri::sched`: a turn with nothing due, after whatever the scene or sway last
 /// said), Qt in its render loop's log (the render thread waits, and the window asked for no
 /// update since: that is a line of the same log).
@@ -187,7 +187,7 @@ const QT_WAITS: &str = "begin processEventsAndWaitForMore()";
 /// after an expose it always is close to: these lines ask for nothing.
 const QT_SYNC_ENDS: [&str; 2] = ["- unlock after sync", "- done with handleExposure()"];
 
-/// Runs `qs` or rusty-impulse on a sway of its own and presses its panel `PRESSES` times, each once
+/// Runs `qs` or impulse-shell on a sway of its own and presses its panel `PRESSES` times, each once
 /// the previous animation finished and its window is idle. `seen`: the press and the
 /// animation change what the panel draws.
 fn run(qs: Option<&Path>, seen: bool) -> Vec<Press> {
@@ -214,7 +214,7 @@ fn run(qs: Option<&Path>, seen: bool) -> Vec<Press> {
     // libwayland writes its log to stderr in pieces: line-buffered, a line of it stays whole.
     let mut cmd = Command::new("stdbuf");
     cmd.arg("-eL")
-        .arg(qs.unwrap_or(Path::new(env!("CARGO_BIN_EXE_rusty-impulse"))));
+        .arg(qs.unwrap_or(Path::new(env!("CARGO_BIN_EXE_impulse-shell"))));
     sway.env(&mut cmd)
         .arg("-p")
         .arg(dir.path())
@@ -301,7 +301,7 @@ fn first_step_follows_the_frame_that_shows_the_press() {
         return;
     }
     let ours = run(None, true);
-    let mut report = table("rusty-impulse", &ours);
+    let mut report = table("impulse-shell", &ours);
     if let Some(qs) = qs() {
         let qt = run(Some(&qs), true);
         report += &table("qs (Qt)", &qt);
@@ -319,16 +319,16 @@ fn first_step_follows_the_frame_that_shows_the_press() {
 }
 
 /// Neither the press nor the animation changes a pixel. Quickshell on Qt 6.12 syncs a frame
-/// all the same and takes the first step 0 to 2 ms after the press. rusty-impulse draws no frame
+/// all the same and takes the first step 0 to 2 ms after the press. impulse-shell draws no frame
 /// that changes nothing, so there is none to wait for: its first step comes by the vsync
-/// timer, 16 to 17 ms after the press. Both step; rusty-impulse once waited for a frame without end.
+/// timer, 16 to 17 ms after the press. Both step; impulse-shell once waited for a frame without end.
 #[test]
 fn an_animation_that_draws_nothing_steps_without_a_frame() {
     if !testenv::require("sway") {
         return;
     }
     let ours = run(None, false);
-    let mut report = table("rusty-impulse", &ours);
+    let mut report = table("impulse-shell", &ours);
     let late = |p: &[Press]| p.iter().map(|p| p.steps[0]).max().unwrap_or(0);
     if let Some(qs) = qs() {
         let qt = run(Some(&qs), false);

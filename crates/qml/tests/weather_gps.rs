@@ -529,7 +529,7 @@ impl Nm {
 /// The original with `config.json` in the fresh config dir, Weather loaded; returns the weather probe.
 fn start(config: &str) -> (Runtime, Host, usize) {
     let home = PathBuf::from(std::env::var_os("HOME").unwrap());
-    let cfg = PathBuf::from(std::env::var_os("XDG_CONFIG_HOME").unwrap()).join("rusty-impulse");
+    let cfg = PathBuf::from(std::env::var_os("XDG_CONFIG_HOME").unwrap()).join("impulse-shell");
     std::fs::create_dir_all(&cfg).unwrap();
     std::fs::write(cfg.join("config.json"), config).unwrap();
     std::fs::write(home.join("main.qml"), MAIN).unwrap();
@@ -719,7 +719,7 @@ fn gps_without_geoclue_uses_the_city_quietly() {
     assert_eq!(log_count("Could not aquire a valid backend plugin"), 0);
     assert!(command(&mut rt, r).contains("wttr.in/Paris?"));
     let cfg = PathBuf::from(std::env::var_os("XDG_CONFIG_HOME").unwrap());
-    let saved = std::fs::read_to_string(cfg.join("rusty-impulse/config.json")).unwrap();
+    let saved = std::fs::read_to_string(cfg.join("impulse-shell/config.json")).unwrap();
     let saved: serde_json::Value = serde_json::from_str(&saved).unwrap();
     assert_eq!(saved["bar"]["weather"]["enableGPS"], true, "{saved}");
 }

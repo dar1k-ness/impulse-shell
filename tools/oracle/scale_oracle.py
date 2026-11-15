@@ -1,4 +1,4 @@
-# Compare QImage.scaled(SmoothTransformation) with rusty-impulse scaletest, plus Image{sourceSize} implicit sizes.
+# Compare QImage.scaled(SmoothTransformation) with impulse-shell scaletest, plus Image{sourceSize} implicit sizes.
 import sys, subprocess, random
 import numpy as np
 from PIL import Image as P

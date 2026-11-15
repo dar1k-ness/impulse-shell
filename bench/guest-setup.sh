@@ -1,6 +1,6 @@
 #!/bin/bash
 # Provisions the benchmark guest: run once by `bench/vm.sh create`, in the guest, as dar1k,
-# from the checkout it copied to ~/rusty-impulse.
+# from the checkout it copied to ~/impulse-shell.
 #   guest-setup.sh YYYY/MM/DD   the Arch Linux Archive snapshot every package comes from
 set -euo pipefail
 snapshot=$1
@@ -10,7 +10,7 @@ repo=$(cd "$(dirname "$0")/.." && pwd)
 # downgrades what the image has newer.
 echo "Server = https://archive.archlinux.org/repos/$snapshot/\$repo/os/\$arch" |
     sudo tee /etc/pacman.d/mirrorlist >/dev/null
-# Build dependencies of rusty-impulse, the compositor, Quickshell with the Qt modules the original imports, the
+# Build dependencies of impulse-shell, the compositor, Quickshell with the Qt modules the original imports, the
 # fonts the original's defaults name that Arch packages, and the tools the original's services call.
 sudo pacman -Syyuu --noconfirm --needed \
     base-devel rustup pkgconf clang cmake nasm git jq \
@@ -30,7 +30,7 @@ sudo pacman -Syyuu --noconfirm --needed \
 echo LANG=C.UTF-8 | sudo tee /etc/locale.conf >/dev/null
 
 # The venv the original's switchwall.sh runs generate_colors_material.py in
-# (RUSTY_IMPULSE_VIRTUAL_ENV), built as tools/testenv/Containerfile builds it:
+# (IMPULSE_SHELL_VIRTUAL_ENV), built as tools/testenv/Containerfile builds it:
 # hash-checked wheels only.
 sudo python -m venv --system-site-packages /opt/ri-venv
 sudo /opt/ri-venv/bin/pip install --no-cache-dir --require-hashes --only-binary=:all: \

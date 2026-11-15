@@ -38,9 +38,9 @@ fn tmpdir(tag: &str) -> PathBuf {
 
 /// The tools the original commands run, as the original installs them.
 fn have_tools() -> bool {
-    let venv = std::env::var("RUSTY_IMPULSE_VIRTUAL_ENV").unwrap_or_default();
+    let venv = std::env::var("IMPULSE_SHELL_VIRTUAL_ENV").unwrap_or_default();
     if venv.is_empty() {
-        testenv::unavailable(format_args!("RUSTY_IMPULSE_VIRTUAL_ENV is not set"));
+        testenv::unavailable(format_args!("IMPULSE_SHELL_VIRTUAL_ENV is not set"));
         return false;
     }
     let ok = std::process::Command::new(format!("{venv}/bin/python3"))

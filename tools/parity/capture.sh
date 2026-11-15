@@ -23,7 +23,7 @@ if [ "$MODE" = native ]; then
   # Stale-build guard: build.sh records which source the binary was built from and the binary's
   # checksum. Without that record, or with another binary or another revision than the one asked
   # for, the run would compare some older build without anyone noticing.
-  BIN=${BIN:-$HOME/rusty-impulse/target/release/rusty-impulse}; export BIN
+  BIN=${BIN:-$HOME/impulse-shell/target/release/impulse-shell}; export BIN
   [ -x "$BIN" ] || die "no native binary at $BIN: build it with tools/parity/build.sh"
   [ -f "$BIN.rev" ] || die "$BIN has no build record ($BIN.rev): build it with tools/parity/build.sh"
   read -r built sum < "$BIN.rev"

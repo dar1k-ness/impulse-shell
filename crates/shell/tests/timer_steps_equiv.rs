@@ -1,7 +1,7 @@
 //! An animation that changes no pixel is stepped by the vsync timer, 60 times a second on a
 //! 60 Hz output, whatever else wakes the loop: QSGThreadedRenderLoop's animation timer fires
 //! once its thread is back in the event loop, however busy the thread was when it timed out.
-//! The real quickshell running the fixture vs the native shell (`rusty-impulse -p`): the steps of a
+//! The real quickshell running the fixture vs the native shell (`impulse-shell -p`): the steps of a
 //! NumberAnimation of a property nothing draws, in the second a Timer counts: alone, while
 //! the pointer moves over the window as often as the compositor takes a move, and next to a
 //! function that posts itself again with Qt.callLater.
@@ -263,7 +263,7 @@ fn same_as_quickshell(moved: bool, busy: bool) {
         s
     };
     let qt = counted("qs", "orig");
-    let here = counted(env!("CARGO_BIN_EXE_rusty-impulse"), "native");
+    let here = counted(env!("CARGO_BIN_EXE_impulse-shell"), "native");
     println!("moved {moved} busy {busy}: Quickshell {qt:?}\nhere {here:?}");
     if moved {
         assert!(

@@ -248,7 +248,7 @@ const LAYERS: Scene = Scene {
     ],
 };
 
-/// What rusty-impulse does not draw as Qt does (docs/qt-differences.md): a ShaderEffectSource that
+/// What impulse-shell does not draw as Qt does (docs/qt-differences.md): a ShaderEffectSource that
 /// is on screen itself.
 const SOURCE_ON_SCREEN: Scene = Scene {
     source: |at, driver| {
@@ -269,7 +269,7 @@ const SOURCE_ON_SCREEN: Scene = Scene {
 /// most.
 const SOURCE_ON_SCREEN_DIFFERS: &[(usize, u8)] = &[(743, 255)];
 
-/// What rusty-impulse does not draw as Qt does either (docs/qt-differences.md): the glyphs that an
+/// What impulse-shell does not draw as Qt does either (docs/qt-differences.md): the glyphs that an
 /// edge of the window cuts, at each of its four edges.
 const EDGES: Scene = Scene {
     source: |at, driver| {

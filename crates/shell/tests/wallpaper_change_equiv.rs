@@ -19,7 +19,7 @@ impl Drop for Kill {
     }
 }
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 // Half of each is a whole number: a picture at opacity 0.5 over the window has one value.
 const WINDOW: [u8; 3] = [0, 0, 254];
 const FIRST: [u8; 3] = [254, 0, 0];
@@ -90,7 +90,7 @@ fn shot(sway: &testenv::Sway, dir: &Path) -> [[u8; 3]; 3] {
 }
 
 /// A frame the shell committed in `log` is on screen: its frame callback was answered
-/// (Quickshell) or its presentation feedback `presented` (rusty-impulse under `RI_LOG=ri::present`).
+/// (Quickshell) or its presentation feedback `presented` (impulse-shell under `RI_LOG=ri::present`).
 fn frame_shown(log: &str) -> bool {
     let lines: Vec<&str> = log.lines().collect();
     let id = |line: &str, request: &str| {

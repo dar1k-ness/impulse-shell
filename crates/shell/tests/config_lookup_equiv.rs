@@ -2,7 +2,7 @@
 //! (`locateConfigFile`, src/launch/command.cpp) must name the same one, or none, over the same
 //! config directories. `kill` is asked: it looks the config up, finds no instance of it and
 //! says its path. tools/install.sh relies on this lookup: it asks the binary whether
-//! `rusty-impulse -c rusty-impulse` finds the rusty-impulse config. The original is `$RI_REF_QS` or `quickshell` on PATH;
+//! `impulse-shell -c impulse-shell` finds the impulse-shell config. The original is `$RI_REF_QS` or `quickshell` on PATH;
 //! without it the test fails (`RI_EQUIV_SKIP=1` skips knowingly). What they say and the exit
 //! status are compared, not which of stdout and stderr carries it: Quickshell logs to stdout,
 //! native's client writes its messages to stderr.
@@ -15,7 +15,7 @@ use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 /// What this shell calls the directory Quickshell calls `quickshell`.
 const OWN: &str = "rustshell";
 
@@ -117,13 +117,13 @@ fn a_named_config_is_found_where_quickshell_finds_it() {
     let d = Dirs::new();
     let config_home = d.path("config").display().to_string();
     let vars = [("XDG_CONFIG_HOME", config_home.as_str())];
-    let ri = ["-c", "rusty-impulse"];
+    let ri = ["-c", "impulse-shell"];
 
     // No config at all.
     d.same(&qt, &ri, &vars, None);
     d.same(&qt, &[], &vars, None);
     // A named config, and the default one beside it.
-    let named = d.config("config/quickshell/rusty-impulse/shell.qml");
+    let named = d.config("config/quickshell/impulse-shell/shell.qml");
     d.same(&qt, &ri, &vars, Some(&named));
     d.same(&qt, &["-c", "other"], &vars, None);
     d.same(&qt, &[], &vars, None);
@@ -137,7 +137,7 @@ fn a_named_config_is_found_where_quickshell_finds_it() {
     d.same(&qt, &[], &vars, Some(&own));
     d.same(&qt, &ri, &vars, None);
     // The lookup goes on in XDG_CONFIG_DIRS.
-    let system = d.config("system/quickshell/rusty-impulse/shell.qml");
+    let system = d.config("system/quickshell/impulse-shell/shell.qml");
     let dirs = format!(
         "{}:{}",
         d.path("empty").display(),
@@ -150,7 +150,7 @@ fn a_named_config_is_found_where_quickshell_finds_it() {
 
     // Without XDG_CONFIG_HOME, or with an empty one: $HOME/.config.
     d.same(&qt, &ri, &[], None);
-    let home = d.config("home/.config/quickshell/rusty-impulse/shell.qml");
+    let home = d.config("home/.config/quickshell/impulse-shell/shell.qml");
     d.same(&qt, &ri, &[], Some(&home));
     d.same(&qt, &ri, &[("XDG_CONFIG_HOME", "")], Some(&home));
 }
@@ -160,16 +160,16 @@ fn a_named_config_is_found_where_quickshell_finds_it() {
 #[test]
 fn a_relative_config_home_is_ignored() {
     let d = Dirs::new();
-    let relative = d.config("cwd/rel/quickshell/rusty-impulse/shell.qml");
+    let relative = d.config("cwd/rel/quickshell/impulse-shell/shell.qml");
     let vars = [("XDG_CONFIG_HOME", "rel")];
-    let (said, code) = d.asked(Path::new(NATIVE), &["-c", "rusty-impulse"], &vars);
+    let (said, code) = d.asked(Path::new(NATIVE), &["-c", "impulse-shell"], &vars);
     assert_eq!(code, Some(255), "{said}");
     assert!(
-        said.contains("Could not find \"rusty-impulse\" config directory"),
+        said.contains("Could not find \"impulse-shell\" config directory"),
         "{said}"
     );
-    let home = d.config("home/.config/quickshell/rusty-impulse/shell.qml");
-    let (said, _) = d.asked(Path::new(NATIVE), &["-c", "rusty-impulse"], &vars);
+    let home = d.config("home/.config/quickshell/impulse-shell/shell.qml");
+    let (said, _) = d.asked(Path::new(NATIVE), &["-c", "impulse-shell"], &vars);
     let file = format!("No running instances for \"{}\"", home.display());
     assert!(said.contains(&file), "no `{file}` in: {said}");
 
@@ -177,7 +177,7 @@ fn a_relative_config_home_is_ignored() {
         testenv::unavailable("quickshell is not installed (or set RI_REF_QS)");
         return;
     };
-    let (said, _) = d.asked(&qt, &["-c", "rusty-impulse"], &vars);
+    let (said, _) = d.asked(&qt, &["-c", "impulse-shell"], &vars);
     let file = format!("No running instances for \"{}\"", relative.display());
     assert!(
         said.contains(&file),

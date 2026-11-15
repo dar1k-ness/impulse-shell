@@ -427,7 +427,7 @@ fn every_pair_of_bytes_of_a_dbus_picture() {
         .and_then(|s| s.split_once('/'))
         .unwrap();
     let saved = std::path::PathBuf::from(std::env::var("XDG_CACHE_HOME").unwrap())
-        .join("rusty-impulse/notification-images");
+        .join("impulse-shell/notification-images");
     std::fs::rename(
         saved.join(format!("{key}-{change}.png")),
         saved.join("0-7-1.png"),

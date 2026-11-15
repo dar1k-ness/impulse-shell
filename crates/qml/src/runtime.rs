@@ -38292,7 +38292,7 @@ impl World {
     /// On the first run (no layout file yet) makes the layout from the user's configuration
     /// ([`crate::layout_model::rusty`]) on the primary of `screens` (name, x, y) and writes it.
     /// Hyprland has no primary output: the one at the origin of the logical space, else the
-    /// top-left-most one, is where the original's bar sits by default. An unreadable rusty-impulse configuration
+    /// top-left-most one, is where the original's bar sits by default. An unreadable impulse-shell configuration
     /// leaves the shell without a layout, as before, rather than replacing what the user set
     /// with defaults; it is reported once, not on every screen change.
     pub fn seed_layout(&mut self, screens: &[(String, i32, i32)]) {
@@ -44698,7 +44698,7 @@ Item {{
         let log = String::from_utf8_lossy(&out.stderr);
         let said: Vec<&str> = log
             .lines()
-            .filter(|l| l.starts_with("rusty-impulse: internal error"))
+            .filter(|l| l.starts_with("impulse-shell: internal error"))
             .collect();
         assert_eq!(said.len(), 2, "{log}");
         assert!(
@@ -45064,7 +45064,7 @@ Item {
         let log = String::from_utf8_lossy(&out.stderr);
         let said: Vec<&str> = log
             .lines()
-            .filter(|l| l.starts_with("rusty-impulse: internal error"))
+            .filter(|l| l.starts_with("impulse-shell: internal error"))
             .collect();
         assert_eq!(said.len(), 1, "{log}");
         assert!(
@@ -49123,7 +49123,7 @@ ListView {
 
     /// Wheel notches on the original's SelectionDialog list (ListView 340x482, content 4194,
     /// `QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000`) against contentY per frame traced from
-    /// `qs -c rusty-impulse` (Quickshell 0.3.2, Qt 6.12, 60 Hz headless sway). Each frame advances the
+    /// `qs -c impulse-shell` (Quickshell 0.3.2, Qt 6.12, 60 Hz headless sway). Each frame advances the
     /// animation driver one float vsync and animations see its whole ms. `notches` are (event
     /// timestamp ms, frames rendered before Qt handled it).
     fn wheel_frames(notches: &[(f64, usize)], frames: usize) -> Vec<f64> {

@@ -2,7 +2,7 @@
 
 `qml` began as the QML of illogical-impulse ("ii", end-4/dots-hyprland) and does what the original's
 tree did. The cases below are the ones where it does something else on purpose, not as a fix
-of something the original meant to do. Each names the test that holds the difference. What rusty-impulse does
+of something the original meant to do. Each names the test that holds the difference. What impulse-shell does
 differently from Quickshell with the same QML is in
 [quickshell-differences.md](quickshell-differences.md).
 
@@ -320,10 +320,10 @@ Code: `set_unseen` in `crates/qml/src/cava.rs`, `sync_unseen` in `crates/shell/s
 Tests: `crates/shell/tests/visualizer_off_screen.rs`; `nothing_on_screen_stops_the_capture` in
 `crates/qml/src/cava.rs`.
 
-## The rusty-impulse card of the About page has no Issues and Discussions buttons
+## The impulse-shell card of the About page has no Issues and Discussions buttons
 
 The settings page "About" of the tree `qml` began as (`ref/ii`, the tree Quickshell runs in the
-screenshot comparison of `tools/parity`) has four buttons under its rusty-impulse card:
+screenshot comparison of `tools/parity`) has four buttons under its impulse-shell card:
 Docs, Issues, Discussions and Donate. Here the card has Docs and Donate.
 
 | | That tree | Here |
@@ -331,7 +331,7 @@ Docs, Issues, Discussions and Donate. Here the card has Docs and Donate.
 | Buttons of the card | Docs, Issues (`https://github.com/end-4/dots-hyprland/issues`), Discussions (`https://github.com/end-4/dots-hyprland/discussions`), Donate. | Docs and Donate, with the addresses they had. |
 | "Report issue" of the card above | Opens `repoUrl` + `/issues`. | The same. |
 
-Why: the project's own links open rusty-impulse (#53), and the card for reports about this
+Why: the project's own links open impulse-shell (#53), and the card for reports about this
 shell is the one above. The wiki and the sponsor page are still end-4's.
 
 Code: the `Dotfiles` section of `qml/modules/settings/About.qml`.
@@ -344,7 +344,7 @@ differs: the two buttons are missing and Donate stands where Issues is there.
 "Keep awake" (`Idle.inhibit`) holds its idle inhibitor on a window of its own, a `PanelWindow`
 for no screen in particular. The compositor puts that window on a monitor and closes it when
 that monitor is removed, and a window the compositor closed stays closed (Quickshell's
-`ProxyWindowBase::onVisibleChanged` sets `visible` to false; so does rusty-impulse). A monitor that
+`ProxyWindowBase::onVisibleChanged` sets `visible` to false; so does impulse-shell). A monitor that
 leaves the bus while it is switched off is removed and added again each time.
 
 | | the original | Here |
@@ -358,13 +358,13 @@ leaves the bus while it is switched off is removed and added again each time.
 
 Seen in the guest of `bench/vm.sh` (Hyprland 0.57.1, the one monitor unplugged for 5 s and
 plugged back, idleness watched with `swayidle`): the original under Quickshell 0.3.2 and the original's file under
-rusty-impulse lose the window for good, and the original's file under rusty-impulse then goes idle with the toggle on;
+impulse-shell lose the window for good, and the original's file under impulse-shell then goes idle with the toggle on;
 with this file the session stays awake. Hyprland moves the layers to a `FALLBACK` monitor in
 between, so the window is opened twice, once per monitor removed. Switching the screen off
 without removing the monitor (`dpms off`) closes nothing.
 
 Why: a toggle that shows on while the session goes idle is a fault for the user, whichever
-shell had it first. The change is in the file, not in rusty-impulse: a closed window still stays
+shell had it first. The change is in the file, not in impulse-shell: a closed window still stays
 closed, as in Quickshell, and the file asks for it again.
 
 Code: `reopenWindow` in `qml/services/Idle.qml`, called when the window is closed and when

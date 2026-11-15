@@ -12,7 +12,7 @@
 //! `sourceSizeChanged`. `image_status/qt612.txt` is what `qml6` of Qt 6.12.0 printed for it
 //! (`QT_FORCE_STDERR_LOGGING=1 QT_QPA_PLATFORM=offscreen qml6 image_status/shell.qml`): its
 //! console lines as `qml: <text>` and its exit status as `status <n>`. The test runs the real
-//! `qml6`, which must print what is recorded, and the native shell (`rusty-impulse -p`), which must
+//! `qml6`, which must print what is recorded, and the native shell (`impulse-shell -p`), which must
 //! print the same lines.
 //!
 //! `image_status/places/shell.qml` does the same with the widgets of the shell that depend on
@@ -112,7 +112,7 @@ fn a_picture_has_its_status_when_it_is_created_as_in_qt() {
         .env("QT_QPA_PLATFORM", "offscreen");
     assert_eq!(run(qt), want, "qml6 of Qt 6.12");
 
-    let mut native = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let mut native = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
     native.arg("-p").arg(dir()).env("RI_INTERP", "1");
     assert_eq!(run(native), want, "the native shell");
 }
@@ -139,7 +139,7 @@ fn the_pictures_of_the_shell_have_their_status_when_created_as_in_quickshell() {
     qs.arg("--no-color").env("QML_IMPORT_PATH", modules.path());
     assert_eq!(run(qs), want, "Quickshell on Qt 6.12");
 
-    let bin = Path::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let bin = Path::new(env!("CARGO_BIN_EXE_impulse-shell"));
     let mut native = isolated(bin, tree.path(), &home.path().join("native"));
     native.env("RI_INTERP", "1");
     assert_eq!(run(native), want, "the native shell");

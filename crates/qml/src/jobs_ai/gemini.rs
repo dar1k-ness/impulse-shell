@@ -22,13 +22,13 @@ pub fn subst(b: &[u8]) -> String {
     s.trim_end_matches('\n').to_string()
 }
 
-/// The secret `secret-tool lookup application rusty-impulse` prints (libsecret: DH
+/// The secret `secret-tool lookup application impulse-shell` prints (libsecret: DH
 /// session, else plain; the first unlocked match, else the first locked one, unlocked).
 fn keyring() -> Result<Option<Vec<u8>>, String> {
     crate::keyring::secret_lookup(&[crate::keyring::APP_ATTR]).map_err(|e| e.to_string())
 }
 
-/// `API_KEY=$(secret-tool lookup 'application' 'rusty-impulse' | jq -r '.apiKeys.gemini')`.
+/// `API_KEY=$(secret-tool lookup 'application' 'impulse-shell' | jq -r '.apiKeys.gemini')`.
 pub fn api_key(err: &mut dyn FnMut(String)) -> String {
     let secret = match keyring() {
         Ok(s) => s.unwrap_or_default(),

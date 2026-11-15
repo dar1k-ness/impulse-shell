@@ -30,7 +30,7 @@ Item {
     property bool showNightLightDialog: false
     property bool showWifiDialog: false
     property bool editMode: false
-    // The layout's sidebar container places the widgets (rusty-impulse); otherwise the original's fixed blocks.
+    // The layout's sidebar container places the widgets (impulse-shell); otherwise the original's fixed blocks.
     readonly property bool layoutPlaced: LayoutState.hasContainer("sidebar")
 
     Connections {

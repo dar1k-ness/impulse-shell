@@ -25,10 +25,10 @@ Singleton {
     property var pendingFields: []
     
     property var properties: {
-        "application": "rusty-impulse",
+        "application": "impulse-shell",
         "explanation": Translation.tr("For storing API keys and other sensitive information"),
     }
-    property string keyringLabel: Translation.tr("%1 Safe Storage").arg("rusty-impulse")
+    property string keyringLabel: Translation.tr("%1 Safe Storage").arg("impulse-shell")
 
     function setNestedField(path, value) {
         root.assignNestedField(path, value);

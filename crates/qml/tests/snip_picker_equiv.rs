@@ -91,7 +91,7 @@ fn side(case: &str, want: usize) -> Side {
     let base = std::env::temp_dir().join(format!("ri-snip-ab-{}-{case}", std::process::id()));
     let _ = std::fs::remove_dir_all(&base);
     let home = base.join("home");
-    std::fs::create_dir_all(home.join(".config/rusty-impulse")).unwrap();
+    std::fs::create_dir_all(home.join(".config/impulse-shell")).unwrap();
     std::fs::create_dir_all(base.join("log")).unwrap();
     let videos = home.join("Videos");
     let config = match case {
@@ -107,7 +107,7 @@ fn side(case: &str, want: usize) -> Side {
             videos.display()
         ),
     };
-    std::fs::write(home.join(".config/rusty-impulse/config.json"), config).unwrap();
+    std::fs::write(home.join(".config/impulse-shell/config.json"), config).unwrap();
     screenshot()
         .save_with_format(base.join("image-DP-1"), image::ImageFormat::Png)
         .unwrap();

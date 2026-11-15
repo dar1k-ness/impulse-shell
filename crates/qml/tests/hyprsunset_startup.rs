@@ -23,9 +23,9 @@ fn night_light_active_at_startup_in_window() {
         let base = tempfile::tempdir().unwrap();
         let cfg = base.path().join("config");
         std::fs::create_dir_all(base.path().join("hypr/TEST")).unwrap();
-        std::fs::create_dir_all(cfg.join("rusty-impulse")).unwrap();
+        std::fs::create_dir_all(cfg.join("impulse-shell")).unwrap();
         std::fs::write(
-            cfg.join("rusty-impulse/config.json"),
+            cfg.join("impulse-shell/config.json"),
             r#"{"light":{"night":{"automatic":true,"from":"19:00","to":"06:30","colorTemperature":5000}}}"#,
         )
         .unwrap();

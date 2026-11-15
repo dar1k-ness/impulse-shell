@@ -131,7 +131,7 @@ fn the_first_of_two_tabs_has_an_indicator_of_its_size() {
     );
 }
 
-/// The left sidebar as the shell loads it (RustyImpulseFamily.qml's PanelLoader), where the
+/// The left sidebar as the shell loads it (ImpulseShellFamily.qml's PanelLoader), where the
 /// original draws no pill either.
 #[test]
 fn the_loaded_left_sidebar_with_one_tab_has_no_indicator() {

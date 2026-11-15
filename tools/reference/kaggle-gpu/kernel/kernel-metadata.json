@@ -1,6 +1,6 @@
 {
-  "id": "KAGGLE_USER/rusty-impulse-gpu-render-check",
-  "title": "rusty-impulse GPU render check",
+  "id": "KAGGLE_USER/impulse-shell-gpu-render-check",
+  "title": "impulse-shell GPU render check",
   "code_file": "run.py",
   "language": "python",
   "kernel_type": "script",

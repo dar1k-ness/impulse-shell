@@ -4,7 +4,7 @@
 //! output comes back the withheld callback arrives and the panel shows its current state.
 //! Hiding a window destroys its surface, so showing it again draws a fresh surface at once even
 //! while the old one's callback is still withheld, and that callback arriving late (through
-//! `proxy::Withhold`, which holds wl_callback.done between rusty-impulse and sway) does not count as the
+//! `proxy::Withhold`, which holds wl_callback.done between impulse-shell and sway) does not count as the
 //! new surface's.
 
 use std::path::{Path, PathBuf};
@@ -116,7 +116,7 @@ impl Drop for PowerOff<'_> {
     }
 }
 
-/// rusty-impulse running `shell.qml` with its draws, frame callbacks and Wayland traffic logged.
+/// impulse-shell running `shell.qml` with its draws, frame callbacks and Wayland traffic logged.
 struct Shell {
     child: Child,
     dir: tempfile::TempDir,
@@ -140,7 +140,7 @@ impl Shell {
         std::fs::write(dir.path().join("shell.qml"), qml).unwrap();
         let (r, w) = std::io::pipe().unwrap();
         let xdg = dir.path().join("xdg");
-        let child = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        let child = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(dir.path())
             .env("RI_INTERP", "1")
@@ -176,7 +176,7 @@ impl Shell {
             .count()
     }
 
-    /// Waits for `f(log)`; panics if rusty-impulse exits first.
+    /// Waits for `f(log)`; panics if impulse-shell exits first.
     fn wait(&mut self, what: &str, f: impl Fn(&str) -> bool) {
         if let Err(s) = self.log.wait(f) {
             let keep: Vec<&str> = s
@@ -186,7 +186,7 @@ impl Shell {
                 })
                 .collect();
             panic!(
-                "rusty-impulse exited before {what}; rusty-impulse log tail:\n{}",
+                "impulse-shell exited before {what}; impulse-shell log tail:\n{}",
                 keep[keep.len().saturating_sub(40)..].join("\n")
             );
         }
@@ -206,7 +206,7 @@ impl Shell {
     }
 
     /// Waits until a commit made after the last line `since` matches (or any commit) is on
-    /// screen: the wp_presentation_feedback rusty-impulse requested for it (under ri::present, logged by
+    /// screen: the wp_presentation_feedback impulse-shell requested for it (under ri::present, logged by
     /// WAYLAND_DEBUG) was `presented`. A feedback ends with its `presented` or `discarded` and
     /// only then may its id be reused, so the first of those after the request is its own.
     fn wait_presented(&mut self, what: &str, since: impl Fn(&str) -> bool) {
@@ -262,7 +262,7 @@ impl Shell {
     }
 
     fn ipc(&self, func: &str) {
-        let st = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        let st = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(self.dir.path())
             .args(["ipc", "call", "fx", func])
@@ -901,7 +901,7 @@ fn window_shown_again_while_its_callback_is_withheld_draws() {
     sh.wait_draws(n + 3, "the animation drawing again");
 }
 
-/// A Wayland proxy between rusty-impulse and sway that can withhold wl_surface.frame callbacks: it
+/// A Wayland proxy between impulse-shell and sway that can withhold wl_surface.frame callbacks: it
 /// forwards every message and fd unchanged, except the done events of frame callbacks (and the
 /// delete_id that frees them) while holding, which it delivers later on request.
 mod proxy {
@@ -1280,7 +1280,7 @@ mod proxy {
     }
 }
 
-/// Occurrences of `wl_callback#id.done` in the rusty-impulse Wayland log.
+/// Occurrences of `wl_callback#id.done` in the impulse-shell Wayland log.
 fn dones(log: &str, id: u32) -> usize {
     log.matches(&format!("wl_callback#{id}.done(")).count()
 }

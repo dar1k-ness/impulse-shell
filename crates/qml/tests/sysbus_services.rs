@@ -915,7 +915,7 @@ fn bluetooth_pairing_ends_when_bluetoothd_leaves() {
     closed(&n, &[id, shown]);
 }
 
-/// rusty-impulse's own BlueZ pairing agent (a deliberate addition: quickshell registers none, so
+/// impulse-shell's own BlueZ pairing agent (a deliberate addition: quickshell registers none, so
 /// pairing failed with "No agent available" unless a separate agent ran).
 #[test]
 fn bluetooth_pairing_agent() {

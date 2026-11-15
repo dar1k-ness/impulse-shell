@@ -1,4 +1,4 @@
-//! The panels of the shell as it runs on the PC: `rusty-impulse -p <QML tree>` on the tree its code was
+//! The panels of the shell as it runs on the PC: `impulse-shell -p <QML tree>` on the tree its code was
 //! compiled from, every script as compiled code, under a sway of its own. Each test opens one
 //! panel the way a user does (its IPC target, a notification, a config value, the settings
 //! window's own process), and fails unless the panel comes on screen with a picture in it,
@@ -13,7 +13,7 @@
 //!
 //! Two writers share that stderr, and neither writes a line at once: libwayland's stdio writes
 //! an unbuffered line 128 bytes at a time, and the shell's own lines go out one format piece at
-//! a time, so a line of one lands inside a line of the other. rusty-impulse runs under `stdbuf -eL`,
+//! a time, so a line of one lands inside a line of the other. impulse-shell runs under `stdbuf -eL`,
 //! which makes each libwayland line one write, and [`untangled`] takes those lines out of the
 //! shell's own.
 //!
@@ -429,7 +429,7 @@ fn presented(lines: &[&str], surface: &Surface) -> usize {
     n
 }
 
-/// rusty-impulse closed `surface` and sway has taken it off the screen: sway answers the request
+/// impulse-shell closed `surface` and sway has taken it off the screen: sway answers the request
 /// that destroys an object with `delete_id` once it has carried it out.
 fn destroyed(lines: &[&str], surface: &Surface) -> bool {
     let gone = format!("-> {}.destroy()", surface.role);
@@ -517,13 +517,13 @@ struct Clickable {
     label: String,
 }
 
-/// One rusty-impulse on the shipped tree, with a home, a sway, a pointer and a Hyprland of its own.
-/// Fields drop in this order: rusty-impulse before the sway it draws on.
+/// One impulse-shell on the shipped tree, with a home, a sway, a pointer and a Hyprland of its own.
+/// Fields drop in this order: impulse-shell before the sway it draws on.
 struct Shell {
     log: Arc<Log>,
     _child: Kill,
     input: Input,
-    /// The screen before rusty-impulse started.
+    /// The screen before impulse-shell started.
     empty: Shot,
     hypr: Hypr,
     path: PathBuf,
@@ -582,7 +582,7 @@ impl Bus {
     }
 }
 
-/// The heights rusty-impulse gave `surface`'s input region, in order: a panel that grows or shrinks
+/// The heights impulse-shell gave `surface`'s input region, in order: a panel that grows or shrinks
 /// sets a new one.
 fn input_heights(lines: &[&str], surface: &Surface) -> Vec<i64> {
     let set = format!("-> wl_surface#{}.set_input_region(wl_region#", surface.wl);
@@ -722,7 +722,7 @@ fn shipped_tree() -> PathBuf {
 }
 
 impl Shell {
-    /// Starts rusty-impulse on `file` of the shipped tree ("" is the shell itself); `config` is more
+    /// Starts impulse-shell on `file` of the shipped tree ("" is the shell itself); `config` is more
     /// members for the original's `config.json`. None, said through `testenv::unavailable`, where the
     /// tests cannot run.
     fn start(file: &str, config: &str, bus: bool) -> Option<Self> {
@@ -755,12 +755,12 @@ impl Shell {
         );
         assert!(tree.join("shell.qml").is_file(), "no QML tree at {tree:?}");
         let bin = std::env::var_os("RI_SHIPPED_BIN")
-            .map_or_else(|| env!("CARGO_BIN_EXE_rusty-impulse").into(), PathBuf::from);
+            .map_or_else(|| env!("CARGO_BIN_EXE_impulse-shell").into(), PathBuf::from);
         let sway = testenv::Sway::start();
         let input = Input::connect(&sway)?;
         let hypr = Hypr::listen(sway.runtime_dir());
         let home = tempfile::tempdir().unwrap();
-        let conf = home.path().join(".config/rusty-impulse");
+        let conf = home.path().join(".config/impulse-shell");
         std::fs::create_dir_all(&conf).unwrap();
         // The desktop clock comes on screen whenever its shape is ready, which can be while a
         // panel opens: its pixels would count as the panel's.
@@ -811,8 +811,8 @@ impl Shell {
         Some((sh, s))
     }
 
-    /// `rusty-impulse -p <path>` in the shell's environment.
-    fn rusty_impulse(&self) -> Command {
+    /// `impulse-shell -p <path>` in the shell's environment.
+    fn impulse_shell(&self) -> Command {
         let mut cmd = Command::new(&self.bin);
         self.env(&mut cmd).arg("-p").arg(&self.path);
         cmd
@@ -854,7 +854,7 @@ impl Shell {
         });
         self.no_script_errors();
         if let Err(log) = r {
-            panic!("rusty-impulse exited before {what}:\n{}", tail(&log));
+            panic!("impulse-shell exited before {what}:\n{}", tail(&log));
         }
     }
 
@@ -896,7 +896,7 @@ impl Shell {
 
     fn ipc(&self, args: &[&str]) -> String {
         let out = self
-            .rusty_impulse()
+            .impulse_shell()
             .args(["ipc", "call"])
             .args(args)
             .output()
@@ -1090,7 +1090,7 @@ impl Shell {
     /// pressed from then on reaches its items.
     fn active(&self, from: usize) {
         // Qt Quick sends a key only to `activeFocusItem`, which a window has once the reply to
-        // the `wl_display.sync` after `wl_keyboard.enter` has activated it; so does rusty-impulse.
+        // the `wl_display.sync` after `wl_keyboard.enter` has activated it; so does impulse-shell.
         self.wait("the window with the keyboard to be active", from, |l| {
             l.iter()
                 .any(|l| l.starts_with("kbd target ") && l.contains(" -> Some("))
@@ -1124,7 +1124,7 @@ impl Shell {
         }
     }
 
-    /// Blocks until rusty-impulse has closed `surface`, which `by` should make it do.
+    /// Blocks until impulse-shell has closed `surface`, which `by` should make it do.
     fn closes(&self, surface: &Surface, from: usize, by: &str) {
         self.wait(&format!("{by} to close {}", surface.name), from, |l| {
             destroyed(l, surface)
@@ -1306,7 +1306,7 @@ fn copy_tree(from: &Path, to: &Path) {
 fn reload_is_refused_and_shown(change: impl FnOnce(&Path)) {
     let from = shipped_tree();
     let dir = tempfile::tempdir().unwrap();
-    let tree = dir.path().join("rusty-impulse");
+    let tree = dir.path().join("impulse-shell");
     copy_tree(&from, &tree);
     let Some(mut sh) = Shell::start_in(&tree, "", "", false, |_| {}) else {
         return;
@@ -1730,11 +1730,11 @@ fn a_known_fault_is_named_and_missed_but_is_no_script_error() {
         " property collapsedWidth (NavigationRailTabArray in ",
     )];
     let log = "qml: binding loop detected on item 1290 property collapsedWidth \
-               (NavigationRailTabArray in /rusty-impulse/modules/common/widgets/NavigationRailTabArray.qml)\n\
-               qml: binding loop detected on item 7 property width (Row in /rusty-impulse/Bar.qml)\n";
+               (NavigationRailTabArray in /impulse-shell/modules/common/widgets/NavigationRailTabArray.qml)\n\
+               qml: binding loop detected on item 7 property width (Row in /impulse-shell/Bar.qml)\n";
     assert_eq!(
         script_errors(faults, log),
-        ["qml: binding loop detected on item 7 property width (Row in /rusty-impulse/Bar.qml)"]
+        ["qml: binding loop detected on item 7 property width (Row in /impulse-shell/Bar.qml)"]
     );
     let (met, gone) = known_faults(faults, log);
     assert_eq!(met.len(), 1);

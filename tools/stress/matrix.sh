@@ -33,7 +33,7 @@ for s in $SC; do
 done
 kill $(cat $RUN/sampler.pid) $(cat $RUN/probe.pid)
 coredumpctl list --since "$since" --no-pager > $RUN/cores.txt 2>&1
-journalctl --user --since "$since" --no-pager | grep -iE 'qs|quickshell|rusty-impulse' | tail -50 > $RUN/journal.txt
+journalctl --user --since "$since" --no-pager | grep -iE 'qs|quickshell|impulse-shell' | tail -50 > $RUN/journal.txt
 echo DONE >> $RUN/results.txt
 # 0: every scenario ended OK.
 [ $bad = 0 ]

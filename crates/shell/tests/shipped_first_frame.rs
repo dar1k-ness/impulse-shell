@@ -1,5 +1,5 @@
-//! The shell as it runs on the PC draws: `rusty-impulse -c rusty-impulse`, how Hyprland starts it, with the very
-//! tree its code was compiled from (`ricompiled::ROOT`) as the config named rusty-impulse, and no
+//! The shell as it runs on the PC draws: `impulse-shell -c impulse-shell`, how Hyprland starts it, with the very
+//! tree its code was compiled from (`ricompiled::ROOT`) as the config named impulse-shell, and no
 //! `RI_INTERP`, so every script runs as compiled code
 //! (main.rs `set_compiled`), the only mode the AOT-only build has. Its bar's first frame has to
 //! be on screen: a shell whose scripts cannot run stays alive with an empty screen, so a
@@ -19,7 +19,7 @@ impl Drop for Kill {
     }
 }
 
-/// The wl_surface id of the layer surface rusty-impulse created for `namespace`.
+/// The wl_surface id of the layer surface impulse-shell created for `namespace`.
 fn layer_surface(log: &str, namespace: &str) -> Option<String> {
     let ns = format!("\"{namespace}\")");
     log.lines()
@@ -116,13 +116,13 @@ fn compiled_tree_draws_its_bar() {
     let home = tempfile::tempdir().unwrap();
     let configs = home.path().join(".config/rustshell");
     std::fs::create_dir_all(&configs).unwrap();
-    std::os::unix::fs::symlink(tree, configs.join("rusty-impulse")).unwrap();
+    std::os::unix::fs::symlink(tree, configs.join("impulse-shell")).unwrap();
     let (r, w) = std::io::pipe().unwrap();
     let mut cmd = Command::new(
-        std::env::var_os("RI_SHIPPED_BIN").unwrap_or(env!("CARGO_BIN_EXE_rusty-impulse").into()),
+        std::env::var_os("RI_SHIPPED_BIN").unwrap_or(env!("CARGO_BIN_EXE_impulse-shell").into()),
     );
     sway.env(&mut cmd)
-        .args(["-c", "rusty-impulse"])
+        .args(["-c", "impulse-shell"])
         .envs(testenv::home_vars(home.path()))
         .env_remove("XDG_CONFIG_DIRS")
         .env_remove("RI_INTERP")
@@ -133,18 +133,18 @@ fn compiled_tree_draws_its_bar() {
         .stderr(w);
     let shell = Kill(cmd.spawn().unwrap());
     eprintln!("waiting for the bar's first frame");
-    let log = Log::capture_shown("rusty-impulse", r);
+    let log = Log::capture_shown("impulse-shell", r);
     let waited = log.wait(|s| {
         refused(s).is_some()
             || layer_surface(s, "rustshell:bar").is_some_and(|id| presented(s, &id))
     });
     let text = log.text();
     if let Some(why) = refused(&text) {
-        panic!("rusty-impulse refused the QML tree it was compiled from: {why}");
+        panic!("impulse-shell refused the QML tree it was compiled from: {why}");
     }
     if waited.is_err() {
         panic!(
-            "rusty-impulse exited before its bar was on screen:\n{}",
+            "impulse-shell exited before its bar was on screen:\n{}",
             tail(&text)
         );
     }

@@ -1,4 +1,4 @@
-"""rusty-impulse on Kaggle's NVIDIA GPU against llvmpipe, without a display.
+"""impulse-shell on Kaggle's NVIDIA GPU against llvmpipe, without a display.
 
 Runs the ri-gpushot bundle (tools/reference/kaggle-gpu/bundle.sh, attached as a dataset): each scene is
 painted once per frame and the same draw list is rendered on the NVIDIA EGL device and on

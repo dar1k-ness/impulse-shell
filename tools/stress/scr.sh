@@ -3,9 +3,9 @@
 # orig is Quickshell on the original in ~/parity-original (README.md), addressed as `qs -p ~/parity-original`.
 . ~/h/common.sh; M=$1; O=~/scr/$M$2; rm -rf $O; mkdir -p $O
 stop_shell; cd ~
-if [ $M = native ]; then (setsid ${BIN:-$HOME/rusty-impulse/target/release/rusty-impulse} > $O/log 2>&1 < /dev/null &)
+if [ $M = native ]; then (setsid ${BIN:-$HOME/impulse-shell/target/release/impulse-shell} > $O/log 2>&1 < /dev/null &)
 else (setsid qs -p ~/parity-original > $O/log 2>&1 < /dev/null &); fi
-if [ $M = orig ]; then QS="qs -p $HOME/parity-original"; else QS="rusty-impulse -c rusty-impulse"; fi
+if [ $M = orig ]; then QS="qs -p $HOME/parity-original"; else QS="impulse-shell -c impulse-shell"; fi
 sleep 30
 hyprctl dispatch "hl.dsp.focus({ workspace = 1 })" >/dev/null
 shot() { sleep ${2:-2.5}; grim $O/$1.png; }

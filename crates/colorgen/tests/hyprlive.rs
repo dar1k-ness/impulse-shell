@@ -161,7 +161,7 @@ fn without_hyprland_a_plain_write() {
 fn eval_names_unnamed_window_rules() {
     let req = eval_request(Path::new("/x/hypr/hyprland/colors.lua"), NEW);
     assert!(req.starts_with("eval local window_rule"));
-    assert!(req.contains("rule.name = \"rusty-impulse colors.lua \" .. n"));
+    assert!(req.contains("rule.name = \"impulse-shell colors.lua \" .. n"));
     assert!(req.contains(NEW));
     // No flag prefix: Hyprland only reads flags before a `/` that comes before any space.
     assert!(req.find(' ') < req.find('/').or(Some(usize::MAX)));

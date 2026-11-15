@@ -193,7 +193,7 @@ fn lib() -> Result<&'static Lib> {
     static LIB: OnceLock<std::result::Result<Lib, String>> = OnceLock::new();
     LIB.get_or_init(|| {
         // Once per process: why its AVIF pixels are libheif's.
-        load(SONAME).inspect_err(|why| elog::eprintln!("rusty-impulse: {why}"))
+        load(SONAME).inspect_err(|why| elog::eprintln!("impulse-shell: {why}"))
     })
     .as_ref()
     .map_err(|e| Error::new(ErrorKind::Unsupported, e.clone()))
@@ -425,7 +425,7 @@ mod tests {
         assert_eq!(
             lines,
             [
-                "rusty-impulse: libavif 9.9.9 is not used, only 1.0.0 to 1.4.2 were checked: AVIF is read \
+                "impulse-shell: libavif 9.9.9 is not used, only 1.0.0 to 1.4.2 were checked: AVIF is read \
               with libheif, whose pixels differ from Pillow's and OpenCV's"
             ],
             "{err}"

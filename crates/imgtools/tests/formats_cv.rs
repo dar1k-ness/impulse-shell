@@ -1,5 +1,5 @@
 //! `cv2.imread` of CMYK / YCCK JPEG and AVIF, in colour and in grey, against OpenCV itself
-//! (the opencv wheel of $RUSTY_IMPULSE_VIRTUAL_ENV in tools/testenv). Fixtures:
+//! (the opencv wheel of $IMPULSE_SHELL_VIRTUAL_ENV in tools/testenv). Fixtures:
 //! crates/qsg/tests/fixtures/{formats,heif}.
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -41,7 +41,7 @@ fn parse(line: &str) -> (usize, usize, Vec<u8>) {
 
 #[test]
 fn colour_and_grey_equal_opencv() {
-    let v = std::env::var("RUSTY_IMPULSE_VIRTUAL_ENV").unwrap_or_default();
+    let v = std::env::var("IMPULSE_SHELL_VIRTUAL_ENV").unwrap_or_default();
     let py = format!("{v}/bin/python3");
     let has_cv2 = !v.is_empty()
         && Command::new(&py)
@@ -49,7 +49,7 @@ fn colour_and_grey_equal_opencv() {
             .status()
             .is_ok_and(|s| s.success());
     if !has_cv2 {
-        return testenv::unavailable("RUSTY_IMPULSE_VIRTUAL_ENV with opencv");
+        return testenv::unavailable("IMPULSE_SHELL_VIRTUAL_ENV with opencv");
     }
     if !heif::avif::available() {
         return testenv::unavailable("libavif (libavif.so.16)");

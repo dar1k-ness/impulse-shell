@@ -107,7 +107,7 @@ fn crisp(
     Ok(())
 }
 
-/// The screenshot taken once rusty-impulse's frame at the new scale is on screen: the frame drawn after
+/// The screenshot taken once impulse-shell's frame at the new scale is on screen: the frame drawn after
 /// the `devicePixelRatio` change was `presented`.
 fn assert_crisp(
     sway: &testenv::Sway,
@@ -136,7 +136,7 @@ fn layer_surface_renders_at_output_scale() {
     swaymsg(&sway, "output HEADLESS-1 scale 2");
     let (r, w) = std::io::pipe().unwrap();
     let _shell = Kill(
-        sway.env(&mut Command::new(env!("CARGO_BIN_EXE_rusty-impulse")))
+        sway.env(&mut Command::new(env!("CARGO_BIN_EXE_impulse-shell")))
             .arg("-p")
             .arg(dir.path())
             .env("RI_INTERP", "1")
@@ -155,7 +155,7 @@ fn layer_surface_renders_at_output_scale() {
                 .lines()
                 .filter(|l| l.contains("HIDPI") || l.contains("qml") || l.contains("scale"))
                 .collect();
-            panic!("rusty-impulse exited before {what}:\n{}", keep.join("\n"));
+            panic!("impulse-shell exited before {what}:\n{}", keep.join("\n"));
         }
     };
     wait("it loaded", &|s| s.contains("HIDPI ready"));
@@ -235,7 +235,7 @@ fn region_screenshot_cuts_the_selected_area_at_fractional_scale() {
     swaymsg(&sway, "output HEADLESS-1 scale 1.25");
     let (r, w) = std::io::pipe().unwrap();
     let _shell = Kill(
-        sway.env(&mut Command::new(env!("CARGO_BIN_EXE_rusty-impulse")))
+        sway.env(&mut Command::new(env!("CARGO_BIN_EXE_impulse-shell")))
             .arg("-p")
             .arg(dir.path())
             .env("RI_INTERP", "1")
@@ -257,7 +257,7 @@ fn region_screenshot_cuts_the_selected_area_at_fractional_scale() {
                 .lines()
                 .filter(|l| l.contains("SNIP") || l.contains("qml") || l.contains("screenshot"))
                 .collect();
-            panic!("rusty-impulse exited before {what}:\n{}", keep.join("\n"));
+            panic!("impulse-shell exited before {what}:\n{}", keep.join("\n"));
         }
     };
     wait("the frame at scale 1.25 on screen", &|s| {

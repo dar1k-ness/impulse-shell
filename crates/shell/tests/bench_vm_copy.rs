@@ -148,14 +148,14 @@ impl Bench {
             .expect("bash");
         assert!(out.status.success(), "vm.sh copy: {out:?}");
         // The commit the guest's build names (tools/build.sh there reads it).
-        let named = std::fs::read_to_string(dir.join("guest/rusty-impulse/.build-commit"));
+        let named = std::fs::read_to_string(dir.join("guest/impulse-shell/.build-commit"));
         assert_eq!(named.unwrap(), "checkout\n");
     }
 
-    /// Builds guest `~/rusty-impulse` into its `target`, as `tools/install.sh` does there, and
+    /// Builds guest `~/impulse-shell` into its `target`, as `tools/install.sh` does there, and
     /// returns what the program prints.
     fn build_and_run(&self) -> String {
-        build_and_run(&self.tmp.path().join("guest/rusty-impulse"))
+        build_and_run(&self.tmp.path().join("guest/impulse-shell"))
     }
 }
 
@@ -196,7 +196,7 @@ fn an_older_checkout_copied_to_the_guest_is_built_as_a_clean_target_dir_builds_i
     bench.copy();
     assert_eq!(bench.build_and_run(), clean);
     // What the checkout no longer has is gone from the guest; its target dir is kept.
-    let guest = bench.tmp.path().join("guest/rusty-impulse");
+    let guest = bench.tmp.path().join("guest/impulse-shell");
     assert!(!guest.join("list/two").exists());
     assert!(guest.join("target/debug").is_dir());
 }
@@ -207,7 +207,7 @@ fn a_checkout_copied_twice_keeps_its_times_in_the_guest() {
     let bench = Bench::new();
     put(&bench.checkout(), A, 100);
     bench.copy();
-    let guest = bench.tmp.path().join("guest/rusty-impulse");
+    let guest = bench.tmp.path().join("guest/impulse-shell");
     let files = ["src/part.rs", "value.txt", "list", "build.rs"];
     let times = |()| {
         files.map(|f| {

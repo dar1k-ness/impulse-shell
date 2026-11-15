@@ -461,7 +461,7 @@ fn in_chat(name: &str, test: Test) {
     if !testenv::in_own_process(&test_id) {
         let tmp = tempfile::tempdir().unwrap();
         let home = tmp.path();
-        let config_dir = home.join(".config/rusty-impulse");
+        let config_dir = home.join(".config/impulse-shell");
         std::fs::create_dir_all(&config_dir).unwrap();
         let fake = home.join(FAKE_NAME);
         std::os::unix::fs::symlink(std::env::current_exe().unwrap(), &fake).unwrap();

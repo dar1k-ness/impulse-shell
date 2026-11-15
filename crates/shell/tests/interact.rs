@@ -1,5 +1,5 @@
 //! Interaction equivalence: drives the same pointer/keyboard/wheel script (tests/interact/steps)
-//! against `qs -p` (Qt) and `rusty-impulse -p` (native) on the harness in tests/interact/shell.qml, and
+//! against `qs -p` (Qt) and `impulse-shell -p` (native) on the harness in tests/interact/shell.qml, and
 //! checks that every step fires the same signals/handlers with the same resulting state.
 //!
 //! Nothing waits on wall time: each step names the `IACT` lines it ends with (`=> line`), and the
@@ -12,7 +12,7 @@
 //! line.
 //!
 //! Needs `sway` (with `zwlr_virtual_pointer_v1` + `zwp_virtual_keyboard_v1`) and `qs` on PATH
-//! (or RI_IACT_QS). The native binary is RI_IACT_NATIVE or this crate's `rusty-impulse`, run with
+//! (or RI_IACT_QS). The native binary is RI_IACT_NATIVE or this crate's `impulse-shell`, run with
 //! RI_INTERP=1 when built with `interp`. Fails without them (skips only with RI_EQUIV_SKIP=1).
 
 use std::collections::BTreeMap;
@@ -679,7 +679,7 @@ fn swipe_released_with_nothing_else_animating_comes_to_rest() {
     )
     .unwrap();
     let home = tempfile::tempdir().unwrap();
-    let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
     for (k, d) in [
         ("XDG_CONFIG_HOME", "config"),
         ("XDG_STATE_HOME", "state"),
@@ -720,13 +720,13 @@ fn controls_match_qt() {
     };
     let native = std::env::var_os("RI_IACT_NATIVE")
         .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from(env!("CARGO_BIN_EXE_rusty-impulse")));
+        .unwrap_or_else(|| PathBuf::from(env!("CARGO_BIN_EXE_impulse-shell")));
     let dir = harness_dir();
     // The original's Config writes config.json under XDG_CONFIG_HOME: keep the user's untouched.
     let home = tempfile::tempdir().unwrap();
     // Directories.qml makes this directory through `Impulse.Files`, which does nothing in
     // Quickshell's copy of the module: without it Config never loads there.
-    std::fs::create_dir_all(home.path().join("config/rusty-impulse")).unwrap();
+    std::fs::create_dir_all(home.path().join("config/impulse-shell")).unwrap();
     let isolated = |bin: &Path| {
         let mut c = Command::new(bin);
         for (k, d) in [

@@ -16,7 +16,7 @@ const OUTPUT_DIRS: [&str; 10] = [
     ".config/fuzzel",
     ".config/gtk-3.0",
     ".config/gtk-4.0",
-    ".config/rusty-impulse",
+    ".config/impulse-shell",
     ".config/Code",
     ".config/Cursor",
     "pts",
@@ -208,7 +208,7 @@ fn prepare(case: &Path) -> (PathBuf, String, Vec<String>, Paths) {
     let h = home.to_str().unwrap().to_string();
     let ident = |b: Vec<u8>| b;
     copy_tree(&Path::new(DIR).join("fixture/home"), &home, &ident);
-    let script_dir = home.join(".config/rustshell/rusty-impulse/scripts/colors");
+    let script_dir = home.join(".config/rustshell/impulse-shell/scripts/colors");
     copy_tree(
         &Path::new(II).join("scripts/colors/terminal"),
         &script_dir.join("terminal"),
@@ -216,7 +216,7 @@ fn prepare(case: &Path) -> (PathBuf, String, Vec<String>, Paths) {
     );
     copy_tree(
         &Path::new(II).join("assets/images"),
-        &home.join(".config/rustshell/rusty-impulse/assets/images"),
+        &home.join(".config/rustshell/impulse-shell/assets/images"),
         &ident,
     );
     std::fs::create_dir_all(home.join("pts")).unwrap();
@@ -323,7 +323,7 @@ fn run_case_with(case: &Path, as_request: bool, config_saved_later: bool) -> Res
         ));
     }
     for (f, t) in &want {
-        if config_saved_later && f.ends_with("rusty-impulse/config.json") {
+        if config_saved_later && f.ends_with("impulse-shell/config.json") {
             continue;
         }
         if let Some((_, g)) = got.iter().find(|(gf, _)| gf == f)
@@ -393,7 +393,7 @@ fn kept_wallpaper_named_by_the_request_is_the_one_used() {
     let scheme_for = |image: &str| {
         let (home, _, _, paths) = prepare(&Path::new(DIR).join("expected/noswitch_color"));
         let wall = |name: &str| format!("{}/Pictures/Wallpapers/{name}", home.display());
-        let config = home.join(".config/rusty-impulse/config.json");
+        let config = home.join(".config/impulse-shell/config.json");
         colorgen::switchwall::jq_set(
             &config,
             &["background", "wallpaperPath"],
@@ -433,7 +433,7 @@ fn kept_wallpaper_named_by_the_request_is_the_one_used() {
 fn config_edits_go_through_sys() {
     let case = Path::new(DIR).join("expected/img_accent_cleared");
     let (home, _h, args, paths) = prepare(&case);
-    let cfg = home.join(".config/rusty-impulse/config.json");
+    let cfg = home.join(".config/impulse-shell/config.json");
     let before = std::fs::read_to_string(&cfg).unwrap();
     let fake = Arc::new(Fake {
         home: home.clone(),

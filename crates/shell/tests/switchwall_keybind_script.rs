@@ -1,6 +1,6 @@
 //! The original's Hyprland keybind for the wallpaper (Ctrl+Super+T) runs a file of the config tree when
 //! no shell answers it: `scripts/colors/switchwall.sh`, which asks for the image with kdialog.
-//! The tree `tools/install.sh` installs has that file, and it hands the launch to rusty-impulse, found
+//! The tree `tools/install.sh` installs has that file, and it hands the launch to impulse-shell, found
 //! in PATH or where an install for one user puts it (`~/.local/bin`, which a compositor's PATH
 //! may lack), with the arguments it was given.
 //! What the port does with the chosen image is compared against the original's script in
@@ -9,7 +9,7 @@
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 fn script() -> std::path::PathBuf {
     Path::new(ricompiled::ROOT).join("scripts/colors/switchwall.sh")
@@ -46,8 +46,8 @@ fn the_keybind_launch_asks_for_the_wallpaper() {
     ] {
         std::fs::create_dir_all(d).unwrap();
     }
-    // rusty-impulse is not in PATH, as under a compositor started without ~/.local/bin in it.
-    std::os::unix::fs::symlink(NATIVE, home.join(".local/bin/rusty-impulse")).unwrap();
+    // impulse-shell is not in PATH, as under a compositor started without ~/.local/bin in it.
+    std::os::unix::fs::symlink(NATIVE, home.join(".local/bin/impulse-shell")).unwrap();
     let log = tmp.path().join("kdialog.log");
     // The dialog writes down how it was asked and is closed without a choice.
     testenv::install_script(
@@ -78,7 +78,7 @@ fn the_keybind_launch_asks_for_the_wallpaper() {
 }
 
 #[test]
-fn the_script_hands_its_arguments_to_the_rusty_impulse_in_path() {
+fn the_script_hands_its_arguments_to_the_impulse_shell_in_path() {
     if !testenv::require_all(&["sh"]) {
         return;
     }
@@ -87,7 +87,7 @@ fn the_script_hands_its_arguments_to_the_rusty_impulse_in_path() {
     for d in [&bin, &home, &tmp.path().join("run")] {
         std::fs::create_dir_all(d).unwrap();
     }
-    std::os::unix::fs::symlink(NATIVE, bin.join("rusty-impulse")).unwrap();
+    std::os::unix::fs::symlink(NATIVE, bin.join("impulse-shell")).unwrap();
     // Nothing in this home names a wallpaper or a colour: `--noswitch` has nothing to keep.
     let out = Command::new(script())
         .arg("--noswitch")

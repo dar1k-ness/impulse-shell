@@ -241,7 +241,7 @@ Singleton {
                 property int cornerStyle: 0 // 0: Hug | 1: Float | 2: Plain rectangle
                 property bool floatStyleShadow: true // Show shadow behind bar when cornerStyle == 1 (Float)
                 property bool borderless: false // true for no grouping of items
-                property string topLeftIcon: "spark" // Options: "distro" or any icon name in ~/.config/rustshell/rusty-impulse/assets/icons
+                property string topLeftIcon: "spark" // Options: "distro" or any icon name in ~/.config/rustshell/impulse-shell/assets/icons
                 property bool showBackground: true
                 // Where the media, workspaces and clock groups sit, in order within each part
                 property JsonObject layout: JsonObject {

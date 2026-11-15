@@ -31,7 +31,7 @@ fn main() {
     if !summed {
         println!("cargo:rerun-if-changed={}", root.display());
     }
-    // The checksum the binary names (`rusty-impulse --version`) is of the files this build
+    // The checksum the binary names (`impulse-shell --version`) is of the files this build
     // reads: one a caller passes for another content fails the build.
     let sum = tree_sum(&root);
     if let Some(given) = given.filter(|g| *g != sum) {

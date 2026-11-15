@@ -10,7 +10,7 @@ import ri.modules.common
  * Wallpaper picker: finds a wallpaper on Wallhaven/Konachan that fits the taste described in
  * Config.options.background.wallpick (a local image model scores the candidates), applies it
  * with a matching accent, and learns from likes and dislikes. The work runs in process
- * (`WallpickRun`); `rusty-impulse wallpick` does the same from a terminal.
+ * (`WallpickRun`); `impulse-shell wallpick` does the same from a terminal.
  */
 Singleton {
     id: root

@@ -13,7 +13,7 @@ use zbus::blocking::{Connection, MessageIterator, fdo::DBusProxy};
 
 const SECRETS: &str = "org.freedesktop.secrets";
 const LOGIN: &str = "/org/freedesktop/secrets/collection/login";
-const LABEL: &str = "rusty-impulse Safe Storage";
+const LABEL: &str = "impulse-shell Safe Storage";
 /// KeyringStorage.properties.explanation (untranslated).
 const EXPLANATION: &str = "For storing API keys and other sensitive information";
 
@@ -211,7 +211,7 @@ fn original_lookup() -> Lookup {
 fn original_store(payload: &str) {
     let (_, code) = run(
         &format!(
-            "secret-tool store --label='{LABEL}' application rusty-impulse explanation '{EXPLANATION}'"
+            "secret-tool store --label='{LABEL}' application impulse-shell explanation '{EXPLANATION}'"
         ),
         payload.as_bytes(),
     );
@@ -220,7 +220,7 @@ fn original_store(payload: &str) {
 
 fn native_store(payload: &str) {
     let attrs = [
-        ("application".to_string(), "rusty-impulse".to_string()),
+        ("application".to_string(), "impulse-shell".to_string()),
         ("explanation".to_string(), EXPLANATION.to_string()),
     ];
     keyring::secret_store(LABEL, &attrs, payload.as_bytes()).unwrap();
@@ -231,7 +231,7 @@ fn native_store(payload: &str) {
 /// not others whoever stores them.
 fn snapshot() -> String {
     let (o, _) = run(
-        "secret-tool search --all application rusty-impulse 2>&1",
+        "secret-tool search --all application impulse-shell 2>&1",
         b"",
     );
     let mut s: Vec<String> = o
@@ -246,7 +246,7 @@ fn snapshot() -> String {
     let ss = secret_service::blocking::SecretService::connect(secret_service::EncryptionType::Dh)
         .unwrap();
     for it in ss
-        .search_items([("application", "rusty-impulse")].into())
+        .search_items([("application", "impulse-shell")].into())
         .unwrap()
         .unlocked
     {
@@ -259,7 +259,7 @@ fn snapshot() -> String {
 }
 
 fn clear() {
-    run("secret-tool clear application rusty-impulse", b"");
+    run("secret-tool clear application impulse-shell", b"");
 }
 
 fn service_call(member: &str, paths: &[&str]) {
@@ -327,14 +327,14 @@ fn store_without_default_collection() {
     const TEST: &str = concat!(module_path!(), "::store_without_default_collection");
     let o = side(TEST, "original", None, |_| {
         let ok = run(
-            "secret-tool store --label=x application rusty-impulse",
+            "secret-tool store --label=x application impulse-shell",
             b"{}",
         )
         .1 == 0;
         (ok, snapshot())
     });
     let n = side(TEST, "native", None, |_| {
-        let attrs = [("application".to_string(), "rusty-impulse".to_string())];
+        let attrs = [("application".to_string(), "impulse-shell".to_string())];
         let n = keyring::secret_store("x", &attrs, b"{}").is_ok();
         (n, snapshot())
     });

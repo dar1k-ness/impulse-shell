@@ -1,7 +1,7 @@
 //! `eprintln!` and `eprint!` that drop a failed write instead of panicking.
 //!
 //! std's macros panic when stderr's write fails (EPIPE once the reader of a pipe is gone, as
-//! a closed terminal or `rusty-impulse 2>&1 | head` leaves it; SIGPIPE is ignored in Rust programs),
+//! a closed terminal or `impulse-shell 2>&1 | head` leaves it; SIGPIPE is ignored in Rust programs),
 //! and the shell would exit with 101 on its next log line. A log line nobody can read is lost
 //! instead, as Qt's message handler loses it. The workspace lints forbid std's macros outside
 //! tests (`clippy::print_stderr`).

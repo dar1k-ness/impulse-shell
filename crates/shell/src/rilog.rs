@@ -811,7 +811,7 @@ type FollowTx = mpsc::Sender<(FollowEvent, Option<std::io::Error>)>;
 /// keep printing what is appended until the writer's lock goes away. A rotation does not end
 /// it: the writer puts the next file (locked, with its header) at `path` before it lets go of
 /// the old one, which is read to its end before the new one. Returns success. A write to an
-/// output nobody reads any more (`rusty-impulse log -f | head -1`) ends the process by SIGPIPE, as it
+/// output nobody reads any more (`impulse-shell log -f | head -1`) ends the process by SIGPIPE, as it
 /// ends `qs log`, instead of following the log, unread, until its writer exits.
 pub fn read_logs(
     file: std::fs::File,
@@ -848,7 +848,7 @@ pub fn read_logs(
     if let Err(e) = watch_file(path, tx.clone()) {
         // Without the watch nothing appended is shown until the writer lets go of the file.
         elog::eprintln!(
-            "rusty-impulse log: cannot watch {} for changes: {e}",
+            "impulse-shell log: cannot watch {} for changes: {e}",
             path.display()
         );
     }
@@ -921,7 +921,7 @@ fn wait_unlocked(file: &std::fs::File, generation: u64, tx: FollowTx) -> bool {
         .and_then(|lock_file| spawn_lock_wait(lock_file, generation, tx))
         .inspect_err(|e| {
             elog::eprintln!(
-                "rusty-impulse log: cannot wait for the log's writer to let go of it: {e}"
+                "impulse-shell log: cannot wait for the log's writer to let go of it: {e}"
             );
         })
         .is_ok()
@@ -1321,7 +1321,7 @@ fn write_lock(f: &std::fs::File, path: &Path) {
     // SAFETY: F_SETLK on the open log takes a pointer to an initialized flock (fcntl(2)).
     if unsafe { libc::fcntl(f.as_raw_fd(), libc::F_SETLK, &fl) } != 0 {
         elog::eprintln!(
-            "rusty-impulse: cannot lock the log file {}: {}; `rusty-impulse log -f` takes this instance for \
+            "impulse-shell: cannot lock the log file {}: {}; `impulse-shell log -f` takes this instance for \
              ended",
             path.display(),
             std::io::Error::last_os_error()
@@ -1422,7 +1422,7 @@ pub fn start_instance_log(
         // Refused by the system (`EAGAIN`): the files are closed with the closure, and what
         // is logged from here on is dropped.
         elog::eprintln!(
-            "rusty-impulse: cannot start the qs-log thread: {e}; this instance's log is not written"
+            "impulse-shell: cannot start the qs-log thread: {e}; this instance's log is not written"
         );
     }
 }
@@ -1510,7 +1510,7 @@ fn flush_logs(files: [&mut Option<LogFile>; 2]) {
 fn give_up(f: &mut Option<LogFile>, e: &std::io::Error) {
     if let Some(f) = f.take() {
         elog::eprintln!(
-            "rusty-impulse: cannot write the log file {}: {e}; it is no longer written",
+            "impulse-shell: cannot write the log file {}: {e}; it is no longer written",
             f.path.display()
         );
         // What it still buffers is not written either: dropping the writer would try again.
@@ -1772,12 +1772,12 @@ mod tests {
         assert!(!ok);
         assert_eq!(open_descriptors(), before, "open descriptors");
         let watch = format!(
-            "rusty-impulse log: cannot watch {} for changes:",
+            "impulse-shell log: cannot watch {} for changes:",
             path.display()
         );
         assert!(text.contains(&watch), "stderr: {text:?}");
         assert!(
-            text.contains("rusty-impulse log: cannot wait for the log's writer to let go of it:"),
+            text.contains("impulse-shell log: cannot wait for the log's writer to let go of it:"),
             "stderr: {text:?}"
         );
     }
@@ -1800,7 +1800,7 @@ mod tests {
         let (ok, text) = testenv::stderr_with(|| read_logs(file, &path, &PLAIN, 0, true, ""));
         assert!(ok);
         let watch = format!(
-            "rusty-impulse log: cannot watch {} for changes:",
+            "impulse-shell log: cannot watch {} for changes:",
             path.display()
         );
         assert!(text.contains(&watch), "stderr: {text:?}");
@@ -1824,7 +1824,7 @@ mod tests {
             start_instance_log("shell.qml", "id", "id", dir.path(), false, None)
         });
         assert!(
-            text.contains("rusty-impulse: cannot start the qs-log thread:"),
+            text.contains("impulse-shell: cannot start the qs-log thread:"),
             "stderr: {text:?}"
         );
         assert_eq!(open_descriptors(), before, "open descriptors");
@@ -1867,7 +1867,7 @@ mod tests {
             t.join().unwrap();
         });
         assert_eq!(
-            said.matches("rusty-impulse: cannot write the log file /dev/full:")
+            said.matches("impulse-shell: cannot write the log file /dev/full:")
                 .count(),
             1,
             "stderr: {said:?}"
@@ -1907,7 +1907,7 @@ mod tests {
             t.join().unwrap();
         });
         let line = format!(
-            "rusty-impulse: cannot write the log file {}: rotating it:",
+            "impulse-shell: cannot write the log file {}: rotating it:",
             path.display()
         );
         assert_eq!(said.matches(&line).count(), 1, "stderr: {said:?}");
@@ -1940,7 +1940,7 @@ mod tests {
         assert_eq!(locked, 0, "{}", std::io::Error::last_os_error());
         let (log, said) = testenv::stderr_with(|| LogFile::open(path.clone(), true));
         let line = format!(
-            "rusty-impulse: cannot lock the log file {}:",
+            "impulse-shell: cannot lock the log file {}:",
             path.display()
         );
         assert!(said.contains(&line), "stderr: {said:?}");

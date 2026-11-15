@@ -68,7 +68,7 @@ fn write_theme(share: &Path, cache: bool) {
             );
             std::fs::create_dir_all(t.join(&d)).unwrap();
             let h = HEIGHTS[s - 1][n];
-            // `x`, and the icon rusty-impulse draws for a name no theme has.
+            // `x`, and the icon impulse-shell draws for a name no theme has.
             for (name, blue) in [("x", 255), ("application-x-executable", 128)] {
                 let [r, g, b, _] = colour(s, n, blue);
                 std::fs::write(
@@ -315,7 +315,7 @@ const QS_FRAMES: &str = r##"Item {
 
 /// Where [`SCENE`] draws what it names (x of the 26x26 item at y 20), for the ones compared by
 /// their pixel. `missing` is compared by its size alone: Quickshell draws a checkerboard,
-/// rusty-impulse the theme's generic icon (see `missing_icon_is_the_generic_one_a_found_icon_would_be`);
+/// impulse-shell the theme's generic icon (see `missing_icon_is_the_generic_one_a_found_icon_would_be`);
 /// so is `width-only`, a 2x2 icon stretched, whose every pixel is an edge.
 const PLACES: [(&str, usize); 13] = [
     ("sized", 20),
@@ -350,7 +350,7 @@ fn swaymsg(sway: &testenv::Sway, cmd: &str) {
 }
 
 /// The surfaces whose commit after the last line holding `mark` is on screen: the
-/// wp_presentation_feedback rusty-impulse asked for it (under `RI_LOG=ri::present`) was `presented`.
+/// wp_presentation_feedback impulse-shell asked for it (under `RI_LOG=ri::present`) was `presented`.
 fn surfaces_shown_after(log: &str, mark: &str) -> usize {
     let lines: Vec<&str> = log.lines().collect();
     let Some(from) = lines.iter().rposition(|l| l.contains(mark)) else {
@@ -455,7 +455,7 @@ impl Session {
         match kind {
             Kind::Quickshell => Command::new("qs"),
             Kind::Ours => {
-                let mut c = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+                let mut c = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
                 c.env("RI_INTERP", "1");
                 c
             }
@@ -1004,7 +1004,7 @@ const MISSING: &str = concat!(
     "::missing_icon_is_the_generic_one_a_found_icon_would_be"
 );
 
-/// For a name no theme has rusty-impulse draws `application-x-executable` where Quickshell draws a
+/// For a name no theme has impulse-shell draws `application-x-executable` where Quickshell draws a
 /// checkerboard (docs/quickshell-differences.md): from the directory the icon asked for
 /// would have come from.
 #[test]

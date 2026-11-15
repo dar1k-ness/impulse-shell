@@ -44,7 +44,7 @@ pub fn eval_request(out: &Path, text: &str) -> String {
 hl.window_rule = function(rule)
     if type(rule) == \"table\" and rule.name == nil then
         n = n + 1
-        rule.name = \"rusty-impulse {file} \" .. n
+        rule.name = \"impulse-shell {file} \" .. n
     end
     return window_rule(rule)
 end

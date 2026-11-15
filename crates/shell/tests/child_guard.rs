@@ -32,7 +32,7 @@ fn guard_mode_ends_registered_groups_when_its_pipe_closes() {
             .unwrap()
     };
     let (mut kept, mut ended) = (spawn_group(), spawn_group());
-    let mut guard = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+    let mut guard = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
         .arg(qml::childguard::ARG)
         .stdin(Stdio::piped())
         .spawn()
@@ -70,7 +70,7 @@ fn guard_mode_outlives_sigterm() {
         .process_group(0)
         .spawn()
         .unwrap();
-    let mut c = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let mut c = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
     c.arg(qml::childguard::ARG).stdin(Stdio::piped());
     // SAFETY: signal(2) is async-signal-safe; the closure touches nothing else. A test runner
     // that ignores SIGTERM would hand that on to the guard.

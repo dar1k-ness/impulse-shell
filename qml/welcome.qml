@@ -29,7 +29,7 @@ ApplicationWindow {
         Notify.send(Translation.tr("Welcome app"), Translation.tr("Enjoy! You can reopen the welcome app any time with <tt>Super+Shift+Alt+/</tt>. To open the settings app, hit <tt>Super+I</tt>"));
         Qt.quit();
     }
-    title: Translation.tr("rusty-impulse Welcome")
+    title: Translation.tr("Impulse Welcome")
 
     Component.onCompleted: {
         MaterialThemeLoader.reapplyTheme();
@@ -468,7 +468,7 @@ ApplicationWindow {
                             nerdIcon: "󰊤"
                             mainText: Translation.tr("GitHub")
                             onClicked: {
-                                Qt.openUrlExternally("https://github.com/dar1k-ness/rusty-impulse");
+                                Qt.openUrlExternally("https://github.com/dar1k-ness/impulse-shell");
                             }
                         }
                         RippleButtonWithIcon {

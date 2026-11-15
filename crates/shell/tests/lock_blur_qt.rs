@@ -117,7 +117,7 @@ impl Drop for Kill {
 const NO_CLIP_CONTROL: (&str, &str) = ("MESA_EXTENSION_OVERRIDE", "-GL_EXT_clip_control");
 
 /// What a screen shows of `body` in a window of the shell itself, and the shell's log:
-/// rusty-impulse (with `env` set, if any) under a headless sway draws it in a panel at the
+/// impulse-shell (with `env` set, if any) under a headless sway draws it in a panel at the
 /// screen's corner, on the GPU path, and `grim` reads the screen.
 fn on_a_screen(body: &str, env: Option<(&str, &str)>) -> (Canvas, String) {
     use std::process::{Command, Stdio};
@@ -135,7 +135,7 @@ fn on_a_screen(body: &str, env: Option<(&str, &str)>) -> (Canvas, String) {
     std::fs::write(dir.path().join("shell.qml"), qml).unwrap();
     let sway = testenv::Sway::start();
     let (r, wr) = std::io::pipe().unwrap();
-    let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
     cmd.envs(env);
     let child = sway
         .env(&mut cmd)
@@ -161,14 +161,14 @@ fn on_a_screen(body: &str, env: Option<(&str, &str)>) -> (Canvas, String) {
             .filter(|l| !l.contains(" -> ") && !l.contains('@'))
             .collect();
         panic!(
-            "rusty-impulse showed no frame with the wallpaper:\n{}",
+            "impulse-shell showed no frame with the wallpaper:\n{}",
             lines.join("\n")
         );
     }
     let text = log.text();
     assert!(
         text.contains("renderer: GPU (GLES2, "),
-        "rusty-impulse draws on the CPU under sway"
+        "impulse-shell draws on the CPU under sway"
     );
     let f = dir.path().join("screen.png");
     let ok = sway

@@ -1,7 +1,7 @@
 //! Files that every reader brings to 8 bits, turns or flattens in its own way (16 bits per
 //! sample, an Orientation tag, a `tRNS` chunk, alpha in a TIFF, colour read as grey), against
 //! OpenCV itself and against ScreenTextOverlay's real `magick … | text_color.py` pipeline, run
-//! live: the Python of `$RUSTY_IMPULSE_VIRTUAL_ENV` (OpenCV 4.13.0 in ri-testenv) and
+//! live: the Python of `$IMPULSE_SHELL_VIRTUAL_ENV` (OpenCV 4.13.0 in ri-testenv) and
 //! ImageMagick. The files are tests/fixtures/convert, written by its make.py.
 
 use std::io::Write;
@@ -45,7 +45,7 @@ const FILES: [&str; 28] = [
 
 /// The venv's Python, with OpenCV.
 fn python() -> Option<String> {
-    let venv = std::env::var("RUSTY_IMPULSE_VIRTUAL_ENV").unwrap_or_default();
+    let venv = std::env::var("IMPULSE_SHELL_VIRTUAL_ENV").unwrap_or_default();
     let py = format!("{venv}/bin/python3");
     let ok = !venv.is_empty()
         && Command::new(&py)
@@ -53,7 +53,7 @@ fn python() -> Option<String> {
             .status()
             .is_ok_and(|s| s.success());
     if !ok {
-        testenv::unavailable("RUSTY_IMPULSE_VIRTUAL_ENV with cv2 + numpy");
+        testenv::unavailable("IMPULSE_SHELL_VIRTUAL_ENV with cv2 + numpy");
         return None;
     }
     Some(py)

@@ -818,7 +818,7 @@ fn image_hints_served_via_qsimage() {
             .split_once('/')
             .unwrap();
         std::path::PathBuf::from(std::env::var("XDG_CACHE_HOME").unwrap()).join(format!(
-            "rusty-impulse/notification-images/{key}-{change}.png"
+            "impulse-shell/notification-images/{key}-{change}.png"
         ))
     };
     wait_disk();
@@ -945,7 +945,7 @@ fn saved_image_source_survives_restart() {
         .unwrap();
     let (run, handle) = key.split_once('-').unwrap();
     let dir = std::path::PathBuf::from(std::env::var("XDG_CACHE_HOME").unwrap())
-        .join("rusty-impulse/notification-images");
+        .join("impulse-shell/notification-images");
     // The PNG copy is written off the main loop.
     let saved = dir.join(format!("{run}-{handle}-{change}.png"));
     wait_disk();

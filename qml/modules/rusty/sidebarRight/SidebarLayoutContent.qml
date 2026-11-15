@@ -8,7 +8,7 @@ import ri.modules.common.widgets
 
 /**
  * The right sidebar's widgets as the edit-mode layout's sidebar container places them
- * (rusty-impulse only: SidebarRightContent loads this file when the layout has a sidebar container).
+ * (impulse-shell only: SidebarRightContent loads this file when the layout has a sidebar container).
  * Runs of widgets narrower than the grid share one quick-panel card, packed into rows of
  * `columns` cells like the original's quick toggles; a full-width widget is a block of its own.
  * A block without an implicit height (notifications) takes the height left over, keeping at

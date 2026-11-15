@@ -7,15 +7,15 @@ of them, never runs it. Tests refuse threads with `testenv::refuse_new_threads`.
 
 | Queue | A job refused its thread | Log line |
 | --- | --- | --- |
-| `Lane::run` (one queue per service: `Notify.send`, NetworkManager, logind, Hyprland, ...) | stays queued, in order | `rusty-impulse: cannot start a lane thread: …; N queued until one starts` |
-| `workpool::long`, no `long` thread running | stays queued | `rusty-impulse: cannot start a pool thread: …; N queued until one starts` |
-| `workpool::long`, other `long` threads running | waits for one of them | `rusty-impulse: cannot start another pool thread (…): the job waits for a running one` |
-| `workpool::long` called from a `long` job | runs on that job's thread, which is never the main thread | `rusty-impulse: cannot start a pool thread: …; its job runs on its submitter` |
+| `Lane::run` (one queue per service: `Notify.send`, NetworkManager, logind, Hyprland, ...) | stays queued, in order | `impulse-shell: cannot start a lane thread: …; N queued until one starts` |
+| `workpool::long`, no `long` thread running | stays queued | `impulse-shell: cannot start a pool thread: …; N queued until one starts` |
+| `workpool::long`, other `long` threads running | waits for one of them | `impulse-shell: cannot start another pool thread (…): the job waits for a running one` |
+| `workpool::long` called from a `long` job | runs on that job's thread, which is never the main thread | `impulse-shell: cannot start a pool thread: …; its job runs on its submitter` |
 | `workpool::try_long` | where `long` would queue with no thread or run on the submitter: dropped, the caller gets the error (`XMLHttpRequest` ends with `onerror`) | none, the caller's |
-| `workpool::run` | stays queued | `rusty-impulse: cannot start a pool worker: …; N queued until one starts` |
+| `workpool::run` | stays queued | `impulse-shell: cannot start a pool worker: …; N queued until one starts` |
 | `workpool::after` with a delay, no worker | refused, the caller gets the error | the caller's |
 | `Lane::try_run_shared` (a tray menu) | dropped, the caller gets the error | the caller's |
-| a child process nothing can wait for | kept, reaped later | `rusty-impulse: cannot start a thread to wait for child …` |
+| a child process nothing can wait for | kept, reaped later | `impulse-shell: cannot start a thread to wait for child …` |
 
 ## When the thread is asked for again
 

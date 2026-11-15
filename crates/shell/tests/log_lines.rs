@@ -56,7 +56,7 @@ ShellRoot {{
     std::fs::write(dir.path().join("shell.qml"), qml).unwrap();
     let (ours, theirs) = record_sockets();
     let xdg = dir.path().join("xdg");
-    let mut child = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
         .arg("-p")
         .arg(dir.path())
         .env("WAYLAND_DISPLAY", sway.display())
@@ -82,7 +82,7 @@ ShellRoot {{
         let write = String::from_utf8_lossy(&buf[..n]);
         assert!(
             n > 0,
-            "rusty-impulse exited before it logged its layer and its line:\n{seen}"
+            "impulse-shell exited before it logged its layer and its line:\n{seen}"
         );
         seen += &write;
         assert!(

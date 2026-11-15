@@ -1,6 +1,6 @@
 //! `Rustshell.reload()` re-executes the shell, and the new image goes on as the same instance
-//! with the same log, as a Quickshell reload stays one process, instance and log: `rusty-impulse log`
-//! still shows what was logged before the reload (why it was asked for), and `rusty-impulse log -f`
+//! with the same log, as a Quickshell reload stays one process, instance and log: `impulse-shell log`
+//! still shows what was logged before the reload (why it was asked for), and `impulse-shell log -f`
 //! keeps following.
 
 use std::path::Path;
@@ -8,7 +8,7 @@ use std::process::{Child, Command, Stdio};
 
 use testenv::Log;
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 struct Kill(Child);
 impl Drop for Kill {

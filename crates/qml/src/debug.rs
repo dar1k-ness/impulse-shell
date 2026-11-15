@@ -259,7 +259,7 @@ pub fn code_error(said: &std::sync::Once, what: std::fmt::Arguments<'_>) {
         panic!("{what}");
     }
     let at = std::panic::Location::caller();
-    said.call_once(|| elog::eprintln!("rusty-impulse: internal error at {at}: {what}"));
+    said.call_once(|| elog::eprintln!("impulse-shell: internal error at {at}: {what}"));
 }
 
 /// [`code_error`] for a mistake that many places can make through one function: the place is
@@ -276,7 +276,7 @@ pub fn code_error_at_caller(what: std::fmt::Arguments<'_>) {
     let mut said = SAID.lock().unwrap_or_else(|e| e.into_inner());
     if !said.contains(&place) {
         said.push(place);
-        elog::eprintln!("rusty-impulse: internal error at {at}: {what}");
+        elog::eprintln!("impulse-shell: internal error at {at}: {what}");
     }
 }
 

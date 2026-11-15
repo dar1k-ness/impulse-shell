@@ -15,21 +15,21 @@ pub struct Migration {
 /// widgets where the user's settings put them. `None` reads every option at its default.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Inputs {
-    pub rusty_impulse_config: Option<PathBuf>,
+    pub impulse_shell_config: Option<PathBuf>,
 }
 
 impl Inputs {
     /// The user's options ([`rusty::config_path`]).
     pub fn ri() -> Inputs {
         Inputs {
-            rusty_impulse_config: Some(rusty::config_path()),
+            impulse_shell_config: Some(rusty::config_path()),
         }
     }
 
     /// The original's options, read only when a step asks for them. A file the original itself could not read
     /// reads as the original's defaults, as a missing one does: the layout is not refused over it.
     pub fn ri_options(&self) -> serde_json::Value {
-        self.rusty_impulse_config
+        self.impulse_shell_config
             .as_deref()
             .and_then(|p| rusty::read_options(p).ok())
             .unwrap_or_else(|| serde_json::Value::Object(Default::default()))

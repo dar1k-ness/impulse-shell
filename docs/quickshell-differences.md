@@ -1,14 +1,14 @@
 # Deliberate differences from Quickshell
 
-rusty-impulse does what Quickshell does with the same QML. The cases below are the ones where it
+impulse-shell does what Quickshell does with the same QML. The cases below are the ones where it
 does something else on purpose. Each row names the test that holds the difference: if
-Quickshell changes, or rusty-impulse stops doing what the row says, that test fails.
+Quickshell changes, or impulse-shell stops doing what the row says, that test fails.
 
 ## A reload while the session is locked
 
 Compared with Quickshell 0.3.2 under sway, on the original's lock screen (`qml/modules/rusty/lock/Lock.qml`).
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | `Quickshell.reload()` under a held lock | Loads the next generation at once and hands it the held lock object (`WlSessionLock::onReload`). the original's `GlobalStates.screenLocked` starts `false` in every generation, so the new `WlSessionLock` sends `unlock_and_destroy`: the session is unlocked, the desktop shows. | Holds the reload. The same image keeps the lock and its surfaces. Once QML unlocks and the compositor has answered the `wl_display.sync` sent after `unlock_and_destroy`, the shell re-executes. |
 | The typed password | Gone with the old generation. | Still in the field while the reload waits. |
@@ -20,14 +20,14 @@ Doing the same would let a configuration reload open a locked session.
 
 Tests, in `crates/shell/tests/session_lock_reload.rs`:
 
-- `a_reload_under_the_original_s_lock_screen_unlocks_in_quickshell_and_waits_in_rusty_impulse` runs both shells
+- `a_reload_under_the_original_s_lock_screen_unlocks_in_quickshell_and_waits_in_impulse_shell` runs both shells
   on the same `Lock.qml` and checks both columns of the first row.
 - `the_typed_password_and_a_pam_conversation_outlive_a_held_reload` checks the other two rows
-  for rusty-impulse.
+  for impulse-shell.
 - `reload_under_a_session_lock_waits_for_the_unlock` and
   `unlock_and_reload_in_one_turn_unlocks_first` check the order of unlock, sync and re-execution.
 
-Two more paths of Quickshell 0.3.2 have no counterpart in rusty-impulse. Both end `qs` on a Wayland
+Two more paths of Quickshell 0.3.2 have no counterpart in impulse-shell. Both end `qs` on a Wayland
 protocol error and leave the session locked with no lock surface. They were seen in a run
 under sway and are not held by a test:
 
@@ -37,7 +37,7 @@ under sway and are not held by a test:
   output that still has the old one ("session lock surface already created for the given
   output").
 
-rusty-impulse has one kind of reload, and it waits for the unlock in both cases.
+impulse-shell has one kind of reload, and it waits for the unlock in both cases.
 
 Not checked: Hyprland. All of the above was run under sway.
 
@@ -45,7 +45,7 @@ Not checked: Hyprland. All of the above was run under sway.
 
 Compared with Quickshell 0.3.2 under sway, on an `Image` whose source is `image://icon/nope`.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | What is drawn | A black and `#d900d8` checkerboard (`IconImageProvider::missingPixmap`). | The theme's `application-x-executable`, else its `image-missing`, from the directory an icon of that request would have come from; nothing when the theme has neither. |
 | The image's size | The request, each side rounded up to even. | The same. |
@@ -68,7 +68,7 @@ Tests:
 
 Compared with Quickshell 0.3.2 under sway.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | `locked = false` and `Qt.quit()` in one handler | Sends `unlock_and_destroy` and ends. It does not wait for the compositor. | Sends `unlock_and_destroy` and a `wl_display.sync`, and ends once the compositor has answered the sync or the connection is gone. |
 | SIGTERM after `locked = false`, before the compositor has read the unlock | Dies by the signal without waiting: 41 ms after the SIGTERM in one run, with `unlock_and_destroy` written and not read by the compositor. | The same wait, then the shell dies by the signal. |
@@ -77,14 +77,14 @@ Why: `ext-session-lock-v1` says of `unlock_and_destroy` that "a correct client t
 to exit directly after unlocking the session must use the wl_display.sync request to ensure
 the server receives and processes the unlock_and_destroy request". A compositor that finds
 the client gone before it has read the unlock keeps the session locked, with nothing left to
-unlock it. This was seen under sway with an rusty-impulse that a test killed right after its
+unlock it. This was seen under sway with an impulse-shell that a test killed right after its
 `unlock_and_destroy`: sway never read the request, and the next client's panel got its
 `configure` and never entered an output.
 
 While it waits the shell runs nothing else, and a second SIGTERM does not end it: only the
 compositor's answer, the end of the connection or SIGKILL do.
 
-`$XDG_RUNTIME_DIR/ri-native.locked` (rusty-impulse only) names the shell that holds the lock. A shell
+`$XDG_RUNTIME_DIR/ri-native.locked` (impulse-shell only) names the shell that holds the lock. A shell
 that ends without the lock takes it away, also when the connection broke before the
 compositor's answer. A shell that ends holding the lock leaves it: the session is locked with
 a dead lock screen. The next shell to start removes a file that names a process that is gone.
@@ -96,7 +96,7 @@ writes to the compositor (`testenv::HeldRequests`):
   the first row, `quickshell_ends_on_sigterm_before_the_compositor_has_read_its_unlock`
   through the second.
 - `quit_while_unlocking_waits_for_the_compositor` and
-  `sigterm_while_unlocking_waits_for_the_compositor`: rusty-impulse is alive until the compositor
+  `sigterm_while_unlocking_waits_for_the_compositor`: impulse-shell is alive until the compositor
   reads the unlock, also after a second SIGTERM; then the compositor shows a panel again and
   the shell has ended.
 - `connection_lost_while_the_exit_waits_ends_the_shell`: the wait ends with the connection.
@@ -122,7 +122,7 @@ reached. sway takes the second lock.
 
 Compared with Quickshell 0.3.2 under sway and under Hyprland 0.57.1.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | Lock surfaces of a new lock | Asked for in the same turn as the `lock` request (`WlSessionLock::realizeLockTarget`). | Asked for once the compositor has answered a `wl_display.sync` sent after `lock`: one round trip later. |
 | The lock is refused (`finished` with no `locked`) under Hyprland | Destroys the lock and the surfaces it asked for. Hyprland has no object for those surfaces: `invalid object`, and `qs` exits. | `finished` comes before the answer to the sync, so no surface was asked for. Only `ext_session_lock_v1.destroy` is sent, and the shell stays up. |
@@ -140,7 +140,7 @@ at once has no surface, and one ended later has surfaces the compositor did crea
 The wait costs the lock screen one round trip and no frame. Quickshell runs Qt's threaded
 render loop, in which every window draws in a thread of its own (seen in the Hyprland guest:
 `qt.scenegraph.general` logs `threaded render loop`, and `qs` has one `QSGRenderThread` per
-window), so a lock surface never waits for the frame of another window. rusty-impulse draws all of
+window), so a lock surface never waits for the frame of another window. impulse-shell draws all of
 its windows in one loop, where a frame of another window (a blurred wallpaper takes long
 without a GPU) would stand before the lock screen's. So the order of the frames is ours:
 from the `lock` request on, the lock surfaces of a lock the compositor has not confirmed draw
@@ -153,7 +153,7 @@ The same order holds for the lock screen's keyboard. The compositor gives a lock
 keyboard focus when its first frame maps it, and in both shells the surface gets keys only from
 the answer to the `wl_display.sync` sent at that `wl_keyboard.enter` on (QtWayland's
 `handleWaylandSync`); a key handled before the answer reaches no item
-(`crates/shell/tests/key_before_activation_equiv.rs`). rusty-impulse reads no event while it draws, so
+(`crates/shell/tests/key_before_activation_equiv.rs`). impulse-shell reads no event while it draws, so
 the other windows also wait for these two answers (the lock surface is mapped, its keyboard
 focus is active): two round trips. Without that wait the frame of another window drawn right
 after the lock screen's first one kept the lock screen without the keyboard for as long as
@@ -174,7 +174,7 @@ What QML reads after a refused lock is the same in both: `locked` false, `secure
 
 Tests, in `crates/shell/tests/session_lock_finished.rs`:
 
-- `a_lock_refused_as_hyprland_does_asks_for_no_surface` runs rusty-impulse against a compositor that
+- `a_lock_refused_as_hyprland_does_asks_for_no_surface` runs impulse-shell against a compositor that
   refuses as Hyprland does and checks the second row and what QML reads.
 - `a_lock_after_a_refused_one_is_taken` checks that the next lock is asked for and held.
 - `finished_before_locked_destroys` is the refusal by sway itself.
@@ -197,7 +197,7 @@ reads, under sway).
 
 Compared with Quickshell 0.3.2 under sway.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | The compositor sends `zwlr_layer_surface_v1.closed` | The window is closed (`LayerSurface::zwlr_layer_surface_v1_closed`). | The same (`layer_closed`). |
 | The panel's `wl_output` is removed and no `closed` comes | The window stays: `ProxyWindowBase::onScreenDestroyed` only forgets the screen. The panel is shown on the output the compositor picked. | The panel is closed with its popups and emits `closed` (`output_destroyed`). |
@@ -206,16 +206,16 @@ Why: the second row happens when the output is removed in the same milliseconds 
 created. The compositor reads `get_layer_surface` after the output is gone. The request names
 a dead `wl_output`, so sway picks another output itself and never sends `closed`: the panel
 of the unplugged screen stays on a live one for good. In every other order of the same events
-the compositor closes the panel, so rusty-impulse closes it in this one too.
+the compositor closes the panel, so impulse-shell closes it in this one too.
 
 Tests, in `crates/shell/tests/windows_outputs.rs`. The first two hold the compositor's
 reading of the shell's requests until the output is removed:
 
 - `quickshell_keeps_a_panel_created_while_its_screen_is_unplugged` checks the Quickshell
   column of the second row.
-- `panel_created_while_its_screen_is_unplugged_is_closed` checks the rusty-impulse column of the
+- `panel_created_while_its_screen_is_unplugged_is_closed` checks the impulse-shell column of the
   second row.
-- `panel_for_unplugged_screen_is_not_moved_to_another_output` checks for rusty-impulse that a panel
+- `panel_for_unplugged_screen_is_not_moved_to_another_output` checks for impulse-shell that a panel
   already shown on the output is closed when the output is removed.
 
 Not checked: Hyprland. The first row for Quickshell was seen in a run under sway and is not
@@ -230,7 +230,7 @@ Not meant to stay: the text, the place and the report on every occurrence are to
 once the rework of the engine's binding table (R2) is merged, because the line and column of a
 binding have to be kept where bindings are created (`Eng::apply`), which that rework rewrites.
 
-| | Qt 6.12 | Quickshell 0.3.2 | rusty-impulse |
+| | Qt 6.12 | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|---|
 | The text, for property `a` of the `Item` at 2:1 declared at 7:5 | `file:///…/loop.qml:2:1: QML Item: Binding loop detected for property "a":` and, on the next line, `file:///…/loop.qml:7:5` | `WARN scene: QML Item at @loop.qml[2:1]: Binding loop detected for property "a":` and `qs:@/qs/loop.qml:7:5` | `Binding loop detected for property "a" (Item in /…/shell.qml)`, target `ri::binding` (docs/env.md). The object's type and file; no line or column of the object or of the binding. |
 | When | Every time the loop happens: 3 times in `loop.qml`. | The same, 3 times. | Once per binding in the life of the process. The engine also records the loop each time as an error; the shell prints an error once (`qml: binding loop detected on item N property a (…)`). |
@@ -239,7 +239,7 @@ binding have to be kept where bindings are created (`Eng::apply`), which that re
 
 Tests, in `crates/shell/tests/lazy_loader_equiv.rs`:
 
-- `a_binding_loop_ends_as_in_qt` runs `qml6`, Quickshell and rusty-impulse on `loop.qml`: the same 17
+- `a_binding_loop_ends_as_in_qt` runs `qml6`, Quickshell and impulse-shell on `loop.qml`: the same 17
   console lines (values and evaluation counts after each of 3 changes) and the same property.
 - `a_binding_that_read_item_is_evaluated_as_many_times_as_in_quickshell` does the same for
   bindings that read `item` of a loading LazyLoader, on `lazyl.qml`.
@@ -248,7 +248,7 @@ Tests, in `crates/shell/tests/lazy_loader_equiv.rs`:
 
 Compared with Quickshell 0.3.2.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | A binding or handler that loops for ever (`while (true) {}`) | Stays in it: no limit. The shell stops answering; in `Component.onDestruction` at `Qt.quit()` the process never ends. | Interrupted with `Error: Interrupted` once it has used between 5 s and 10 s of its thread's CPU time. The shell goes on; at `Qt.quit()` the remaining handlers run and the process ends with its status. |
 | A binding or handler that works for long and returns (1 s of CPU time, 8 MiB written with a `FileView`) | Runs to its end. | The same: only CPU time counts, and less than 5 s of it is never interrupted. |
@@ -264,7 +264,7 @@ with it.
 
 Tests, in `crates/shell/tests/destruction_equiv.rs` unless said:
 
-- `a_handler_that_never_returns_is_interrupted` checks the rusty-impulse column for
+- `a_handler_that_never_returns_is_interrupted` checks the impulse-shell column for
   `Component.onDestruction` at `Qt.exit(3)`: the handlers after the interrupted one, the file
   one of them writes and the status are those of the same configuration with a handler that
   returns. `Interrupted` is printed as a warning inside the interrupted handler, before the
@@ -285,13 +285,13 @@ configuration was still in the handler 10 s after `Qt.quit()` and was killed.
 
 Compared with Quickshell 0.3.2.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | `Qt.quit()` right after a call or a property write to bluetoothd (`discovering = false` in `Component.onDestruction`) | Writes the call to the bus and ends without waiting for the answer. | The same: the exit waits until the call is written, not for the answer. A bluetoothd that does not answer does not hold the exit. |
 | The same, while an earlier property write is still unanswered | Writes it at once. | Property writes go one at a time: the new one is written when the earlier one is answered. The exit waits for that up to 2 s (`FLUSH`, `crates/qml/src/notifier.rs`, one limit for every service the exit waits for), then ends without it. |
 
 Measured, from `Qt.quit()` to the end of the process, three runs each, with the handler
-stopping a discovery: Quickshell 18 to 31 ms, rusty-impulse 18 to 42 ms, the same with a bluetoothd
+stopping a discovery: Quickshell 18 to 31 ms, impulse-shell 18 to 42 ms, the same with a bluetoothd
 that answers and with one that is stopped; without a discovery 17 to 25 ms for both.
 
 Tests:
@@ -306,11 +306,11 @@ Tests:
 - `the_exit_waits_once_for_two_services_that_do_not_answer` in
   `crates/shell/tests/destruction_equiv.rs` checks that the limit is one for all: with a
   write queued behind one bluetoothd holds and a notification for a session bus that never
-  answers, rusty-impulse ends 2 s after its handlers, not 4.
+  answers, impulse-shell ends 2 s after its handlers, not 4.
 
 With the real bluetoothd 5.87, by hand in the guest of `bench/vm.sh` (a virtual controller:
 `modprobe hci_vhci`, `btvirt -l2` built from the BlueZ source), one run: the Bluetooth page
-of the Waffle action center open and `Discovering: yes`, then `rusty-impulse -c rusty-impulse kill`. The shell
+of the Waffle action center open and `Discovering: yes`, then `impulse-shell -c impulse-shell kill`. The shell
 ended in 64 ms with status 0, `StopDiscovery` is in `dbus-monitor`, `stop_discovery()` in
 the log of `bluetoothd -d`, `Stop Discovery` in `btmon`, and `bluetoothctl show` says
 `Discovering: no`.
@@ -324,7 +324,7 @@ writes a second property write at once (read in its source, `src/dbus/properties
 Compared with Quickshell 0.3.2, with a sway that is killed and one that is left by
 `swaymsg exit`.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | Warning, status | `The Wayland connection broke. Did the Wayland compositor die?`, 255 | The same |
 | `Component.onDestruction` | Not run: what a handler would remove stays. | The same |
@@ -339,7 +339,7 @@ Tests:
 - `no_handler_runs_when_the_compositor_goes_away` in
   `crates/shell/tests/destruction_equiv.rs` checks the first three rows for both.
 - `lost_compositor_writes_the_pending_config_save` in
-  `crates/shell/tests/wayland_lost_flush.rs` checks the rusty-impulse column of the last.
+  `crates/shell/tests/wayland_lost_flush.rs` checks the impulse-shell column of the last.
 
 Not held by a test: that Quickshell loses a pending save. Hyprland 0.57.1 in place of sway
 (`hl.dsp.exit()`, SIGTERM, SIGKILL) was measured by hand in the guest of `bench/vm.sh`: the
@@ -349,14 +349,14 @@ How long Quickshell's `Process`es stay, in Hyprland runs of the same three kinds
 of each: they have no parent when Quickshell ends, whichever way Hyprland went, 5 of 5.
 Looked at again 2 s later, they are gone after `hl.dsp.exit()` and after SIGTERM, 5 of 5
 each, and still run after SIGKILL, 5 of 5. What ends them in the first two was not looked
-for. rusty-impulse leaves none when it ends in any of the three, 5 of 5 each. In these runs both
+for. impulse-shell leaves none when it ends in any of the three, 5 of 5 each. In these runs both
 shells ended with 255, 53 to 147 ms after the compositor.
 
 ## A picture sent over D-Bus larger than 1024 pixels a side
 
 Compared with Quickshell 0.3.2 under sway, through OpenGL (`crates/shell/tests/tray_pixels_qt.rs`).
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | A tray pixmap (`IconPixmap`, `OverlayIconPixmap`, `AttentionIconPixmap`) or a notification's `image-data` of up to 1024x1024 | Kept as it came: one of 512x512 is shown pixel for pixel. | The same, 0 of 262144 pixels differ. |
 | One with a side over 1024 | Kept as it came: one of 1025x1025 is shown pixel for pixel, and the notification's `Image` is 1025x1025. | Averaged down once, when it arrives, so that its longer side is 1024 (1025x1025 becomes 1024x1024, 2048x1024 becomes 1024x512). The notification's `Image` is 1024x1024. |
@@ -372,7 +372,7 @@ can send one.
 A picture of 4096x4096 depends on the bus (measured with libnotify as the sender,
 `notify_notification_set_image_from_pixbuf`):
 
-| Bus | Quickshell 0.3.2 | rusty-impulse |
+| Bus | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | `dbus-daemon` 1.16 with the session's configuration | The bus closes the sender's connection; nothing arrives. | The same. |
 | `dbus-broker` 37 | The bus passes it on; Quickshell's connection to the bus then ends: the sender gets `Remote peer disconnected`, `org.freedesktop.Notifications` has no owner afterwards and the next notification fails with `ServiceUnknown`. `VmRSS` 191812 kB before, 264756 kB after. | Arrives and is kept as 1024x1024 (`VmRSS` 156688 kB before, 179828 kB after); the next notification arrives. So does one of 5792x5792 (134189056 bytes); one of 5800x5800 is over the broker's 128 MiB for a message and closes the sender's connection, the shell stays on the bus. |
@@ -385,9 +385,9 @@ The bus has to let the message through first. `dbus-daemon` takes a message of a
 32 MiB (33554432 bytes) unless its configuration sets `max_message_size`; the session's
 (`/usr/share/dbus-1/session.conf`) sets 1000000000. A picture of 4096x2048 is a message of
 33554736 bytes: the session bus delivers it (libnotify as the sender, through `dbus-daemon`
-with the session's configuration and through `dbus-broker`: Quickshell shows 4096x2048, rusty-impulse
+with the session's configuration and through `dbus-broker`: Quickshell shows 4096x2048, impulse-shell
 keeps 1024x512), a `dbus-daemon` with no such line closes the sender's connection, for
-Quickshell as for rusty-impulse.
+Quickshell as for impulse-shell.
 
 Not held by a test: the rows for `dbus-broker` and for libnotify (measured by hand in the
 test image; the tests' bus is `dbus-daemon` and their sender zbus).
@@ -402,12 +402,12 @@ in `crates/qml/tests/notifications.rs`.
 ## Qt's scale variables
 
 Compared with Quickshell 0.3.2 on Qt 6.12.0 under sway with two outputs, at scale 1 and 1.5.
-`QT_SCALE_FACTOR` and `QT_SCREEN_SCALE_FACTORS` do in rusty-impulse what they do in Quickshell
+`QT_SCALE_FACTOR` and `QT_SCREEN_SCALE_FACTORS` do in impulse-shell what they do in Quickshell
 ([env.md](env.md#qts-scale-variables)); the rows below are what differs. All but the popup
 are differences from Qt itself and are in
 [qt-differences.md](qt-differences.md#qts-scale-variables) as well, with what `qml6` shows.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | `QT_SCALE_FACTOR` that is a number but not a finite one above 0; an infinite entry of `QT_SCREEN_SCALE_FACTORS` | Taken as the factor, as Qt does: no window appears, and nothing is logged about the variable; with a visible `PopupWindow` Quickshell ends on a protocol error. The values are in the table below. | The factor is 1, the entry is dropped, and one line in the log names the variable and the value. |
 | `QT_FONT_DPI=N` | The whole interface is scaled by N/96 (192 doubles it), not only fonts; multiplied with `QT_SCALE_FACTOR`; a screen's entry of `QT_SCREEN_SCALE_FACTORS` replaces it on that screen. | Not read. |
@@ -424,7 +424,7 @@ each value of the rows with a warning: Qt asks for a popup without a size, and t
 `error 0: width and height must be positive and non-zero` and
 `WARN: The Wayland connection experienced a fatal error: Protocol error`.
 
-| Value | The factor in Quickshell's QML | What Quickshell shows and logs | rusty-impulse |
+| Value | The factor in Quickshell's QML | What Quickshell shows and logs | impulse-shell |
 |---|---|---|---|
 | `QT_SCALE_FACTOR=0`, `-0` | 0 | No bar on the first output, a strip 2 px high on the second. Nothing logged. | 1, one warning |
 | `QT_SCALE_FACTOR=-1` | −1 | No window. Nothing logged. | 1, one warning |
@@ -447,7 +447,7 @@ The popup, measured in sway with `HEADLESS-1` (1920x1080, scale 1) at 0,0 and `H
 and a `PopupWindow` of 50x30 anchored at 100,40 of the bar. The popup of the bar on
 `HEADLESS-2`, in that output's pixels (x y width height):
 
-| Session | Quickshell 0.3.2 | rusty-impulse |
+| Session | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | neither variable | 180 60 75 44 | 180 60 75 44 |
 | `QT_SCALE_FACTOR=2` | 0 120 150 89 | 360 120 150 89 |
@@ -462,7 +462,7 @@ guest under Hyprland and is not held by a test: `Virtual-1` (1920x1080, scale 1)
 headless output of 2560x1600 at 1920,0 at scale 1.6 (Hyprland does not take 1.5 for that
 mode), the Waffle bar, `QT_SCALE_FACTOR=2`. The tooltip of the Start button on the second
 output (`WPopupToolTip`, a `PopupWindow`) is at the output's left edge in the original and above its
-button in rusty-impulse. On `Virtual-1` with the same factor, and on the second output with
+button in impulse-shell. On `Virtual-1` with the same factor, and on the second output with
 `QT_SCALE_FACTOR=1`, it is above the button in both.
 
 Why: a shell without a window and without a word about the variable in its log is a
@@ -489,7 +489,7 @@ Tests:
   `QT_SCALE_FACTOR_ROUNDING_POLICY=Round`. `QT_ENABLE_HIGHDPI_SCALING`, the physical DPI
   and the CPU renderer without `wp_viewporter` are not held by a test.
 - The other tests of `crates/shell/tests/scale_factor_equiv.rs` hold that the two variables
-  read in rusty-impulse as in Quickshell.
+  read in impulse-shell as in Quickshell.
 
 An output connected while the shell runs, with `QT_SCALE_FACTOR=2`, was run once by hand in
 sway and is not held by a test: the new output's bar, its size after the output's mode and
@@ -504,15 +504,15 @@ Compared with Quickshell 0.3.2. Quickshell copies its environment before it appl
 config's pragmas (`Common::INITIAL_ENVIRONMENT`, `src/launch/launch.cpp`) and starts `Process`,
 `Process.startDetached()` and `Quickshell.execDetached` with that copy
 (`setupProcessEnvironment`, `src/io/processcore.cpp`): `//@ pragma Env`, `//@ pragma DefaultEnv`,
-the `Fusion` style and the removal of `QT_STYLE_OVERRIDE` reach the shell alone. rusty-impulse does the
+the `Fusion` style and the removal of `QT_STYLE_OVERRIDE` reach the shell alone. impulse-shell does the
 same (`workpool::userenv`), also for the programs it starts from Rust where the original started them
 from QML or from a script QML started. The rows below are what differs.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
-| The PAM conversation | A `fork()` without `exec` of the shell (`src/services/pam/subprocess.cpp:40`): it has the shell's environment, pragmas included. | A helper process, `rusty-impulse` itself, started with the shell's environment, pragmas included. |
+| The PAM conversation | A `fork()` without `exec` of the shell (`src/services/pam/subprocess.cpp:40`): it has the shell's environment, pragmas included. | A helper process, `impulse-shell` itself, started with the shell's environment, pragmas included. |
 | The polkit agent's helper | Started by polkit's library inside the shell: the shell's environment. | `polkit-agent-helper-1` started with the shell's environment. |
-| The guard of the children's process groups | No such process. | `rusty-impulse` itself with the shell's environment; it reads no variable. |
+| The guard of the children's process groups | No such process. | `impulse-shell` itself with the shell's environment; it reads no variable. |
 
 Why: the first two rows keep what Quickshell's code in the shell's own process sees.
 
@@ -531,7 +531,7 @@ Not checked: the three rows above are from the code and are not held by a test.
 
 Compared with Quickshell 0.3.2 under sway 1.12 (wlroots 0.20.2).
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | The output of a panel is removed after the client wrote `zwlr_layer_surface_v1.get_popup` and before the compositor read it | The process ends with status 255: QtWayland commits the popup right after `get_popup`, the compositor answers with the protocol error `xdg_popup has no parent` and closes the connection, and `QWaylandDisplay::checkWaylandError` calls `_exit(-1)`. Its last line is one of two, see below. | The shell stays. The panel and the popup are closed, the popup without a commit. |
 | First commit of a panel's popup | In the same write as `get_popup`. | One round trip later: after the answer to a `wl_display.sync` sent with `get_popup` (`PopupAdopted`). |
@@ -543,7 +543,7 @@ without a parent, and a commit of such a popup is the protocol error `xdg_popup 
 parent` ([`handle_xdg_popup_client_commit`][wl-commit]). A protocol error ends the
 connection, and the shell with it. The client cannot know that the layer surface has ended
 until it reads `closed`, but `closed` always comes before the answer to a `wl_display.sync`
-sent after `get_popup`. So rusty-impulse commits the popup on that answer, and only if the panel is
+sent after `get_popup`. So impulse-shell commits the popup on that answer, and only if the panel is
 still there.
 
 The other order, the layer surface ending after the compositor read `get_popup` and before it
@@ -630,7 +630,7 @@ Tests, in `crates/shell/tests/windows_outputs.rs`. Each holds the compositor's r
 the client's requests until the parent has ended:
 
 - `popup_shown_while_its_panels_screen_is_unplugged_does_not_end_the_shell` checks the
-  rusty-impulse column of the first row.
+  impulse-shell column of the first row.
 - `quickshell_ends_when_a_popup_is_shown_while_its_panels_screen_is_unplugged` checks the
   Quickshell column of the first row: status 255, the error sway sent, and one of the two
   last lines above.
@@ -654,7 +654,7 @@ guest (`bench/vm.sh`; Hyprland 0.57.1, Quickshell 0.3.2, Qt 6.12.0) with 16 busy
 `swaymsg` replaced by a script that says the same to `hyprctl` (`output create headless`,
 `output remove`, `hl.dsp.window.close`):
 
-| | Quickshell 0.3.2 | rusty-impulse | rusty-impulse before the change |
+| | Quickshell 0.3.2 | impulse-shell | impulse-shell before the change |
 |---|---|---|---|
 | Requests held | `get_popup`, `commit` of the popup | `get_popup`, `wl_display.sync` | `get_popup`, `commit` of the popup |
 | After `closed` | Destroys the popup and the panel. No `wl_display.error`; the process is still there 30 s later, so its test, which waits for the end, does not pass on Hyprland: 100 of 100 runs under 16 busy loops reached the 30 s limit with `qs` alive and no `wl_display.error`. | Destroys the popup without a commit, shows the next panel. Its test passes 100 of 100. | The shell stays and shows the next panel, but the popup of the closed panel was committed: the test fails at that line, 20 of 20. |
@@ -682,21 +682,21 @@ there before the change too. It is there for wlroots compositors.
 ## A reload that cannot happen
 
 Quickshell 0.3.2 loads the next configuration inside its process, beside the running one,
-and keeps its Wayland connection. rusty-impulse re-executes itself (`exec`), so the running tree is
+and keeps its Wayland connection. impulse-shell re-executes itself (`exec`), so the running tree is
 gone before the next one loads. What would leave no shell is therefore looked for before the
 `exec`; when it is found the running tree stays as it is, no `Component.onDestruction` runs,
 and `Quickshell.reloadFailed(error)` is emitted, which the original's `ReloadPopup.qml` shows. It is
 emitted twice, as Quickshell emits it twice for one failed reload (`RootWrapper::reloadGraph`
 in `src/core/rootwrapper.cpp` has the `emit` before and after it decides on its own popup).
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | A reload that happens | The new tree completes and gets `reloadCompleted`, then `Component.onDestruction` of the old one runs. | `Component.onDestruction` of the old tree runs, then the new image loads the new tree. |
 | The tree differs from the one compiled in (a file edited, added or removed), build without the interpreter | No such case: it compiles what is there. Its text for a configuration that does not load is `Failed to load configuration` and one `  caused by @<file>[<line>:<column>]: <message>` line per error. | Refused. The text is `<tree> differs from the tree this shell was built from. The running shell keeps its current code.`, one line per file (`<file>: <why>`, at most five), and `Install again: tools/install.sh`. |
 | The compositor's socket is gone | Reloads: the connection it has stays. | Refused: `Cannot connect to the Wayland compositor: <why>` and `The running shell keeps its current code.` |
 
 The start of a build without the interpreter refuses the same trees as its reload and as
-`--check-tree` (`shell::reload::differing_tree`): status 1 and `rusty-impulse: install again:
+`--check-tree` (`shell::reload::differing_tree`): status 1 and `impulse-shell: install again:
 tools/install.sh`, also for a tree that only lacks a compiled file.
 
 What is left: the socket is looked at before the `exec` and connected to after it. A
@@ -725,7 +725,7 @@ Compared with Quickshell 0.3.2 (Qt 6.12.0) under sway 1.12, by the requests each
 frame callback until the shell sends `unlock_and_destroy`, as a locked sway does for a
 window it no longer shows.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | The panel has changed and the answer to its last frame's callback does not come | Commits one more frame of the panel 100 ms after the last one (100 and 101 ms in the runs), without a new frame callback request. After it no frame of the panel: 2.9 s in the run that was locked that long. | No frame of the panel until the answer comes: 3.0 s in the same run. |
 | The session is locked 15 ms after the panel's last frame, the answer not there | The lock surface is asked for and has its first frame 55 ms after the `lock` request; that one frame of the panel follows 31 ms later. | The lock surface is asked for and has its frame; no frame of the panel. |
@@ -735,7 +735,7 @@ Why Quickshell sends that frame, read in Qt 6.12.0 and not measured: the render 
 the next frame ready and waits for the frame callback before it swaps, for 100 ms at most
 ([`QWaylandGLContext::swapBuffers`][qt-swap-wait] calls `waitForFrameSync(100)`); then it
 swaps, and the window counts as not exposed until the callback comes
-(`mFrameCallbackTimedOut`). rusty-impulse takes Qt's 100 ms for the animations only
+(`mFrameCallbackTimedOut`). impulse-shell takes Qt's 100 ms for the animations only
 (`FRAME_CALLBACK_TIMEOUT_MS`, [clocks.md](clocks.md)): they stop waiting, the window still
 draws nothing.
 
@@ -750,10 +750,10 @@ draw its current state.
 frame, the lock is taken and released, and the panel draws again after the answer. It does
 not hold the number of the panel's frames while the answer is kept back.
 
-# Where rusty-impulse follows Quickshell and not Qt
+# Where impulse-shell follows Quickshell and not Qt
 
 The QML engine does what Qt 6.12 does. The cases below are the ones where Quickshell 0.3.2
-itself does something else with the same files, and rusty-impulse does what Quickshell does.
+itself does something else with the same files, and impulse-shell does what Quickshell does.
 
 ## A `FrameAnimation` behind a lock or on a dark screen
 
@@ -763,7 +763,7 @@ shown and in one that is not, here as under Quickshell
 its timer where no frame callback comes: 60 or more wakeups of the main thread a second for
 as long as it runs.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | The compositor has confirmed the session lock; the `FrameAnimation` is in a window that is no lock surface | Triggered at every step, as before the lock. | Not stepped: it waits for the unlock, like an endless animation of a window that is not shown. A turn of the loop that something else asks for (a Timer, an event) still triggers it once. |
 | Every output is powered off (`zwlr_output_power_v1`); any `FrameAnimation`, also one of a lock surface or of no window | Triggered at every step. | Not stepped, until the first output is on. |
@@ -772,13 +772,13 @@ as long as it runs.
 Deliberate: nobody can see what such a step draws, and the compositor has said so. Measured
 in a guest (Hyprland 0.57.1, music playing, the original's media controls open, whose progress bar
 waves on a `FrameAnimation`), main thread, session locked and the screen off: Quickshell
-1.33 s of CPU a minute and 135 wakeups a second, rusty-impulse 0.34 s and 5.5 (4.74 s and 129 with
+1.33 s of CPU a minute and 135 wakeups a second, impulse-shell 0.34 s and 5.5 (4.74 s and 129 with
 the visualizer capturing and the `FrameAnimation` stepped).
 
 Without `zwlr_output_power_manager_v1` every output counts as on, and only the lock rests
 them. For this the shell keeps one `zwlr_output_power_v1` for each output while it runs.
 Sway (wlroots) gives an output's to one client at a time and answers `failed` to the next:
-another client's request for it fails while rusty-impulse runs, and rusty-impulse counts an output as on
+another client's request for it fails while impulse-shell runs, and impulse-shell counts an output as on
 whose `zwlr_output_power_v1` another client holds. Hyprland gives one to every client that
 asks.
 
@@ -790,14 +790,14 @@ Test: `frame_animations_rest_out_of_sight` in `crates/shell/tests/visualizer_off
 
 Quickshell writes the `qmldir` of every directory it loads that has none, with a `singleton`
 line for each file that starts with `pragma Singleton`. Qt alone registers no singleton for
-such a directory. the original's tree has no `qmldir` files and uses its singletons by name, so rusty-impulse
+such a directory. the original's tree has no `qmldir` files and uses its singletons by name, so impulse-shell
 does the same as Quickshell (`read_dir_types` in `crates/qml/src/resolve.rs`). A directory
 that has a `qmldir` follows Qt's rules in both.
 
 `d/Solo.qml` starts with `pragma Singleton` and has `property int v: 7`; the document has
 `import "d"`:
 
-| | Qt 6.12 | Quickshell 0.3.2 and rusty-impulse |
+| | Qt 6.12 | Quickshell 0.3.2 and impulse-shell |
 |---|---|---|
 | `Solo.v` | `undefined` | `7` |
 | `typeof Solo` | `object` | `object` |
@@ -811,15 +811,15 @@ Test: `a_directory_without_qmldir_has_the_singletons_quickshell_gives_it` in
 
 Quickshell loads the documents of the shell directory through its own scheme: such a document
 has the url `qs:@/qs/<path in the directory>`, where Qt alone, given the file, has
-`file:///<path>`. rusty-impulse does the same as Quickshell (`World::ctx_url` in
+`file:///<path>`. impulse-shell does the same as Quickshell (`World::ctx_url` in
 `crates/qml/src/runtime.rs`). `baseUrl` of a `Text`, `TextArea` or `TextEdit` nothing was
 written to is the url of the document that holds the object, so it shows the difference. A
 document outside of the shell directory that is loaded by a `file:` url has that url in all
-three; loaded by its path, it has `qs:<path>` in Quickshell and rusty-impulse.
+three; loaded by its path, it has `qs:<path>` in Quickshell and impulse-shell.
 
 `Probe.qml` and `sub/Sub.qml` are in the shell directory `DIR/cfg`, `DIR/out/Out.qml` is not:
 
-| `baseUrl` of a `Text` or `TextArea` in | Qt 6.12 | Quickshell 0.3.2 and rusty-impulse |
+| `baseUrl` of a `Text` or `TextArea` in | Qt 6.12 | Quickshell 0.3.2 and impulse-shell |
 |---|---|---|
 | `Probe.qml` | `file://DIR/cfg/Probe.qml` | `qs:@/qs/Probe.qml` |
 | `sub/Sub.qml` | `file://DIR/cfg/sub/Sub.qml` | `qs:@/qs/sub/Sub.qml` |
@@ -837,11 +837,11 @@ Compared with Quickshell 0.3.2 and KSyntaxHighlighting 6.31.0, on the code block
 assistant chat (`qml/modules/rusty/sidebarLeft/aiChat/MessageCodeBlock.qml`).
 
 Quickshell colours the block with KDE's `SyntaxHighlighter` and the 463 syntax definitions
-installed with the library. rusty-impulse reads the same definition files with its own code
+installed with the library. impulse-shell reads the same definition files with its own code
 (`crates/qml/src/syntax/kate.rs`) and carries 41 of them: the 29 languages below and the 12
 definitions those include (`crates/qml/src/syntax/data/LICENSES.md` lists every file).
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | A block of one of the 29 languages | Coloured by its definition. | The same colours, character for character. |
 | A block of any other language KDE has a definition for (`perl`, `haskell`, `zsh`, ...) | Coloured by its definition. | Not coloured: all of it in the theme's Normal colour, as Quickshell shows a language KDE has no definition for. |
@@ -859,7 +859,7 @@ Coloured inside a `latex` block: Bash, C, C#, C++, CMake, CSS, Comments, Diff, G
 Java, JavaScript, Kotlin, LaTeX, Lua, Makefile, Markdown, Nix, Python, QML, Ruby, Rust, SQL,
 Swift, TOML, TypeScript, XML, YAML, reStructuredText.
 
-Why: the definitions are compiled into `rusty-impulse`. All that Markdown and LaTeX can name are
+Why: the definitions are compiled into `impulse-shell`. All that Markdown and LaTeX can name are
 156 files and 5.5 MB; the 41 carried are 1.9 MB. The languages are the ones the chat's models
 send.
 
@@ -867,11 +867,11 @@ Tests:
 
 - `code_is_coloured_as_quickshell_colours_it` in `crates/shell/tests/code_colours.rs` draws a
   text of each of the 29 languages, and of four names KDE has no definition for, with the
-  real `qs` under KDE's highlighter and with rusty-impulse's colours, in both of the original's themes, and
+  real `qs` under KDE's highlighter and with impulse-shell's colours, in both of the original's themes, and
   compares the pictures pixel for pixel. It holds the first row.
 - `code_of_a_language_outside_the_set_is_coloured_only_by_quickshell` in the same file holds
   the other two rows against `qs`: the pictures differ, and only inside the code of the
-  language rusty-impulse does not carry.
+  language impulse-shell does not carry.
 - `nested_code_is_coloured_for_the_languages_of_the_set` in `crates/qml/src/syntax.rs` checks
   the two lists against the definitions carried.
 
@@ -883,7 +883,7 @@ clear button of the right sidebar calls. It empties its own list, runs
 `notifServer.trackedNotifications.values.forEach((notif) => { notif.dismiss() })` and
 destroys the wrapper of each notification.
 
-| | Quickshell 0.3.2 | rusty-impulse |
+| | Quickshell 0.3.2 | impulse-shell |
 |---|---|---|
 | When `dismiss()` takes the notification out of `trackedNotifications` | Inside the call (`NotificationServer::deleteNotification`): the list is one shorter when `dismiss()` returns. | After the script that called it. |
 | Which notifications the `forEach` dismisses | The first and the third. The list shrinks under the `forEach`, which skips every second one. | All three. |
@@ -899,7 +899,7 @@ from Quickshell, and each of those stays in the server's memory.
 
 Not held by a test: the cards themselves. In frames of both shells on the whole `qml/` (the
 right sidebar open, three notifications, the clear button) Quickshell's cards slide out
-without their text for about 0.1 s and rusty-impulse's with it.
+without their text for about 0.1 s and impulse-shell's with it.
 
 Tests, in `crates/shell/tests/notification_clear_all_equiv.rs`, on
 `notification_clear_all/shell.qml`, which is `discardAllNotifications` in small:
@@ -907,5 +907,5 @@ Tests, in `crates/shell/tests/notification_clear_all_equiv.rs`, on
 - `quickshell_clears_every_second_notification` runs the real `qs`: `NotificationClosed` for
   1 and 3 with reason 2, the second still there for `CloseNotification` (reason 3), and the
   wrappers of 1 and 3 with an empty summary.
-- `clear_all_closes_every_notification` runs rusty-impulse: `NotificationClosed` for 1, 2 and 3 with
+- `clear_all_closes_every_notification` runs impulse-shell: `NotificationClosed` for 1, 2 and 3 with
   reason 2, nothing left to close, no wrapper with an empty summary.

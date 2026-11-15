@@ -216,26 +216,26 @@ step_shipped_build() {
 # binary, which holds no JavaScript parser or evaluator (shipped_binary), and tools/install.sh
 # with it (install_rollback); then the binary shipped-build installed (release, thin LTO): it
 # says it has no interpreter, runs the tree it was installed with, finds it started as Hyprland
-# starts it (`rusty-impulse -c rusty-impulse`), holds no interpreter source paths, draws its bar from that tree
+# starts it (`impulse-shell -c impulse-shell`), holds no interpreter source paths, draws its bar from that tree
 # (shipped_first_frame) and opens its panels there, each with a picture, a click and a key that
 # it reacts to, and no script error (shipped_panels).
 step_shipped_tests() {
     rc=0
     as-tester env RI_REQUIRE_GL=1 $shipped_commit $nextest_shipped -p shell || rc=1
-    bin=$installed/prefix/bin/rusty-impulse
+    bin=$installed/prefix/bin/impulse-shell
     [ -x "$bin" ] || {
         echo "no $bin: run shipped-build first"
         return 1
     }
     "$bin" --version || return 1
     "$bin" --version | grep -qx 'JavaScript interpreter: none' || return 1
-    env -i "$bin" --check-tree -p "$installed/config/rustshell/rusty-impulse" || return 1
-    env -i HOME="$installed" XDG_CONFIG_HOME="$installed/config" "$bin" -c rusty-impulse --check-tree || return 1
+    env -i "$bin" --check-tree -p "$installed/config/rustshell/impulse-shell" || return 1
+    env -i HOME="$installed" XDG_CONFIG_HOME="$installed/config" "$bin" -c impulse-shell --check-tree || return 1
     if grep -aqE 'oxc_parser|oxc_ast|qml/src/ir\.rs' "$bin"; then
         echo "$bin holds interpreter code"
         return 1
     fi
-    as-tester env RI_SHIPPED_BIN="$bin" RI_SHIPPED_TREE="$installed/config/rustshell/rusty-impulse" \
+    as-tester env RI_SHIPPED_BIN="$bin" RI_SHIPPED_TREE="$installed/config/rustshell/impulse-shell" \
         $shipped_commit $nextest_shipped -p shell --test shipped_first_frame --test shipped_panels || rc=1
     return $rc
 }

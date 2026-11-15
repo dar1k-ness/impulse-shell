@@ -55,7 +55,7 @@ impl Paths {
         }
     }
     pub fn qs_config_dir(&self) -> PathBuf {
-        self.config_home.join("rustshell/rusty-impulse")
+        self.config_home.join("rustshell/impulse-shell")
     }
     pub fn state_dir(&self) -> PathBuf {
         self.state_home.join("rustshell")
@@ -64,7 +64,7 @@ impl Paths {
         self.state_dir().join("user/generated")
     }
     pub fn shell_config(&self) -> PathBuf {
-        self.config_home.join("rusty-impulse/config.json")
+        self.config_home.join("impulse-shell/config.json")
     }
     fn restore_script(&self) -> PathBuf {
         self.config_home
@@ -755,7 +755,7 @@ fn auto_scheme(path: &Path) -> &'static str {
         });
     let file = std::env::var_os("XDG_RUNTIME_DIR")
         .filter(|d| !d.is_empty())
-        .map(|d| PathBuf::from(d).join("rusty-impulse-colorgen-scheme"));
+        .map(|d| PathBuf::from(d).join("impulse-shell-colorgen-scheme"));
     let known = |v: &str| {
         ["scheme-neutral", "scheme-tonal-spot"]
             .into_iter()
@@ -803,7 +803,7 @@ fn image_sources(path: &Path, canon: &Path) -> Result<(Argb, Argb), GenError> {
     });
     let file = std::env::var_os("XDG_RUNTIME_DIR")
         .filter(|d| !d.is_empty())
-        .map(|d| PathBuf::from(d).join("rusty-impulse-colorgen-sources"));
+        .map(|d| PathBuf::from(d).join("impulse-shell-colorgen-sources"));
     let hex = |c: Argb| format!("#{:02X}{:02X}{:02X}", c.red, c.green, c.blue);
     if let Some(k) = &key {
         if let Some((lk, a, b)) = LAST.lock().unwrap().as_ref()

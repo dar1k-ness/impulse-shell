@@ -1,7 +1,7 @@
 import QtQuick.tooling 1.2
 
 // Runs the wallpaper picker's action `args` (`pick`, `like`, `dislike --next`, `style`,
-// `arrange <left> <center> <right>`, `reset-taste`: what `rusty-impulse wallpick` takes) in
+// `arrange <left> <center> <right>`, `reset-taste`: what `impulse-shell wallpick` takes) in
 // process. Each line on `stdout` and `stderr` is a status of the run.
 // A Process whose work is native (crates/qml/src/procs.rs): `running`, `exited`, `stdout` as Process.
 Module {

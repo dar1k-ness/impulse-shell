@@ -5,12 +5,12 @@
 #                              start: shell, run, first open ms, second open ms), summary.md,
 #                              env.txt and per start the shell's log
 #   RUNS=20            starts per shell; with two shells they alternate
-#   SHELLS=rusty-impulse       or "rusty-impulse quickshell"
+#   SHELLS=impulse-shell       or "impulse-shell quickshell"
 #   WAIT=180           seconds from the shell's exec to the first open
 #   PANEL=sidebarRight the panel: its shortcuts are <PANEL>Open / <PANEL>Close, its layer
 #                      namespace rustshell:<PANEL> (the original's: quickshell:<PANEL>)
-#   SHELL_ENV=         environment for rusty-impulse, e.g. "RI_LOG=ri::stats,ri::frames"
-#   RI_BIN=rusty-impulse        the rusty-impulse binary, e.g. another release under /usr/local/lib/rusty-impulse/releases
+#   SHELL_ENV=         environment for impulse-shell, e.g. "RI_LOG=ri::stats,ri::frames"
+#   RI_BIN=impulse-shell        the impulse-shell binary, e.g. another release under /usr/local/lib/impulse-shell/releases
 # One open is the time from just before `hyprctl dispatch` of the panel's global shortcut to
 # Hyprland's `openlayer` event for the panel's layer (its first buffer is committed), read from
 # Hyprland's event socket by a blocking read. A start is fresh: the shell is stopped and the original's
@@ -34,18 +34,18 @@ if [ "${1:-}" = --exec ]; then
     echo $$ >"$4"
     case $2 in
     # SHELL_ENV comes through a file: the command goes through Hyprland's own quoting.
-    rusty-impulse) exec env $(<"$3.env") "$(<"$3.bin")" -c rusty-impulse >"$3" 2>&1 </dev/null ;;
+    impulse-shell) exec env $(<"$3.env") "$(<"$3.bin")" -c impulse-shell >"$3" 2>&1 </dev/null ;;
     quickshell) exec qs -p "$orig" >"$3" 2>&1 </dev/null ;;
     esac
 fi
 
 RUNS=${RUNS:-20}
-SHELLS=${SHELLS:-rusty-impulse}
+SHELLS=${SHELLS:-impulse-shell}
 WAIT=${WAIT:-180}
 PANEL=${PANEL:-sidebarRight}
 out=${1:-$HOME/first-open/$(date +%Y%m%d-%H%M%S)}
 walls=$HOME/Pictures/Wallpapers
-cfg=$HOME/.config/rusty-impulse/config.json
+cfg=$HOME/.config/impulse-shell/config.json
 
 die() {
     echo "first-open.sh: $*" >&2
@@ -54,7 +54,7 @@ die() {
 
 ipc() {
     case $shell in
-    rusty-impulse) timeout 10 rusty-impulse -c rusty-impulse ipc "$@" ;;
+    impulse-shell) timeout 10 impulse-shell -c impulse-shell ipc "$@" ;;
     quickshell) timeout 10 qs -p "$orig" ipc "$@" ;;
     esac
 }
@@ -72,7 +72,7 @@ layer() { hyprctl layers -j | jq -e --arg n "$1" '[.. | .namespace? // empty] | 
 no_layer() { ! layer "$1"; }
 
 stop_shell() {
-    local n='rusty-impulse|quickshell|qs' rc=0
+    local n='impulse-shell|quickshell|qs' rc=0
     systemctl --user stop "$unit" 2>/dev/null || true
     if pkill -x "$n"; then
         timeout 20 pidwait -x "$n" || rc=$?
@@ -83,13 +83,13 @@ stop_shell() {
 
 reset_state() {
     local old; old=~/.config/$(printf %s-%s illogical impulse)
-    rm -rf ~/.config/rusty-impulse ~/.local/state/quickshell ~/.cache/quickshell ~/.config/matugen \
+    rm -rf ~/.config/impulse-shell ~/.local/state/quickshell ~/.cache/quickshell ~/.config/matugen \
         ~/.local/state/rustshell ~/.cache/rustshell "$old"
-    mkdir -p ~/.config/rusty-impulse ~/.local/state/quickshell/user ~/.cache/quickshell
+    mkdir -p ~/.config/impulse-shell ~/.local/state/quickshell/user ~/.cache/quickshell
     # Each shell reads these under its own name for them.
     ln -s quickshell ~/.local/state/rustshell
     ln -s quickshell ~/.cache/rustshell
-    ln -s rusty-impulse "$old"
+    ln -s impulse-shell "$old"
     cp -r "$repo/crates/colorgen/tests/switchwall/fixture/home/.config/matugen" ~/.config/matugen
     jq -n --arg w "$walls/bench-a.jpg" '{background: {wallpaperPath: $w}}' >"$cfg"
     # Without it the original opens its welcome window.
@@ -101,7 +101,7 @@ start_shell() {
     reset_state
     rm -f "$run/pid"
     echo "${SHELL_ENV:-}" >"$run/shell.log.env"
-    echo "${RI_BIN:-rusty-impulse}" >"$run/shell.log.bin"
+    echo "${RI_BIN:-impulse-shell}" >"$run/shell.log.bin"
     started=$SECONDS
     hyprctl dispatch "hl.dsp.exec_cmd(\"systemd-run --user --scope --quiet --collect --unit=$unit $self --exec $shell $run/shell.log $run/pid\")" >/dev/null
     wait_for 20 test -s "$run/pid" || die "$shell did not start"
@@ -162,7 +162,7 @@ one_run() {
     stop_shell
 }
 
-command -v rusty-impulse >/dev/null || die "rusty-impulse is not installed: run bench/vm.sh sync"
+command -v impulse-shell >/dev/null || die "impulse-shell is not installed: run bench/vm.sh sync"
 mkdir -p "$out" "$walls"
 out=$(realpath "$out")
 [ -f "$walls/bench-a.jpg" ] || magick -size 3840x2160 -seed 7 plasma:'#3b5b8c-#c08a5a' -blur 0x8 -quality 92 "$walls/bench-a.jpg"

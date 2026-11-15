@@ -1,7 +1,7 @@
 //! LazyLoader against the real Quickshell: the documents of `lazy_loader/` log every state
 //! change, signal and completion of their LazyLoaders, then quit. `<name>.qs.txt` is what
 //! Quickshell 0.3.2 printed for `<name>.qml`: its console lines and its binding loop warnings.
-//! Each test runs `qs` and the native shell (`rusty-impulse -p`) on the document: `qs` must print the
+//! Each test runs `qs` and the native shell (`impulse-shell -p`) on the document: `qs` must print the
 //! recorded text, the native shell the same console lines and a binding loop on the same
 //! properties.
 //!
@@ -106,7 +106,7 @@ fn same_as_quickshell(name: &str) {
 
     let tmp = tempfile::tempdir().unwrap();
     std::fs::copy(&doc, tmp.path().join("shell.qml")).unwrap();
-    let mut native = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let mut native = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
     native.arg("-p").arg(tmp.path()).env("RI_INTERP", "1");
     let native = run(native);
 

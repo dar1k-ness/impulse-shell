@@ -2,7 +2,7 @@
 
 The QML engine does what Qt 6.12 does with the same QML and JavaScript. The cases below are
 the ones where it does something else on purpose. Each names the test that holds the
-difference: if the engine stops doing what the row says, that test fails. What rusty-impulse does
+difference: if the engine stops doing what the row says, that test fails. What impulse-shell does
 differently from Quickshell is in [quickshell-differences.md](quickshell-differences.md),
 from the original in [original-differences.md](original-differences.md).
 
@@ -594,7 +594,7 @@ Compared with Qt 6.12 (`QQuickView`, offscreen) on
 20, one of them with sections, in a root `Item` that is in no window. After 200 ms the file
 counts the rows that have a delegate.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | Delegates of the plain view | 6 | 22 |
 | Delegates of the view with sections | 6 | 22 |
@@ -602,7 +602,7 @@ counts the rows that have a delegate.
 
 Why: Qt creates rows one at a time until their measured heights cover the view, and an item
 in no window is never polished, so the view never tops the rows up to its `cacheBuffer`.
-rusty-impulse sizes the range of rows from the last layout and does include the buffer. In a window
+impulse-shell sizes the range of rows from the last layout and does include the buffer. In a window
 both make the same rows (`secw`, `sm7w`, `mm1w` in the same test file compare them line for
 line).
 
@@ -620,7 +620,7 @@ with 40 rows of height 30 and `highlightRangeMode: ListView.StrictlyEnforceRange
 60..90), in no window. Its own `Component.onCompleted` prints the view's geometry, and a
 timer prints it again 100 ms later.
 
-| Read in `Component.onCompleted` | Qt 6.12 | rusty-impulse |
+| Read in `Component.onCompleted` | Qt 6.12 | impulse-shell |
 |---|---|---|
 | `contentY` | -60 | 0 |
 | `contentHeight` | 1200 | 0 |
@@ -628,7 +628,7 @@ timer prints it again 100 ms later.
 | The same 100 ms later | -60, 1200 | -60, 1200 |
 
 Why: Qt lays the view out in `QQuickItemView::componentComplete`, before the handler runs.
-rusty-impulse lays a view out in the layout pass that follows the handlers.
+impulse-shell lays a view out in the layout pass that follows the handlers.
 
 Not changed, because nothing in `qml/` reads it there. Counted in `qml/`:
 
@@ -653,14 +653,14 @@ Compared with Quickshell 0.3.2 (Qt 6.12) on `crates/shell/tests/views_like_qt/ft
 `GridView` 200×100 with 40 cells 50×40 and `flow: GridView.FlowTopToBottom`, in a
 `FloatingWindow`.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | Cell 1 at | 0, 40 | 50, 0 |
 | Cell 2 at | 50, 0 | 100, 0 |
 | `contentWidth`, `contentHeight` | 1000, -1 | 0, 400 |
 | `contentX`, `contentY` after `positionViewAtIndex(30, GridView.Beginning)` | 750, 0 | 0, 280 |
 
-Why: Qt fills a column, then the next one, and scrolls along x. rusty-impulse lays a `GridView` out
+Why: Qt fills a column, then the next one, and scrolls along x. impulse-shell lays a `GridView` out
 in rows only and does not read `flow`.
 
 Not changed, because no `GridView` in `qml/` sets `flow` (0 places).
@@ -757,7 +757,7 @@ Compared with `qml6` of Qt 6.12.0. A `Text` whose text reads left to right has
 `horizontalAlignment: Text.AlignLeft`, `LayoutMirroring.enabled` is set, and then a script
 takes the alignment back with `horizontalAlignment = undefined`.
 
-| After `horizontalAlignment = undefined` | Qt 6.12 | rusty-impulse |
+| After `horizontalAlignment = undefined` | Qt 6.12 | impulse-shell |
 |---|---|---|
 | `horizontalAlignment` read by a script | `Text.AlignLeft` | The same. |
 | `effectiveHorizontalAlignment` read by a script | `Text.AlignLeft` | The same. |
@@ -871,7 +871,7 @@ allowed.
 
 ## The drawn glyphs of `Text.QtRendering` are kept, 512 a font
 
-Qt draws every glyph of such a text from its distance field each frame and keeps nothing drawn, so it has no limit. rusty-impulse keeps the drawn glyphs of a font at a size, 512 at most (`DF_TILES`): the 513th pushes out the one used longest ago, and that one is drawn anew with the same pixels when it is next asked for. The picture is Qt's; only the time differs. Test: `tile_past_the_limit_evicts_the_oldest_which_redraws_the_same` in `crates/qsg/src/text.rs`.
+Qt draws every glyph of such a text from its distance field each frame and keeps nothing drawn, so it has no limit. impulse-shell keeps the drawn glyphs of a font at a size, 512 at most (`DF_TILES`): the 513th pushes out the one used longest ago, and that one is drawn anew with the same pixels when it is next asked for. The picture is Qt's; only the time differs. Test: `tile_past_the_limit_evicts_the_oldest_which_redraws_the_same` in `crates/qsg/src/text.rs`.
 
 ## `Text.QtRendering` under a `Rotation` about x or y, or under a `clip` inside a turned item
 
@@ -879,7 +879,7 @@ A `Text.QtRendering` under a `Rotation` about the x or y axis has not been compa
 
 ## A `ShaderEffectSource` on screen
 
-A `ShaderEffectSource` that stands on screen itself shows its `sourceItem` in Qt. In rusty-impulse it only feeds an effect and draws nothing: in a window 320 by 240 with white under the text, all 743 pixels of a line at 16 px that it shows in Qt are missing. `qml/` has none on screen.
+A `ShaderEffectSource` that stands on screen itself shows its `sourceItem` in Qt. In impulse-shell it only feeds an effect and draws nothing: in a window 320 by 240 with white under the text, all 743 pixels of a line at 16 px that it shows in Qt are missing. `qml/` has none on screen.
 
 An item with `layer.enabled: true` and no `layer.effect` is drawn as Qt draws it, into a transparent texture and that texture into the window. A `Text.QtRendering` in it has no opaque pixels under it there, so its glyphs come out gray, without the coloured fringes of subpixel antialiasing: a line at 16 px in a layer over both sides of the window and one at 20 px in a layer over the window's corner have Qt's pixels. So have a layer with a `layer.effect` and the source of an `OpacityMask` or a `GaussianBlur`.
 
@@ -887,24 +887,24 @@ Tests in `crates/shell/tests/text_qt_view.rs`, on the CPU and on the GPU: `a_sha
 
 ## A glyph of `Text.QtRendering` that an edge of the window cuts
 
-Qt Quick's window has a depth buffer, so llvmpipe clips every triangle at the edges of the window before it draws it: a glyph's two triangles become up to seven, with new corners on the edge whose texture coordinates are computed there. rusty-impulse draws the two whole triangles and leaves out the pixels beyond the edge. The coordinates agree to the last bit or two of a `float`, which moves a pixel of the cut glyph by up to 4 of 255 now and then: of 30 glyphs at 16 px cut by the upper edge, 23 pixels differ, by up to 4; cut by the lower edge, 41 pixels, by up to 2; the one glyph cut by the left edge and the one cut by the right, none. A glyph cut by a `clip` or by the edge of a `Flickable` is not clipped so (Qt cuts it with the scissor) and is drawn as in Qt.
+Qt Quick's window has a depth buffer, so llvmpipe clips every triangle at the edges of the window before it draws it: a glyph's two triangles become up to seven, with new corners on the edge whose texture coordinates are computed there. impulse-shell draws the two whole triangles and leaves out the pixels beyond the edge. The coordinates agree to the last bit or two of a `float`, which moves a pixel of the cut glyph by up to 4 of 255 now and then: of 30 glyphs at 16 px cut by the upper edge, 23 pixels differ, by up to 4; cut by the lower edge, 41 pixels, by up to 2; the one glyph cut by the left edge and the one cut by the right, none. A glyph cut by a `clip` or by the edge of a `Flickable` is not clipped so (Qt cuts it with the scissor) and is drawn as in Qt.
 
 Tests: `text_cut_by_an_edge_of_the_window_differs_from_qt_as_recorded` in `crates/shell/tests/text_qt_view.rs` holds these numbers; `text_cut_by_an_edge_of_the_window_matches_qt` beside it is the comparison with no difference allowed, not run.
 
 ## Which moved item becomes a batch root
 
-Qt's renderer makes an item that moves a batch root once more than 64 geometry nodes or more than 1024 vertices lie under it, and from then on places the glyphs of a `Text.QtRendering` under it from that item, which rounds differently in the last bit. rusty-impulse does the same and counts the nodes and vertices of a `Rectangle` and of a text as Qt has them (`text_moved_between_frames_matches_qt_on_both_sides_of_a_batch_root`: 256 and 257 glyphs, 64 and 65 nodes). Anything else that draws (an `Image`, a `Shape`, a `Canvas`, a `ShaderEffect`, a layer) it counts as one node of four vertices, which is not Qt's count for all of them: an item that holds such things and is within their true count of a limit may become a batch root a move earlier or later than in Qt. This has not been compared with Qt.
+Qt's renderer makes an item that moves a batch root once more than 64 geometry nodes or more than 1024 vertices lie under it, and from then on places the glyphs of a `Text.QtRendering` under it from that item, which rounds differently in the last bit. impulse-shell does the same and counts the nodes and vertices of a `Rectangle` and of a text as Qt has them (`text_moved_between_frames_matches_qt_on_both_sides_of_a_batch_root`: 256 and 257 glyphs, 64 and 65 nodes). Anything else that draws (an `Image`, a `Shape`, a `Canvas`, a `ShaderEffect`, a layer) it counts as one node of four vertices, which is not Qt's count for all of them: an item that holds such things and is within their true count of a limit may become a batch root a move earlier or later than in Qt. This has not been compared with Qt.
 
 ## Qt's scale variables
 
 Compared with `qml6` of Qt 6.12.0 under sway with two outputs, at scale 1 and 1.5.
-`QT_SCALE_FACTOR` and `QT_SCREEN_SCALE_FACTORS` do in rusty-impulse what they do in Qt
+`QT_SCALE_FACTOR` and `QT_SCREEN_SCALE_FACTORS` do in impulse-shell what they do in Qt
 ([env.md](env.md#qts-scale-variables)); the rows below are what differs. Quickshell 0.3.2
 does with these variables what Qt does, so each row is a difference from Quickshell as
 well; what Quickshell shows is in
 [quickshell-differences.md](quickshell-differences.md#qts-scale-variables).
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | `QT_SCALE_FACTOR` that is a number but not a finite one above 0; an infinite entry of `QT_SCREEN_SCALE_FACTORS` | Taken as the factor: no window appears, and nothing is logged about the variable. The values are in the table below. | The factor is 1, the entry is dropped, and one line in the log names the variable and the value. |
 | `QT_FONT_DPI=N` | The whole interface is scaled by N/96 (192 doubles it), not only fonts; multiplied with `QT_SCALE_FACTOR`; a screen's entry of `QT_SCREEN_SCALE_FACTORS` replaces it on that screen. | Not read. |
@@ -917,7 +917,7 @@ well; what Quickshell shows is in
 The values no window can have. "Nothing logged" is: no line that a run without the
 variable does not have.
 
-| Value | Qt's factor | What `qml6` shows and logs | rusty-impulse |
+| Value | Qt's factor | What `qml6` shows and logs | impulse-shell |
 |---|---|---|---|
 | `QT_SCALE_FACTOR=0`, `-0` | 0 | A window of the size 2147483647. Nothing logged. | 1, one warning |
 | `QT_SCALE_FACTOR=-1` | −1 | No window. Nothing logged. | 1, one warning |
@@ -965,7 +965,7 @@ Compared with Qt 6.12.0 (`qml6`, `QSGRhiLayer::setSize`) on a window of 160 x 64
 `GaussianBlur` and a `DropShadow` of 1e9 x 1e9 over one source of 40 x 40, both on Mesa's
 software driver, whose limit is 16384 texels a side.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | Size the layer is drawn at | 16384 x 16384: each side bounded to the limit. | The same. |
 | What is on screen | The source and nothing of the two effects. | The same pixels. |
@@ -990,18 +990,18 @@ Tests:
 
 Compared with `qml6` of Qt 6.12.0 under sway, by the requests each sends its surface
 (`WAYLAND_DEBUG`). While an animation runs Qt renders its window at every frame and sends
-the whole buffer each time, whether a pixel changed or not. rusty-impulse sends a frame only when
+the whole buffer each time, whether a pixel changed or not. impulse-shell sends a frame only when
 it differs from the one shown.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | A step that changes no pixel (an item still moving after its opacity reached 0, a value that rounds to the same pixel) | The window is rendered and committed with a full buffer, and a frame callback is requested. | Nothing is sent: no commit, no buffer, no frame callback request. |
 | What paces the steps, one window shown | The frame callback of each commit. | The frame callback after a step that sent a frame; a timer of one refresh interval after a step that sent none. |
 | What paces the steps, more than one window shown (the original's bar and a popup) | A system timer of 13 ms at 60 Hz, apart from the frames (`QSGThreadedRenderLoop::startOrStopAnimationTimer`): more steps than frames. | The same as with one window: one step per refresh interval, 16.7 ms at 60 Hz. |
 
-The numbers, three runs of Qt and five of rusty-impulse:
+The numbers, three runs of Qt and five of impulse-shell:
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | One window, an item fades out in 100 ms and moves for 500 ms: commits with a buffer after it is gone | 24 | 0 after the frame that shows it gone |
 | The same, commits without a buffer and frame callback requests after it is gone | 0 and 24 | 0 and 0 |
@@ -1013,7 +1013,7 @@ The numbers, three runs of Qt and five of rusty-impulse:
 What QML sees is the same but for the number of steps with more than one window: the
 transition takes its duration, the properties end at their `to` values, `running`,
 `started`, `stopped` and `finished` come in Qt's order, and `on<Property>Changed` runs at
-every step. With more than one window shown Qt takes about 13 ms a step and rusty-impulse 16.7 ms,
+every step. With more than one window shown Qt takes about 13 ms a step and impulse-shell 16.7 ms,
 so a handler that counted its calls would count fewer; nothing in `qml/` counts the steps
 of an animated property or adds anything up in its change handler.
 
@@ -1028,7 +1028,7 @@ Held by `an_unchanged_frame_is_not_committed_and_the_transition_ends_on_time`,
 Compared with Quickshell 0.3.2 on Qt 6.12.0 under headless sway at 60 Hz. A NumberAnimation
 of 300 ms; the handlers of the steps named keep the thread busy. The time from `start()` to
 `finished` on the wall clock, 10 runs each. Without a busy handler it is 307 to 327 ms under
-Quickshell and 317 to 318 ms in rusty-impulse when the steps change nothing the window shows,
+Quickshell and 317 to 318 ms in impulse-shell when the steps change nothing the window shows,
 and 314 to 332 ms against 291 to 296 ms (once 309) when they do.
 
 The same in both: the animation clock moves one vsync (16.67 ms) per step whatever the wall
@@ -1042,31 +1042,31 @@ later, one of 100 ms some 50 ms later, two of 100 ms some 130 ms later.
 
 An animation that changes nothing the window shows:
 
-| Busy steps | Quickshell | rusty-impulse | Steps within 10 ms after the late ones |
+| Busy steps | Quickshell | impulse-shell | Steps within 10 ms after the late ones |
 |---|---|---|---|
 | 100 ms, steps 2 and 3 | 443 to 451 ms | 449 to 450 ms | 3 in both, in every run |
-| 100 ms, step 5 | 341 to 373 ms | 366 to 367 ms | Qt 3 in 7 runs of 10, else 2; rusty-impulse 3 |
+| 100 ms, step 5 | 341 to 373 ms | 366 to 367 ms | Qt 3 in 7 runs of 10, else 2; impulse-shell 3 |
 | 100 ms, steps 5 and 6 | 447 to 453 ms | 449 to 450 ms | 3 in both, in every run |
-| 30 ms, step 5 | 291 to 338 ms | 317 to 318 ms | Qt 2, twice 3; rusty-impulse 2, once 1 |
+| 30 ms, step 5 | 291 to 338 ms | 317 to 318 ms | Qt 2, twice 3; impulse-shell 2, once 1 |
 
 The steps of one run each, in ms since the step before, from the first late one: Quickshell
-`100 100 1 2 18 16`, rusty-impulse `100 100 0 0 16 17`.
+`100 100 1 2 18 16`, impulse-shell `100 100 0 0 16 17`.
 
 An animation whose every step changes what the window shows:
 
-| Busy steps | Quickshell | rusty-impulse | Steps within 10 ms after the late ones |
+| Busy steps | Quickshell | impulse-shell | Steps within 10 ms after the late ones |
 |---|---|---|---|
 | 100 ms, steps 2 and 3 | 449 to 468 ms | 444 to 458 ms, once 489 | 3 in both, 2 in one run of 10 of each |
-| 100 ms, step 5 | 367 to 394 ms | 346 to 357 ms | Qt 3 in 7 runs of 10, else 2; rusty-impulse 3 in 8, else 2 |
+| 100 ms, step 5 | 367 to 394 ms | 346 to 357 ms | Qt 3 in 7 runs of 10, else 2; impulse-shell 3 in 8, else 2 |
 | 100 ms, steps 5 and 6 | 449 to 462 ms | 433 to 447 ms, once 471 | 3 in both, in every run |
 | 30 ms, step 5 | 311 to 318 ms | 293 to 302 ms | 2 in both, in every run |
 
-The steps of one run each: Quickshell `100 100 2 4 16 17`, rusty-impulse `103 103 0 3 17 16`.
+The steps of one run each: Quickshell `100 100 2 4 16 17`, impulse-shell `103 103 0 3 17 16`.
 
 The times of this section were taken before the first step of an animation was made as in
 "The first step of an animation" below. The fixture is its only-Timer case (one window, the
 only Timer counting starts the animation), where Quickshell's end moves by a frame and more
-from one round of runs to another and rusty-impulse's does not: in this round rusty-impulse
+from one round of runs to another and impulse-shell's does not: in this round impulse-shell
 ended 15 to 25 ms earlier in every row where the steps draw, and with no busy step at all
 (291 to 296 ms against 314 to 332). The rows were not measured again.
 
@@ -1083,7 +1083,7 @@ sway to the frame they send. After one late step the second update request is de
 when the main thread is back in its event loop before the render thread has sent the next
 frame: a race of Qt's two threads, won in 7 runs of 10 here and in 15 of 20 on another day.
 
-What rusty-impulse does for the same count (it has one thread, and sends no frame that
+What impulse-shell does for the same count (it has one thread, and sends no frame that
 changes no pixel):
 
 - An animation that sends no frame steps by a vsync timer. A tick missed during a late step
@@ -1100,7 +1100,7 @@ changes no pixel):
   three, in every run.
 
 In one run of 10 with steps 2 and 3 busy (3 of 70 on an earlier head, none in 50 more with
-`RI_LOG=ri::frames`) rusty-impulse took 20 steps instead of 19 and ended after 487 to 489 ms:
+`RI_LOG=ri::frames`) impulse-shell took 20 steps instead of 19 and ended after 487 to 489 ms:
 its second step came 22 to 24 ms after the first instead of 8 to 10 (a cold start), which made
 three late steps in a row, and the clock went over to the wall clock (steps of 2, 17, 23 and
 8 ms on the animation clock). That is the rule of `QSGDefaultAnimationDriver::advance` (more
@@ -1116,7 +1116,7 @@ order of events and compare no wall time with Quickshell's:
 `late_frames_make_an_animation_as_late_as_under_quickshell` (nothing drawn, steps 2 and 3)
 and `a_late_step_makes_an_animation_that_draws_nothing_as_late_as_under_quickshell` (step 5)
 count Quickshell's steps before its second frame callback after the late ones and the steps
-rusty-impulse takes within half a vsync of the end of the late one, on the fixture's clock;
+impulse-shell takes within half a vsync of the end of the late one, on the fixture's clock;
 `two_late_steps_in_a_row_are_followed_by_as_many_steps_at_once_as_under_quickshell` (steps
 drawn, steps 5 and 6) counts the steps of both before the fourth frame callback after the
 late ones, five. With every core of the machine busy a Quickshell thread that got no
@@ -1129,7 +1129,7 @@ is the same as in Qt and is held by the other tests of that file.
 Compared with Quickshell 0.3.2 on Qt 6.12.0 under headless sway at 60 Hz. A NumberAnimation
 of 300 ms is started by the handler of a Timer, in a shell that has shown its windows and is
 idle. When Qt takes the first step depends on how many windows are exposed and on what
-started the animation driver, and rusty-impulse follows the three cases:
+started the animation driver, and impulse-shell follows the three cases:
 
 - **One window, and a Timer was counting besides the one that started the animation** (or
   that one repeats). The driver
@@ -1144,7 +1144,7 @@ started the animation driver, and rusty-impulse follows the three cases:
   runs. The window's update and the step after its sync come before the animation the
   handler started is in the driver's list (`startAnimations` is queued behind them): that
   step moves nothing, and the animation takes its first step with the frame callback of that
-  frame, one frame later. rusty-impulse sends that one frame too, changed or not, and steps
+  frame, one frame later. impulse-shell sends that one frame too, changed or not, and steps
   first with its callback (`Steppers::lone` in `crates/qml/src/steppers.rs`,
   `World::timer_started_driver`, `AnimClock::late`).
 - **No window or several windows exposed.** The driver is stepped by a timer of one vsync
@@ -1152,13 +1152,13 @@ started the animation driver, and rusty-impulse follows the three cases:
   step comes one interval after the start, whatever started the driver
   (`AnimClock::one_window`).
 
-Before, rusty-impulse took the first step one vsync after `start()` in every case, and with
+Before, impulse-shell took the first step one vsync after `start()` in every case, and with
 one window a second step as it sent the frame of the first.
 
 The end of the animation after `start()` on the wall clock, 8 runs each one after another,
 and the first steps of a typical run:
 
-| Windows | Started by | Steps draw | Quickshell | rusty-impulse | Before |
+| Windows | Started by | Steps draw | Quickshell | impulse-shell | Before |
 |---|---|---|---|---|---|
 | one | a Timer while another counts | yes | 271 to 277 in 5 runs, 286 to 291 in 3 (0, 7, 24) | 270 to 274 (0, 10, 12) | 287 to 290 (17, 27, 29) |
 | one | a Timer while another counts | no | 272 to 294 (0, 4, 21) | 300 to 301 (0, 17, 34) | 317 (17, 34, 50) |
@@ -1176,35 +1176,35 @@ Still different:
   the first at once only when its main thread asks for the next update before its render
   thread has asked for the frame callback (`QWaylandWindow::requestUpdate` against
   `handleUpdate`); each later step is another go at that race, and once won the render
-  thread stays a frame ahead. rusty-impulse always takes that extra step after the frame of
+  thread stays a frame ahead. impulse-shell always takes that extra step after the frame of
   the first when another Timer was counting, as Quickshell does in most runs, and never
   with the only Timer.
 - With the only Timer, Quickshell's end also moves with where sway's 60 Hz clock stands as
   the Timer ends: in another round of 8 runs it took its first step 10 to 13 ms after
   `start()` and ended at 305 to 324 ms in every run, against 4 to 8 ms and the times of the
-  table. rusty-impulse's one frame is answered within 1 ms, and it ended at 291 to 293 ms
+  table. impulse-shell's one frame is answered within 1 ms, and it ended at 291 to 293 ms
   (once 304) in that round too.
-- Under headless sway the frame callbacks come 16.1 to 16.2 ms apart to rusty-impulse and
+- Under headless sway the frame callbacks come 16.1 to 16.2 ms apart to impulse-shell and
   16.6 to 16.7 ms apart to Quickshell, by the times sway itself stamps on them: 8 ms over
   the 18 steps of the animation. Why sway paces the two differently was not found.
 - With one window and steps that draw nothing, Quickshell still sends a frame for each step
-  and steps with the callbacks, the extra step included; rusty-impulse sends no frame and
+  and steps with the callbacks, the extra step included; impulse-shell sends no frame and
   steps by its vsync timer after the first step, and ends when the 300 ms are over, up to
   28 ms after Quickshell. Nothing on the screen differs, since nothing is drawn.
 - With two windows Quickshell's steps come from its timer, 16 ms apart on the wall clock (the
   whole milliseconds of one vsync) and independent of the frame callbacks, each moving the
   animation clock by 16.67 ms: after the first step an animation runs 4 % fast at 60 Hz.
-  rusty-impulse steps first by its vsync timer too, then once per frame callback of a window
+  impulse-shell steps first by its vsync timer too, then once per frame callback of a window
   that draws; the step of the first callback moves the clock by the time since the timer's
   step. It ends 2 to 5 ms before Quickshell here.
 
 Held by tests: `an_animation_takes_its_first_step_as_it_starts_as_under_quickshell` of
 `crates/shell/tests/timer_clock_equiv.rs` checks that the first step of both comes less than
-half a vsync after the start on the fixture's clock (17 ms in rusty-impulse before), and
+half a vsync after the start on the fixture's clock (17 ms in impulse-shell before), and
 counts the steps before the second frame callback after the handler by the order of the lines
-of the Wayland trace (3 in rusty-impulse, 2 or 3 under Quickshell);
+of the Wayland trace (3 in impulse-shell, 2 or 3 under Quickshell);
 `an_animation_started_as_the_only_timer_ends_steps_first_with_a_frame_callback` counts the
-steps of both before the first such callback (0 and 0; 2 in rusty-impulse before);
+steps of both before the first such callback (0 and 0; 2 in impulse-shell before);
 `with_two_windows_the_first_step_comes_one_vsync_after_the_start_as_under_quickshell` checks
 on the fixture's clock that the first step of both comes no sooner than half a vsync after
 the start; `undrawn_animation_steps_on_a_timer` of `crates/shell/tests/idle_wakeups.rs`
@@ -1283,7 +1283,7 @@ Compared with `qml6` of Qt 6.12.0: an `Image` created without a `source`, whose 
 function then sets to a file that is read without waiting (not `asynchronous`); the
 function reads `status` and `implicitWidth` right after the write.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | `status` and the size of the picture right after `pic.source = "p20.png"` | `Image.Ready` and the size of the picture: the file is read inside the write, and the handlers of `progress`, the size and `status` run inside it. | In the shell, as Qt: the write loads the picture (`image_written` in `crates/qml/src/runtime.rs` has the shell measure the Image through its measure hook, `text_measure`). An engine without the measure hook has `Image.Null` and 0: the file is read by the next layout of the window (`measure_inner` in `crates/shell/src/scene.rs`), the handlers run then. |
 | `widthChanged` and `implicitWidthChanged` of an item sized by its content | `widthChanged` first (`QQuickItem::setImplicitSize`). | `implicitWidthChanged` first: `measure_inner` writes the implicit size, then the size. No handler of an implicit size in `qml/` (0 of `onImplicitWidthChanged`, `onImplicitHeightChanged`). |
@@ -1515,7 +1515,7 @@ and so is the order the `Kirigami.Icon`s of a window are asked in: the one that 
 polished last first (`QQuickWindowPrivate::polishItems`; `icons_are_polished_in_the_order_qt_polishes_them`
 in `crates/shell/tests/kirigami_icon_size.rs`). The row below is what differs.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | The order the `Image { source: "image://icon/..." }` of a window are asked from the theme in | From the last one declared to the first (`QQmlObjectCreator::finalize` completes the last object created first, and `QQuickImageBase::componentComplete` loads). | From the first to the last, in the first layout of the window. |
 
@@ -1534,7 +1534,7 @@ scales in turn, and with one name at two sizes
 `..._at_another_size_...` in `crates/shell/tests/icon_theme_dirs.rs`). The rows below
 differ; none of them is measured.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | A name leaves the 100 while an item still shows it | The item's `QIcon` keeps its engine: another size of it is picked among the files found first. | The name is searched again the next time it is asked. |
 | The icon theme is changed while the shell runs | Every icon is searched again (`QIconLoader::themeKey`). | A name found before the change stays as found; the themes read stay as read. |
@@ -1644,7 +1644,7 @@ Code: `choose_config`, `Gpu::depth` and `Rows` in `crates/shell/src/gpu.rs`; `tr
 Tests: `crates/shell/tests/lock_blur_qt.rs`: the three `..._of_the_shell_wallpaper_..._on_the_gpu`,
 the three `..._on_the_cpu_raster` (2 184, 2 235 and 11 392 pixels a level off before),
 `lock_screen_blur_of_a_picture_...` on both (an Image that is the blur's source itself: 70 267
-pixels before) and `lock_screen_blur_of_the_shell_wallpaper_in_a_window_on_a_screen` (a panel of rusty-impulse under
+pixels before) and `lock_screen_blur_of_the_shell_wallpaper_in_a_window_on_a_screen` (a panel of impulse-shell under
 sway, read off the screen: Qt's pixels; with no depth buffer 134 pixels off, with the origin
 at the lower left 54, with neither 101), `lock_screen_blur_in_a_window_of_a_driver_without_clip_control`
 (Mesa told to leave the extension out: one warning, 54 pixels).
@@ -1658,11 +1658,11 @@ instead: 264 pixels).
 
 Compared with Qt 6.12.0 and Kirigami 6.31.0 drawing with OpenGL on Wayland under sway, with
 `QSG_FIXED_ANIMATION_STEP`. A `Kirigami.Icon` with `animated: true` fades from its old image
-into the new one in rusty-impulse as in Qt: 200 ms on `InOutCubic`, at 0 in the frame of the write
+into the new one in impulse-shell as in Qt: 200 ms on `InOutCubic`, at 0 in the frame of the write
 and in the next one. What differs is the frame the fade begins to move in when the GUI
 thread is kept longer than the output takes for a frame.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | A new `source` while the GUI thread is kept longer than a frame of the output (16.7 ms at 60 Hz) in every frame | Every frame is drawn, and the fade stays at 0 for up to 44 frames more before it moves. | The fade moves in the second frame after the write, as with a free thread. |
 
@@ -1670,7 +1670,7 @@ The frames Qt's fade stood at 0 past the two it always needs, with the GUI threa
 long in every step of the animations, on an idle machine; ten fades in a run, two runs for
 each of the first four rows and 23 for the last:
 
-| GUI thread kept | Qt 6.12 stood | rusty-impulse stood |
+| GUI thread kept | Qt 6.12 stood | impulse-shell stood |
 |---|---|---|
 | 5 ms | 0 to 1 frames | 0 |
 | 12 ms | 0 to 1 frames, 3 twice in one run | 0 |
@@ -1691,14 +1691,14 @@ the update requests of the frames come through the same queue
 request ahead of a queued call is one more frame drawn with the fade at 0, and a thread
 kept past the frame callback leaves more than one of them in the queue.
 
-Why rusty-impulse does not: it has no queue of deferred calls between the write and the animation
+Why impulse-shell does not: it has no queue of deferred calls between the write and the animation
 clock. The fade is a job of that clock from the frame of the write (`World::polish_icon` in
 `crates/qml/src/runtime.rs`) and makes a step in every frame. How many frames Qt stands is
 what its event queue happens to hold, not a rule of the fade.
 
 Tests, in `crates/shell/tests/kirigami_icon_fade_equiv.rs`:
 
-- `our_fade_moves_in_the_second_frame_after_the_write` holds the rusty-impulse column.
+- `our_fade_moves_in_the_second_frame_after_the_write` holds the impulse-shell column.
 - `qt_kept_45_ms_in_every_step_stands_before_its_fades` holds the last row of the table: Qt
   kept 45 ms in every step stands 3 frames or more before one of its fades.
 - `animated_icon_fades_into_its_new_source_like_qt` compares every frame Qt drew with ours
@@ -1737,7 +1737,7 @@ write, against Quickshell's own log.
 script. A paste key and a middle click are not part of this: no script runs between the key
 and the text.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | The clipboard's text is in the process (the cases below) | Inserts inside the call. | The same: inserts inside the call. `copy(); paste(); field.text` reads the pasted text. |
 | The clipboard's text is not in the process | Reads the selection from its owner inside the call: the interface thread waits until the owner has written the text and closed the pipe (`QWaylandDataOffer::retrieveData`). The script reads the pasted text right after the call. | `paste()` returns at once and has changed nothing: the script reads the old `text`, cursor and selection. The shell reads the owner's pipe from its event loop and inserts the text once the owner closed it. The change signals come then, in the order and with the values Qt gives them. |
@@ -1813,7 +1813,7 @@ Qt's `.qmltypes` declare every method of every type. The engine has written the 
 calls, not all of them. The rest are listed in [`unwritten-methods.tsv`](unwritten-methods.tsv),
 one row per declaring class and method.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | `typeof item.childAt` | `function` | `function` |
 | `item.childAt(1, 1)` | The child, or `null`. | Throws `Error: Item.childAt() is declared by Qt and not written in this engine`, reported with the QML file and line like any error of a script. |
@@ -1851,7 +1851,7 @@ Compared with Qt 6.12.0 (`QQuickAnimatedImage`, `QMovie`) on a GIF of 940 bytes:
 on a canvas of 4000 x 4000, played for two rounds. Memory is the anonymous memory of the
 process.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | `cache: true` (the default) | Keeps every frame it has shown (`QMovie::CacheAll`): 61 MB more with each frame of the first round, 2565 MB from then on. | Keeps the frame on screen and one canvas the next frame is drawn on: 131 MB at every frame. |
 | `cache: false` | Keeps one frame (`QMovie::CacheNone`): 185 MB, 245 MB at the peak. | The same 131 MB. |
@@ -1879,7 +1879,7 @@ Tests:
 
 Compared with Qt 6.12.0, on GIF and WebP files of three frames.
 
-| | Qt 6.12 | rusty-impulse |
+| | Qt 6.12 | impulse-shell |
 |---|---|---|
 | `loops: 1` (any number from 0), `finishBehavior: AnimatedImage.FinishAtFinalFrame`, `cache: false` | The process dies of a segmentation fault (exit code 139) when the rounds end: endless recursion in `QQuickAnimatedImage::handleLoopCompletion`. | The movie stops at the last frame, `playing` goes false, `finished` comes: the signals Qt 6.12 gives for the same movie with `cache: true`. |
 
@@ -1917,7 +1917,7 @@ shadow: none of its `MultiEffect`s sets `shadowEnabled`.
 Qt's answers in the tree were taken with ICU 78.3, the one of the system the image of
 `tools/testenv` has. Qt asks ICU for a zone's names (`t` and `tttt` of a date's format), and
 Arch's Qt uses the system's ICU, so on a machine with another ICU the original under Quickshell names
-some zones in other words than rusty-impulse does. rusty-impulse carries the names of ICU 78.3 in
+some zones in other words than impulse-shell does. impulse-shell carries the names of ICU 78.3 in
 `crates/qml/src/locale_data.rs` and asks no ICU of the machine.
 
 | | Qt 6.12 with ICU 73 | Qt 6.12 with ICU 78.3, and here |
@@ -2097,7 +2097,7 @@ corners of the message bubbles, the same 9 on `main`.
 
 Why: not known. Quickshell's own picture of the digit changes with the scroll: the pixel
 that is (64,39,30) in the frame of the answer is (65,39,30) after the second question, where
-rusty-impulse keeps (64,39,30).
+impulse-shell keeps (64,39,30).
 
 Orange marks a pixel that differs, dark theme and light theme:
 
@@ -2106,7 +2106,7 @@ Orange marks a pixel that differs, dark theme and light theme:
 
 ## `push` and `sort` of a frozen or non-extensible array with more than 65536 holes at its end
 
-Compared with `qml6` of Qt 6.12. This difference comes from the merge of two fixes of rusty-impulse,
+Compared with `qml6` of Qt 6.12. This difference comes from the merge of two fixes of impulse-shell,
 not from a choice about Qt: the array storage of audit slice B1 alone answers as Qt here, and
 stopped when the tail of long arrays (B2-17) was merged over it.
 

@@ -1,9 +1,9 @@
 //! The main loop sleeps until something is due: an idle shell blocks without a timeout, a
 //! Timer wakes it at its interval, animations step at wl_surface frame callbacks (or on a
 //! vsync timer when nothing is drawn) and the loop goes back to sleep when they finish.
-//! Wakeups are the loop turns rusty-impulse reports (ri::sched logs one line per turn with its next
+//! Wakeups are the loop turns impulse-shell reports (ri::sched logs one line per turn with its next
 //! deadline) and the main thread's voluntary context switches, counted between events: log
-//! lines the shell prints, or the frame callbacks sway sends a second, animating rusty-impulse
+//! lines the shell prints, or the frame callbacks sway sends a second, animating impulse-shell
 //! (`Metronome`), one per output refresh. Durations are the runtime's own clock: the
 //! deadlines it logs, or animation frames under `QSG_FIXED_ANIMATION_STEP`.
 
@@ -22,7 +22,7 @@ use wayland_protocols_wlr::virtual_pointer::v1::client::{
 struct Shell {
     child: Child,
     dir: PathBuf,
-    /// Its sway: where `rusty-impulse ipc` finds it.
+    /// Its sway: where `impulse-shell ipc` finds it.
     runtime: PathBuf,
     display: PathBuf,
     log: Arc<Log>,
@@ -36,7 +36,7 @@ impl Shell {
         }
         let (r, w) = std::io::pipe().unwrap();
         let child = sway
-            .env(&mut Command::new(env!("CARGO_BIN_EXE_rusty-impulse")))
+            .env(&mut Command::new(env!("CARGO_BIN_EXE_impulse-shell")))
             .arg("-p")
             .arg(dir)
             .env("RI_INTERP", "1")
@@ -62,14 +62,14 @@ impl Shell {
         let found = |s: &str| texts(s).into_iter().rev().find(|t| ok(t));
         match self.log.wait(|s| found(s).is_some()) {
             Ok(()) => found(&self.log.text()).unwrap(),
-            Err(log) => panic!("{what}; rusty-impulse printed:\n{log}"),
+            Err(log) => panic!("{what}; impulse-shell printed:\n{log}"),
         }
     }
 
-    /// Waits until `f(log)`; panics if rusty-impulse exits first.
+    /// Waits until `f(log)`; panics if impulse-shell exits first.
     fn wait_log(&self, what: &str, f: impl Fn(&str) -> bool) {
         if let Err(log) = self.log.wait(f) {
-            panic!("{what}; rusty-impulse printed:\n{log}");
+            panic!("{what}; impulse-shell printed:\n{log}");
         }
     }
 
@@ -145,10 +145,10 @@ impl Shell {
             .unwrap()
     }
 
-    /// Calls the IpcHandler `fx`'s `func` through `rusty-impulse ipc call`, which returns once the
+    /// Calls the IpcHandler `fx`'s `func` through `impulse-shell ipc call`, which returns once the
     /// shell answered.
     fn ipc(&self, func: &str) {
-        let st = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        let st = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(&self.dir)
             .args(["ipc", "call", "fx", func])
@@ -168,7 +168,7 @@ impl Drop for Shell {
     }
 }
 
-/// A second rusty-impulse whose panel animates without end: sway answers its frame callbacks once per
+/// A second impulse-shell whose panel animates without end: sway answers its frame callbacks once per
 /// output refresh, so counting them measures a span of refreshes without a clock.
 struct Metronome {
     sh: Shell,
@@ -645,7 +645,7 @@ ShellRoot {
     eprintln!("unseen endless animations: {turned} loop turns until the Timer");
     assert!(
         turned <= 4 && !log.lines().any(|l| is_turn(l) && l.contains(", Frame))")),
-        "unseen endless animations woke the loop {turned} times before the Timer; rusty-impulse \
+        "unseen endless animations woke the loop {turned} times before the Timer; impulse-shell \
          printed meanwhile:\n{log}"
     );
     let log = sh.wait_lines(

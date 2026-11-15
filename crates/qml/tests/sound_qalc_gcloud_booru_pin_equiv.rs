@@ -70,9 +70,9 @@ fn base() -> &'static Path {
 }
 
 /// A root for [`base`] in `d`, and the environment that names it: config home (with an empty
-/// rusty-impulse config), cache, state and data homes, and a runtime dir for Hyprland instance `TEST`.
+/// impulse-shell config), cache, state and data homes, and a runtime dir for Hyprland instance `TEST`.
 fn base_vars(d: &Path) -> Vec<(&'static str, OsString)> {
-    let ri_conf = d.join("config/rusty-impulse");
+    let ri_conf = d.join("config/impulse-shell");
     std::fs::create_dir_all(&ri_conf).unwrap();
     std::fs::write(ri_conf.join("config.json"), "{}").unwrap();
     std::fs::create_dir_all(d.join("rt/hypr/TEST")).unwrap();
@@ -745,7 +745,7 @@ fn google_cloud_get_token_token_proc() {
     if !tools(&["bash", "openssl"]) {
         return;
     }
-    let venv = std::env::var("RUSTY_IMPULSE_VIRTUAL_ENV").unwrap_or_default();
+    let venv = std::env::var("IMPULSE_SHELL_VIRTUAL_ENV").unwrap_or_default();
     let has_auth = !venv.is_empty()
         && std::process::Command::new(format!("{venv}/bin/python"))
             .args([
@@ -755,7 +755,7 @@ fn google_cloud_get_token_token_proc() {
             .output()
             .is_ok_and(|o| o.status.success());
     if !has_auth {
-        testenv::unavailable("RUSTY_IMPULSE_VIRTUAL_ENV has no google-auth venv");
+        testenv::unavailable("IMPULSE_SHELL_VIRTUAL_ENV has no google-auth venv");
         return;
     }
     if !own_process(concat!(

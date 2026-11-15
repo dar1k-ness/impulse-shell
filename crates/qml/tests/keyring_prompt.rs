@@ -21,7 +21,7 @@ const SERVICE: &str = "/org/freedesktop/secrets";
 /// The `default` alias: a collection of its own, as when the item lives outside `login`.
 const COLLECTION: &str = "/org/freedesktop/secrets/collection/Default_5fkeyring";
 const LOGIN: &str = "/org/freedesktop/secrets/collection/login";
-const LABEL: &str = "rusty-impulse Safe Storage";
+const LABEL: &str = "impulse-shell Safe Storage";
 const SESSION: &str = "/org/freedesktop/secrets/session/plain";
 const DH: &str = "dh-ietf1024-sha256-aes128-cbc-pkcs7";
 
@@ -476,7 +476,7 @@ fn fake(test: &str, locked: bool, answer: Answer) -> Option<Fake> {
 
 fn attrs() -> Vec<(String, String)> {
     [
-        ("application", "rusty-impulse"),
+        ("application", "impulse-shell"),
         (
             "explanation",
             "For storing API keys and other sensitive information",

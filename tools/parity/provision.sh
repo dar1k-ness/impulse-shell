@@ -1,7 +1,7 @@
 #!/bin/bash
 # provision.sh: what the scene matrix needs on top of bench/guest-setup.sh. Run once in the guest
 # made by `bench/vm.sh create` (setup.sh refuses to run without these):
-#   bench/vm.sh ssh 'bash rusty-impulse/tools/parity/provision.sh'
+#   bench/vm.sh ssh 'bash impulse-shell/tools/parity/provision.sh'
 # Packages come from the archive snapshot guest-setup.sh pinned, the font from a pinned release.
 set -euo pipefail
 PARITY=$(cd "$(dirname "$0")" && pwd)

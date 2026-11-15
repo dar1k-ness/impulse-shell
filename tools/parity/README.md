@@ -1,7 +1,7 @@
-# tools/parity: native rusty-impulse against the original in Quickshell, shot by shot
+# tools/parity: native impulse-shell against the original in Quickshell, shot by shot
 
 Runs every scene of `scenes.sh` under the original (Quickshell running the original's QML) and under
-native `rusty-impulse` in the same Hyprland guest, compares each pair of shots and says pass or fail. The last full run,
+native `impulse-shell` in the same Hyprland guest, compares each pair of shots and says pass or fail. The last full run,
 its numbers and what it found are in [REPORT.md](REPORT.md).
 
 It runs in the QEMU guest of `bench/vm.sh` only: the scenes move the pointer, lock the session,
@@ -11,7 +11,7 @@ pin the clock and rewrite the shell's config and state. Nothing here is for a re
 
 ```sh
 bench/vm.sh create                                      # once: the guest (bench/README.md)
-bench/vm.sh sync                                        # this checkout -> guest ~/rusty-impulse, its `qml` as the rusty-impulse config;
+bench/vm.sh sync                                        # this checkout -> guest ~/impulse-shell, its `qml` as the impulse-shell config;
                                                         # runs provision.sh: what the scenes need
 tools/parity/run.sh                                     # build native in the guest, shoot both shells, compare
 tools/parity/run.sh lock polkit                         # the same for some scenes
@@ -28,8 +28,8 @@ original is in git history, below).
 
 ## The two sides
 
-- Native: `rusty-impulse` built in the guest from the checkout, running the `rusty-impulse` config
-  (`~/.config/rustshell/rusty-impulse`), which `bench/vm.sh sync` makes a copy of the checkout's `qml`.
+- Native: `impulse-shell` built in the guest from the checkout, running the `impulse-shell` config
+  (`~/.config/rustshell/impulse-shell`), which `bench/vm.sh sync` makes a copy of the checkout's `qml`.
 - Original: Quickshell running the original's own QML. That tree is not in the checkout: since #53 `qml` is
   the project's own tree and imports the `Impulse` module, which Quickshell does not have
   (`module "Impulse" is not installed`). `orig.sh` takes it from git history, `ref/ii` of the last
@@ -71,7 +71,7 @@ Results in `OUT`: `orig/` and `native/` (shots, shell logs, `state.log`, `overla
   two runs of one shell: live values (CPU, memory), a random icon. One line per
   rectangle with the reason. The lines that start with `renamed` are the names the project changed
   on purpose and the original still shows: the app id and title of the shell's own windows in the
-  bar (`org.rustshell`, `rusty-impulse Settings`) and the config folder in the Assistant hint of
+  bar (`org.rustshell`, `Impulse Settings`) and the config folder in the Assistant hint of
   the left sidebar. Each covers the differing words and one pixel around them, nothing else of
   the shot.
 - `areas` in `policy.json` are rectangles of a shot with limits of their own, for a difference the
@@ -99,7 +99,7 @@ Results in `OUT`: `orig/` and `native/` (shots, shell logs, `state.log`, `overla
   file present, a known password for lock and polkit, one audio sink at a known volume.
 - The Qt platform theme the end-4 dots use (`kdeglobals.py`): application font, icon theme, caret
   that does not blink.
-- the original's Python environment in the Hyprland environment (`RUSTY_IMPULSE_VIRTUAL_ENV`): the
+- the original's Python environment in the Hyprland environment (`IMPULSE_SHELL_VIRTUAL_ENV`): the
   region selector finds content regions with it.
 - Every shell start resets what both shells share in `states.json`: sidebar tab, overlay widget
   positions, the Hyprland instance the state belongs to, "Keep awake".
@@ -149,12 +149,12 @@ Results in `OUT`: `orig/` and `native/` (shots, shell logs, `state.log`, `overla
 - `bar_vertical`, `bar_bottom`, `bar_float`, `waffle`: `*_live` shots are taken after editing
   `config.json` under the running shell, the others after a restart with that config.
 - `settings`, `welcome`, `killDialog`: standalone windows (`qs -p FILE` from the original tree,
-  `$BIN -p FILE` from the `rusty-impulse` config).
+  `$BIN -p FILE` from the `impulse-shell` config).
 
 ## The native build (`build.sh`)
 
-`build.sh` builds in the guest from `~/rusty-impulse` the way `tools/install.sh` does and writes
-`REVISION SHA256` next to the binary (`rusty-impulse.rev`). `capture.sh native` stops when there is no such
+`build.sh` builds in the guest from `~/impulse-shell` the way `tools/install.sh` does and writes
+`REVISION SHA256` next to the binary (`impulse-shell.rev`). `capture.sh native` stops when there is no such
 record, when the binary has another checksum, or when the revision is not the one `run.sh` asks
 for (the host checkout's): `bench/vm.sh sync`, then run again.
 

@@ -272,7 +272,7 @@ fn collect(mut ch: Child, stop: &Arc<Stop>) -> std::io::Result<Output> {
                         // ended is unknown: `ECHILD` when something else reaped it, or
                         // SIGCHLD is ignored. Polling its pidfd again would never block.
                         Err(e) => {
-                            elog::eprintln!("rusty-impulse: cannot wait for child {pid}: {e}");
+                            elog::eprintln!("impulse-shell: cannot wait for child {pid}: {e}");
                             return Err(e);
                         }
                     }

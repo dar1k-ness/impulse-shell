@@ -1,4 +1,4 @@
-//! A theme switch crossfades every rusty-impulse window from its previous frame (`Crossfade.request`). On a
+//! A theme switch crossfades every impulse-shell window from its previous frame (`Crossfade.request`). On a
 //! compositor with wl_subcompositor and wp_alpha_modifier_v1 (the headless sway of
 //! tools/testenv, as Hyprland) the previous frame goes on a subsurface once and the compositor
 //! fades it out: the window itself draws nothing more while its content holds still. Blending
@@ -80,7 +80,7 @@ impl Shell {
         let (r, w) = std::io::pipe().unwrap();
         let xdg = dir.path().join("xdg");
         let child = sway
-            .env(&mut Command::new(env!("CARGO_BIN_EXE_rusty-impulse")))
+            .env(&mut Command::new(env!("CARGO_BIN_EXE_impulse-shell")))
             .arg("-p")
             .arg(dir.path())
             .env("RI_INTERP", "1")
@@ -117,7 +117,7 @@ impl Shell {
                 keep = s.lines().collect();
             }
             panic!(
-                "rusty-impulse exited before {what}; rusty-impulse log tail:\n{}",
+                "impulse-shell exited before {what}; impulse-shell log tail:\n{}",
                 keep[keep.len().saturating_sub(40)..].join("\n")
             );
         }
@@ -165,7 +165,7 @@ impl Shell {
     fn ipc(&self, func: &str) {
         let st = self
             .sway
-            .env(&mut Command::new(env!("CARGO_BIN_EXE_rusty-impulse")))
+            .env(&mut Command::new(env!("CARGO_BIN_EXE_impulse-shell")))
             .arg("-p")
             .arg(self.dir.path())
             .args(["ipc", "call", "fx", func])

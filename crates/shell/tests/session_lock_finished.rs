@@ -1,4 +1,4 @@
-//! ext-session-lock-v1 `finished`, checked on the requests rusty-impulse puts on the wire (recorded by
+//! ext-session-lock-v1 `finished`, checked on the requests impulse-shell puts on the wire (recorded by
 //! `proxy::EndLock`; `WAYLAND_DEBUG` writes a line's timestamp, `[discarded]` marker and request
 //! separately, so other threads' stderr can split them and a discarded request reads as sent): the
 //! client must answer it with `destroy` when `locked` never came and with `unlock_and_destroy`
@@ -115,7 +115,7 @@ fn fails_without_sway() {
     );
 }
 
-/// rusty-impulse running [`SHELL`] with its Wayland traffic logged.
+/// impulse-shell running [`SHELL`] with its Wayland traffic logged.
 struct Shell {
     child: Child,
     dir: tempfile::TempDir,
@@ -140,7 +140,7 @@ impl Shell {
         std::fs::write(dir.path().join("shell.qml"), qml).unwrap();
         let (r, w) = std::io::pipe().unwrap();
         let xdg = dir.path().join("xdg");
-        let child = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        let child = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(dir.path())
             .env("RI_INTERP", "1")
@@ -166,14 +166,14 @@ impl Shell {
         wl(&self.log.text())
     }
 
-    /// Waits for `f(log)`: `Err(log)` once rusty-impulse exits (closes its log) without it.
+    /// Waits for `f(log)`: `Err(log)` once impulse-shell exits (closes its log) without it.
     fn wait(&self, f: impl Fn(&str) -> bool) -> Result<String, String> {
         self.log.wait(|s| f(&wl(s))).map_err(|s| wl(&s))?;
         Ok(self.text())
     }
 
-    /// `lock.probe()`: the log once QML printed what it reads, `None` if rusty-impulse is gone (the
-    /// call fails, or rusty-impulse exits before printing it).
+    /// `lock.probe()`: the log once QML printed what it reads, `None` if impulse-shell is gone (the
+    /// call fails, or impulse-shell exits before printing it).
     fn probe(&self) -> Option<String> {
         let n = |s: &str| s.matches("PROBE ").count();
         let before = n(&self.text());
@@ -182,7 +182,7 @@ impl Shell {
     }
 
     fn call(&self, func: &str) -> bool {
-        Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(self.dir.path())
             .args(["ipc", "call", "lock", func])
@@ -251,7 +251,7 @@ fn finished_after_locked_unlocks_and_destroys() {
     // QML reads `locked: false` (Quickshell's WlSessionLock::unlock), so no new lock follows.
     let s = sh
         .wait(|s| s.contains("LOCKED false"))
-        .unwrap_or_else(|s| panic!("rusty-impulse exited:\n{}", tail(&s)));
+        .unwrap_or_else(|s| panic!("impulse-shell exited:\n{}", tail(&s)));
     assert!(
         s.contains("The compositor ended the session lock.")
             && !s.contains("Failed to acquire session lock."),
@@ -260,7 +260,7 @@ fn finished_after_locked_unlocks_and_destroys() {
     );
     let s = sh
         .probe()
-        .unwrap_or_else(|| panic!("rusty-impulse died:\n{}", tail(&sh.text())));
+        .unwrap_or_else(|| panic!("impulse-shell died:\n{}", tail(&sh.text())));
     assert!(
         s.contains("PROBE false"),
         "QML still reads locked:\n{}",
@@ -306,7 +306,7 @@ fn finished_before_locked_destroys() {
         "finished before locked was not answered with destroy:\n{}",
         tail(&s)
     );
-    let s = probe.unwrap_or_else(|| panic!("rusty-impulse died:\n{}", tail(&s)));
+    let s = probe.unwrap_or_else(|| panic!("impulse-shell died:\n{}", tail(&s)));
     assert!(
         s.contains("Failed to acquire session lock."),
         "no lock failure logged:\n{}",
@@ -342,7 +342,7 @@ fn finished_before_locked_destroys() {
 /// creates no object for a `get_lock_surface` on a refused lock, so a request on such a surface
 /// is `invalid object` and ends the connection ([`proxy::EndLock::refusing`]). The lock goes by
 /// `destroy` with no surface asked for, QML reads what Quickshell's `finished` leaves
-/// (`locked` false, `secureChanged` emitted with `secure` still false), and rusty-impulse stays up.
+/// (`locked` false, `secureChanged` emitted with `secure` still false), and impulse-shell stays up.
 #[test]
 fn a_lock_refused_as_hyprland_does_asks_for_no_surface() {
     let _g = LOCK.lock().unwrap_or_else(|e| e.into_inner());
@@ -361,7 +361,7 @@ fn a_lock_refused_as_hyprland_does_asks_for_no_surface() {
     );
     let s = sh
         .probe()
-        .unwrap_or_else(|| panic!("rusty-impulse died:\n{}", tail(&sh.text())));
+        .unwrap_or_else(|| panic!("impulse-shell died:\n{}", tail(&sh.text())));
     assert!(
         s.contains("Failed to acquire session lock.") && !s.contains("session lock: locked"),
         "wrong log for a refused lock:\n{}",
@@ -411,7 +411,7 @@ fn a_lock_after_a_refused_one_is_taken() {
     );
     assert!(
         alive,
-        "rusty-impulse died after the refused lock:\n{}",
+        "impulse-shell died after the refused lock:\n{}",
         tail(&end)
     );
     assert!(
@@ -1059,7 +1059,7 @@ fn swaymsg(sock: &Path, args: &[&str]) -> String {
     String::from_utf8_lossy(&out.stdout).into_owned()
 }
 
-/// A Wayland proxy between rusty-impulse and sway that forwards every message and fd unchanged, except
+/// A Wayland proxy between impulse-shell and sway that forwards every message and fd unchanged, except
 /// on a session lock. [`EndLock::start`]: once sway sends `locked` it adds `finished`, and
 /// answers a client `destroy` of that lock with the `invalid_destroy` error (sway gets
 /// `unlock_and_destroy`, so its session is never left locked by the test).

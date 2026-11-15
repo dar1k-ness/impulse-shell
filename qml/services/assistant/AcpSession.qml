@@ -150,7 +150,7 @@ Item {
         root.request("initialize", {
             protocolVersion: 1,
             clientCapabilities: { fs: { readTextFile: false, writeTextFile: false }, terminal: false },
-            clientInfo: { name: "rusty-impulse", version: "1.0" }
+            clientInfo: { name: "impulse-shell", version: "1.0" }
         }, (result, error) => {
             if (root.stopping) return;
             if (error) {

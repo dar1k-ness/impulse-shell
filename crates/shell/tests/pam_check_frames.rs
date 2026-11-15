@@ -64,7 +64,7 @@ fn fails_without_sway() {
     );
 }
 
-/// rusty-impulse running [`shell_qml`] on `sway` with its Wayland traffic logged.
+/// impulse-shell running [`shell_qml`] on `sway` with its Wayland traffic logged.
 struct Shell<'a> {
     child: Child,
     dir: tempfile::TempDir,
@@ -93,7 +93,7 @@ impl<'a> Shell<'a> {
         std::fs::write(dir.path().join("shell.qml"), shell_qml(&pam)).unwrap();
         let (r, w) = std::io::pipe().unwrap();
         let xdg = dir.path().join("xdg");
-        let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
         let child = sway
             .env(&mut cmd)
             .arg("-p")
@@ -116,16 +116,16 @@ impl<'a> Shell<'a> {
         }
     }
 
-    /// Waits for `f(log)`; panics with the log's tail if rusty-impulse exits first.
+    /// Waits for `f(log)`; panics with the log's tail if impulse-shell exits first.
     fn wait(&self, what: &str, f: impl Fn(&str) -> bool) -> String {
         if let Err(s) = self.log.wait(&f) {
-            panic!("rusty-impulse exited before {what}:\n{}", tail(&s));
+            panic!("impulse-shell exited before {what}:\n{}", tail(&s));
         }
         self.log.text()
     }
 
     fn ipc(&self, func: &str) {
-        let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
         let st = self
             .sway
             .env(&mut cmd)
@@ -283,7 +283,7 @@ fn a_helper_that_sends_nothing_holds_the_frame_for_a_moment_only() {
         line(&lines, "PAM ", 0).is_none(),
         "the helper was heard before the frame"
     );
-    // The call itself (a second rusty-impulse started) is in `took`.
+    // The call itself (a second impulse-shell started) is in `took`.
     assert!(
         took < std::time::Duration::from_secs(5),
         "the panel drew {took:?} after the check started"

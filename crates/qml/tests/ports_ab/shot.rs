@@ -443,7 +443,7 @@ fn screenshot_action_ab() {
     sc.set("PIPEWIRE_RUNTIME_DIR", &dir_s);
     sc.set("PIPEWIRE_REMOTE", "pipewire-0");
     let videos = dir.join("videos");
-    let cfg = dir.join("home/.config/rusty-impulse/config.json");
+    let cfg = dir.join("home/.config/impulse-shell/config.json");
     std::fs::create_dir_all(cfg.parent().unwrap()).unwrap();
     std::fs::write(
         &cfg,

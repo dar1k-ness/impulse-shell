@@ -1,5 +1,5 @@
 //! A command that prints its answer (`-V`, `--help`, `--check-tree`, `ipc call`, `ipc prop
-//! get`, `ipc listen`) to a stdout nobody reads any more (`rusty-impulse -V | true`, `rusty-impulse ipc listen
+//! get`, `ipc listen`) to a stdout nobody reads any more (`impulse-shell -V | true`, `impulse-shell ipc listen
 //! t sig | head -1`) ends by SIGPIPE, as `qs` and every program with the signal's default
 //! action do, instead of std's `print!` panic (exit 101); a full disk is an error message.
 
@@ -9,7 +9,7 @@ use std::process::{Child, Command, Output, Stdio};
 
 use testenv::Log;
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 /// A pipe's write end whose read end is closed: every write fails with EPIPE.
 fn closed() -> Stdio {
@@ -73,7 +73,7 @@ fn full_disk_is_an_error_message() {
     let err = String::from_utf8_lossy(&o.stderr);
     assert_eq!(o.status.code(), Some(255), "{err}");
     assert!(
-        err.starts_with("rusty-impulse: cannot write to the standard output: ")
+        err.starts_with("impulse-shell: cannot write to the standard output: ")
             && err.lines().count() == 1,
         "{err}"
     );

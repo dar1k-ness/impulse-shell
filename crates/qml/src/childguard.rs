@@ -87,11 +87,11 @@ impl Guard {
             Ok(()) => {}
             // The guard died (killed on its own): start another with the current groups.
             Err(e) if e.raw_os_error() == Some(libc::EPIPE) => {
-                elog::eprintln!("rusty-impulse: child guard exited, starting it again");
+                elog::eprintln!("impulse-shell: child guard exited, starting it again");
                 self.pipe = None;
                 self.start();
             }
-            Err(e) => elog::eprintln!("rusty-impulse: child guard: {e}"),
+            Err(e) => elog::eprintln!("impulse-shell: child guard: {e}"),
         }
     }
 
@@ -102,7 +102,7 @@ impl Guard {
         // SAFETY: `fds` is the writable array of two descriptors pipe2(2) fills.
         if unsafe { libc::pipe2(fds.as_mut_ptr(), libc::O_CLOEXEC) } != 0 {
             elog::eprintln!(
-                "rusty-impulse: child guard: pipe: {}",
+                "impulse-shell: child guard: pipe: {}",
                 std::io::Error::last_os_error()
             );
             return;
@@ -122,7 +122,7 @@ impl Guard {
         match c.spawn() {
             Ok(ch) => workpool::reap(ch),
             Err(e) => {
-                elog::eprintln!("rusty-impulse: cannot start the child guard: {e}");
+                elog::eprintln!("impulse-shell: cannot start the child guard: {e}");
                 return;
             }
         }
@@ -132,7 +132,7 @@ impl Guard {
             buf.extend_from_slice(&g.to_le_bytes());
         }
         if let Err(e) = pipe.write_all(&buf) {
-            elog::eprintln!("rusty-impulse: child guard: {e}");
+            elog::eprintln!("impulse-shell: child guard: {e}");
             return;
         }
         self.pipe = Some(pipe);

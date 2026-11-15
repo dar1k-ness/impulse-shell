@@ -113,7 +113,7 @@ struct Shell {
 }
 
 impl Shell {
-    /// rusty-impulse on `shell_qml(SCREEN)`, with `bin` first on PATH, drawn and idle; on the Wayland
+    /// impulse-shell on `shell_qml(SCREEN)`, with `bin` first on PATH, drawn and idle; on the Wayland
     /// socket `display` instead of the environment's when given.
     fn start(bin: &Path, display: Option<&Path>) -> Self {
         Self::start_with(bin, display, SCREEN)
@@ -146,7 +146,7 @@ impl Shell {
         let (r, w) = std::io::pipe().unwrap();
         let xdg = dir.path().join("xdg");
         let path = format!("{}:{}", bin.display(), std::env::var("PATH").unwrap());
-        let child = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        let child = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(dir.path())
             .env("RI_INTERP", "1")
@@ -192,7 +192,7 @@ impl Shell {
                 })
                 .collect();
             panic!(
-                "timed out waiting for {what}; rusty-impulse log tail:\n{}",
+                "timed out waiting for {what}; impulse-shell log tail:\n{}",
                 keep[keep.len().saturating_sub(40)..].join("\n")
             );
         }
@@ -212,7 +212,7 @@ impl Shell {
     }
 
     fn ipc(&self, func: &str) {
-        let st = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        let st = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(self.dir.path())
             .args(["ipc", "call", "fx", func])
@@ -317,7 +317,7 @@ fn probes(log: &str) -> (usize, usize) {
     let (mut made, mut live) = (0, std::collections::HashSet::new());
     for l in log.lines() {
         if let Some((_, r)) = l.split_once("get_layer_surface(new id ")
-            && r.ends_with("\"rusty-impulse-shown\")")
+            && r.ends_with("\"impulse-shell-shown\")")
         {
             made += 1;
             for id in r.split(", ").take(2) {
@@ -335,7 +335,7 @@ fn probe_shown(log: &str) -> bool {
     let mut probe = std::collections::HashSet::new();
     log.lines().any(|l| {
         if let Some((_, r)) = l.split_once("get_layer_surface(new id ")
-            && r.ends_with("\"rusty-impulse-shown\")")
+            && r.ends_with("\"impulse-shell-shown\")")
         {
             probe.insert(r.split(", ").nth(1).unwrap().to_string());
         }
@@ -352,7 +352,7 @@ fn entered(log: &str) -> usize {
     for l in log.lines() {
         if let Some((_, r)) = l.split_once("get_layer_surface(new id ") {
             let surface = r.split(", ").nth(1).unwrap().to_string();
-            if r.ends_with("\"rusty-impulse-shown\")") {
+            if r.ends_with("\"impulse-shell-shown\")") {
                 probe.insert(surface);
             } else {
                 probe.remove(&surface);
@@ -701,7 +701,7 @@ fn hyprpicker_starts_when_no_frame_follows_the_discarded_one_of_the_probe() {
         .lines()
         .find_map(|l| {
             let (_, r) = l.split_once("get_layer_surface(new id ")?;
-            r.ends_with("\"rusty-impulse-shown\")")
+            r.ends_with("\"impulse-shell-shown\")")
                 .then(|| r.split_once(',').unwrap().0.to_string())
         })
         .unwrap();
@@ -1021,7 +1021,7 @@ impl Drop for FakeHypr {
 }
 
 /// The namespace of the layer the shell maps to hear of a frame.
-const PROBE: &str = "rusty-impulse-shown";
+const PROBE: &str = "impulse-shell-shown";
 
 /// The shell has Hyprland's answer about its animations: a closed layer is animated `ms`.
 fn wait_close_ms(sh: &Shell, ms: u32) {

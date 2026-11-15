@@ -11,13 +11,13 @@ const BIND: &str = r#"hl.bind("SUPER + ALT + E", hl.dsp.global("rustshell:editMo
 /// What install.sh asks of the binary it installs: it has no JavaScript interpreter and the
 /// tree it is given, also where Hyprland starts it from, is the one it was compiled from.
 const BINARY: &str = r#"#!/bin/sh
-if [ "$1" = --version ]; then echo 'rusty-impulse test'; echo 'JavaScript interpreter: none'; exit 0; fi
-if [ "$1 $2 $3" = '-c rusty-impulse --check-tree' ]; then
-    set -- --check-tree -p "$(realpath "$HOME/.config/rustshell/rusty-impulse")"
+if [ "$1" = --version ]; then echo 'impulse-shell test'; echo 'JavaScript interpreter: none'; exit 0; fi
+if [ "$1 $2 $3" = '-c impulse-shell --check-tree' ]; then
+    set -- --check-tree -p "$(realpath "$HOME/.config/rustshell/impulse-shell")"
 fi
 [ "$1" = --check-tree ] && [ "$2" = -p ] || exit 2
 [ "$(cat "$3/shell.qml")" = '// tree a' ] || exit 1
-echo "rusty-impulse: $3 has the scripts this binary was compiled from"
+echo "impulse-shell: $3 has the scripts this binary was compiled from"
 "#;
 
 struct Home {
@@ -26,7 +26,7 @@ struct Home {
 }
 
 impl Home {
-    /// A HOME, a stand-in for a built `rusty-impulse` with the tree it says it was compiled
+    /// A HOME, a stand-in for a built `impulse-shell` with the tree it says it was compiled
     /// from (as install_rollback.rs makes them) and, when `dots`, end-4's Lua Hyprland config.
     fn new(dots: bool) -> Home {
         let dir = tempfile::tempdir().unwrap();
@@ -34,7 +34,7 @@ impl Home {
         std::fs::create_dir_all(root.join("source/modules")).unwrap();
         std::fs::write(root.join("source/shell.qml"), "// tree a\n").unwrap();
         std::fs::write(root.join("source/modules/Bar.qml"), "// bar of a\n").unwrap();
-        let bin = root.join("rusty-impulse");
+        let bin = root.join("impulse-shell");
         std::fs::write(&bin, BINARY).unwrap();
         std::fs::set_permissions(&bin, std::fs::Permissions::from_mode(0o755)).unwrap();
         if dots {
@@ -66,7 +66,7 @@ impl Home {
         let out = Command::new("bash")
             .arg(script)
             .args(args)
-            .env("BIN", self.root.join("rusty-impulse"))
+            .env("BIN", self.root.join("impulse-shell"))
             .env("RI_ROOT", self.root.join("source"))
             .env("PREFIX", self.root.join("prefix"))
             .env("HOME", self.root.join("home"))
@@ -98,13 +98,13 @@ fn binds_edit_mode_once_and_uninstall_removes_only_its_line() {
     let mine = "hl.bind(\"CTRL+SUPER+ALT+Slash\", hl.dsp.exec_cmd(\"xdg-open ~/.config/hypr/custom/keybinds.lua\"), {description = \"Edit user keybinds\"} )";
     std::fs::write(h.user_binds(), mine).unwrap();
     assert!(h.install(&[]).contains("bound Super+Alt+E"));
-    assert!(h.root.join("prefix/bin/rusty-impulse").exists());
+    assert!(h.root.join("prefix/bin/impulse-shell").exists());
     assert_eq!(h.read(&h.user_binds()), format!("{mine}\n{BIND}\n"));
     // Installing again (an update) adds nothing.
     h.install(&[]);
     assert_eq!(h.read(&h.user_binds()), format!("{mine}\n{BIND}\n"));
     h.install(&["--uninstall"]);
-    assert!(!h.root.join("prefix/bin/rusty-impulse").exists());
+    assert!(!h.root.join("prefix/bin/impulse-shell").exists());
     assert_eq!(h.read(&h.user_binds()), format!("{mine}\n"));
 }
 

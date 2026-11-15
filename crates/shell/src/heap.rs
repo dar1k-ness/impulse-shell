@@ -50,7 +50,7 @@ pub fn start_background_thread() {
         return;
     }
     if let Err(e) = tikv_jemalloc_ctl::background_thread::write(true) {
-        elog::eprintln!("rusty-impulse: cannot start jemalloc's background thread: {e}");
+        elog::eprintln!("impulse-shell: cannot start jemalloc's background thread: {e}");
     }
 }
 

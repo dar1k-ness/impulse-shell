@@ -1,5 +1,5 @@
 <div align="center">
-    <h1>【 rusty-impulse 】</h1>
+    <h1>【 impulse-shell 】</h1>
     <h3>end-4's illogical-impulse without Quickshell and without Qt</h3>
 </div>
 
@@ -12,7 +12,7 @@
   <summary>What this is/isn't</summary>
 
   - The graphical shell of [end_4's Hyprland dotfiles](https://github.com/end-4/dots-hyprland) (illogical-impulse): bar, sidebars, overview, lock screen, notifications, settings
-  - One Rust binary, `rusty-impulse`, that reads the shell's QML (`qml`) and draws it itself. It links no Qt, no KDE and no Quickshell
+  - One Rust binary, `impulse-shell`, that reads the shell's QML (`qml`) and draws it itself. It links no Qt, no KDE and no Quickshell
   - Meant to look and behave as the original does. Where it does not: [docs/original-differences.md](docs/original-differences.md), [docs/quickshell-differences.md](docs/quickshell-differences.md), [docs/qt-differences.md](docs/qt-differences.md)
   - NOT the dotfiles: Hyprland's configuration, fonts and the other programs stay those of the original's setup
   - NOT a system setup script: `install.sh` installs the packages the build needs and nothing else. No graphic drivers, no zram setup, etc.
@@ -41,7 +41,7 @@
      - Nothing under the original's names is changed or removed. `tools/carry-over.sh --dots old` puts your files back
      - `tools/install.sh --rollback` goes back to the release the last install replaced
      - The same steps one by one, and other systems: [docs/install.md](docs/install.md), [docs/build.md](docs/build.md)
-   - Hyprland starts the shell as `rusty-impulse -c rusty-impulse`
+   - Hyprland starts the shell as `impulse-shell -c impulse-shell`
    - A binary runs only the QML tree it was built from. After the tree changes, install again
    - **Keybinds**: Those of the original. Important ones:
      - `Super`+`/` = keybind list
@@ -55,7 +55,7 @@
   | Software | Purpose |
   | ------------- | ------------- |
   | [Hyprland](https://github.com/hyprwm/hyprland) | The compositor (manages and renders windows) |
-  | `rusty-impulse` | This project: the status bar, sidebars, etc. In place of Quickshell and Qt |
+  | `impulse-shell` | This project: the status bar, sidebars, etc. In place of Quickshell and Qt |
   | Others | See the original's [deps-info.md](https://github.com/end-4/dots-hyprland/blob/main/sdata/deps-info.md) |
 
 </details>

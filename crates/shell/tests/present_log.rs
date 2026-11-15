@@ -49,13 +49,13 @@ ShellRoot {
 }
 "##;
 
-/// rusty-impulse running `qml` under `sway`, with its Wayland traffic and presentation feedback logged.
+/// impulse-shell running `qml` under `sway`, with its Wayland traffic and presentation feedback logged.
 fn shell(sway: &testenv::Sway, qml: &str) -> (Kill, tempfile::TempDir, Arc<Log>) {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(dir.path().join("shell.qml"), qml).unwrap();
     let (r, w) = std::io::pipe().unwrap();
     let child = sway
-        .env(&mut Command::new(env!("CARGO_BIN_EXE_rusty-impulse")))
+        .env(&mut Command::new(env!("CARGO_BIN_EXE_impulse-shell")))
         .arg("-p")
         .arg(dir.path())
         .env("RI_INTERP", "1")
@@ -71,7 +71,7 @@ fn shell(sway: &testenv::Sway, qml: &str) -> (Kill, tempfile::TempDir, Arc<Log>)
 
 fn wait_presented(log: &Log, mark: &str) {
     if let Err(s) = log.wait(|s| presented_after(s, |l| l.contains(mark))) {
-        panic!("rusty-impulse exited before a frame after `{mark}` was presented:\n{s}");
+        panic!("impulse-shell exited before a frame after `{mark}` was presented:\n{s}");
     }
 }
 

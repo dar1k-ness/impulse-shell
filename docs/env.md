@@ -4,7 +4,7 @@ Every `II_*` / `RI_*` name in `crates/`, `tools/`, `bench/`, `.github/`, `.confi
 what it does. `crates/qml/tests/env_registry.rs` fails when a name, an `RI_DEBUG` switch or
 an `RI_LOG` target is in the code but not here, or here but not in the code.
 
-The installed shell (`rusty-impulse` built without the `interp` feature) reads only the variables of
+The installed shell (`impulse-shell` built without the `interp` feature) reads only the variables of
 the first three sections. Everything else is read by test and tool builds.
 
 ## Shell
@@ -37,13 +37,13 @@ shell starts get the values of the session, not the pragmas'.
 
 | Variable | Read by | What it does |
 | --- | --- | --- |
-| `RI_ROOT` | `crates/ricompiled-gen/build.rs`, `tools/install.sh`, `tools/parity/build.sh` | The QML tree compiled into the binary. Default: `qml` of the checkout, for `tools/install.sh` too, which then makes the rusty-impulse config `~/.config/rustshell/rusty-impulse` a copy of it. The build fails without a tree. |
-| `RI_ROOT_SUM` | `crates/ricompiled-gen/build.rs`, `tools/build.sh` | A checksum of the content of the `RI_ROOT` tree, set by `tools/build.sh` (`tools/build.sh --sum <tree>` prints it). Cargo compiles the tree again when this value differs from the one of the last build; without it Cargo goes by file times alone and keeps its build of a tree whose files are older than that build. The build computes the checksum of the files it compiles itself, and `rusty-impulse --version` prints that (`sum`); a value that is not that checksum fails the build. |
+| `RI_ROOT` | `crates/ricompiled-gen/build.rs`, `tools/install.sh`, `tools/parity/build.sh` | The QML tree compiled into the binary. Default: `qml` of the checkout, for `tools/install.sh` too, which then makes the impulse-shell config `~/.config/rustshell/impulse-shell` a copy of it. The build fails without a tree. |
+| `RI_ROOT_SUM` | `crates/ricompiled-gen/build.rs`, `tools/build.sh` | A checksum of the content of the `RI_ROOT` tree, set by `tools/build.sh` (`tools/build.sh --sum <tree>` prints it). Cargo compiles the tree again when this value differs from the one of the last build; without it Cargo goes by file times alone and keeps its build of a tree whose files are older than that build. The build computes the checksum of the files it compiles itself, and `impulse-shell --version` prints that (`sum`); a value that is not that checksum fails the build. |
 | `RI_WORD` | `tools/carry-over.sh`, `tools/pc/rollback-watch` | The word that stands in place of `quickshell` in the project's own names (default `rustshell`). `tools/carry-over.sh` names with it the directories it carries a user's data over to, and stops if it is `quickshell` or not a name; `tools/pc/rollback-watch` takes it as the prefix of the new build's layers and the name of its runtime directory. Set it only to the word the installed build was renamed with. |
-| `RI_REPO` | `install.sh` | The repository `install.sh` clones when it is run from outside a checkout (default `https://github.com/dar1k-ness/rusty-impulse.git`). |
-| `RI_SRC` | `install.sh` | Where that clone goes, and the clone it updates when one is there (default `~/.local/src/rusty-impulse`). |
+| `RI_REPO` | `install.sh` | The repository `install.sh` clones when it is run from outside a checkout (default `https://github.com/dar1k-ness/impulse-shell.git`). |
+| `RI_SRC` | `install.sh` | Where that clone goes, and the clone it updates when one is there (default `~/.local/src/impulse-shell`). |
 | `RI_START_WAIT` | `install.sh` | Seconds `install.sh` waits for the started shell's panels before it puts back the Hyprland files and the shell that ran (default 30). |
-| `RI_COMMIT` | `crates/shell/src/ricli.rs`, `crates/shell/src/main.rs`, `tools/build.sh` | The commit `rusty-impulse --version` names. `tools/build.sh` sets it from the checkout (`+changes` when a file differs from the commit or is not in it); for a copy of the sources without `.git` the caller sets it to what `tools/build.sh --commit` prints in the checkout the copy was made from (or the copy's file `.build-commit` holds it, which `bench/vm.sh` writes), and the script fails without it. A release build of the shell without the interpreter does not compile without it; other builds (tests, `--features shell/interp`) say `unknown`. |
+| `RI_COMMIT` | `crates/shell/src/ricli.rs`, `crates/shell/src/main.rs`, `tools/build.sh` | The commit `impulse-shell --version` names. `tools/build.sh` sets it from the checkout (`+changes` when a file differs from the commit or is not in it); for a copy of the sources without `.git` the caller sets it to what `tools/build.sh --commit` prints in the checkout the copy was made from (or the copy's file `.build-commit` holds it, which `bench/vm.sh` writes), and the script fails without it. A release build of the shell without the interpreter does not compile without it; other builds (tests, `--features shell/interp`) say `unknown`. |
 | `RI_DIR` | `crates/rigen/check/build.rs`, `tools/testenv/ri-gate` | The QML tree whose scripts the `rigen/check` workspace also compiles. Unset: only its own cases. |
 
 ## `RI_DEBUG` switches
@@ -224,7 +224,7 @@ Set by a person or by CI:
 | `RI_ROUNDS` | `crates/qml/tests/notifications.rs` | How many rounds of 500 notifications `flood_500` sends (4 without it). |
 | `RI_EQUIV_SKIP` | `crates/testenv` | Exactly `1`: a test whose reference tool, service or compositor is missing prints a skip instead of failing. |
 | `RI_REQUIRE_GL` | `crates/shell/src/gpu.rs` tests, `crates/shell/src/gpu_precision_tests.rs`, `tools/testenv/ri-gate` (steps `tests`, `shipped-tests` and `gpu-precision`) | Set: GPU tests fail when they cannot make a GL context (surfaceless EGL, or EGL on the Wayland display), instead of returning early. |
-| `RI_SHIPPED_BIN` | `crates/shell/tests/shipped_first_frame.rs`, `crates/shell/tests/shipped_panels.rs`, `tools/testenv/ri-gate` (step `shipped-tests`) | The rusty-impulse binary the first-frame and panel tests run (default: the one cargo built for the test). |
+| `RI_SHIPPED_BIN` | `crates/shell/tests/shipped_first_frame.rs`, `crates/shell/tests/shipped_panels.rs`, `tools/testenv/ri-gate` (step `shipped-tests`) | The impulse-shell binary the first-frame and panel tests run (default: the one cargo built for the test). |
 | `RI_SHIPPED_TREE` | `crates/shell/tests/shipped_first_frame.rs`, `crates/shell/tests/shipped_panels.rs`, `tools/testenv/ri-gate` (step `shipped-tests`) | The QML tree they run (default: `ricompiled::ROOT`). |
 | `RI_GATE_DIR` | `tools/ci/gate`, `tools/ci/in-testenv` | Directory that keeps the gate's target dir and Cargo registry between runs. Default: `~/.cache/ri-gate` (`$XDG_CACHE_HOME/ri-gate`); in CI the runner's temp dir. See [ci.md](ci.md). |
 | `RI_GATE_LOCKED` | `tools/ci/gate`, `tools/ci/in-testenv` | Set by `tools/ci/gate` once it holds the lock of `RI_GATE_DIR`: `tools/ci/in-testenv` then does not take that lock again. Started on its own, `in-testenv` takes it. |
@@ -239,14 +239,14 @@ Set by a person or by CI:
 | `RI_MICROTEX_DIR` | `files_equiv` | MicroTeX directory (default `/opt/MicroTeX`). |
 | `RI_REF_QS` | `qs_list_log`, `config_lookup_equiv` | The Quickshell binary to compare against (default `quickshell` on `PATH`). |
 | `RI_IACT_QS` | `crates/shell/tests/interact.rs` | The `qs` binary to compare against (default `qs` on `PATH`). |
-| `RI_IACT_NATIVE` | same | The native binary under test (default this build's `rusty-impulse`). |
+| `RI_IACT_NATIVE` | same | The native binary under test (default this build's `impulse-shell`). |
 | `RI_AB_KEEP` | `ports_ab` | Set: keep the test's scene directory after it ends. |
 | `RI_TEXT_QT_RENDERING_DUMP` | `text_qt_rendering` | Directory the test writes its two pictures to, Qt's and ours, as raw RGBA. |
 | `RI_TEXT_QT_VIEW_DUMP` | `text_qt_view` | Directory the test writes its pictures to, Qt's and ours at every step, as raw RGBA. |
 | `RI_SHELL_SCENES_DUMP` | `shell_scenes_qt` | Directory the test writes its two frames of every scene to, Qt's and ours, as raw RGBA. |
 | `RI_DUMP_DIR` | `text_dpr_qt` (`crates/shell/tests/support/qt_window.rs`) | Directory the test writes its two pictures to, ours and Qt's, as PPM files. |
 | `RI_DUMP` | `riflood`, `tools/reference/equiv/debugenv.sh` | File `riflood` writes its final world dump to. |
-| `RI_BIN` | `bench/first-open.sh` | The rusty-impulse binary the benchmark starts (default `rusty-impulse` on `PATH`), e.g. another release under `/usr/local/lib/rusty-impulse/releases`. |
+| `RI_BIN` | `bench/first-open.sh` | The impulse-shell binary the benchmark starts (default `impulse-shell` on `PATH`), e.g. another release under `/usr/local/lib/impulse-shell/releases`. |
 
 Set by a test for the child process it starts; setting them by hand does nothing useful:
 

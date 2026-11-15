@@ -34,7 +34,7 @@ Singleton {
         return acc;
     }, []).sort()
 
-    // Load user action scripts from ~/.config/rusty-impulse/actions/
+    // Load user action scripts from ~/.config/impulse-shell/actions/
     // Uses FolderListModel to auto-reload when scripts are added/removed
     property var userActionScripts: {
         const actions = [];

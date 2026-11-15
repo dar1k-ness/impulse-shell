@@ -4,7 +4,7 @@
 //! a property bound to its `visible`), the tray menu fades in. The native shell arms a Behavior
 //! once its item went through a layout, so it lays hidden windows out in its idle time, of
 //! every kind and whenever they were made. The real quickshell running the fixture vs the
-//! native shell (`rusty-impulse -p`): the first value each property changes to after the window was
+//! native shell (`impulse-shell -p`): the first value each property changes to after the window was
 //! shown.
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
@@ -149,7 +149,7 @@ fn animates_as_in_quickshell(kind: &str, late: bool) {
     let base = tempfile::tempdir().unwrap();
     let qt = first_shown("qs", &base.path().join("orig"), kind, late);
     let ours = first_shown(
-        env!("CARGO_BIN_EXE_rusty-impulse"),
+        env!("CARGO_BIN_EXE_impulse-shell"),
         &base.path().join("native"),
         kind,
         late,

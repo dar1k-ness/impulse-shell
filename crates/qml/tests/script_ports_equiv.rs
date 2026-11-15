@@ -517,7 +517,7 @@ fn run_side(
     if let Ok(cfg) = std::fs::read_to_string(&seed)
         && !cfg.is_empty()
     {
-        let c = home.join(".config/rusty-impulse");
+        let c = home.join(".config/impulse-shell");
         std::fs::create_dir_all(&c).unwrap();
         std::fs::write(
             c.join("config.json"),
@@ -579,7 +579,7 @@ fn run_side(
             let region = |r: &str| serde_json::to_string(r).unwrap();
             // The save directory is the caller's to give (`Config.options.screenRecord
             // .savePath`): what the config file says, as the script reads it.
-            let saved = std::fs::read_to_string(home.join(".config/rusty-impulse/config.json"))
+            let saved = std::fs::read_to_string(home.join(".config/impulse-shell/config.json"))
                 .ok()
                 .and_then(|c| serde_json::from_str::<serde_json::Value>(&c).ok())
                 .and_then(|c| Some(c.get("screenRecord")?.get("savePath")?.as_str()?.to_owned()))
@@ -884,7 +884,7 @@ fn record_script_matches_native() {
     }
 }
 
-/// The shell binary run in the script's place (`rusty-impulse __ri-record ARGS`, what the tree's
+/// The shell binary run in the script's place (`impulse-shell __ri-record ARGS`, what the tree's
 /// `scripts/videos/record.sh` runs for the original's Hyprland keybinds) against the original's script with the
 /// same arguments: the keybinds' two launches (`--fullscreen`, `--fullscreen --sound`), the
 /// ones for a region, and a second launch while a recording runs. Sound is recorded in all
@@ -962,7 +962,7 @@ fn record_program_matches_script() {
         assert_eq!(
             got,
             want,
-            "{tag}: rusty-impulse {} vs {RECORD}",
+            "{tag}: impulse-shell {} vs {RECORD}",
             qml::ports::record::ARG
         );
         std::env::set_current_dir(env!("CARGO_MANIFEST_DIR")).unwrap();

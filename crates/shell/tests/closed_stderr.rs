@@ -1,4 +1,4 @@
-//! A shell whose stderr reader went away (the terminal it was started from closed, `rusty-impulse 2>&1
+//! A shell whose stderr reader went away (the terminal it was started from closed, `impulse-shell 2>&1
 //! | head`) keeps running: its log lines are dropped, as Quickshell's are, instead of the
 //! write's EPIPE ending it with std's panic (exit 101).
 
@@ -7,7 +7,7 @@ use std::os::unix::process::ExitStatusExt;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 const FIXTURE: &str = r#"import QtQuick
 import Rustshell

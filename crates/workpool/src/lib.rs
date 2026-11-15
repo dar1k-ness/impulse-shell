@@ -101,7 +101,7 @@ fn pool() -> &'static Pool {
         let mut g = p.q.lock().unwrap();
         for _ in 0..WORKERS {
             if let Err(e) = p.spawn_worker(&mut g) {
-                elog::eprintln!("rusty-impulse: cannot start a pool worker: {e}");
+                elog::eprintln!("impulse-shell: cannot start a pool worker: {e}");
             }
         }
         drop(g);
@@ -218,7 +218,7 @@ fn caught_as(what: &str, f: impl FnOnce()) {
             .map(|s| s.to_string())
             .or_else(|| e.downcast_ref::<String>().cloned())
             .unwrap_or_default();
-        elog::eprintln!("rusty-impulse: {what} panicked: {msg}");
+        elog::eprintln!("impulse-shell: {what} panicked: {msg}");
     }
 }
 
@@ -237,7 +237,7 @@ pub fn run(f: impl FnOnce() + Send + 'static) {
     drop(g);
     if let Err(e) = refused {
         elog::eprintln!(
-            "rusty-impulse: cannot start a pool worker: {e}; {held} queued until one starts"
+            "impulse-shell: cannot start a pool worker: {e}; {held} queued until one starts"
         );
     }
 }
@@ -400,7 +400,7 @@ impl Elastic {
             drop(g);
             // The threads there are take it once one of them is free.
             elog::eprintln!(
-                "rusty-impulse: cannot start another pool thread ({e}): the job waits for a running one"
+                "impulse-shell: cannot start another pool thread ({e}): the job waits for a running one"
             );
             self.cv.notify_one();
             return Ok(());
@@ -421,7 +421,7 @@ impl Elastic {
             g.busy += 1;
             drop(g);
             elog::eprintln!(
-                "rusty-impulse: cannot start a pool thread: {e}; its job runs on its submitter"
+                "impulse-shell: cannot start a pool thread: {e}; its job runs on its submitter"
             );
             caught(job.unwrap());
             self.finished(&mut self.q.lock().unwrap());
@@ -438,7 +438,7 @@ impl Elastic {
         }
         drop(g);
         elog::eprintln!(
-            "rusty-impulse: cannot start a pool thread: {e}; {held} queued until one starts"
+            "impulse-shell: cannot start a pool thread: {e}; {held} queued until one starts"
         );
         Ok(())
     }
@@ -588,9 +588,9 @@ pub fn require_pidfd() -> Result<(), String> {
     match pidfd_open(std::process::id() as i32) {
         Ok(_) => Ok(()),
         Err(e) if e.raw_os_error() == Some(libc::ENOSYS) => {
-            Err("rusty-impulse needs Linux 5.3 or later (pidfd_open(2) is missing)".into())
+            Err("impulse-shell needs Linux 5.3 or later (pidfd_open(2) is missing)".into())
         }
-        Err(e) => Err(format!("rusty-impulse: pidfd_open(2): {e}")),
+        Err(e) => Err(format!("impulse-shell: pidfd_open(2): {e}")),
     }
 }
 
@@ -714,7 +714,7 @@ fn reaper_for(first: bool) -> Option<&'static Reaper> {
             match start_reaper() {
                 Ok(r) => drop(REAPER.set(r)),
                 Err(e) if first => {
-                    elog::eprintln!("rusty-impulse: cannot start the reaper thread: {e}")
+                    elog::eprintln!("impulse-shell: cannot start the reaper thread: {e}")
                 }
                 Err(_) => {}
             }
@@ -765,7 +765,7 @@ fn reap_loop(r: &Reaper) {
                 // The child is gone all the same (its pidfd is readable): its exit is
                 // reported, the status unknown.
                 Err(e) => {
-                    elog::eprintln!("rusty-impulse: cannot wait for child {pid}: {e}");
+                    elog::eprintln!("impulse-shell: cannot wait for child {pid}: {e}");
                     None
                 }
             };
@@ -987,7 +987,7 @@ fn wait_here(ch: Waited, on_exit: Option<OnExit>) {
     let pid = ch.pid();
     let st = ch
         .wait()
-        .map_err(|e| elog::eprintln!("rusty-impulse: cannot wait for child {pid}: {e}"))
+        .map_err(|e| elog::eprintln!("impulse-shell: cannot wait for child {pid}: {e}"))
         .ok();
     if let Some(f) = on_exit {
         caught_as("child exit callback", move || f(st));
@@ -1088,7 +1088,7 @@ fn watch_one(ch: Waited, on_exit: Option<OnExit>, pidfd: std::io::Result<OwnedFd
     // a thread of its own.
     if first {
         elog::eprintln!(
-            "rusty-impulse: cannot watch child {pid} ({err}): waiting for it on a thread"
+            "impulse-shell: cannot watch child {pid} ({err}): waiting for it on a thread"
         );
     }
     // A refused thread drops what it was given, so the child stays here until one starts.
@@ -1104,7 +1104,7 @@ fn watch_one(ch: Waited, on_exit: Option<OnExit>, pidfd: std::io::Result<OwnedFd
     if let Err(e) = waited {
         if first {
             elog::eprintln!(
-                "rusty-impulse: cannot start a thread to wait for child {pid} ({e}): it is tried again \
+                "impulse-shell: cannot start a thread to wait for child {pid} ({e}): it is tried again \
                  with the next job or child"
             );
         }
@@ -1194,7 +1194,7 @@ impl Lane {
             let held = q.0.len();
             drop(q);
             elog::eprintln!(
-                "rusty-impulse: cannot start a lane thread: {e}; {held} queued until one starts"
+                "impulse-shell: cannot start a lane thread: {e}; {held} queued until one starts"
             );
         }
     }
@@ -1901,7 +1901,7 @@ mod tests {
                     }))
                 });
                 assert_eq!(
-                    log.matches("rusty-impulse: cannot start a pool thread: ")
+                    log.matches("impulse-shell: cannot start a pool thread: ")
                         .count(),
                     1,
                     "log: {log:?}"
@@ -2084,7 +2084,7 @@ mod tests {
                 let t = tx.clone();
                 let log = logged(|| run(move || t.send((0, name())).unwrap()));
                 assert_eq!(
-                    log.matches("rusty-impulse: cannot start a pool worker: ")
+                    log.matches("impulse-shell: cannot start a pool worker: ")
                         .count(),
                     1,
                     "log: {log:?}"
@@ -2484,7 +2484,7 @@ mod tests {
             });
             assert_eq!(e.q.lock().unwrap().threads, 1);
             assert!(
-                log.contains("rusty-impulse: cannot start another pool thread (")
+                log.contains("impulse-shell: cannot start another pool thread (")
                     && log.contains("the job waits for a running one"),
                 "log: {log:?}"
             );
@@ -2514,7 +2514,7 @@ mod tests {
                 assert_eq!(rx.recv().unwrap(), (Some("reap1".into()), Some(4)));
             });
             assert!(
-                log.contains("rusty-impulse: cannot start the reaper thread: "),
+                log.contains("impulse-shell: cannot start the reaper thread: "),
                 "log: {log:?}"
             );
             assert!(REAPER.get().is_none());
@@ -2549,7 +2549,7 @@ mod tests {
                     REAP1_SPAWN_FAILS.set(false);
                 });
                 let line =
-                    format!("rusty-impulse: cannot start a thread to wait for child {pid} (");
+                    format!("impulse-shell: cannot start a thread to wait for child {pid} (");
                 assert!(log.contains(&line), "log: {log:?}");
                 assert!(!log.contains("left unreaped"), "log: {log:?}");
                 assert!(rx.try_recv().is_err(), "nothing waited for the child yet");
@@ -2618,7 +2618,7 @@ mod tests {
                         REAP1_SPAWN_FAILS.set(false);
                     });
                     let line =
-                        format!("rusty-impulse: cannot start a thread to wait for child {pid} (");
+                        format!("impulse-shell: cannot start a thread to wait for child {pid} (");
                     assert_eq!(log.matches(&line).count(), 1, "{name}: log: {log:?}");
                     let reaper_refused = log.matches("cannot start the reaper thread").count();
                     assert_eq!(reaper_refused, first as usize, "{name}: log: {log:?}");
@@ -2669,7 +2669,7 @@ mod tests {
                     assert_eq!(rx.recv().unwrap(), (Some("reaper".into()), None));
                 });
                 assert!(
-                    log.contains(&format!("rusty-impulse: cannot wait for child {pid}: ")),
+                    log.contains(&format!("impulse-shell: cannot wait for child {pid}: ")),
                     "log: {log:?}"
                 );
                 let ch = exits(0);
@@ -2680,7 +2680,7 @@ mod tests {
                     assert_eq!(rx.recv().unwrap(), (Some("reap1".into()), None));
                 });
                 assert!(
-                    log.contains(&format!("rusty-impulse: cannot wait for child {pid}: ")),
+                    log.contains(&format!("impulse-shell: cannot wait for child {pid}: ")),
                     "log: {log:?}"
                 );
             },

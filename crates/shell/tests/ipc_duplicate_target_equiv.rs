@@ -2,7 +2,7 @@
 //! Start menu and the Task View, `panelFamilies/WaffleFamily.qml`). Quickshell uses the handler
 //! registered first and its LazyLoaders, all active from the start, load last declared first,
 //! so `ipc call search toggle` reaches the panel declared last (the Task View). The real
-//! quickshell running the fixture vs the native shell (`rusty-impulse -p`): the same panel must answer.
+//! quickshell running the fixture vs the native shell (`impulse-shell -p`): the same panel must answer.
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
 
@@ -125,7 +125,7 @@ fn duplicate_ipc_target_reaches_the_same_panel_as_quickshell() {
     let base = tempfile::tempdir().unwrap();
     let orig = answered("qs", &base.path().join("orig"));
     let native = answered(
-        env!("CARGO_BIN_EXE_rusty-impulse"),
+        env!("CARGO_BIN_EXE_impulse-shell"),
         &base.path().join("native"),
     );
     assert_eq!(native, orig);

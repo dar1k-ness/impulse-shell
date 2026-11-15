@@ -48,6 +48,6 @@ GPU code or the image). Only the last runs on pull requests: [docs/ci.md](ci.md)
 switch and log target is listed in [docs/env.md](env.md).
 
 ```sh
-RI_LOG=ri::stats,ri::keys rusty-impulse -c rusty-impulse
-RI_DEBUG=dmgcheck,laycheck rusty-impulse -c rusty-impulse
+RI_LOG=ri::stats,ri::keys impulse-shell -c impulse-shell
+RI_DEBUG=dmgcheck,laycheck impulse-shell -c impulse-shell
 ```

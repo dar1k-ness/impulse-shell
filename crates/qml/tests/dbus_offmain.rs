@@ -234,7 +234,7 @@ fn a_send_refused_its_thread_returns_on_a_silent_bus(test: &str, send: &str, dia
     let lines: Vec<_> = log.lines().collect();
     assert_eq!(lines.len(), 1, "{log}");
     assert!(
-        lines[0].starts_with("rusty-impulse: cannot start a lane thread: "),
+        lines[0].starts_with("impulse-shell: cannot start a lane thread: "),
         "{log}"
     );
     assert_eq!(

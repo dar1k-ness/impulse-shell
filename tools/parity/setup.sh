@@ -12,7 +12,7 @@
 set -u
 PARITY=$(cd "$(dirname "$0")" && pwd)
 . "$PARITY/lib.sh"
-SRC=${SRC:-$HOME/rusty-impulse}
+SRC=${SRC:-$HOME/impulse-shell}
 need="run tools/parity/provision.sh in the guest"
 for c in wtype grim magick jq slurp wf-recorder pkexec notify-send wl-copy matugen wpctl pactl; do
   command -v "$c" >/dev/null || die "$c is not installed: $need"
@@ -21,7 +21,7 @@ python3 -c "import evdev, numpy, PIL" 2>/dev/null || die "python-evdev, python-n
 [ "$(fc-match -f '%{family}' 'Google Sans Flex')" = "Google Sans Flex" ] ||
   die "Google Sans Flex (kdeglobals application font) is not installed: $need"
 [ -w /dev/uinput ] || die "/dev/uinput is not writable (uinput module of the running kernel, group input): $need"
-[ -f "$HOME/.config/rustshell/rusty-impulse/shell.qml" ] || die "no rusty-impulse config at ~/.config/rustshell/rusty-impulse: bench/vm.sh sync"
+[ -f "$HOME/.config/rustshell/impulse-shell/shell.qml" ] || die "no impulse-shell config at ~/.config/rustshell/impulse-shell: bench/vm.sh sync"
 # The region selector finds content regions with scripts/images/find_regions.py in this environment;
 # without it the original shows none and the scene compares nothing.
 VENV=/opt/ri-venv
@@ -39,7 +39,7 @@ echo "$(id -un):${PARITY_PW:-parity}" | sudo chpasswd
 # QT_QPA_PLATFORMTHEME=kde only selects QKdeTheme (kdeglobals font/icons) with KDE_SESSION_VERSION >= 4.
 hyprctl eval 'hl.env("QT_QPA_PLATFORMTHEME","kde")' >/dev/null
 hyprctl eval 'hl.env("KDE_SESSION_VERSION","6")' >/dev/null
-hyprctl eval "hl.env(\"RUSTY_IMPULSE_VIRTUAL_ENV\",\"$VENV\")" >/dev/null
+hyprctl eval "hl.env(\"IMPULSE_SHELL_VIRTUAL_ENV\",\"$VENV\")" >/dev/null
 # The original's scripts read it under the original's name.
 hyprctl eval "hl.env(\"$(printf %s_%s_VIRTUAL_ENV ILLOGICAL IMPULSE)\",\"$VENV\")" >/dev/null
 python3 "$PARITY/kdeglobals.py" "$HOME/.config/kdeglobals" || die "kdeglobals"
@@ -66,10 +66,10 @@ if [ ! -f "$WALL" ] || [ ! -f "$HOME/.local/state/quickshell/user/generated/colo
   # switchwall.sh and its helpers are kept with the tests (the shell does not run them); the
   # terminal templates they read are in the installed tree.
   SW=$(mktemp -d)
-  # the original's switchwall.sh goes over the installed one, which hands the work to rusty-impulse.
-  cp -r "$HOME/.config/rustshell/rusty-impulse/scripts" "$SW/"
+  # the original's switchwall.sh goes over the installed one, which hands the work to impulse-shell.
+  cp -r "$HOME/.config/rustshell/impulse-shell/scripts" "$SW/"
   cp -r "$SRC/crates/qml/tests/fixtures/original-unshipped/scripts/." "$SW/scripts/" || die "original-unshipped scripts (needs the checkout at $SRC: bench/vm.sh sync)"
-  RUSTY_IMPULSE_VIRTUAL_ENV=$VENV bash "$SW/scripts/colors/switchwall.sh" \
+  IMPULSE_SHELL_VIRTUAL_ENV=$VENV bash "$SW/scripts/colors/switchwall.sh" \
     --image "$WALL" --mode dark > "$HOME/.cache/parity-switchwall.log" 2>&1
   rm -rf "$SW"
   [ -f "$HOME/.local/state/quickshell/user/generated/colors.json" ] ||

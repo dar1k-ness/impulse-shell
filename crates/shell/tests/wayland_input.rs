@@ -1,4 +1,4 @@
-//! Input that reaches rusty-impulse only through Wayland protocols, on a wlroots compositor (the
+//! Input that reaches impulse-shell only through Wayland protocols, on a wlroots compositor (the
 //! testenv's sway): a held key repeats client-side from wl_keyboard.repeat_info (compositors
 //! below wl_seat v10, Hyprland included, never send repeats themselves), and an input method's
 //! text arrives through zwp_text_input_v3 like Qt's QWaylandTextInputv3, and a key pressed
@@ -352,7 +352,7 @@ impl Shell {
             std::fs::create_dir_all(dir.join(d)).unwrap();
         }
         let (r, w) = std::io::pipe().unwrap();
-        let child = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        let child = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(dir)
             .env("RI_INTERP", "1")
@@ -379,14 +379,14 @@ impl Shell {
         texts(&self.log.text())
     }
 
-    /// Waits for `f(log)`; panics if rusty-impulse exits first.
+    /// Waits for `f(log)`; panics if impulse-shell exits first.
     fn wait_log(&self, what: &str, f: impl Fn(&str) -> bool) -> String {
         if let Err(s) = self.log.wait(&f) {
             let tail: Vec<&str> = s
                 .lines()
                 .filter(|l| l.contains("text_input") || l.contains("keyboard") || l.contains("TXT"))
                 .collect();
-            panic!("rusty-impulse exited before {what}:\n{}", tail.join("\n"));
+            panic!("impulse-shell exited before {what}:\n{}", tail.join("\n"));
         }
         self.log.text()
     }

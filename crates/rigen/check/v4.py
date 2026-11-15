@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prints `<case> <result>` as Qt's V4 engine (the Qt that runs `qs -c rusty-impulse`) computes it,
+"""Prints `<case> <result>` as Qt's V4 engine (the Qt that runs `qs -c impulse-shell`) computes it,
 for the `// v4: <result>` pins in cases/. The Qt that answers is the system's, with the
 system's ICU (tools/testenv/system_qt.py), through the bindings of the matching PySide6:
 in ri-testenv /opt/qv4-venv (tools/testenv/Containerfile).

@@ -1,6 +1,6 @@
 //! BlueZ pairing agent (org.bluez.Agent1), registered as the default agent while bluetoothd runs.
 //! Quickshell has none, so pairing from the original shell needs a separate agent (blueman,
-//! bluedevil); without one bluetoothd fails pairing with "No agent available". rusty-impulse deviates
+//! bluedevil); without one bluetoothd fails pairing with "No agent available". impulse-shell deviates
 //! here on purpose: questions and passkeys go to the user as notifications with actions, and a
 //! PIN/passkey to type goes to the shell's authentication dialog: the native `PolkitAgent`
 //! (`crate::polkit`) queues it as a flow next to polkit requests, so the original's polkit window asks.

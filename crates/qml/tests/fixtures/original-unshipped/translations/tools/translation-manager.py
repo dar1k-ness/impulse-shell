@@ -216,8 +216,8 @@ def main():
                        default=".config/rustshell/translations",
                        help="Translation files directory (default: .config/rustshell/translations)")
     parser.add_argument("--source-dir", "-s", 
-                       default=".config/rustshell/rusty-impulse",
-                       help="Source code directory (default: .config/rustshell/rusty-impulse)")
+                       default=".config/rustshell/impulse-shell",
+                       help="Source code directory (default: .config/rustshell/impulse-shell)")
     parser.add_argument("--language", "-l", 
                        help="Specify language code to process (e.g., zh_CN)")
     parser.add_argument("--extract-only", "-e", action="store_true",

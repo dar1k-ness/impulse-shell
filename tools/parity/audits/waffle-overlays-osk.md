@@ -24,4 +24,4 @@
 | Waffle `bash -c Config.options.apps.*` launchers | user-configured shell command lines; running them through a shell is the feature |
 | Crosshair overlay | pure QML drawing; no process, polling or file work to fix |
 | Resources overlay polling | 1 s `/proc` sampling drives the visible graphs; already read natively without processes |
-| `rusty-impulse -p` | parsing and standalone load audited, no flaw found in this area (SpinBox/ScrollView handled elsewhere) |
+| `impulse-shell -p` | parsing and standalone load audited, no flaw found in this area (SpinBox/ScrollView handled elsewhere) |

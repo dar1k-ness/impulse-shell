@@ -526,8 +526,8 @@ fn a_coloured_block_is_drawn_as_quickshell_draws_it() {
 }
 
 /// docs/quickshell-differences.md, "Code inside Markdown and LaTeX code blocks": KDE has a
-/// definition for Perl and rusty-impulse does not carry it. Quickshell colours Perl code, alone and
-/// inside a Markdown or LaTeX block; rusty-impulse leaves it in one colour, and colours the Python
+/// definition for Perl and impulse-shell does not carry it. Quickshell colours Perl code, alone and
+/// inside a Markdown or LaTeX block; impulse-shell leaves it in one colour, and colours the Python
 /// code beside it as Quickshell does.
 #[test]
 fn code_of_a_language_outside_the_set_is_coloured_only_by_quickshell() {
@@ -575,7 +575,7 @@ fn code_of_a_language_outside_the_set_is_coloured_only_by_quickshell() {
             let all = differences(text, &drawn[i * 4 + t * 2], &drawn[i * 4 + t * 2 + 1]);
             assert!(
                 !all.is_empty(),
-                "{lang}, {theme}: Quickshell draws the Perl code as rusty-impulse does"
+                "{lang}, {theme}: Quickshell draws the Perl code as impulse-shell does"
             );
             let outside: Vec<_> = all.iter().filter(|d| !perl_lines.contains(&d.0)).collect();
             assert!(

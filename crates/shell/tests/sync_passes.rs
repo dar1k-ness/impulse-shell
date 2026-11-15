@@ -24,7 +24,7 @@ fn fails_without_sway() {
     );
 }
 
-/// rusty-impulse running `shell.qml` with its Wayland traffic and `ri::sync` passes logged.
+/// impulse-shell running `shell.qml` with its Wayland traffic and `ri::sync` passes logged.
 struct Shell {
     child: Child,
     _sway: testenv::Sway,
@@ -39,7 +39,7 @@ impl Shell {
         std::fs::write(dir.path().join("shell.qml"), qml).unwrap();
         let (r, w) = std::io::pipe().unwrap();
         let xdg = dir.path().join("xdg");
-        let child = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        let child = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(dir.path())
             .env("WAYLAND_DISPLAY", sway.display())
@@ -68,12 +68,12 @@ impl Shell {
         self.log.text().replace('@', "#")
     }
 
-    /// Blocks until `f(log)` holds, on each line rusty-impulse prints; the log if it exits first.
+    /// Blocks until `f(log)` holds, on each line impulse-shell prints; the log if it exits first.
     fn wait(&self, what: &str, f: impl Fn(&str) -> bool) -> String {
         match self.log.wait(|s| f(&s.replace('@', "#"))) {
             Ok(()) => self.text(),
             Err(s) => panic!(
-                "rusty-impulse exited before {what}; its log tail:\n{}",
+                "impulse-shell exited before {what}; its log tail:\n{}",
                 tail(&s.replace('@', "#"))
             ),
         }

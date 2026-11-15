@@ -1,7 +1,7 @@
 //! The shell's widget layout: which panels, desktops and sidebars each monitor has and
 //! which widgets sit where in them, as edited by the edit mode and read by the shell.
 //!
-//! The model is plain data. It is stored in `$XDG_CONFIG_HOME/rusty-impulse/layout.toml`
+//! The model is plain data. It is stored in `$XDG_CONFIG_HOME/impulse-shell/layout.toml`
 //! ([`Store`]), versioned and migrated on load ([`migrate`]), kept per monitor and matched
 //! to connected outputs by EDID and connector name ([`Layout::resolve`]), and changed only
 //! through validated [`Edit`]s with undo/redo ([`Editor`]). Widget settings are opaque
@@ -61,10 +61,10 @@ pub const MAX_PX: u32 = 1 << 15;
 /// The most columns a sidebar grid may have.
 pub const MAX_COLUMNS: u32 = 64;
 
-/// `$XDG_CONFIG_HOME/rusty-impulse/layout.toml`.
+/// `$XDG_CONFIG_HOME/impulse-shell/layout.toml`.
 pub fn default_path() -> PathBuf {
     crate::xdg::config_home()
-        .join("rusty-impulse")
+        .join("impulse-shell")
         .join("layout.toml")
 }
 

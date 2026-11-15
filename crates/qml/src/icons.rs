@@ -297,7 +297,7 @@ fn fallback_icon(name: &str, dirs: &[PathBuf]) -> Option<PathBuf> {
 
 /// KIconLoader::iconPath for the User group: `KIconLoaderPrivate::locate` of `name.svg`, then
 /// `.png`, `.xpm` in the legacy `icons` and `pixmaps` data dirs (where dots-hyprland installs
-/// `~/.local/share/icons/rusty-impulse.svg`).
+/// `~/.local/share/icons/impulse-shell.svg`).
 fn user_icon(name: &str, data: &[PathBuf]) -> Option<PathBuf> {
     ["svg", "png", "xpm"].iter().find_map(|e| {
         ["icons", "pixmaps"].iter().find_map(|sub| {
@@ -1250,13 +1250,13 @@ mod tests {
     fn user_group_icons_and_pixmaps() {
         let t = std::env::temp_dir().join(format!("ri-icons-{}", std::process::id()));
         let (home, sys) = (t.join("home"), t.join("sys"));
-        touch(&home.join("icons/rusty-impulse.svg"));
+        touch(&home.join("icons/impulse-shell.svg"));
         touch(&sys.join("pixmaps/logo.png"));
         touch(&sys.join("icons/logo.svg"));
         let data = [home.clone(), sys.clone()];
         assert_eq!(
-            user_icon("rusty-impulse", &data),
-            Some(home.join("icons/rusty-impulse.svg"))
+            user_icon("impulse-shell", &data),
+            Some(home.join("icons/impulse-shell.svg"))
         );
         // svg is tried in every search path before png.
         assert_eq!(user_icon("logo", &data), Some(sys.join("icons/logo.svg")));
@@ -1267,7 +1267,7 @@ mod tests {
             Some(sys.join("pixmaps/logo.png"))
         );
         // Unthemed Qt lookup never looks in the bare icons dir.
-        assert_eq!(fallback_icon("rusty-impulse", &pix), None);
+        assert_eq!(fallback_icon("impulse-shell", &pix), None);
         std::fs::remove_dir_all(&t).unwrap();
     }
 

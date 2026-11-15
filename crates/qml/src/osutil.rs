@@ -190,7 +190,7 @@ pub fn signal_on_stop<'a>(
     let fd = match workpool::pidfd_open(ch.id() as i32) {
         Ok(fd) => fd,
         Err(e) => {
-            elog::eprintln!("rusty-impulse: child {}: pidfd_open: {e}", ch.id());
+            elog::eprintln!("impulse-shell: child {}: pidfd_open: {e}", ch.id());
             return None;
         }
     };

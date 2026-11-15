@@ -51,7 +51,7 @@ ShellRoot {
     PanelFamilyLoader {
         identifier: "rusty"
         oldIdentifier: "ii" // in a config written before the rename
-        component: RustyImpulseFamily {}
+        component: ImpulseShellFamily {}
     }
 
     PanelFamilyLoader {

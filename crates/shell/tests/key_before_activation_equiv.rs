@@ -251,7 +251,7 @@ impl Client {
         cmd.arg("-eL");
         match name {
             "qs" => cmd.arg("qs"),
-            _ => cmd.arg(env!("CARGO_BIN_EXE_rusty-impulse")),
+            _ => cmd.arg(env!("CARGO_BIN_EXE_impulse-shell")),
         };
         sway.env(&mut cmd)
             .arg("-p")
@@ -346,7 +346,7 @@ fn keys_got(name: &'static str, active: bool) -> Option<Vec<String>> {
 
     let panel = Client::start(&sway, name, &dir.path().join("panel"), PANEL);
     panel.logged("sway to give the mapped panel the keyboard", &all, 2);
-    let _window = Client::start(&sway, "rusty-impulse", &dir.path().join("window"), WINDOW);
+    let _window = Client::start(&sway, "impulse-shell", &dir.path().join("window"), WINDOW);
     panel.logged("the mapped window to take the keyboard", &all, 3);
     if active {
         input.click(ON_PANEL);
@@ -400,7 +400,7 @@ fn key_in_one_batch_with_enter_does_not_reach_a_window_that_was_not_active() {
     let Some(qs) = keys_got("qs", false) else {
         return;
     };
-    assert_eq!(keys_got("rusty-impulse", false), Some(qs));
+    assert_eq!(keys_got("impulse-shell", false), Some(qs));
 }
 
 #[test]
@@ -408,5 +408,5 @@ fn key_in_one_batch_with_leave_and_enter_reaches_a_window_that_stayed_active() {
     let Some(qs) = keys_got("qs", true) else {
         return;
     };
-    assert_eq!(keys_got("rusty-impulse", true), Some(qs));
+    assert_eq!(keys_got("impulse-shell", true), Some(qs));
 }

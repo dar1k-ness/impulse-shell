@@ -110,7 +110,7 @@ fn isolate(out: &Path) -> PathBuf {
         };
     }
     // Config.ready (and with it the original family) waits for this file.
-    let cfg = home.join(".config/rusty-impulse/config.json");
+    let cfg = home.join(".config/impulse-shell/config.json");
     std::fs::create_dir_all(cfg.parent().unwrap()).unwrap();
     if !cfg.exists() {
         std::fs::write(&cfg, "{}\n").unwrap();

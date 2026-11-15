@@ -20,7 +20,7 @@ fn translation_locale_survives_pending_config_save() {
     if !testenv::in_own_process(TEST) {
         let dir = tempfile::tempdir().unwrap();
         let home = dir.path();
-        let cfg_dir = home.join(".config/rusty-impulse");
+        let cfg_dir = home.join(".config/impulse-shell");
         std::fs::create_dir_all(&cfg_dir).unwrap();
         std::fs::write(
             cfg_dir.join("config.json"),
@@ -45,7 +45,7 @@ fn translation_locale_survives_pending_config_save() {
         return;
     }
     let home = PathBuf::from(std::env::var_os("HOME").unwrap());
-    let cfg_dir = home.join(".config/rusty-impulse");
+    let cfg_dir = home.join(".config/impulse-shell");
     let cfg = cfg_dir.join("config.json");
     let mut rt = Runtime::new(Some(ri()));
     let mut lp = event_loop::Loop::new(&mut rt);
@@ -64,8 +64,8 @@ fn translation_locale_survives_pending_config_save() {
     // A user edit whose save is still pending in Config's write timer...
     rt.call_method(root, "edit", vec![]).unwrap().unwrap();
     // ...when the translation job (on its own thread) finishes and switches the UI locale.
-    let script = home.join("rustshell/rusty-impulse/scripts/ai/gemini-translate.sh");
-    let texts = home.join("rustshell/rusty-impulse/translations");
+    let script = home.join("rustshell/impulse-shell/scripts/ai/gemini-translate.sh");
+    let texts = home.join("rustshell/impulse-shell/translations");
     std::fs::create_dir_all(&texts).unwrap();
     std::fs::write(texts.join("en_US.json"), "{\"Hello\": \"Hello\"}").unwrap();
     let gemini = translation_server();

@@ -42,7 +42,7 @@ fn no_compositor_is_a_clean_error_not_a_panic() {
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("shell.qml"), "import QtQuick\nItem {}\n").unwrap();
-    let out = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+    let out = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
         .arg("-p")
         .arg(&dir)
         .env("RI_INTERP", "1")
@@ -59,14 +59,14 @@ fn no_compositor_is_a_clean_error_not_a_panic() {
     let _ = std::fs::remove_dir_all(&dir);
     assert!(!err.contains("panicked"), "startup panicked:\n{err}");
     assert!(
-        err.contains("rusty-impulse: cannot connect to the Wayland compositor"),
+        err.contains("impulse-shell: cannot connect to the Wayland compositor"),
         "no startup error message:\n{err}"
     );
     assert_eq!(out.status.code(), Some(1), "stderr:\n{err}");
 }
 
 /// The exit on a startup error ends the log thread wherever it is: what was logged until
-/// then, and the error itself, are in the instance's log first, where `rusty-impulse log` shows why
+/// then, and the error itself, are in the instance's log first, where `impulse-shell log` shows why
 /// the shell did not start.
 #[cfg(feature = "interp")]
 #[test]
@@ -74,7 +74,7 @@ fn startup_error_is_in_the_instance_log() {
     let dir = tempfile::tempdir().unwrap();
     let dir = dir.path();
     std::fs::write(dir.join("shell.qml"), "import QtQuick\nItem {}\n").unwrap();
-    let out = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+    let out = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
         .arg("-p")
         .arg(dir)
         .env("RI_INTERP", "1")
@@ -98,7 +98,7 @@ fn startup_error_is_in_the_instance_log() {
         text.contains("ERROR: cannot connect to the Wayland compositor"),
         "log.log: {text:?}"
     );
-    let detailed = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+    let detailed = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
         .arg("log")
         .arg(instances[0].join("log.qslog"))
         .env("NO_COLOR", "1")
@@ -111,7 +111,7 @@ fn startup_error_is_in_the_instance_log() {
     );
 }
 
-/// Runs `rusty-impulse -p <dir>` on `shell.qml` (`src`) in a fresh `dir` that is also its runtime dir,
+/// Runs `impulse-shell -p <dir>` on `shell.qml` (`src`) in a fresh `dir` that is also its runtime dir,
 /// with no compositor. Returns its exit code, its stderr, whether it registered the instance
 /// and the [`registration`] it left behind.
 fn failed_start(test: &str, src: &str) -> (Option<i32>, String, bool, Vec<PathBuf>) {
@@ -119,7 +119,7 @@ fn failed_start(test: &str, src: &str) -> (Option<i32>, String, bool, Vec<PathBu
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("shell.qml"), src).unwrap();
-    let out = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+    let out = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
         .arg("-p")
         .arg(&dir)
         .env("RI_INTERP", "1")
@@ -148,7 +148,7 @@ fn failed_start_leaves_no_instance_registered() {
     let (code, err, registered, left) = failed_start("no-compositor", "import QtQuick\nItem {}\n");
     assert_eq!(code, Some(1), "stderr:\n{err}");
     assert!(
-        err.contains("rusty-impulse: cannot connect to the Wayland compositor"),
+        err.contains("impulse-shell: cannot connect to the Wayland compositor"),
         "did not fail at the Wayland connection:\n{err}"
     );
     assert!(registered, "the instance never registered:\n{err}");
@@ -193,9 +193,9 @@ fn tree_without(test: &str, gone: &str) -> tempfile::TempDir {
         .unwrap();
     copy(
         Path::new(ricompiled::ROOT),
-        &dir.path().join("rusty-impulse"),
+        &dir.path().join("impulse-shell"),
     );
-    std::fs::remove_file(dir.path().join("rusty-impulse").join(gone)).unwrap();
+    std::fs::remove_file(dir.path().join("impulse-shell").join(gone)).unwrap();
     dir
 }
 
@@ -208,9 +208,9 @@ fn tree_without(test: &str, gone: &str) -> tempfile::TempDir {
 fn a_tree_that_lacks_a_compiled_file_is_refused() {
     for gone in ["modules/rusty/bar/Bar.qml", "ReloadPopup.qml"] {
         let dir = tree_without("lacks", gone);
-        let tree = dir.path().join("rusty-impulse");
+        let tree = dir.path().join("impulse-shell");
         let ri = |args: &[&str]| {
-            Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+            Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
                 .args(args)
                 .arg("-p")
                 .arg(&tree)
@@ -244,7 +244,7 @@ fn a_tree_that_lacks_a_compiled_file_is_refused() {
             "started without {gone}:\n{err}"
         );
         assert!(
-            err.lines().any(|l| l == line) && err.contains("rusty-impulse: install again: "),
+            err.lines().any(|l| l == line) && err.contains("impulse-shell: install again: "),
             "started without {gone}, the tree was not refused:\n{err}"
         );
         assert!(
@@ -286,7 +286,7 @@ fn wait_group(pgid: i32) -> (i32, i32) {
 
 /// `//@ pragma Env` is applied with `setenv`, which is sound only while no other thread exists.
 /// A start must not depend on how soon the scheduler runs a thread started before it: the
-/// first thread rusty-impulse starts is held, as a busy CPU would, never running a single instruction,
+/// first thread impulse-shell starts is held, as a busy CPU would, never running a single instruction,
 /// until the main thread exits (jemalloc's purging thread, started at the allocator's
 /// initialisation before `main`, then keeps the main thread's name and is counted). A start that
 /// waits on that thread hangs, and nextest's slow-timeout (.config/nextest.toml) ends it.
@@ -301,7 +301,7 @@ fn env_pragmas_apply_before_any_thread() {
         "//@ pragma Env RI_TEST_PRAGMA=1\nimport QtQuick\nItem {}\n",
     )
     .unwrap();
-    let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
     cmd.arg("-p")
         .arg(&dir)
         .env("RI_INTERP", "1")

@@ -4,7 +4,7 @@
 //! `qml6` of Qt 6.12 for a `source` written after creation, which is what the fixture does.
 //!
 //! The fixture has no handler of `width`: Qt emits widthChanged before implicitWidthChanged
-//! (QQuickItem::setImplicitSize), rusty-impulse the other way round. That is in the same section of
+//! (QQuickItem::setImplicitSize), impulse-shell the other way round. That is in the same section of
 //! the document.
 //!
 //! When the status changes is not Qt's for such a write: see "The status of an Image whose
@@ -84,7 +84,7 @@ own ready true implicit 20 twice 40
     assert_eq!(laid, want);
 }
 
-/// The rusty-impulse column of docs/qt-differences.md: Qt's line here is `after 1 20`, after the four
+/// The impulse-shell column of docs/qt-differences.md: Qt's line here is `after 1 20`, after the four
 /// lines of the handlers. Without a `source` the picture is Null at creation in Qt too.
 #[test]
 #[cfg_attr(not(feature = "interp"), ignore = "temp tree; AOT-only refuses it")]

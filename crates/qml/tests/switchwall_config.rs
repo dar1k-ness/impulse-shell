@@ -19,7 +19,7 @@ fn switchwall_edit_survives_pending_config_save() {
     if !testenv::in_own_process(TEST) {
         let dir = tempfile::tempdir().unwrap();
         let home = dir.path();
-        let cfg_dir = home.join(".config/rusty-impulse");
+        let cfg_dir = home.join(".config/impulse-shell");
         std::fs::create_dir_all(&cfg_dir).unwrap();
         std::fs::write(
             cfg_dir.join("config.json"),
@@ -40,7 +40,7 @@ fn switchwall_edit_survives_pending_config_save() {
         return;
     }
     let home = PathBuf::from(std::env::var_os("HOME").unwrap());
-    let cfg = home.join(".config/rusty-impulse/config.json");
+    let cfg = home.join(".config/impulse-shell/config.json");
     let mut rt = Runtime::new(Some(ri()));
     let keep = ["Directories", "Config", "FileUtils", "StringUtils"];
     let dirs = ["modules/common", "modules/common/functions"].map(|d| ri().join(d));
@@ -86,7 +86,7 @@ fn two_process_setup(test: &str) -> Option<(Runtime, usize, PathBuf)> {
     if !testenv::in_own_process(test) {
         let dir = tempfile::tempdir().unwrap();
         let home = dir.path();
-        let cfg_dir = home.join(".config/rusty-impulse");
+        let cfg_dir = home.join(".config/impulse-shell");
         std::fs::create_dir_all(&cfg_dir).unwrap();
         std::fs::write(
             cfg_dir.join("config.json"),
@@ -107,7 +107,7 @@ fn two_process_setup(test: &str) -> Option<(Runtime, usize, PathBuf)> {
         return None;
     }
     let home = PathBuf::from(std::env::var_os("HOME").unwrap());
-    let cfg = home.join(".config/rusty-impulse/config.json");
+    let cfg = home.join(".config/impulse-shell/config.json");
     let mut rt = Runtime::new(Some(ri()));
     let keep = ["Directories", "Config", "FileUtils", "StringUtils"];
     let dirs = ["modules/common", "modules/common/functions"].map(|d| ri().join(d));

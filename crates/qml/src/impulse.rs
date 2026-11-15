@@ -458,8 +458,8 @@ Item {
     function go() {
         SystemSound.play("freedesktop", "bell");
         MusicRecognizer.start(2, 30, "monitor");
-        Keyring.lookup({ application: "rusty-impulse" });
-        Keyring.store("label", { application: "rusty-impulse" }, "secret");
+        Keyring.lookup({ application: "impulse-shell" });
+        Keyring.store("label", { application: "impulse-shell" }, "secret");
         Keyring.unlock("password");
         Fingerprint.waitForAvailable();
         DisplayBrightness.detectDdc();
@@ -503,8 +503,8 @@ Item {
             [
                 "SystemSound.play freedesktop bell",
                 "MusicRecognizer.start 2 30 monitor",
-                "Keyring.lookup application=rusty-impulse",
-                "Keyring.store label application=rusty-impulse",
+                "Keyring.lookup application=impulse-shell",
+                "Keyring.store label application=impulse-shell",
                 "Keyring.unlock",
                 "Fingerprint.waitForAvailable",
                 "DisplayBrightness.detectDdc",

@@ -1,4 +1,4 @@
-//! `qs list` / `qs log` equivalence: the native `qs` (rusty-impulse invoked as `qs`) and the original
+//! `qs list` / `qs log` equivalence: the native `qs` (impulse-shell invoked as `qs`) and the original
 //! Quickshell must print the same stdout/stderr and exit with the same code over one runtime
 //! directory of live, dead and other-display instances, native- and Qt-written `log.qslog` files,
 //! and malformed logs. The original is `$RI_REF_QS` or `quickshell` on PATH; without it the test
@@ -14,7 +14,7 @@ use std::process::{Command, Stdio};
 
 use shell::rilog::{Encoder, Filter, Level, Msg};
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 fn reference() -> Option<PathBuf> {
     if let Some(p) = std::env::var_os("RI_REF_QS") {
@@ -472,7 +472,7 @@ fn follow_matches(env: &Env, qt: &Path, logs: &Path) {
     );
 }
 
-/// `rusty-impulse log -f` ends by SIGINT, SIGTERM and SIGHUP (Ctrl+C, `kill`, a closed terminal), as
+/// `impulse-shell log -f` ends by SIGINT, SIGTERM and SIGHUP (Ctrl+C, `kill`, a closed terminal), as
 /// any program that handles none of them: it runs no main loop that reads the shell's signal
 /// pipe, so the shell's handlers must not be installed in it. The signal is sent once the
 /// follower printed the log's one message (it follows: the writer's lock is held), and the lock
@@ -519,7 +519,7 @@ fn log_follow_ends_by_a_termination_signal() {
         drop(c);
         let out = testenv::Log::capture(out_r);
         out.wait(|o| o.contains("info msg"))
-            .unwrap_or_else(|o| panic!("rusty-impulse log -f never printed the log: {o:?}"));
+            .unwrap_or_else(|o| panic!("impulse-shell log -f never printed the log: {o:?}"));
         // SAFETY: kill(2) takes plain integers; the child is not reaped yet, so the pid is its.
         // SAFETY: kill(2) takes plain integers; `child` is this test's unreaped child.
         let sent = unsafe { libc::kill(child.id() as libc::pid_t, sig) };
@@ -529,7 +529,7 @@ fn log_follow_ends_by_a_termination_signal() {
         assert_eq!(
             status.signal(),
             Some(sig),
-            "rusty-impulse log -f after signal {sig}: {status}"
+            "impulse-shell log -f after signal {sig}: {status}"
         );
     }
 }
@@ -603,7 +603,7 @@ fn log_follow_with_its_output_closed_ends_as_quickshells() {
     assert_eq!(run(Path::new(NATIVE)), want);
 }
 
-/// `rusty-impulse log -f | head -1` does not wait for the shell that writes the log to exit: the
+/// `impulse-shell log -f | head -1` does not wait for the shell that writes the log to exit: the
 /// follower is waited for while the writer still holds the log's lock, so one that goes on
 /// following hangs here. It ends at the message appended after its output closed, also when
 /// that was appended before it watched the log.
@@ -617,7 +617,7 @@ fn log_follow_with_its_output_closed_ends_while_the_log_is_written() {
     assert_eq!(status.signal(), Some(libc::SIGPIPE), "{status}");
 }
 
-/// rusty-impulse rotates its log (Quickshell does not): the next file, locked and with its header, is
+/// impulse-shell rotates its log (Quickshell does not): the next file, locked and with its header, is
 /// renamed over the path while the old one, kept as `<name>.1`, is still locked. `qs log -f`
 /// reads the old file to its end and follows the new one until its writer lets go of it.
 fn follow_across_rotation(env: &Env, logs: &Path) {

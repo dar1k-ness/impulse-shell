@@ -335,7 +335,7 @@ impl Run {
         std::thread::spawn(move || while q.blocking_dispatch(&mut g).is_ok() {});
 
         let (r, out) = std::io::pipe().unwrap();
-        let mut cmd = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
         env(&mut cmd);
         let shell = Shell(
             cmd.env("WAYLAND_DEBUG", "1")
@@ -383,7 +383,7 @@ impl Run {
 
     /// What the shell's script `f` returns: what it read right after its `paste()` calls.
     fn call(&self, f: &str) -> String {
-        let mut c = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+        let mut c = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
         (self.env)(&mut c);
         let o = c.args(["ipc", "call", "t", f]).output().unwrap();
         assert!(o.status.success(), "ipc call t {f}: {o:?}");

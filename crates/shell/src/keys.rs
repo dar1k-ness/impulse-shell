@@ -3576,7 +3576,7 @@ impl Keyboard {
         (!truthy(&mut rt.world.borrow_mut(), i, "readOnly", false)).then_some(i)
     }
 
-    /// The state to send for the IME editor. Password fields get no surrounding text: qs -c rusty-impulse
+    /// The state to send for the IME editor. Password fields get no surrounding text: qs -c impulse-shell
     /// sends the plain password to the input method, which has no use for it.
     pub fn ime_state(&self, rt: &Runtime) -> Option<ImeState> {
         let i = self.ime_editor(rt)?;
@@ -4573,7 +4573,7 @@ import QtQuick.Controls
 mod repeat_tests {
     use super::*;
 
-    /// A held letter in a TextField: qs -c rusty-impulse types it once per repeat, and Keys.onPressed sees
+    /// A held letter in a TextField: qs -c impulse-shell types it once per repeat, and Keys.onPressed sees
     /// the repeats with isAutoRepeat (onReleased gets the auto-repeat releases too).
     #[cfg(feature = "interp")]
     #[test]
@@ -4685,7 +4685,7 @@ mod ime_tests {
     use super::paste_tests::{field, get};
     use super::*;
 
-    /// fcitx5/IBus commit text through zwp_text_input_v3; qs -c rusty-impulse types it like keys, so
+    /// fcitx5/IBus commit text through zwp_text_input_v3; qs -c impulse-shell types it like keys, so
     /// maximumLength still applies and onTextEdited fires.
     #[test]
     fn commit_string_types_into_the_focused_field() {

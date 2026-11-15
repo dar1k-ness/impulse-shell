@@ -87,21 +87,21 @@ struct Shell {
 }
 
 impl Shell {
-    /// rusty-impulse on [`SHELL`] at the Wayland socket `display`, with its visualizer capturing.
+    /// impulse-shell on [`SHELL`] at the Wayland socket `display`, with its visualizer capturing.
     fn start(display: &Path) -> Self {
         let sh = Shell::spawn(display, SHELL);
         sh.wait("the visualizer capturing", |s| captures(s) == (1, 0));
         sh
     }
 
-    /// rusty-impulse on the shell `qml` at the Wayland socket `display`, once it knows the output and
+    /// impulse-shell on the shell `qml` at the Wayland socket `display`, once it knows the output and
     /// its power: what follows is a change of them.
     fn spawn(display: &Path, qml: &str) -> Self {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(dir.path().join("shell.qml"), qml).unwrap();
         let (r, w) = std::io::pipe().unwrap();
         let xdg = dir.path().join("xdg");
-        let child = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        let child = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(dir.path())
             .env("RI_INTERP", "1")
@@ -140,14 +140,14 @@ impl Shell {
                 })
                 .collect();
             panic!(
-                "rusty-impulse exited before {what}; rusty-impulse log tail:\n{}",
+                "impulse-shell exited before {what}; impulse-shell log tail:\n{}",
                 keep[keep.len().saturating_sub(40)..].join("\n")
             );
         }
     }
 
     fn ipc(&self, func: &str) {
-        let st = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        let st = Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(self.dir.path())
             .args(["ipc", "call", "fx", func])

@@ -99,7 +99,7 @@ reason its `#[ignore]` gives (`tools/ci/skipped-tests`, which also runs on its o
 | `fmt` | `cargo fmt --check`, both workspaces. |
 | `clippy` | Clippy with `-D warnings` on every target, interpreter and `tools` on, and on the `crates/rigen/check` workspace. |
 | `shipped-build` | The shell without the interpreter (`-p shell`, `shipped` profile; `RI_COMMIT=gate`, since that build does not compile without a commit to name and is installed nowhere), then `tools/install.sh` itself: `tools/build.sh` builds the release profile, names the checkout's commit and fails if the binary names a directory of the machine; installed into `/target/shipped-install`. |
-| `shipped-tests` | Every shell test without the interpreter (`startup_errors`, `shipped_binary`, `install_rollback` among them); then the installed binary: `--version` says it has no interpreter, it runs the tree it was installed with, finds it when started as `rusty-impulse -c rusty-impulse`, holds no interpreter source paths, draws its bar from that tree, started that way (`shipped_first_frame`), and opens its panels there under a sway of its own: both sidebars, overview, session screen, lock, a notification, the vertical bar and the settings window each come on screen with a picture, react to a click and to a key (the notification and the bar take no keyboard), and log no script error (`shipped_panels`). |
+| `shipped-tests` | Every shell test without the interpreter (`startup_errors`, `shipped_binary`, `install_rollback` among them); then the installed binary: `--version` says it has no interpreter, it runs the tree it was installed with, finds it when started as `impulse-shell -c impulse-shell`, holds no interpreter source paths, draws its bar from that tree, started that way (`shipped_first_frame`), and opens its panels there under a sway of its own: both sidebars, overview, session screen, lock, a notification, the vertical bar and the settings window each come on screen with a picture, react to a click and to a key (the notification and the bar take no keyboard), and log no script error (`shipped_panels`). |
 | `shipped-clippy` | Clippy on that build. |
 | `deny` | `cargo deny`: advisories, bans, licenses, sources, both lock files. |
 | `gpu-precision` | The shader precision tests on llvmpipe, failing (not skipping) without a GL context. |
@@ -149,9 +149,9 @@ sudo tools/testenv/power-cut                        # this checkout's tools/inst
 sudo tools/testenv/power-cut --script <install.sh>  # another copy of it
 ```
 
-It puts `$PREFIX` and the rusty-impulse config on two file systems (loop devices behind dm-flakey),
+It puts `$PREFIX` and the impulse-shell config on two file systems (loop devices behind dm-flakey),
 cuts the power of one of them at each step of an install and of a rollback, mounts both again
-and asks whether `rusty-impulse -c rusty-impulse` still starts and the next install installs (about 40 s; the
+and asks whether `impulse-shell -c impulse-shell` still starts and the next install installs (about 40 s; the
 header of the script says what a case is). It needs root, `dmsetup` with the flakey target
 and `mkfs.ext4`, which the ri-testenv container does not have: run it on the host after a
 change to the order of the steps in `tools/install.sh`. In the gate `install_rollback`

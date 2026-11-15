@@ -1,5 +1,5 @@
 //! The first layout of a user coming from the original: built from the original's own configuration
-//! (`~/.config/rusty-impulse/config.json`, the original's `Config.options`) so the shell looks
+//! (`~/.config/impulse-shell/config.json`, the original's `Config.options`) so the shell looks
 //! exactly as it did before there was a layout. The panel holds the original's bar modules in the original's order
 //! on the original's bar edge, which `bar.vertical` / `bar.bottom` keep choosing ([`PanelPosition::RustyBar`]);
 //! the widgets keep reading the `bar.*` options they always read (verbose, borderless, weather,
@@ -19,10 +19,10 @@ use super::{
     PanelProps, Place, Side, SidebarProps, Widget, Width, Zone,
 };
 
-/// The original's options file: `$XDG_CONFIG_HOME/rusty-impulse/config.json`.
+/// The original's options file: `$XDG_CONFIG_HOME/impulse-shell/config.json`.
 pub fn config_path() -> PathBuf {
     crate::xdg::config_home()
-        .join("rusty-impulse")
+        .join("impulse-shell")
         .join("config.json")
 }
 

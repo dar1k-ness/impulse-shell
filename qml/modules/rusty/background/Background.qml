@@ -277,7 +277,7 @@ Variants {
                     }
                 }
 
-                // The edit-mode layout's desktop container (rusty-impulse); without one, the widgets above.
+                // The edit-mode layout's desktop container (impulse-shell); without one, the widgets above.
                 Loader {
                     id: desktopLayoutLoader
                     width: bgRoot.screen.width

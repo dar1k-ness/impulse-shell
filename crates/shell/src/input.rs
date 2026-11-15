@@ -3195,7 +3195,7 @@ mod axis_tests {
     #[test]
     fn queued_axis_frames_merge_like_qt_wayland() {
         // 5 wheel notches; the 3rd and 4th were queued behind a busy main thread (50 µs apart):
-        // qs -c rusty-impulse delivers angleDelta -120, -120, -240, -120.
+        // qs -c impulse-shell delivers angleDelta -120, -120, -240, -120.
         let t0 = Instant::now();
         let at = [0, 30_000, 30_050, 30_100, 120_000].map(|us| t0 + Duration::from_micros(us));
         let mut c = AxisCompression::default();

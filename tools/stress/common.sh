@@ -1,13 +1,13 @@
 . ~/henv
-# The shell under test and what addresses its IPC. native: rusty-impulse on ~/.config/rustshell/rusty-impulse (a
-# copy of this checkout's qml), `rusty-impulse -c rusty-impulse` (Quickshell's `qs` does not find it). orig: Quickshell on the original in ~/parity-original
+# The shell under test and what addresses its IPC. native: impulse-shell on ~/.config/rustshell/impulse-shell (a
+# copy of this checkout's qml), `impulse-shell -c impulse-shell` (Quickshell's `qs` does not find it). orig: Quickshell on the original in ~/parity-original
 # (README.md: tools/parity/orig.sh puts it there; Quickshell cannot load qml, which imports the
 # Impulse module), `qs -p ~/parity-original`. The mode is $MODE of the script that starts the shell;
 # a scenario started for that run reads it from $RUN/mode, where start_shell_proc wrote it.
 ORIG_TREE=$HOME/parity-original
 MODE=${MODE:-$(cat $RUN/mode 2>/dev/null)}
-if [ "$MODE" = orig ]; then QS="qs -p $ORIG_TREE" NS=quickshell; else QS="rusty-impulse -c rusty-impulse" NS=rustshell; fi
-NATIVE_BIN=${BIN:-$HOME/rusty-impulse/target/release/rusty-impulse}
+if [ "$MODE" = orig ]; then QS="qs -p $ORIG_TREE" NS=quickshell; else QS="impulse-shell -c impulse-shell" NS=rustshell; fi
+NATIVE_BIN=${BIN:-$HOME/impulse-shell/target/release/impulse-shell}
 spid() { local p=$(cat $RUN/pid 2>/dev/null); [ -n "$p" ] && [ -d /proc/$p ] && echo $p; }
 # CPU ticks of process $1; nothing for no process ("/proc//stat" would be /proc/stat, many lines).
 cputicks() { [ -n "$1" ] && awk '{print $14+$15}' /proc/$1/stat 2>/dev/null; }
@@ -39,7 +39,7 @@ start_shell_proc() { # mode logfile -> pid in $RUN/pid
 }
 # stop_shell [NAMES]: SIGTERM every shell process (or those named NAMES, a pattern) and return when they have exited
 # (SIGKILL after 10 s without an exit)
-stop_shell() { local n=${1:-'qs|quickshell|rusty-impulse'}; pkill -x "$n" || return 0
+stop_shell() { local n=${1:-'qs|quickshell|impulse-shell'}; pkill -x "$n" || return 0
   timeout 10 pidwait -x "$n"; [ $? != 124 ] || { pkill -9 -x "$n"; pidwait -x "$n"; }; return 0; }
 # need PROGRAM...: a scenario names what it runs, and stops when one is missing: without it the
 # scenario would do nothing and the shell, left alone, would pass. `bench/vm.sh sync` installs
@@ -53,7 +53,7 @@ need() {
 # tap X Y: a real pointer click at output pixel (X,Y), through the uinput device of
 # tools/parity/ptr.py (python-evdev and /dev/uinput: tools/parity/provision.sh). A click that
 # was not made ends the scenario: its rounds would count a shell nothing touched.
-PTR=${PTR:-$HOME/rusty-impulse/tools/parity/ptr.py}
+PTR=${PTR:-$HOME/impulse-shell/tools/parity/ptr.py}
 tap() {
   python3 "$PTR" click "$1" "$2" || { echo "${0##*/}: tap $1 $2: python3 $PTR failed" >&2; exit 1; }
 }

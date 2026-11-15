@@ -956,7 +956,7 @@ mod tests {
                 r#"{{"mice":[],"keyboards":[
                 {{"name":"mic-buttons","main":false,"layout":"us","active_layout_index":0}},
                 {{"name":"usb-keyboard","main":{main_real},"rules":"","model":"pc105","layout":"us,ru","variant":"","options":"grp:alt_shift_toggle","active_layout_index":1,"active_keymap":"Russian","capsLock":false,"numLock":true}},
-                {{"name":"hl-virtual-keyboard-rusty-impulse","main":{},"active_layout_index":0}}]}}"#,
+                {{"name":"hl-virtual-keyboard-impulse-shell","main":{},"active_layout_index":0}}]}}"#,
                 !main_real
             )
         };
@@ -1149,7 +1149,7 @@ mod tests {
                 r#"{{"keyboards":[
                 {{"name":"usb-keyboard","main":true,"layout":"us,ru","active_layout_index":{real}}},
                 {{"name":"power-button","main":false,"layout":"us,ru","active_layout_index":0}},
-                {{"name":"hl-virtual-keyboard-rusty-impulse","main":false,"active_layout_index":{virt}}}]}}"#
+                {{"name":"hl-virtual-keyboard-impulse-shell","main":false,"active_layout_index":{virt}}}]}}"#
             )
         };
         let apart = |d: &str| real_keyboard(d, &mut None).unwrap().apart;
@@ -1186,7 +1186,7 @@ mod tests {
         assert!(h.keyboards_changed(dir.path()));
         let (mut ev, _) = s2.accept().unwrap();
         ev.write_all(
-            b"workspace>>2\nactivelayout>>hl-virtual-keyboard-rusty-impulse,Russian\n\
+            b"workspace>>2\nactivelayout>>hl-virtual-keyboard-impulse-shell,Russian\n\
               activelayout>>hl-virtual-keyboard,Russian\n",
         )
         .unwrap();
@@ -1210,7 +1210,7 @@ mod tests {
         ));
         assert!(real_keyboard_event(b"configreloaded>>"));
         assert!(!real_keyboard_event(
-            b"activelayout>>hl-virtual-keyboard-rusty-impulse,Russian"
+            b"activelayout>>hl-virtual-keyboard-impulse-shell,Russian"
         ));
         assert!(!real_keyboard_event(
             b"activelayout>>hl-virtual-keyboard,Russian"

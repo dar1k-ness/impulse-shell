@@ -7,9 +7,9 @@ import ri.modules.common
 import Impulse
 
 /**
- * KDE-style edit mode (rusty-impulse only: the family loads this file only when the layout has
- * containers, so `qs -c rusty-impulse` never parses it). Super+Alt+E (the `editModeToggle` global
- * shortcut) or `rusty-impulse ipc call editMode toggle` enters it; Esc or Done leaves it. While
+ * KDE-style edit mode (impulse-shell only: the family loads this file only when the layout has
+ * containers, so `qs -c impulse-shell` never parses it). Super+Alt+E (the `editModeToggle` global
+ * shortcut) or `impulse-shell ipc call editMode toggle` enters it; Esc or Done leaves it. While
  * editing, every monitor without a fullscreen window gets a fullscreen overlay above the
  * shell's surfaces; the native EditController decides everything, the overlay draws.
  */

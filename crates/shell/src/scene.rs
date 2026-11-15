@@ -5347,7 +5347,7 @@ pub fn measure_new(w: &mut World, fonts: &mut Fonts, n0: usize) -> bool {
     }
     // Qt sizes a window's content item before its children complete, so `width` bindings
     // read in Component.onCompleted see the real geometry (e.g. GridView.cellWidth). Also
-    // the `rusty-impulse -p` app windows (settings.qml, welcome.qml).
+    // the `impulse-shell -p` app windows (settings.qml, welcome.qml).
     for i in n0..w.items.len() {
         let app = |w: &World, i| ["ApplicationWindow", "Window"].iter().any(|t| is(w, i, t));
         if w.dead.contains(&i) || !(WINDOWS.iter().any(|t| is(w, i, t)) || app(w, i)) {
@@ -16021,7 +16021,7 @@ fn remote_cache_file(src: &str) -> std::path::PathBuf {
     let mut h = rustc_hash::FxHasher::default();
     src.hash(&mut h);
     qml::xdg::cache_home()
-        .join("rusty-impulse/net")
+        .join("impulse-shell/net")
         .join(format!("{:016x}", h.finish()))
 }
 

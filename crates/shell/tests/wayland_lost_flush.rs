@@ -7,7 +7,7 @@ use std::process::{Command, Stdio};
 
 use testenv::Log;
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 /// The original's Config.qml in small: the adapter's edits are saved on a Timer after
 /// `onAdapterUpdated`. Here the Timer never comes due during the test, so the edit is still

@@ -2,7 +2,7 @@
 -- mode, nothing of the compositor's own on screen and no compositor effects, so what is drawn
 -- and animated is the shell under test.
 -- The Python environment the original's scripts activate (guest-setup.sh builds it).
-hl.env("RUSTY_IMPULSE_VIRTUAL_ENV", "/opt/ri-venv")
+hl.env("IMPULSE_SHELL_VIRTUAL_ENV", "/opt/ri-venv")
 hl.env("ILLOGICAL" .. "_IMPULSE_VIRTUAL_ENV", "/opt/ri-venv") -- the original's name for it
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 hl.config({

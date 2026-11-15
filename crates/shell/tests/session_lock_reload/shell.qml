@@ -4,7 +4,7 @@
 // Harness of tests/session_lock_reload.rs: the original's own lock screen (`modules/rusty/lock/Lock.qml`) and
 // nothing else of the shell, with what the tests read printed as `IMAGE`, `TEXT`, `PAM` and
 // `PROBE` lines. The test copies the tree next to this file and runs it under `qs -p` and
-// `rusty-impulse -p`.
+// `impulse-shell -p`.
 import "modules/common"
 import "services"
 import "modules/rusty/lock"

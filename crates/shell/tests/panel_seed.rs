@@ -189,7 +189,7 @@ fn lay_out(bar: &Bar) -> (Vec<Run>, Vec<String>) {
     (out, log)
 }
 
-/// Where the original's VerticalBarContent puts each group on a 1080 px left bar, as `qs -c rusty-impulse` and the
+/// Where the original's VerticalBarContent puts each group on a 1080 px left bar, as `qs -c impulse-shell` and the
 /// base lay them out: media's least length (24) is more than it takes with nothing playing, and
 /// asking for it would move the top group up and the groups below it down.
 #[test]

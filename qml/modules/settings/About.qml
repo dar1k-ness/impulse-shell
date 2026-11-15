@@ -9,8 +9,8 @@ import ri.modules.common.widgets
 SettingsPage {
     id: root
 
-    // rusty-impulse repository: the only place to change it.
-    readonly property string repoUrl: "https://github.com/dar1k-ness/rusty-impulse"
+    // impulse-shell repository: the only place to change it.
+    readonly property string repoUrl: "https://github.com/dar1k-ness/impulse-shell"
 
     component CardButton: RippleButtonWithIcon {
         buttonRadius: Appearance.rounding.full
@@ -81,7 +81,7 @@ SettingsPage {
                 Layout.fillWidth: true
                 spacing: 8
                 CardHeader {
-                    title: "rusty-impulse"
+                    title: "Impulse"
                     subtitle: Translation.tr("Based on illogical-impulse by end-4")
                     icon: "rocket_launch"
                 }
@@ -103,7 +103,7 @@ SettingsPage {
         title: Translation.tr("Dotfiles")
         SettingsCard {
             CardHeader {
-                title: "rusty-impulse"
+                title: "Impulse"
                 subtitle: Translation.tr("Based on end-4/dots-hyprland")
                 icon: "folder_special"
             }
@@ -142,7 +142,7 @@ SettingsPage {
                     materialIcon: systemCard.justCopied ? "check" : "content_copy"
                     mainText: systemCard.justCopied ? Translation.tr("Copied") : Translation.tr("Copy info")
                     onClicked: {
-                        Rustshell.clipboardText = `${SystemInfo.distroName} | ${SystemInfo.desktopEnvironment} | ${SystemInfo.windowingSystem} | rusty-impulse`;
+                        Rustshell.clipboardText = `${SystemInfo.distroName} | ${SystemInfo.desktopEnvironment} | ${SystemInfo.windowingSystem} | Impulse`;
                         systemCard.justCopied = true;
                         copiedTimer.restart();
                     }

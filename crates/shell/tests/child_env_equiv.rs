@@ -18,7 +18,7 @@ impl Drop for Kill {
     }
 }
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 /// The variables asked about, in the order they are reported.
 const VARS: [&str; 5] = [

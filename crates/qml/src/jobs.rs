@@ -46,7 +46,7 @@ pub fn caught(f: impl FnOnce() -> i32) -> i32 {
             .map(|s| s.to_string())
             .or_else(|| e.downcast_ref::<String>().cloned())
             .unwrap_or_default();
-        elog::eprintln!("rusty-impulse: native job panicked: {msg}");
+        elog::eprintln!("impulse-shell: native job panicked: {msg}");
         1
     })
 }

@@ -1,7 +1,7 @@
 # Notification flood: original Qt `qs -c ii` vs native, by phase
 
 Guest: Arch, 6 vCPU / 16 GB, Hyprland 0.57, Qt 6.12.0, quickshell 0.3.2, Mesa llvmpipe (GLES2).
-Native: `rusty-impulse` release from `2012943` (#65), frame pointers + line tables.
+Native: `impulse-shell` release from `2012943` (#65), frame pointers + line tables.
 Workload: `bench/qtflood/vfperf.sh` (= `vflood.sh` plus profiler hooks), N=50 history, K=300 `notify-send` (3 apps), 40 s settle wait before the flood.
 
 ## CPU per flood (no profiler attached, 3 runs each)
@@ -9,7 +9,7 @@ Workload: `bench/qtflood/vfperf.sh` (= `vflood.sh` plus profiler hooks), N=50 hi
 | | run 1 | run 2 | run 3 | mean | per notification |
 |---|---|---|---|---|---|
 | Qt `quickshell -c ii` | 236 | 316 | 204 | **252 ticks** | 8.4 ms |
-| native `rusty-impulse` | 532 | 607 | 604 | **581 ticks** | 19.4 ms |
+| native `impulse-shell` | 532 | 607 | 604 | **581 ticks** | 19.4 ms |
 
 Native is 2.3x Qt here (RX 580: ~3.3x). Qt also answers `notify-send` slower (300 sends take 2.1-3.1 s vs 0.4-0.7 s native).
 
@@ -65,7 +65,7 @@ Caveats: llvmpipe makes render far more expensive than on the RX 580. With perf 
 
 ## Render phase: frame count, not per-frame cost
 
-Same guest and workload, `rusty-impulse` release from `7028f2b`, Qt via `QT_LOGGING_RULES=qt.scenegraph.time.renderloop=true`, native via `RI_FRAMES` / `RI_STATS` / `RI_CMDSTAT` / `RI_GPUPROF`.
+Same guest and workload, `impulse-shell` release from `7028f2b`, Qt via `QT_LOGGING_RULES=qt.scenegraph.time.renderloop=true`, native via `RI_FRAMES` / `RI_STATS` / `RI_CMDSTAT` / `RI_GPUPROF`.
 
 | per flood | Qt | native |
 |---|---|---|

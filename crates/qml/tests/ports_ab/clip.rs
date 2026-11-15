@@ -1150,7 +1150,7 @@ fn vkbd_keys_keep_the_real_keyboard_layout() {
             let mut buf = [0u8; 256];
             let n = s.read(&mut buf).unwrap_or(0);
             let reply = if &buf[..n] == b"j/devices" {
-                r#"{"mice":[],"keyboards":[{"name":"hl-virtual-keyboard-rusty-impulse","layout":"us,ru","active_keymap":"English (US)","active_layout_index":0,"main":true},{"name":"usb-keyboard","layout":"us,ru","active_keymap":"Russian","active_layout_index":1,"main":false}]}"#
+                r#"{"mice":[],"keyboards":[{"name":"hl-virtual-keyboard-impulse-shell","layout":"us,ru","active_keymap":"English (US)","active_layout_index":0,"main":true},{"name":"usb-keyboard","layout":"us,ru","active_keymap":"Russian","active_layout_index":1,"main":false}]}"#
             } else {
                 "unknown request"
             };
@@ -1228,7 +1228,7 @@ impl FakeHypr {
     /// [`FakeHypr::set`], with the real keyboard's CapsLock and NumLock as given.
     fn set_locks(&self, layout: &str, index: u32, active: &str, caps: bool, num: bool) {
         *self.devices.lock().unwrap() = format!(
-            r#"{{"mice":[],"keyboards":[{{"name":"hl-virtual-keyboard-rusty-impulse","rules":"","model":"","layout":"","variant":"","options":"","active_layout_index":0,"active_keymap":"English (US)","capsLock":false,"numLock":false,"main":true}},{{"name":"usb-keyboard","rules":"","model":"","layout":"{layout}","variant":"","options":"","active_layout_index":{index},"active_keymap":"{active}","capsLock":{caps},"numLock":{num},"main":false}}]}}"#
+            r#"{{"mice":[],"keyboards":[{{"name":"hl-virtual-keyboard-impulse-shell","rules":"","model":"","layout":"","variant":"","options":"","active_layout_index":0,"active_keymap":"English (US)","capsLock":false,"numLock":false,"main":true}},{{"name":"usb-keyboard","rules":"","model":"","layout":"{layout}","variant":"","options":"","active_layout_index":{index},"active_keymap":"{active}","capsLock":{caps},"numLock":{num},"main":false}}]}}"#
         );
     }
 

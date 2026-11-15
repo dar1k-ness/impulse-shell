@@ -389,7 +389,7 @@ fn favicon_download_matches_the_original_command() {
     let (base, seen) = server();
     let d = tmpdir("favicon");
     let out = d.join("favicons");
-    let qml_dir = d.join("rusty-impulse/modules/common/widgets");
+    let qml_dir = d.join("impulse-shell/modules/common/widgets");
     std::fs::create_dir_all(&qml_dir).unwrap();
     let props = ri_lines(
         "modules/common/widgets/Favicon.qml",
@@ -885,7 +885,7 @@ Item {{
                 lit(city),
             )
         };
-        let files = ["o", "n"].map(|side| d.join(side).join("rusty-impulse/services/Weather.qml"));
+        let files = ["o", "n"].map(|side| d.join(side).join("impulse-shell/services/Weather.qml"));
         for (i, f) in files.iter().enumerate() {
             std::fs::create_dir_all(f.parent().unwrap()).unwrap();
             std::fs::write(f, src(&sides[i], &fetchers[i])).unwrap();

@@ -1,45 +1,45 @@
 #!/bin/bash
-# Install the native shell as `rusty-impulse` (its own name: it no longer poses as Quickshell's `qs`).
-# Hyprland starts it as `rusty-impulse -c rusty-impulse`; `rusty-impulse ipc call ...` is its Qt-free IPC client. A
+# Install the native shell as `impulse-shell` (its own name: it no longer poses as Quickshell's `qs`).
+# Hyprland starts it as `impulse-shell -c impulse-shell`; `impulse-shell ipc call ...` is its Qt-free IPC client. A
 # real `qs` does not reach it: its socket is under $XDG_RUNTIME_DIR/rustshell, not Quickshell's. `pidof qs`
-# checks (hypridle lock_cmd) must also accept `pidof rusty-impulse`.
+# checks (hypridle lock_cmd) must also accept `pidof impulse-shell`.
 #   tools/install.sh              build and install, keeping the release it replaces
 #   tools/install.sh --rollback   switch back to that release (again: forward to the newer one)
 #   tools/install.sh --mark-good  the current release has proved good here: it is kept until
 #                                 another one is marked, however many installs follow
 #                                 (SHA256=<hex>: only if that is its binary's sha256)
 #   tools/install.sh --rollback-good  switch back to the release marked good
-#   tools/install.sh --status     the current and the previous release, the rusty-impulse config, and
+#   tools/install.sh --status     the current and the previous release, the impulse-shell config, and
 #                                 how many replaced configs are kept
-#   tools/install.sh --uninstall  removes the releases and the link to them; the rusty-impulse config, the
-#                                 kept configs and an rusty-impulse of another origin stay
+#   tools/install.sh --uninstall  removes the releases and the link to them; the impulse-shell config, the
+#                                 kept configs and an impulse-shell of another origin stay
 #   tools/install.sh --help       this text
 #   PREFIX=/usr/local (default)   Needs cargo and jq to build.
-#   NOBUILD=1: install the existing build of this checkout: the rusty-impulse in release/ of Cargo's
+#   NOBUILD=1: install the existing build of this checkout: the impulse-shell in release/ of Cargo's
 #   target directory or, built for a named target (build.target), in <target>/release/.
-#   BIN=<file>: install this rusty-impulse, built elsewhere from the tree RI_ROOT (needs no cargo).
+#   BIN=<file>: install this impulse-shell, built elsewhere from the tree RI_ROOT (needs no cargo).
 #   RI_ROOT=<tree> (default: `qml` of this checkout): the QML tree the binary is compiled
 #   from. It has no JavaScript interpreter and refuses to start on a tree whose scripts differ
 #   from this one's.
 # Run it as the user whose shell it is, not as root (sudo, doas, pkexec, su): it uses sudo
-# itself where the target directories need it. The rusty-impulse config is ~/.config/rustshell/rusty-impulse
-# ($XDG_CONFIG_HOME), what `rusty-impulse -c rusty-impulse` runs: an install makes it a copy of the tree it
+# itself where the target directories need it. The impulse-shell config is ~/.config/rustshell/impulse-shell
+# ($XDG_CONFIG_HOME), what `impulse-shell -c impulse-shell` runs: an install makes it a copy of the tree it
 # built, with the files' executable bits. A relative XDG_CONFIG_HOME or XDG_STATE_HOME is
-# ignored, as the XDG Base Directory Specification and rusty-impulse have it.
+# ignored, as the XDG Base Directory Specification and impulse-shell have it.
 #
 # The binary and the QML tree it was compiled from are one release:
-#   $PREFIX/bin/rusty-impulse                    -> ../lib/rusty-impulse/current/rusty-impulse
-#   $PREFIX/lib/rusty-impulse/current, previous  -> releases/<id>
-#   $PREFIX/lib/rusty-impulse/good               -> releases/<id>, the release marked good, if one is
-#   $PREFIX/lib/rusty-impulse/releases/<id>/     rusty-impulse and tree/, a copy of the tree it runs (files
+#   $PREFIX/bin/impulse-shell                    -> ../lib/impulse-shell/current/impulse-shell
+#   $PREFIX/lib/impulse-shell/current, previous  -> releases/<id>
+#   $PREFIX/lib/impulse-shell/good               -> releases/<id>, the release marked good, if one is
+#   $PREFIX/lib/impulse-shell/releases/<id>/     impulse-shell and tree/, a copy of the tree it runs (files
 #                                        through links copied as files, without .git)
 # An install first asks the new binary whether it has a JavaScript interpreter
-# (`rusty-impulse --version`) and whether it runs the tree (`rusty-impulse --check-tree`), and replaces
-# nothing if it has one or does not. It then puts the release's tree in the rusty-impulse config's place
-# and asks the binary the way Hyprland starts it, `rusty-impulse -c rusty-impulse --check-tree`: if that does not
+# (`impulse-shell --version`) and whether it runs the tree (`impulse-shell --check-tree`), and replaces
+# nothing if it has one or does not. It then puts the release's tree in the impulse-shell config's place
+# and asks the binary the way Hyprland starts it, `impulse-shell -c impulse-shell --check-tree`: if that does not
 # find the config and run it (a shell.qml of the user's own in ~/.config/rustshell hides the
 # named configs beside it: Quickshell's rule), the install or rollback is undone.
-# A binary that $PREFIX/bin/rusty-impulse runs and no install put there (a plain file, a link to a
+# A binary that $PREFIX/bin/impulse-shell runs and no install put there (a plain file, a link to a
 # build elsewhere) is kept as a release first, legacy-<id>, so it can be rolled back to. Its
 # tree is the config it ran, and a rollback puts that config back as it was: a link in it to
 # a file of the tree itself is stored, and comes back, as that link.
@@ -55,14 +55,14 @@
 # is kept beside those two, and --rollback-good switches to it, with its tree, as --rollback
 # does to the previous one; the release switched from becomes the previous one.
 # One that is killed between its steps (SIGKILL, the power) leaves a shell that starts: while
-# the config and the links are switched, `current` names releases/.switch, whose rusty-impulse starts
+# the config and the links are switched, `current` names releases/.switch, whose impulse-shell starts
 # the release that runs the config as it is. Each of these steps is written to the disk before
 # the next one is made: $PREFIX and the config may be on two file systems, and after a power
 # cut neither is then ahead of the other. The next install, rollback or uninstall first
 # finishes what was killed if the config is already the new release's, and undoes it if not.
 # On SIGINT, SIGTERM or SIGHUP the script undoes what it has switched and exits, also when
 # its terminal is gone and nothing can be printed.
-# A config edited since its install is kept as ~/.local/state/rusty-impulse/replaced-<time>.<random>
+# A config edited since its install is kept as ~/.local/state/impulse-shell/replaced-<time>.<random>
 # ($XDG_STATE_HOME) once it is replaced, its links kept as links; these copies are never
 # removed by the script. An install and a rollback do not restart a running shell.
 #
@@ -71,14 +71,14 @@
 # directory, ~/.local/share ($XDG_DATA_HOME):
 #   applications/org.rustshell.desktop
 #   icons/hicolor/scalable/apps/org.rustshell.svg
-# There rusty-impulse finds the icon the bar, the overview and the dock show for these windows
+# There impulse-shell finds the icon the bar, the overview and the dock show for these windows
 # (without them: a placeholder). Both files are written out of this script, so a copy of the
 # script alone installs them. A rollback leaves them; --uninstall removes them.
 set -euo pipefail
 PREFIX=${PREFIX:-/usr/local}
 bin_dir=$PREFIX/bin
-lib=$PREFIX/lib/rusty-impulse
-# The XDG base directories as rusty-impulse finds them (crates/qml/src/xdg.rs): the variable's value
+lib=$PREFIX/lib/impulse-shell
+# The XDG base directories as impulse-shell finds them (crates/qml/src/xdg.rs): the variable's value
 # if it is an absolute path, the default under $HOME otherwise. The XDG Base Directory
 # Specification has a relative path in these variables ignored.
 config_home=${XDG_CONFIG_HOME-}
@@ -89,10 +89,10 @@ data_home=${XDG_DATA_HOME-}
 [[ $data_home == /* ]] || data_home=$HOME/.local/share
 for v in XDG_CONFIG_HOME XDG_STATE_HOME XDG_DATA_HOME; do
     [[ -z ${!v-} || ${!v} == /* ]] ||
-        echo "install.sh: $v=${!v} is not an absolute path and is ignored, as rusty-impulse ignores it (XDG Base Directory Specification)" >&2
+        echo "install.sh: $v=${!v} is not an absolute path and is ignored, as impulse-shell ignores it (XDG Base Directory Specification)" >&2
 done
-config_tree=$config_home/rustshell/rusty-impulse
-state_dir=$state_home/rusty-impulse
+config_tree=$config_home/rustshell/impulse-shell
+state_dir=$state_home/impulse-shell
 # The desktop entry and the icon of the shell's own windows, by their app id.
 app_id=org.rustshell
 app_entry=$data_home/applications/$app_id.desktop
@@ -114,7 +114,7 @@ writable() {
 SUDO=
 if [ "$(id -u)" != 0 ] && ! { writable "$bin_dir" && writable "$lib"; }; then SUDO=sudo; fi
 # Runs a command that makes files under $PREFIX with the umask of installed files, whatever
-# the umask of the user who installs: the user who runs rusty-impulse reads them, also when they are
+# the umask of the user who installs: the user who runs impulse-shell reads them, also when they are
 # root's (sudo runs a command with the stricter of its own umask and the caller's).
 in_prefix() { (umask 022 && $SUDO "$@"); }
 # Run as root by another user, $HOME and the config would be root's, not those of the user
@@ -136,19 +136,19 @@ as_the_user() {
         how="as root"
     fi
     [ -z "$who" ] || [ "$who" = root ] ||
-        die "run it as $who, not $how: the rusty-impulse config is $who's (it uses sudo itself where it needs to)"
+        die "run it as $who, not $how: the impulse-shell config is $who's (it uses sudo itself where it needs to)"
 }
 
-# Earlier installs replaced `qs` with a link to rusty-impulse: drop it so `qs` is Quickshell again.
-drop_qs_link() { [ "$(readlink "$bin_dir/qs" 2>/dev/null)" != rusty-impulse ] || $SUDO rm -f "$bin_dir/qs"; }
+# Earlier installs replaced `qs` with a link to impulse-shell: drop it so `qs` is Quickshell again.
+drop_qs_link() { [ "$(readlink "$bin_dir/qs" 2>/dev/null)" != impulse-shell ] || $SUDO rm -f "$bin_dir/qs"; }
 # Whether the binary `$1` runs the QML tree `$2` as it is: exit status 0 if it does, 1 with the
 # files on stderr if it does not. With an empty environment: a binary older than --check-tree
 # ignores the option and starts as a shell, which then finds no compositor to connect to and
 # exits with an error. (`exec -c`, not env(1), which takes a path with `=` in it for a
 # variable.)
 accepts() { (exec -c "$1" --check-tree -p "$2"); }
-# Whether the binary `$1`, started the way Hyprland starts the shell (`rusty-impulse -c rusty-impulse`), finds
-# the rusty-impulse config and runs it as it is: status 0 with its answer on stdout if it does, 1 with
+# Whether the binary `$1`, started the way Hyprland starts the shell (`impulse-shell -c impulse-shell`), finds
+# the impulse-shell config and runs it as it is: status 0 with its answer on stdout if it does, 1 with
 # the reason on stderr if not. It finds a named config by Quickshell's rule (locateConfigFile):
 # in the first of $XDG_CONFIG_HOME/rustshell and the quickshell directories of
 # $XDG_CONFIG_DIRS that holds it, and never in one that has a shell.qml of its own. HOME and
@@ -159,17 +159,17 @@ launches() {
         for v in $(compgen -e); do
             case $v in HOME | XDG_CONFIG_HOME | XDG_CONFIG_DIRS) ;; *) export -n "$v" ;; esac
         done
-        exec "$1" -c rusty-impulse --check-tree
+        exec "$1" -c impulse-shell --check-tree
     ) || rc=$?
     at=$(realpath "$config_tree" 2>/dev/null) || at=$config_tree
-    if [ $rc = 0 ] && [ "$out" = "rusty-impulse: $at has the scripts this binary was compiled from" ]; then
+    if [ $rc = 0 ] && [ "$out" = "impulse-shell: $at has the scripts this binary was compiled from" ]; then
         echo "$out"
         return 0
     fi
     {
-        echo "install.sh: \`rusty-impulse -c rusty-impulse\`, how Hyprland starts the shell, does not run the rusty-impulse config $config_tree (exit status $rc${out:+; it says: $out})"
+        echo "install.sh: \`impulse-shell -c impulse-shell\`, how Hyprland starts the shell, does not run the impulse-shell config $config_tree (exit status $rc${out:+; it says: $out})"
         [ ! -f "$config_home/rustshell/shell.qml" ] ||
-            echo "install.sh: $config_home/rustshell/shell.qml is a config of its own: with it there, Quickshell and rusty-impulse look up no named config such as rusty-impulse in that directory. Move it, with the files it uses, to $config_home/rustshell/default/ and it stays the default config"
+            echo "install.sh: $config_home/rustshell/shell.qml is a config of its own: with it there, Quickshell and impulse-shell look up no named config such as impulse-shell in that directory. Move it, with the files it uses, to $config_home/rustshell/default/ and it stays the default config"
     } >&2
     return 1
 }
@@ -184,13 +184,13 @@ vet() {
     case $rc in
     0) ;;
     126 | 127) die "cannot run $1: $out; nothing was installed" ;;
-    *) die "$1 does not answer --version (exit status $rc): it is not rusty-impulse, or one too old to say whether it has a JavaScript interpreter; nothing was installed" ;;
+    *) die "$1 does not answer --version (exit status $rc): it is not impulse-shell, or one too old to say whether it has a JavaScript interpreter; nothing was installed" ;;
     esac
     grep -qx 'JavaScript interpreter: none' <<<"$out" ||
         die "$1 has a JavaScript interpreter (its --version: $(tr '\n' ' ' <<<"$out")); the installed shell must have none: build it with tools/install.sh; nothing was installed"
 }
 # Says what the binary `$1` misses on this machine of the libraries it opens only when they
-# are there. An rusty-impulse from before it told (no such line in its --version) says nothing.
+# are there. An impulse-shell from before it told (no such line in its --version) says nothing.
 optional() {
     local out
     out=$(exec -c "$1" --version 2>/dev/null) || return 0
@@ -254,7 +254,7 @@ other_modes() {
 # The id of the release the link `$1` (current, previous) names, if it has a binary.
 release() {
     local target
-    target=$(readlink "$lib/$1" 2>/dev/null) && [ -x "$lib/$target/rusty-impulse" ] && echo "${target#releases/}"
+    target=$(readlink "$lib/$1" 2>/dev/null) && [ -x "$lib/$target/impulse-shell" ] && echo "${target#releases/}"
 }
 # Makes the link `$1` (current, previous) point at `$2`, or removes it if `$2` is empty. Link
 # then rename: the name always points at a complete release, and renaming over a running
@@ -270,19 +270,19 @@ set_link() {
 point() { set_link "$1" "releases/$2"; }
 # Nothing to do when the name already is the link: it follows `current`.
 link_bin() {
-    [ "$(readlink "$bin_dir/rusty-impulse" 2>/dev/null)" != ../lib/rusty-impulse/current/rusty-impulse ] || return 0
+    [ "$(readlink "$bin_dir/impulse-shell" 2>/dev/null)" != ../lib/impulse-shell/current/impulse-shell ] || return 0
     in_prefix mkdir -p "$bin_dir" &&
-        $SUDO ln -sfn ../lib/rusty-impulse/current/rusty-impulse "$bin_dir/.rusty-impulse.new" &&
-        $SUDO mv -Tf "$bin_dir/.rusty-impulse.new" "$bin_dir/rusty-impulse"
+        $SUDO ln -sfn ../lib/impulse-shell/current/impulse-shell "$bin_dir/.impulse-shell.new" &&
+        $SUDO mv -Tf "$bin_dir/.impulse-shell.new" "$bin_dir/impulse-shell"
 }
 # The switch in progress. The config and the links cannot be replaced in one step, so from
 # before the config is replaced until the links name the new pair, `current` names this
-# directory. Its rusty-impulse (begin_switch writes it) starts the release that runs the config as it
+# directory. Its impulse-shell (begin_switch writes it) starts the release that runs the config as it
 # is at that moment, and its journal says what was being switched, for recover: an install or
 # a rollback that is killed at any step leaves a shell that starts.
 switch=$lib/releases/.switch
 switching() { [ "$(readlink "$lib/current" 2>/dev/null)" = releases/.switch ]; }
-# Writes the journal and that rusty-impulse for a switch from the release `$1` (none: a first
+# Writes the journal and that impulse-shell for a switch from the release `$1` (none: a first
 # install), whose `previous` link is `$2`, to the release `$3` with `$4` as the previous one,
 # and makes `current` name them. `$5` is the release to remove if the switch is undone (the
 # one an install made), `$6` the link the name of the binary was if it was not an install's
@@ -298,7 +298,7 @@ begin_switch() {
     script=$(
         echo '#!/bin/bash'
         echo '# Written by tools/install.sh for the time it switches releases; one that was killed'
-        echo '# left it here. It starts the release that runs the rusty-impulse config as it is. The next'
+        echo '# left it here. It starts the release that runs the impulse-shell config as it is. The next'
         echo '# tools/install.sh (an install, --rollback, --uninstall) removes it.'
         printf 'lib=%q\n%s\n' "$lib" "$q"
         cat <<'EOS'
@@ -306,11 +306,11 @@ begin_switch() {
 # that was free: those this script was started with (a reloading shell passes the pipe of
 # its signals on) reach the release.
 exec {lock}<"$lib/.lock" && flock "$lock"
-# The release starts under the name this script was started as ($PREFIX/bin/rusty-impulse): that is
+# The release starts under the name this script was started as ($PREFIX/bin/impulse-shell): that is
 # the path its reload and its own windows run, which leads to the release installed since.
 if [ "$(readlink "$lib/current")" != releases/.switch ]; then
     exec {lock}<&-
-    exec -a "$0" "$lib/current/rusty-impulse" "$@"
+    exec -a "$0" "$lib/current/impulse-shell" "$@"
 fi
 run=$j_to
 if [ -n "$j_live" ]; then
@@ -321,15 +321,15 @@ if [ -n "$j_live" ]; then
 fi
 exec {lock}<&-
 if [ -z "$run" ]; then
-    echo "rusty-impulse: its first install was interrupted: run tools/install.sh again" >&2
+    echo "impulse-shell: its first install was interrupted: run tools/install.sh again" >&2
     exit 1
 fi
-exec -a "$0" "$lib/releases/$run/rusty-impulse" "$@"
+exec -a "$0" "$lib/releases/$run/impulse-shell" "$@"
 EOS
     )
-    $SUDO tee "$stage/rusty-impulse" >/dev/null <<<"$script" &&
+    $SUDO tee "$stage/impulse-shell" >/dev/null <<<"$script" &&
         $SUDO tee "$stage/journal" >/dev/null <<<"$q" &&
-        $SUDO chmod 755 "$stage/rusty-impulse" && $SUDO chmod 644 "$stage/journal" || return 1
+        $SUDO chmod 755 "$stage/impulse-shell" && $SUDO chmod 644 "$stage/journal" || return 1
     # What the switch renames into place is on the disk before it is: the release, these two
     # files and the copy of the tree beside the config (the power may go at any step). And
     # `current` names the switch on the disk before the config is replaced.
@@ -350,7 +350,7 @@ recover() {
         # shellcheck disable=SC1091
         . "$switch/journal"
         [ -z "$j_live" ] || [ -w "$(dirname "$j_live")" ] ||
-            die "an install or a rollback that replaces $j_live was interrupted: the next one by that config's user finishes or undoes it (rusty-impulse starts all the same)"
+            die "an install or a rollback that replaces $j_live was interrupted: the next one by that config's user finishes or undoes it (impulse-shell starts all the same)"
         if [ "${1:-}" = undo ] && switching; then
             finished=
             # The config is the new release's: that tree goes back beside it.
@@ -367,12 +367,12 @@ recover() {
         if switching; then
             if [ -n "$finished" ]; then
                 set_link previous "${j_other:+releases/$j_other}" && set_link current "releases/$j_to" ||
-                    die "cannot finish the install or rollback that was interrupted: the links in $lib cannot be switched (rusty-impulse starts all the same)"
+                    die "cannot finish the install or rollback that was interrupted: the links in $lib cannot be switched (impulse-shell starts all the same)"
                 prune "$j_to" "$j_other"
                 echo "finished the install or rollback that was interrupted: $j_to is the current release"
             else
                 set_link previous "$j_prev" && set_link current "${j_cur:+releases/$j_cur}" ||
-                    die "cannot undo the install or rollback that was interrupted: the links in $lib cannot be switched (rusty-impulse starts all the same)"
+                    die "cannot undo the install or rollback that was interrupted: the links in $lib cannot be switched (impulse-shell starts all the same)"
                 [ -n "$j_cur" ] && [ -z "$j_bin" ] || unlink_bin "$j_bin"
                 echo "undid the install or rollback that was interrupted: ${j_cur:-no release} is the current release"
             fi
@@ -423,21 +423,21 @@ switch_links() {
     was_prev=$(readlink "$lib/previous" 2>/dev/null) || was_prev=
     # The name of the binary as it is, unless it is an install's link already: none, or a
     # link that leads to no binary (adopt_bin has kept a binary it led to as a release).
-    was_bin=$(readlink "$bin_dir/rusty-impulse" 2>/dev/null) || was_bin=
-    if [ "$was_bin" = ../lib/rusty-impulse/current/rusty-impulse ]; then was_bin=; else made_bin=1; fi
+    was_bin=$(readlink "$bin_dir/impulse-shell" 2>/dev/null) || was_bin=
+    if [ "$was_bin" = ../lib/impulse-shell/current/impulse-shell ]; then was_bin=; else made_bin=1; fi
     if begin_switch "${was_cur#releases/}" "$was_prev" "$1" "$2" "$3" "$was_bin" && link_bin &&
         { [ "$tree_change" != prepared ] || swap_tree; } &&
         # The new pair as Hyprland starts it. A binary from before releases cannot be asked.
-        { [ -e "$lib/releases/$1/unverified" ] || launches "$lib/releases/$1/rusty-impulse" >/dev/null ||
-            { why="$bin_dir/rusty-impulse would not start as \`rusty-impulse -c rusty-impulse\`" && false; }; } &&
+        { [ -e "$lib/releases/$1/unverified" ] || launches "$lib/releases/$1/impulse-shell" >/dev/null ||
+            { why="$bin_dir/impulse-shell would not start as \`impulse-shell -c impulse-shell\`" && false; }; } &&
         set_link previous "${2:+releases/$2}" && set_link current "releases/$1"; then
         # The config that was replaced is gone from the disk before the journal that names it.
         [ "$tree_change" != replaced ] || [ -z "$old" ] || { rm -rf "$old" && flush "$(dirname "$live")"; }
         $SUDO rm -rf "$switch"
         return 0
     fi
-    $SUDO rm -f "$lib/.current.new" "$lib/.previous.new" "$bin_dir/.rusty-impulse.new" || true
-    # The config goes back while `current` still names the switch, whose rusty-impulse starts the
+    $SUDO rm -f "$lib/.current.new" "$lib/.previous.new" "$bin_dir/.impulse-shell.new" || true
+    # The config goes back while `current` still names the switch, whose impulse-shell starts the
     # release that runs the config at each step of that; then the links.
     if { [ "$tree_change" != replaced ] || unswap_tree; } &&
         put_link_back previous "$was_prev" && put_link_back current "$was_cur"; then
@@ -448,7 +448,7 @@ switch_links() {
         fail "$why; $4"
         return 1
     fi
-    fail "cannot switch the links in $lib, nor put back what was replaced: rusty-impulse starts the release that runs the rusty-impulse config as it is, and the next install or rollback finishes or undoes this one"
+    fail "cannot switch the links in $lib, nor put back what was replaced: impulse-shell starts the release that runs the impulse-shell config as it is, and the next install or rollback finishes or undoes this one"
     return 1
 }
 put_link_back() {
@@ -458,11 +458,11 @@ put_link_back() {
 # Undoes link_bin, if the name of the binary is the link an install made: the name is again
 # the link to `$1` that it was, or with no `$1` is removed.
 unlink_bin() {
-    [ "$(readlink "$bin_dir/rusty-impulse" 2>/dev/null)" = ../lib/rusty-impulse/current/rusty-impulse ] || return 0
+    [ "$(readlink "$bin_dir/impulse-shell" 2>/dev/null)" = ../lib/impulse-shell/current/impulse-shell ] || return 0
     if [ -n "${1:-}" ]; then
-        $SUDO ln -sfn "$1" "$bin_dir/.rusty-impulse.new" && $SUDO mv -Tf "$bin_dir/.rusty-impulse.new" "$bin_dir/rusty-impulse"
+        $SUDO ln -sfn "$1" "$bin_dir/.impulse-shell.new" && $SUDO mv -Tf "$bin_dir/.impulse-shell.new" "$bin_dir/impulse-shell"
     else
-        $SUDO rm -f "$bin_dir/rusty-impulse"
+        $SUDO rm -f "$bin_dir/impulse-shell"
     fi
 }
 # Runs the pipeline `$@` (a function) while the lock is held, and returns its status. This
@@ -552,13 +552,13 @@ lock() {
 # or not at all. Files reached through links are copied as files (a config of links into a
 # dotfiles directory), .git is left out, and the copy belongs to whoever owns $lib. Everyone
 # can read it, whatever the modes of the files it was copied from (a checkout made with umask
-# 077): the user who runs rusty-impulse is not always its owner. `$4`: a file to mark the release
+# 077): the user who runs impulse-shell is not always its owner. `$4`: a file to mark the release
 # with; `$5`: the pipeline that copies the tree, if not release_copy.
 store() {
     local stage=$lib/releases/.staging
     $SUDO rm -rf "$stage"
     in_prefix mkdir -p "$stage/tree"
-    $SUDO install -m755 "$1" "$stage/rusty-impulse"
+    $SUDO install -m755 "$1" "$stage/impulse-shell"
     apart "${5:-release_copy}" "$2" "$stage/tree" &&
         $SUDO chmod -R a+rX "$stage/tree" || {
         $SUDO rm -rf "$stage"
@@ -581,7 +581,7 @@ new_id() {
 # Whether the name of the binary runs a binary that is not a release: one installed before
 # releases existed (a plain file), or one built elsewhere that the name is a link to.
 foreign_bin() {
-    [ -f "$bin_dir/rusty-impulse" ] && [ "$(readlink "$bin_dir/rusty-impulse" 2>/dev/null)" != ../lib/rusty-impulse/current/rusty-impulse ]
+    [ -f "$bin_dir/impulse-shell" ] && [ "$(readlink "$bin_dir/impulse-shell" 2>/dev/null)" != ../lib/impulse-shell/current/impulse-shell ]
 }
 # Under the lock: such a binary becomes the current release, so that what ran before an
 # install or a rollback can be rolled back to, and is still there if a later step fails. It
@@ -591,7 +591,7 @@ foreign_bin() {
 # If it cannot be kept, the script ends with a message that ends in `$2`.
 kept_bin=
 adopt_bin() {
-    local legacy running=$1 from=${kept_bin:-$bin_dir/rusty-impulse} was_cur
+    local legacy running=$1 from=${kept_bin:-$bin_dir/impulse-shell} was_cur
     foreign_bin || return 0
     was_cur=$(readlink "$lib/current" 2>/dev/null) || was_cur=
     legacy=$(new_id "$from" legacy-)
@@ -601,9 +601,9 @@ adopt_bin() {
     # copy, then `current`, are on the disk before the name leads to them.
     flush "$lib/releases/$legacy"
     if point current "$legacy" && flush "$lib" && link_bin; then return 0; fi
-    $SUDO rm -f "$lib/.current.new" "$bin_dir/.rusty-impulse.new" || true
+    $SUDO rm -f "$lib/.current.new" "$bin_dir/.impulse-shell.new" || true
     put_link_back current "$was_cur" && $SUDO rm -rf "$lib/releases/$legacy" || true
-    die "cannot keep $bin_dir/rusty-impulse, which no install put there, as a release in $lib; $2"
+    die "cannot keep $bin_dir/impulse-shell, which no install put there, as a release in $lib; $2"
 }
 
 install_release() {
@@ -621,34 +621,34 @@ install_release() {
     cur=$(release current) || cur=
     prev=$(release previous) || prev=
     if [ -n "$cur" ] && [ ! -e "$lib/releases/$cur/unverified" ] &&
-        cmp -s "$bin" "$lib/releases/$cur/rusty-impulse" && same_tree "$tree" "$lib/releases/$cur/tree"; then
+        cmp -s "$bin" "$lib/releases/$cur/impulse-shell" && same_tree "$tree" "$lib/releases/$cur/tree"; then
         replace_tree "$lib/releases/$cur/tree" "$lib/releases/$cur/tree" || exit 1
         if [ -n "$tree_change" ]; then
             switch_links "$cur" "$prev" "" "nothing changed" || exit 1
         else
-            launches "$lib/releases/$cur/rusty-impulse" >/dev/null ||
-                die "$bin_dir/rusty-impulse is this build ($cur) and would not start as \`rusty-impulse -c rusty-impulse\`; nothing changed"
+            launches "$lib/releases/$cur/impulse-shell" >/dev/null ||
+                die "$bin_dir/impulse-shell is this build ($cur) and would not start as \`impulse-shell -c impulse-shell\`; nothing changed"
         fi
         keep_tree
         link_bin
         drop_qs_link
         put_app_icon
-        echo "$bin_dir/rusty-impulse is already this build ($cur)"
-        optional "$lib/releases/$cur/rusty-impulse"
+        echo "$bin_dir/impulse-shell is already this build ($cur)"
+        optional "$lib/releases/$cur/impulse-shell"
         return 0
     fi
     id=$(new_id "$bin")
     staged=$id
     store "$bin" "$tree" "$id"
     # The pair as stored, not as it was before the copy.
-    accepts "$lib/releases/$id/rusty-impulse" "$lib/releases/$id/tree" >/dev/null || {
+    accepts "$lib/releases/$id/impulse-shell" "$lib/releases/$id/tree" >/dev/null || {
         $SUDO rm -rf "$lib/releases/$id"
         die "the stored copy of $tree is not the tree the binary was compiled from (did it change during the install?); nothing was installed"
     }
     # The same binary with another tree (a file the build does not read) takes the current
     # release's place: the release to roll back to stays one with another binary.
     keep=$cur
-    if [ -n "$cur" ] && cmp -s "$bin" "$lib/releases/$cur/rusty-impulse"; then keep=$prev; fi
+    if [ -n "$cur" ] && cmp -s "$bin" "$lib/releases/$cur/impulse-shell"; then keep=$prev; fi
     # The config and the links. If either cannot be replaced, what was replaced is put back:
     # the installed release stays the current one, with the config it runs and the release to
     # roll back to.
@@ -662,13 +662,13 @@ install_release() {
     drop_qs_link
     put_app_icon
     prune "$id" "$keep"
-    echo "installed $bin_dir/rusty-impulse ($id)"
+    echo "installed $bin_dir/impulse-shell ($id)"
     [ "$keep" = "$cur" ] || echo "it replaces $cur, which has the same binary"
     [ -z "$keep" ] || echo "previous: $keep (tools/install.sh --rollback)"
-    optional "$lib/releases/$id/rusty-impulse"
+    optional "$lib/releases/$id/impulse-shell"
 }
 
-# Makes the rusty-impulse config a copy of the stored tree `$1`, in parts, so that an install or a
+# Makes the impulse-shell config a copy of the stored tree `$1`, in parts, so that an install or a
 # rollback either happens whole or changes nothing. prepare_tree does all that can fail
 # before the config is touched: the directories for a config where there is none, the copy of
 # `$1` beside the config and, if the config was edited since it was the stored tree `$2` (or
@@ -766,7 +766,7 @@ unswap_tree() {
     # And is back on the disk before the links are.
     flush "$(dirname "$live")"
 }
-# Prepares the rusty-impulse config to become a copy of the stored tree `$1`, unless it is one; `$2` as
+# Prepares the impulse-shell config to become a copy of the stored tree `$1`, unless it is one; `$2` as
 # for prepare_tree. switch_links then replaces it.
 replace_tree() {
     tree_change=
@@ -799,12 +799,12 @@ put_back_by_hand() {
     local prev
     foreign_bin || return 1
     prev=$(release previous) && [ "$prev" != "$1" ] || return 1
-    cmp -s "$bin_dir/rusty-impulse" "$lib/releases/$prev/rusty-impulse" || return 1
+    cmp -s "$bin_dir/impulse-shell" "$lib/releases/$prev/impulse-shell" || return 1
     [ -f "$config_tree/shell.qml" ] && same_tree "$config_tree" "$lib/releases/$prev/tree" || return 1
     if point previous "$1" && point current "$prev" && flush "$lib" && link_bin; then return 0; fi
-    $SUDO rm -f "$lib/.previous.new" "$lib/.current.new" "$bin_dir/.rusty-impulse.new" || true
+    $SUDO rm -f "$lib/.previous.new" "$lib/.current.new" "$bin_dir/.impulse-shell.new" || true
     put_link_back current "releases/$1" && put_link_back previous "releases/$prev" || true
-    die "cannot switch the links in $lib to the release that $bin_dir/rusty-impulse is a copy of; nothing changed"
+    die "cannot switch the links in $lib to the release that $bin_dir/impulse-shell is a copy of; nothing changed"
 }
 
 # The build from before the rename is not a release of this directory: it stays installed under
@@ -836,7 +836,7 @@ rollback() {
     fi
     target=$lib/releases/$prev
     if [ ! -f "$config_tree/shell.qml" ]; then
-        # No rusty-impulse config for the older binary to run: it gets its release's, as from an install.
+        # No impulse-shell config for the older binary to run: it gets its release's, as from an install.
         restore=1
     # The newer release changed the tree: undo that as well. Otherwise the config stays as it
     # is when the older binary runs it.
@@ -844,18 +844,18 @@ rollback() {
         restore=1
     elif [ -e "$target/unverified" ]; then
         same_tree "$config_tree" "$target/tree" || restore=1
-    elif ! accepts "$target/rusty-impulse" "$config_tree" >/dev/null 2>&1; then
+    elif ! accepts "$target/impulse-shell" "$config_tree" >/dev/null 2>&1; then
         restore=1
     fi
     if [ -n "$restore" ]; then
-        [ -e "$target/unverified" ] || accepts "$target/rusty-impulse" "$target/tree" >/dev/null 2>&1 ||
+        [ -e "$target/unverified" ] || accepts "$target/impulse-shell" "$target/tree" >/dev/null 2>&1 ||
             die "the tree stored with $prev is not the one its binary was compiled from; nothing changed"
         replace_tree "$target/tree" "$lib/releases/$cur/tree" || exit 1
     fi
     switch_links "$prev" "$cur" "" "nothing changed" || exit 1
     # The release that was the previous one is neither any more.
     [ "$to" = previous ] || prune "$prev" "$cur"
-    echo "rolled back $bin_dir/rusty-impulse to $prev (was $cur)"
+    echo "rolled back $bin_dir/impulse-shell to $prev (was $cur)"
     if [ "$tree_change" = replaced ]; then
         if [ -n "$old" ]; then
             echo "restored $config_tree from that release"
@@ -874,10 +874,10 @@ mark_good() {
     as_the_user
     [ -d "$lib/releases" ] || die "nothing is installed under $lib"
     lock
-    ! foreign_bin || die "$bin_dir/rusty-impulse is not a release of $lib (no install put it there); nothing was marked"
+    ! foreign_bin || die "$bin_dir/impulse-shell is not a release of $lib (no install put it there); nothing was marked"
     cur=$(release current) || die "nothing is installed under $lib"
     if [ -n "${SHA256:-}" ]; then
-        sum=$(sha256sum <"$lib/releases/$cur/rusty-impulse" | cut -d' ' -f1)
+        sum=$(sha256sum <"$lib/releases/$cur/impulse-shell" | cut -d' ' -f1)
         [ "$sum" = "$SHA256" ] ||
             die "the current release $cur has the sha256 $sum, not $SHA256; nothing was marked"
     fi
@@ -892,9 +892,9 @@ status() {
     as_the_user
     if switching; then
         if at_work; then
-            echo "an install or a rollback is switching releases now: an rusty-impulse started meanwhile waits for it"
+            echo "an install or a rollback is switching releases now: an impulse-shell started meanwhile waits for it"
         else
-            echo "an install or a rollback was interrupted: rusty-impulse starts the release that runs the rusty-impulse config as it is, and the next install or rollback finishes or undoes it"
+            echo "an install or a rollback was interrupted: impulse-shell starts the release that runs the impulse-shell config as it is, and the next install or rollback finishes or undoes it"
         fi
         return 0
     fi
@@ -906,22 +906,22 @@ status() {
     [ -z "$(old_names_note)" ] || echo "before the rename:$(old_names_note | cut -c2-)"
     copies=("$state_dir"/replaced-*)
     [ ! -e "${copies[0]}" ] ||
-        echo "replaced rusty-impulse configs: ${#copies[@]} kept in $state_dir (yours to remove)"
+        echo "replaced impulse-shell configs: ${#copies[@]} kept in $state_dir (yours to remove)"
     if [ ! -f "$config_tree/shell.qml" ]; then
-        echo "rusty-impulse config: none at $config_tree"
+        echo "impulse-shell config: none at $config_tree"
         return 0
     fi
     if same_tree "$config_tree" "$lib/releases/$cur/tree"; then
-        echo "rusty-impulse config: $config_tree is the tree stored with $cur"
+        echo "impulse-shell config: $config_tree is the tree stored with $cur"
     else
-        echo "rusty-impulse config: $config_tree differs from the tree stored with $cur:"
+        echo "impulse-shell config: $config_tree differs from the tree stored with $cur:"
         {
             diff -rq -x .git "$lib/releases/$cur/tree/." "$config_tree/." 2>&1 || true
             other_modes "$lib/releases/$cur/tree" "$config_tree" 2>&1 |
                 sed 's/^/Executable in only one of the two: /'
         } | head -n 20 | sed 's/^/  /' || true
     fi
-    [ -e "$lib/releases/$cur/unverified" ] || launches "$lib/releases/$cur/rusty-impulse"
+    [ -e "$lib/releases/$cur/unverified" ] || launches "$lib/releases/$cur/impulse-shell"
 }
 
 # Edit mode's shortcut, bound as end-4's dots bind the shell: Hyprland dispatches the shell's
@@ -953,9 +953,9 @@ drop_edit_bind() {
 }
 
 uninstall() {
-    local name=$bin_dir/rusty-impulse ours=
+    local name=$bin_dir/impulse-shell ours=
     as_the_user
-    [ "$(readlink "$name" 2>/dev/null)" != ../lib/rusty-impulse/current/rusty-impulse ] || ours=1
+    [ "$(readlink "$name" 2>/dev/null)" != ../lib/impulse-shell/current/impulse-shell ] || ours=1
     # Only the link an install made is the script's to remove.
     if [ ! -d "$lib" ] && [ -z "$ours" ]; then
         [ ! -e "$name" ] && [ ! -L "$name" ] ||
@@ -976,9 +976,9 @@ uninstall() {
             echo "left: $name, which is not the link an install makes (it has another origin)"
     fi
     [ ! -e "$config_tree" ] ||
-        echo "left: the rusty-impulse config $config_tree, the tree rusty-impulse ran (yours to remove)"
+        echo "left: the impulse-shell config $config_tree, the tree impulse-shell ran (yours to remove)"
     if compgen -G "$state_dir/replaced-*" >/dev/null; then
-        echo "kept: the rusty-impulse configs that installs and rollbacks replaced, in $state_dir (yours to remove)"
+        echo "kept: the impulse-shell configs that installs and rollbacks replaced, in $state_dir (yours to remove)"
     fi
 }
 
@@ -1028,8 +1028,8 @@ elif [ -z "${NOBUILD:-}" ]; then
     # The name of the binary may be a link to the file this build writes (a build of this
     # checkout that was run in place): the binary as it is now is what adopt_bin keeps.
     if foreign_bin; then
-        kept_bin=$(mktemp) && cp "$bin_dir/rusty-impulse" "$kept_bin" ||
-            die "cannot keep a copy of $bin_dir/rusty-impulse, which no install put there; nothing was installed"
+        kept_bin=$(mktemp) && cp "$bin_dir/impulse-shell" "$kept_bin" ||
+            die "cannot keep a copy of $bin_dir/impulse-shell, which no install put there; nothing was installed"
         trap 'rm -f "$kept_bin"' EXIT
     fi
     # tools/build.sh builds the shipped binary: it names its commit and the checksum of its
@@ -1045,16 +1045,16 @@ else
     # the one that is there is installed, and of several none.
     target_dir=$(cd "$repo" && cargo metadata --locked --format-version 1 --no-deps | jq -r .target_directory)
     builds=()
-    for bin in "$target_dir"/release/rusty-impulse "$target_dir"/*/release/rusty-impulse; do
+    for bin in "$target_dir"/release/impulse-shell "$target_dir"/*/release/impulse-shell; do
         [ ! -x "$bin" ] || builds+=("$bin")
     done
     [ ${#builds[@]} -le 1 ] ||
-        die "more than one build of rusty-impulse under $target_dir: ${builds[*]}; name the one to install with BIN=<file>; nothing was installed"
-    bin=${builds[0]:-$target_dir/release/rusty-impulse}
+        die "more than one build of impulse-shell under $target_dir: ${builds[*]}; name the one to install with BIN=<file>; nothing was installed"
+    bin=${builds[0]:-$target_dir/release/impulse-shell}
 fi
 # A file is named by its path, also one in the current directory: it is not looked for in
 # $PATH.
 case $bin in /*) ;; *) bin=$PWD/$bin ;; esac
-[ -x "$bin" ] || die "no rusty-impulse binary at '$bin'"
+[ -x "$bin" ] || die "no impulse-shell binary at '$bin'"
 install_release "$bin" "$RI_ROOT"
 add_edit_bind

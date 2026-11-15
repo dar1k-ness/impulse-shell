@@ -5,7 +5,7 @@
 // Interaction harness for tests/interact.rs: one instance of every interactive control type
 // the tree uses, at fixed positions, logging its signals and resulting state as `IACT ...` lines.
 // The test copies the tree next to this file (so `qs.*` imports resolve) and runs it under both
-// `qs -p` and `rusty-impulse -p`, driving identical pointer/keyboard input.
+// `qs -p` and `impulse-shell -p`, driving identical pointer/keyboard input.
 import QtQuick
 import QtQuick.Controls
 import Quickshell
@@ -40,7 +40,7 @@ ShellRoot {
         }
 
         // The test's input clock, outside the trace: Qt (QWaylandEventCompressionPrivate) and
-        // rusty-impulse both merge pointer frames that queued up behind each other, so the test sends
+        // impulse-shell both merge pointer frames that queued up behind each other, so the test sends
         // the next one only once two frames were drawn after the previous, i.e. after the shell's
         // event loop has handled it on its own.
         FrameAnimation {

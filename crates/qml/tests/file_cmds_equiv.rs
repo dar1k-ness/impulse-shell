@@ -127,8 +127,8 @@ fn clear(f: &Fx) {
     }
     let _ = std::fs::remove_file(&f.log);
     f.notes.lock().unwrap().clear();
-    std::fs::create_dir_all(f.home.join(".config/rusty-impulse")).unwrap();
-    std::fs::write(f.home.join(".config/rusty-impulse/config.json"), "{}").unwrap();
+    std::fs::create_dir_all(f.home.join(".config/impulse-shell")).unwrap();
+    std::fs::write(f.home.join(".config/impulse-shell/config.json"), "{}").unwrap();
 }
 
 fn walk(p: &Path, rel: &str, out: &mut BTreeMap<String, String>) {
@@ -168,7 +168,7 @@ fn snapshot(f: &Fx) -> Vec<String> {
     let mut out: Vec<String> = m
         .into_iter()
         .filter(|(k, _)| {
-            !k.starts_with("~/.config/rusty-impulse/config.json") && !k.contains("/notifications")
+            !k.starts_with("~/.config/impulse-shell/config.json") && !k.contains("/notifications")
         })
         .map(|(k, v)| format!("{k}: {v}"))
         .collect();
@@ -574,8 +574,8 @@ fn first_run_launches() {
         &marker,
         &singleton("FirstRunExperience"),
         &launch(&[
-            "/opt/rusty-impulse/welcome.qml",
-            "/opt/my rusty-impulse/welcome.qml",
+            "/opt/impulse-shell/welcome.qml",
+            "/opt/my impulse-shell/welcome.qml",
         ]),
         &[],
     );

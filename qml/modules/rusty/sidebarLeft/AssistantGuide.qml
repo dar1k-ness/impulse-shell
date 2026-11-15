@@ -47,7 +47,7 @@ Item {
                 icon: "list"
                 title: "menu"
                 text: Translation.tr("Runs with sh -c each time the sidebar opens and prints a JSON array. Each entry has icon (a Material Symbols name), label, an optional description, and exec, which runs with sh -c on click.")
-                code: '"sidebar": {\n  "assistant": {\n    "menu": "~/.config/rusty-impulse/menu.sh"\n  }\n}'
+                code: '"sidebar": {\n  "assistant": {\n    "menu": "~/.config/impulse-shell/menu.sh"\n  }\n}'
                 code2: '#!/bin/sh\necho \'[\n  {"icon": "terminal", "label": "Terminal",\n   "exec": "kitty"},\n  {"icon": "update", "label": "Update",\n   "description": "yay -Syu",\n   "exec": "kitty -e yay -Syu"}\n]\''
                 note: Translation.tr("If both are set, the menu is shown.")
             }

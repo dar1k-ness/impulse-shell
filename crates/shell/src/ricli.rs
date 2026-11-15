@@ -1,7 +1,7 @@
-//! The command line of `rusty-impulse`, which is Quickshell's `qs` command line, so that scripts and
-//! keybinds written for `qs` work with `rusty-impulse` in its place: `rusty-impulse [-c name | -p path]`
-//! launches the shell, and `rusty-impulse ... ipc call|show|prop get|wait|listen`, `rusty-impulse msg` and
-//! `rusty-impulse kill` talk to a running instance over its socket; `rusty-impulse list` and `rusty-impulse log` read
+//! The command line of `impulse-shell`, which is Quickshell's `qs` command line, so that scripts and
+//! keybinds written for `qs` work with `impulse-shell` in its place: `impulse-shell [-c name | -p path]`
+//! launches the shell, and `impulse-shell ... ipc call|show|prop get|wait|listen`, `impulse-shell msg` and
+//! `impulse-shell kill` talk to a running instance over its socket; `impulse-shell list` and `impulse-shell log` read
 //! the instance registry and `log.qslog` files. Instance selection, messages and exit codes
 //! follow quickshell's launch/command.cpp and io/ipccomm.cpp. Run under the name `qs` (a link),
 //! the default config is quickshell's "default" instead of the original.
@@ -39,7 +39,7 @@ struct Opts {
     check_tree: bool,
     /// `-V`, `--version`: print [`version`] instead of launching.
     version: bool,
-    /// Invoked as `rusty-impulse`, not `qs`: the default config is the original rather than quickshell's "default".
+    /// Invoked as `impulse-shell`, not `qs`: the default config is the original rather than quickshell's "default".
     native: bool,
     /// Subcommand words and positional arguments, in order.
     words: Vec<String>,
@@ -88,7 +88,7 @@ pub fn dispatch() -> (PathBuf, Option<PathBuf>) {
         Some("wallpick") if native => std::process::exit(qml::jobs_wallpick::cli(
             &o.words[1..],
             &PathBuf::from(std::env::var("HOME").unwrap_or_default())
-                .join(".config/rustshell/rusty-impulse"),
+                .join(".config/rustshell/impulse-shell"),
         )),
         _ => {}
     }
@@ -110,7 +110,7 @@ fn launch_target(o: &Opts) -> (PathBuf, Option<PathBuf>) {
         // Native convention: a bare directory argument, else the original.
         let root = o.words.first().map(PathBuf::from).unwrap_or_else(|| {
             PathBuf::from(std::env::var("HOME").unwrap_or_default())
-                .join(".config/rustshell/rusty-impulse")
+                .join(".config/rustshell/impulse-shell")
         });
         return (root, None);
     }
@@ -138,7 +138,7 @@ fn launch_target(o: &Opts) -> (PathBuf, Option<PathBuf>) {
 /// RI_COMMIT; the shipped binary does not compile without it, see main.rs).
 fn version() -> String {
     format!(
-        "rusty-impulse {} (commit {})\nQML tree: sum {}\nJavaScript interpreter: {}\n\
+        "impulse-shell {} (commit {})\nQML tree: sum {}\nJavaScript interpreter: {}\n\
          Thai line breaking: {}\n",
         env!("CARGO_PKG_VERSION"),
         option_env!("RI_COMMIT").unwrap_or("unknown"),
@@ -160,13 +160,13 @@ fn check_tree(root: &Path, app_file: Option<&Path>) -> i32 {
     let differing = crate::reload::differing_tree(root, app_file);
     if differing.is_empty() {
         say(&format!(
-            "rusty-impulse: {} has the scripts this binary was compiled from\n",
+            "impulse-shell: {} has the scripts this binary was compiled from\n",
             app_file.unwrap_or(root).display()
         ));
         return 0;
     }
     elog::eprintln!(
-        "rusty-impulse: {} differs from the tree this binary was compiled from:",
+        "impulse-shell: {} differs from the tree this binary was compiled from:",
         root.display()
     );
     const SHOWN: usize = 20;
@@ -180,19 +180,19 @@ fn check_tree(root: &Path, app_file: Option<&Path>) -> i32 {
 }
 
 const USAGE: &str = "\
-Usage: rusty-impulse [-c NAME | -p PATH]                 run the shell (default config: rusty-impulse)
-       rusty-impulse [-c NAME | -p PATH] --check-tree    exit 0 if that config has the scripts this
+Usage: impulse-shell [-c NAME | -p PATH]                 run the shell (default config: impulse-shell)
+       impulse-shell [-c NAME | -p PATH] --check-tree    exit 0 if that config has the scripts this
                                                  binary was compiled from, else list them, exit 1
-       rusty-impulse -V, --version                       the build, its QML tree, whether it has a
+       impulse-shell -V, --version                       the build, its QML tree, whether it has a
                                                  JavaScript interpreter, and how Thai is broken
                                                  (between words needs libthai)
-       rusty-impulse [SELECT] ipc call TARGET FUNCTION [ARGS...]
-       rusty-impulse [SELECT] ipc show | prop get TARGET PROP | wait TARGET SIGNAL | listen TARGET SIGNAL
-       rusty-impulse [SELECT] msg [-s] TARGET FUNCTION [ARGS...]
-       rusty-impulse [SELECT] kill
-       rusty-impulse list [-a | -c NAME | -p PATH] [-j] [--show-dead]
-       rusty-impulse log [FILE | SELECT] [-t N] [-f] [-r RULES]
-       rusty-impulse wallpick pick [--desktop | --words TEXT] | like | dislike [--next] |
+       impulse-shell [SELECT] ipc call TARGET FUNCTION [ARGS...]
+       impulse-shell [SELECT] ipc show | prop get TARGET PROP | wait TARGET SIGNAL | listen TARGET SIGNAL
+       impulse-shell [SELECT] msg [-s] TARGET FUNCTION [ARGS...]
+       impulse-shell [SELECT] kill
+       impulse-shell list [-a | -c NAME | -p PATH] [-j] [--show-dead]
+       impulse-shell log [FILE | SELECT] [-t N] [-f] [-r RULES]
+       impulse-shell wallpick pick [--desktop | --words TEXT] | like | dislike [--next] |
                               revert | keep | style | reset-taste
 SELECT: -c,--config NAME | -p,--path PATH | -i,--id ID | --pid PID, -n,--newest, --any-display
 ";
@@ -266,7 +266,7 @@ fn config_selection(o: &Opts, native: bool) -> (Option<String>, Option<String>) 
     let env = |k| std::env::var(k).ok().filter(|v: &String| !v.is_empty());
     match (&o.path, &o.name) {
         (None, None) => match (env("QS_CONFIG_PATH"), env("QS_CONFIG_NAME")) {
-            (None, None) if native => (None, Some("rusty-impulse".into())),
+            (None, None) if native => (None, Some("impulse-shell".into())),
             sel => sel,
         },
         (p, n) => (p.clone(), n.clone()),
@@ -275,7 +275,7 @@ fn config_selection(o: &Opts, native: bool) -> (Option<String>, Option<String>) 
 
 /// quickshell's `configBaseDirs`, but for a relative `XDG_CONFIG_HOME`: quickshell takes the
 /// variable as it is here, and native ignores a relative value here as everywhere else
-/// ([`qml::xdg`], the XDG Base Directory Specification). tools/install.sh puts the rusty-impulse config
+/// ([`qml::xdg`], the XDG Base Directory Specification). tools/install.sh puts the impulse-shell config
 /// under the same directory.
 fn config_base_dirs() -> Vec<PathBuf> {
     let home = qml::xdg::config_home();
@@ -1116,7 +1116,7 @@ fn run(s: &mut UnixStream, req: &Req, id: &str) -> std::io::Result<i32> {
 }
 
 /// Writes `text` to stdout. `print!` panics when the write fails; SIGPIPE is ignored in Rust
-/// programs, so the write to a pipe whose reader is gone (`rusty-impulse -V | true`) fails with EPIPE.
+/// programs, so the write to a pipe whose reader is gone (`impulse-shell -V | true`) fails with EPIPE.
 fn put(text: &str) -> std::io::Result<()> {
     let mut so = std::io::stdout().lock();
     so.write_all(text.as_bytes())?;
@@ -1142,7 +1142,7 @@ fn output_failed(e: &std::io::Error) -> ! {
     if e.kind() == std::io::ErrorKind::BrokenPipe {
         crate::shutdown::exit_by(libc::SIGPIPE);
     }
-    elog::eprintln!("rusty-impulse: cannot write to the standard output: {e}");
+    elog::eprintln!("impulse-shell: cannot write to the standard output: {e}");
     std::process::exit(FAIL);
 }
 
@@ -1156,41 +1156,41 @@ mod tests {
 
     #[test]
     fn check_tree_selects_the_config_as_a_launch_does() {
-        let o = parse(&args("--check-tree -p /x/rusty-impulse")).unwrap();
+        let o = parse(&args("--check-tree -p /x/impulse-shell")).unwrap();
         assert!(o.check_tree && o.words.is_empty());
-        assert_eq!(o.path.as_deref(), Some("/x/rusty-impulse"));
-        let o = parse(&args("-c rusty-impulse")).unwrap();
+        assert_eq!(o.path.as_deref(), Some("/x/impulse-shell"));
+        let o = parse(&args("-c impulse-shell")).unwrap();
         assert!(!o.check_tree);
     }
 
     #[test]
     fn parses_hyprland_calls() {
-        let o = parse(&args("-c rusty-impulse ipc call sidebarLeft toggle")).unwrap();
-        assert_eq!(o.name.as_deref(), Some("rusty-impulse"));
+        let o = parse(&args("-c impulse-shell ipc call sidebarLeft toggle")).unwrap();
+        assert_eq!(o.name.as_deref(), Some("impulse-shell"));
         assert_eq!(
             request(&o.words).unwrap(),
             Req::Call("sidebarLeft".into(), "toggle".into(), vec![])
         );
         let o = parse(&args(
-            "-p /x/rusty-impulse/ ipc call brightness increment -5",
+            "-p /x/impulse-shell/ ipc call brightness increment -5",
         ))
         .unwrap();
-        assert_eq!(o.path.as_deref(), Some("/x/rusty-impulse/"));
+        assert_eq!(o.path.as_deref(), Some("/x/impulse-shell/"));
         assert_eq!(
             request(&o.words).unwrap(),
             Req::Call("brightness".into(), "increment".into(), vec!["-5".into()])
         );
         let o = parse(&args(
-            "ipc --config=rusty-impulse --newest prop get bar visible",
+            "ipc --config=impulse-shell --newest prop get bar visible",
         ))
         .unwrap();
-        assert!(o.newest && o.name.as_deref() == Some("rusty-impulse"));
+        assert!(o.newest && o.name.as_deref() == Some("impulse-shell"));
         assert_eq!(
             request(&o.words).unwrap(),
             Req::Prop("bar".into(), "visible".into())
         );
-        let o = parse(&args("-crusty-impulse ipc call x y -- -n")).unwrap();
-        assert!(!o.newest && o.name.as_deref() == Some("rusty-impulse"));
+        let o = parse(&args("-cimpulse-shell ipc call x y -- -n")).unwrap();
+        assert!(!o.newest && o.name.as_deref() == Some("impulse-shell"));
         assert_eq!(
             request(&o.words).unwrap(),
             Req::Call("x".into(), "y".into(), vec!["-n".into()])
@@ -1201,7 +1201,7 @@ mod tests {
         {
             assert_eq!(
                 config_selection(&o, true),
-                (None, Some("rusty-impulse".into()))
+                (None, Some("impulse-shell".into()))
             );
             assert_eq!(config_selection(&o, false), (None, None));
         }
@@ -1228,10 +1228,10 @@ mod tests {
     #[test]
     fn locates_named_and_path_configs() {
         let d = std::env::temp_dir().join(format!("ricli-{}", std::process::id()));
-        std::fs::create_dir_all(d.join("rusty-impulse")).unwrap();
-        std::fs::write(d.join("rusty-impulse/shell.qml"), "").unwrap();
-        let p = d.join("rusty-impulse/").to_string_lossy().into_owned();
-        let want = clean_absolute(&d.join("rusty-impulse/shell.qml")).unwrap();
+        std::fs::create_dir_all(d.join("impulse-shell")).unwrap();
+        std::fs::write(d.join("impulse-shell/shell.qml"), "").unwrap();
+        let p = d.join("impulse-shell/").to_string_lossy().into_owned();
+        let want = clean_absolute(&d.join("impulse-shell/shell.qml")).unwrap();
         assert_eq!(locate_config(Some(p), None).unwrap(), want);
         assert!(locate_config(Some(d.join("nope").to_string_lossy().into()), None).is_err());
         let _ = std::fs::remove_dir_all(&d);

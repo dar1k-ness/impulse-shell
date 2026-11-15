@@ -6,10 +6,10 @@ export HYPRLAND_INSTANCE_SIGNATURE=test XDG_RUNTIME_DIR
 XDG_RUNTIME_DIR=$(mktemp -d); trap 'kill "$pid" 2>/dev/null; rm -rf "$XDG_RUNTIME_DIR"' EXIT
 here=$(dirname "$0")
 . "$here/lib.sh"
-# No shell is found or stopped by name here: the machine's own qs or rusty-impulse is not this test's.
+# No shell is found or stopped by name here: the machine's own qs or impulse-shell is not this test's.
 pgrep() { return 1; }
 pkill() { return 1; }
-# A "native binary" that stays up and is not named rusty-impulse, started as start_shell starts one.
+# A "native binary" that stays up and is not named impulse-shell, started as start_shell starts one.
 # launch.sh takes the step that pins the uptime (a mount namespace through sudo) as done: that step
 # needs root, and the shell it starts is then a child of sudo, not the process started here.
 export BIN=$XDG_RUNTIME_DIR/any-name SHELL_PID PARITY_UPTIME_PINNED=1

@@ -1,5 +1,5 @@
 //! The wallpaper picker's actions (services/Wallpick.qml's `WallpickRun`, and the
-//! `rusty-impulse wallpick <action>` command), run in-process: the engine is the
+//! `impulse-shell wallpick <action>` command), run in-process: the engine is the
 //! `wallpick` crate; applying a pick is the in-process `colorgen::switchwall` and edits of
 //! the shell config go through [`crate::shell_config`], as for every other native script.
 //! Each line on stdout is a status the settings pages show while the job runs.
@@ -46,12 +46,12 @@ impl Ctx {
     }
 
     fn config_file(&self) -> PathBuf {
-        self.config_home.join("rusty-impulse/config.json")
+        self.config_home.join("impulse-shell/config.json")
     }
 
     /// The shell's layout (`layout_model::default_path` under this config home).
     fn layout_file(&self) -> PathBuf {
-        self.config_home.join("rusty-impulse/layout.toml")
+        self.config_home.join("impulse-shell/layout.toml")
     }
 
     fn dirs(&self) -> wallpick::Dirs {
@@ -114,11 +114,11 @@ pub(crate) fn job(w: &mut World, p: usize) -> Option<Job> {
     }))
 }
 
-/// `rusty-impulse wallpick <action>` outside a running shell (scripts, keybinds).
+/// `impulse-shell wallpick <action>` outside a running shell (scripts, keybinds).
 pub fn cli(args: &[String], root: &Path) -> i32 {
     let Some(action) = Action::parse(args) else {
         elog::eprintln!(
-            "usage: rusty-impulse wallpick pick [--desktop | --words TEXT] | like | dislike [--next] | revert | keep | style | reset-taste | arrange LEFT CENTER RIGHT"
+            "usage: impulse-shell wallpick pick [--desktop | --words TEXT] | like | dislike [--next] | revert | keep | style | reset-taste | arrange LEFT CENTER RIGHT"
         );
         return 2;
     };
@@ -590,7 +590,7 @@ mod tests {
     use std::sync::Mutex;
 
     fn ctx(home: &std::path::Path, config: Value) -> Ctx {
-        let file = home.join(".config/rusty-impulse/config.json");
+        let file = home.join(".config/impulse-shell/config.json");
         std::fs::create_dir_all(file.parent().unwrap()).unwrap();
         std::fs::write(&file, config.to_string()).unwrap();
         Ctx {

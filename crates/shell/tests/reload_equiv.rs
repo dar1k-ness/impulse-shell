@@ -1,7 +1,7 @@
 //! `Quickshell.reload()` against the real Quickshell 0.3.2.
 //!
 //! `reload/base` is the running configuration and `reload/good` the one put over it. Each test
-//! runs Quickshell and the native shell (`rusty-impulse -p`) on a copy.
+//! runs Quickshell and the native shell (`impulse-shell -p`) on a copy.
 //!
 //! - A reload that happens runs `Component.onDestruction` of the old tree in both. Quickshell
 //!   completes the new tree and tells it `reloadCompleted` first; the native shell becomes a
@@ -52,7 +52,7 @@ impl Who {
                 c
             }
             Who::Native => {
-                let mut c = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+                let mut c = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
                 c.env("RI_INTERP", "1");
                 c
             }

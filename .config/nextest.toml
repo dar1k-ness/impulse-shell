@@ -82,7 +82,7 @@ filter = """
     | (binary_id(shell::settings_pages) & test(copy_info_opens_no_url))
     | (binary_id(shell::install_rollback) & test(a_shell_started_through_the_switch_reloads_into_the_release_installed_since))
     | (binary_id(qml::sysbus_services) & test(waffle_only_the_bluetooth_page_scans))
-    | (binary_id(shell::bin/rusty-impulse) & test(capture_without_screencopy_ends_failed))
+    | (binary_id(shell::bin/impulse-shell) & test(capture_without_screencopy_ends_failed))
     | binary_id(/^shell::(idle_inhibit_after_login|world_ends_with_runtime)$/)
     | binary_id(/^shell::effects_(qt|like_qt)$/)
     | (binary_id(shell::animated_image_qt) & test(/^played::/))

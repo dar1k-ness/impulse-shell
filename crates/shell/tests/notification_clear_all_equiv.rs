@@ -213,7 +213,7 @@ fn clear_all_closes_every_notification() {
     if !available() {
         return;
     }
-    let mut native = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let mut native = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
     native.arg("-p").arg(conf()).env("RI_INTERP", "1");
     assert_eq!(
         clear_all(native),

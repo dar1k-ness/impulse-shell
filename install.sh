@@ -1,6 +1,6 @@
 #!/bin/bash
 # install.sh: the whole install by one command, on Arch Linux with end-4's dots-hyprland in
-# place. It ends with rusty-impulse running in the Hyprland session it was started from.
+# place. It ends with impulse-shell running in the Hyprland session it was started from.
 #
 #   ./install.sh              from a checkout: install that checkout
 #   bash install.sh           from anywhere else (the file alone): clone the repository to
@@ -16,9 +16,9 @@
 #   3. build and install: PREFIX=~/.local tools/install.sh (docs/install.md).
 #   4. the user's data and files: tools/carry-over.sh, then tools/carry-over.sh --dots new. The
 #      settings, state and caches are copied to the new names, and the Hyprland files call and
-#      start rusty-impulse where they called and started Quickshell. Nothing old is removed.
+#      start impulse-shell where they called and started Quickshell. Nothing old is removed.
 #   5. the switch, when this runs inside a Hyprland session: Hyprland reloads its config, the
-#      shell that runs is stopped and rusty-impulse is started. If it does not show its panels
+#      shell that runs is stopped and impulse-shell is started. If it does not show its panels
 #      in $RI_START_WAIT seconds, the files of step 4 are put back and the shell that ran is
 #      started again: the session is not left without a shell. Outside a session nothing is
 #      started: the next login starts it.
@@ -27,8 +27,8 @@
 # tools/install.sh --uninstall removes the build.
 #
 # Environment:
-#   RI_REPO        the repository to clone (default https://github.com/dar1k-ness/rusty-impulse.git)
-#   RI_SRC         where the clone goes (default ~/.local/src/rusty-impulse)
+#   RI_REPO        the repository to clone (default https://github.com/dar1k-ness/impulse-shell.git)
+#   RI_SRC         where the clone goes (default ~/.local/src/impulse-shell)
 #   RI_START_WAIT  seconds to wait for the panels in step 5 (default 30)
 #
 # Exit status: 0 the shell is installed (and runs, if step 5 was made), 1 a step failed and
@@ -81,7 +81,7 @@ main() {
     fi
 }
 
-name=rusty-impulse
+name=impulse-shell
 word=rustshell
 bin=$HOME/.local/bin/$name
 config=${XDG_CONFIG_HOME-}
@@ -148,8 +148,8 @@ sources() {
         src=$here
         return 0
     fi
-    local repo=${RI_REPO:-https://github.com/dar1k-ness/rusty-impulse.git}
-    src=${RI_SRC:-$HOME/.local/src/rusty-impulse}
+    local repo=${RI_REPO:-https://github.com/dar1k-ness/impulse-shell.git}
+    src=${RI_SRC:-$HOME/.local/src/impulse-shell}
     command -v git >/dev/null || die "git is needed to get the sources"
     if [ -d "$src/.git" ]; then
         step "updating $src"

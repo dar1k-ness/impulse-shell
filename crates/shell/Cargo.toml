@@ -6,7 +6,7 @@ license.workspace = true
 rust-version.workspace = true
 
 [[bin]]
-name = "rusty-impulse"
+name = "impulse-shell"
 path = "src/main.rs"
 
 # Developer tools (offscreen bar render, headless flood benchmark): each is another full

@@ -174,7 +174,7 @@ impl Svc {
         &self,
         attributes: HashMap<String, String>,
     ) -> (Vec<OwnedObjectPath>, Vec<OwnedObjectPath>) {
-        if attributes.get("application").map(String::as_str) == Some("rusty-impulse") {
+        if attributes.get("application").map(String::as_str) == Some("impulse-shell") {
             (vec![op(ITEM)], vec![])
         } else {
             (vec![], vec![])
@@ -209,11 +209,11 @@ impl Item {
     }
     #[zbus(property)]
     fn attributes(&self) -> HashMap<String, String> {
-        HashMap::from([("application".into(), "rusty-impulse".into())])
+        HashMap::from([("application".into(), "impulse-shell".into())])
     }
     #[zbus(property)]
     fn label(&self) -> String {
-        "rusty-impulse".into()
+        "impulse-shell".into()
     }
     #[zbus(property)]
     fn created(&self) -> u64 {
@@ -393,14 +393,14 @@ struct Run {
 }
 
 const TR_FILES: &[&str] = &[
-    "rustshell/rusty-impulse/translations/en_US.json",
-    "rustshell/rusty-impulse/translations/en_US.json.bak",
-    "home/.config/rusty-impulse/translations/ru_RU.json",
+    "rustshell/impulse-shell/translations/en_US.json",
+    "rustshell/impulse-shell/translations/en_US.json.bak",
+    "home/.config/impulse-shell/translations/ru_RU.json",
 ];
 
 /// The config the translation edits: not byte-compared with the script (`jq … > f.tmp && mv`
 /// left an empty `.tmp` on failure and reformatted the whole file); see `Cfg`.
-const TR_CONFIG: &str = "home/.config/rusty-impulse/config.json";
+const TR_CONFIG: &str = "home/.config/impulse-shell/config.json";
 
 /// config.json after a run, and whether a `config.json.tmp` was left.
 struct Cfg {
@@ -408,12 +408,12 @@ struct Cfg {
     tmp: bool,
 }
 
-/// A config tree under `d`: `quickshell/rusty-impulse` (the scripts, translations, sources) and a
+/// A config tree under `d`: `quickshell/impulse-shell` (the scripts, translations, sources) and a
 /// sibling `quickshell/other` (manage-translations scans the parent of the tree). `en_US.json`
 /// lists the texts of the sources, as the shipped one does (`tests/translation_keys.rs`), so
 /// the script's update step finds nothing to change; the native side has no such step.
 fn translate_tree(d: &Path, port: u16, config: Option<&str>) -> PathBuf {
-    let ri = d.join("rustshell/rusty-impulse");
+    let ri = d.join("rustshell/impulse-shell");
     let script = ri.join("scripts/ai/gemini-translate.sh");
     script_copy("scripts/ai/gemini-translate.sh", &script, port);
     for f in ["manage-translations.sh", "translation-manager.py"] {
@@ -445,7 +445,7 @@ fn translate_tree(d: &Path, port: u16, config: Option<&str>) -> PathBuf {
         "Text { text: Translation.tr(\"  Other %1 \") }\n",
     )
     .unwrap();
-    let cfg = d.join("home/.config/rusty-impulse");
+    let cfg = d.join("home/.config/impulse-shell");
     std::fs::create_dir_all(&cfg).unwrap();
     if let Some(c) = config {
         std::fs::write(cfg.join("config.json"), c).unwrap();

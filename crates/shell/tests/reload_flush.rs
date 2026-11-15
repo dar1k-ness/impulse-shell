@@ -7,7 +7,7 @@ use std::process::{Child, Command, Stdio};
 
 use testenv::Log;
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 struct Kill(Child);
 impl Drop for Kill {

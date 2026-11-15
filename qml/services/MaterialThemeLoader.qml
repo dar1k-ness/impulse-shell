@@ -40,7 +40,7 @@ Singleton {
         }
         if (root.loadedOnce && !changed)
             return
-        // A new scheme (light/dark, accent) fades in over the old one: rusty-impulse crossfades each
+        // A new scheme (light/dark, accent) fades in over the old one: impulse-shell crossfades each
         // window from its last frame. The first load at startup applies at once.
         if (root.loadedOnce)
             Crossfade.request(400)

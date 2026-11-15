@@ -16,5 +16,5 @@ if [ -z "${PARITY_UPTIME_PINNED:-}" ]; then
 fi
 unset PARITY_UPTIME_PINNED
 echo "$$ $(cut -d' ' -f22 "/proc/$$/stat")" > "$SHELL_PID"
-if [ "$1" = native ]; then exec "${BIN:-$HOME/rusty-impulse/target/release/rusty-impulse}" > "$2" 2>&1 < /dev/null
+if [ "$1" = native ]; then exec "${BIN:-$HOME/impulse-shell/target/release/impulse-shell}" > "$2" 2>&1 < /dev/null
 else exec qs -p "$ORIG_TREE" > "$2" 2>&1 < /dev/null; fi

@@ -2,9 +2,9 @@
 //! `--dots old` puts them back. What is pinned here is that the commands in those files still
 //! reach the shell afterwards. The old build answered Quickshell's client, so stock files say
 //! `qs -c ii ipc call ...` (or `qs -c $qsConfig ipc call ...`); the new build has a socket of
-//! its own that `qs` does not know. (The rewrite made such a line `qs -c rusty-impulse ipc
+//! its own that `qs` does not know. (The rewrite made such a line `qs -c impulse-shell ipc
 //! call ...`, which nothing answers.) Each test has a home of its own; the commands of its
-//! files are run there with a `qs` and a `rusty-impulse` that write down what they were asked.
+//! files are run there with a `qs` and an `impulse-shell` that write down what they were asked.
 
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
@@ -34,7 +34,7 @@ impl Home {
         // Quickshell's client: it knows the old build's config and no other.
         home.program(
             "bin/qs",
-            "case \"$*\" in *rusty-impulse*) echo 'Could not find \"rusty-impulse\" config directory' >&2; exit 255 ;; esac\n\
+            "case \"$*\" in *impulse-shell*) echo 'Could not find \"impulse-shell\" config directory' >&2; exit 255 ;; esac\n\
              echo \"qs $*\" >>\"$HOME/asked\"\n",
         );
         home
@@ -55,12 +55,12 @@ impl Home {
         std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
     }
 
-    /// The new build installed the way the PC has it: `~/.local/bin/rusty-impulse`, a
+    /// The new build installed the way the PC has it: `~/.local/bin/impulse-shell`, a
     /// directory that is not on the PATH of what Hyprland runs.
     fn install_new(&self) {
         self.program(
-            ".local/bin/rusty-impulse",
-            "echo \"rusty-impulse $*\" >>\"$HOME/asked\"\n",
+            ".local/bin/impulse-shell",
+            "echo \"impulse-shell $*\" >>\"$HOME/asked\"\n",
         );
     }
 
@@ -98,7 +98,7 @@ impl Home {
     }
 
     /// Runs `calls.sh` of the home the way Hyprland runs a binding's command (`qsConfig` is
-    /// what `variables.lua` sets) and gives what `qs` and `rusty-impulse` were asked.
+    /// what `variables.lua` sets) and gives what `qs` and `impulse-shell` were asked.
     fn asked(&self) -> Vec<String> {
         let _ = std::fs::remove_file(self.path().join("asked"));
         let variables = self.read("variables.lua");
@@ -142,17 +142,17 @@ fn stock_calls_through_qs_reach_the_new_build_and_the_old_one_after_going_back()
     assert_eq!(
         home.asked(),
         [
-            "rusty-impulse -c rusty-impulse ipc call bar toggle",
-            "rusty-impulse -c rusty-impulse ipc call overview toggle",
-            "rusty-impulse -c rusty-impulse ipc call cliphistService update",
-            "rusty-impulse -p ~/.config/rustshell/rusty-impulse/welcome.qml",
-            "rusty-impulse -p ~/.config/rustshell/rusty-impulse/settings.qml",
+            "impulse-shell -c impulse-shell ipc call bar toggle",
+            "impulse-shell -c impulse-shell ipc call overview toggle",
+            "impulse-shell -c impulse-shell ipc call cliphistService update",
+            "impulse-shell -p ~/.config/rustshell/impulse-shell/welcome.qml",
+            "impulse-shell -p ~/.config/rustshell/impulse-shell/settings.qml",
         ]
     );
     // By its full path: ~/.local/bin is not on the PATH these commands run with.
     assert!(
         home.read("calls.sh")
-            .starts_with("$HOME/.local/bin/rusty-impulse -c $qsConfig ipc call bar toggle\n")
+            .starts_with("$HOME/.local/bin/impulse-shell -c $qsConfig ipc call bar toggle\n")
     );
 
     home.carry_over("old");
@@ -183,9 +183,9 @@ fn calls_through_the_old_binary_reach_the_new_one() {
     assert_eq!(
         home.asked(),
         [
-            "rusty-impulse -c rusty-impulse ipc call sidebarLeft toggle",
-            "rusty-impulse -c rusty-impulse ipc call cliphistService update",
-            "rusty-impulse -c rusty-impulse ipc call bar toggle",
+            "impulse-shell -c impulse-shell ipc call sidebarLeft toggle",
+            "impulse-shell -c impulse-shell ipc call cliphistService update",
+            "impulse-shell -c impulse-shell ipc call bar toggle",
         ]
     );
 
@@ -198,19 +198,19 @@ fn calls_through_the_old_binary_reach_the_new_one() {
 fn a_build_that_is_not_under_the_home_is_called_by_name() {
     let home = Home::new();
     home.program(
-        "bin/rusty-impulse",
-        "echo \"rusty-impulse $*\" >>\"$HOME/asked\"\n",
+        "bin/impulse-shell",
+        "echo \"impulse-shell $*\" >>\"$HOME/asked\"\n",
     );
     home.write("variables.lua", VARIABLES);
     home.write("calls.sh", "qs -c ii ipc call bar toggle\n");
     home.carry_over("new");
     assert_eq!(
         home.read("calls.sh"),
-        "rusty-impulse -c rusty-impulse ipc call bar toggle\n"
+        "impulse-shell -c impulse-shell ipc call bar toggle\n"
     );
     assert_eq!(
         home.asked(),
-        ["rusty-impulse -c rusty-impulse ipc call bar toggle"]
+        ["impulse-shell -c impulse-shell ipc call bar toggle"]
     );
 }
 
@@ -227,13 +227,13 @@ fn an_alias_for_the_old_client_calls_the_new_build() {
     let alias = std::fs::read_to_string(&fish).unwrap();
     assert_eq!(
         alias,
-        "    alias q '$HOME/.local/bin/rusty-impulse -c rusty-impulse'\n"
+        "    alias q '$HOME/.local/bin/impulse-shell -c impulse-shell'\n"
     );
     let body = alias.split('\'').nth(1).unwrap();
     home.write("calls.sh", &format!("{body} ipc call bar toggle\n"));
     assert_eq!(
         home.asked(),
-        ["rusty-impulse -c rusty-impulse ipc call bar toggle"]
+        ["impulse-shell -c impulse-shell ipc call bar toggle"]
     );
     home.carry_over("old");
     assert_eq!(
@@ -262,7 +262,7 @@ fn what_is_quickshells_own_stays() {
     home.carry_over("new");
     assert_eq!(
         home.read("keybinds.lua"),
-        format!("{stays}$HOME/.local/bin/rusty-impulse -c rusty-impulse ipc call bar toggle\n")
+        format!("{stays}$HOME/.local/bin/impulse-shell -c impulse-shell ipc call bar toggle\n")
     );
 }
 
@@ -289,11 +289,11 @@ fn the_stock_start_restart_and_lock_lines_name_the_new_build() {
     home.carry_over("new");
     assert_eq!(
         home.read("execs.lua"),
-        "hl.exec_cmd(\"$HOME/.local/bin/rusty-impulse -c $qsConfig\")\n\
-         hl.bind(\"CTRL + SUPER + R\", hl.dsp.exec_cmd(\"killall ydotool qs quickshell rusty-impulse; $HOME/.local/bin/rusty-impulse -c $qsConfig &\"),\n\
-         $lock_cmd = hyprctl dispatch 'hl.dsp.global(\"rustshell:lock\")' & pidof qs quickshell rusty-impulse hyprlock || hyprlock\n"
+        "hl.exec_cmd(\"$HOME/.local/bin/impulse-shell -c $qsConfig\")\n\
+         hl.bind(\"CTRL + SUPER + R\", hl.dsp.exec_cmd(\"killall ydotool qs quickshell impulse-shell; $HOME/.local/bin/impulse-shell -c $qsConfig &\"),\n\
+         $lock_cmd = hyprctl dispatch 'hl.dsp.global(\"rustshell:lock\")' & pidof qs quickshell impulse-shell hyprlock || hyprlock\n"
     );
-    assert_eq!(home.asked(), ["rusty-impulse -c rusty-impulse"]);
+    assert_eq!(home.asked(), ["impulse-shell -c impulse-shell"]);
     // A second run finds nothing more to rewrite.
     let rewritten = home.read("execs.lua");
     home.carry_over("new");
@@ -320,7 +320,7 @@ fn a_second_rewrite_keeps_the_old_text_of_the_first() {
                    $lock_cmd = hyprctl dispatch 'hl.dsp.global(\"rustshell:lock\")' & pidof qs quickshell hyprlock || hyprlock\n";
     let kept = home
         .path()
-        .join(".local/state/rusty-impulse/carry-over/dots/new")
+        .join(".local/state/impulse-shell/carry-over/dots/new")
         .join(home.hypr().strip_prefix("/").unwrap())
         .join("execs.lua");
     let now = home.read("execs.lua");
@@ -339,9 +339,9 @@ fn a_second_rewrite_keeps_the_old_text_of_the_first() {
 #[test]
 fn going_back_puts_the_layout_back_and_keeps_the_new_one_beside_it() {
     let home = Home::new();
-    let dir = home.path().join(".config/rusty-impulse");
+    let dir = home.path().join(".config/impulse-shell");
     let layout = dir.join("layout.toml");
-    let side = dir.join("layout.toml.from-rusty-impulse");
+    let side = dir.join("layout.toml.from-impulse-shell");
     let old = "version = 1\n[[widget]]\nedge = \"ii\"\nx = 10\n";
     let new = "version = 1\n[[widget]]\nedge = \"rusty\"\nx = 20\n";
     std::fs::create_dir_all(&dir).unwrap();
@@ -372,7 +372,7 @@ fn going_back_puts_the_layout_back_and_keeps_the_new_one_beside_it() {
 #[test]
 fn a_layout_the_old_build_changed_since_stays() {
     let home = Home::new();
-    let dir = home.path().join(".config/rusty-impulse");
+    let dir = home.path().join(".config/impulse-shell");
     let layout = dir.join("layout.toml");
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(&layout, "edge = \"ii\"\nx = 1\n").unwrap();
@@ -391,7 +391,7 @@ fn a_layout_the_old_build_changed_since_stays() {
         "edge = \"ii\"\nx = 3\n"
     );
     assert_eq!(
-        std::fs::read_to_string(dir.join("layout.toml.from-rusty-impulse")).unwrap(),
+        std::fs::read_to_string(dir.join("layout.toml.from-impulse-shell")).unwrap(),
         "edge = \"rusty\"\nx = 2\n"
     );
 }
@@ -401,7 +401,7 @@ fn a_layout_the_old_build_changed_since_stays() {
 #[test]
 fn a_layout_that_was_not_there_is_not_there_after_going_back() {
     let home = Home::new();
-    let dir = home.path().join(".config/rusty-impulse");
+    let dir = home.path().join(".config/impulse-shell");
     let layout = dir.join("layout.toml");
     home.carry_over("new");
     home.carry_over("old");
@@ -413,7 +413,7 @@ fn a_layout_that_was_not_there_is_not_there_after_going_back() {
     home.carry_over("old");
     assert!(!layout.exists());
     assert_eq!(
-        std::fs::read_to_string(dir.join("layout.toml.from-rusty-impulse")).unwrap(),
+        std::fs::read_to_string(dir.join("layout.toml.from-impulse-shell")).unwrap(),
         "edge = \"rusty\"\n"
     );
     home.carry_over("new");
@@ -429,21 +429,21 @@ fn a_layout_that_was_not_there_is_not_there_after_going_back() {
 #[test]
 fn dated_copies_of_the_layout_do_not_add_up() {
     let home = Home::new();
-    let dir = home.path().join(".config/rusty-impulse");
+    let dir = home.path().join(".config/impulse-shell");
     let layout = dir.join("layout.toml");
     std::fs::create_dir_all(&dir).unwrap();
     let dated = || {
         let mut names: Vec<String> = std::fs::read_dir(&dir)
             .unwrap()
             .map(|entry| entry.unwrap().file_name().into_string().unwrap())
-            .filter(|name| name.starts_with("layout.toml.from-rusty-impulse."))
+            .filter(|name| name.starts_with("layout.toml.from-impulse-shell."))
             .collect();
         names.sort();
         names
     };
     for old in ["20000101-000001", "20000101-000002", "20000101-000003"] {
         std::fs::write(
-            dir.join(format!("layout.toml.from-rusty-impulse.{old}")),
+            dir.join(format!("layout.toml.from-impulse-shell.{old}")),
             old,
         )
         .unwrap();
@@ -463,14 +463,14 @@ fn dated_copies_of_the_layout_do_not_add_up() {
             std::fs::rename(
                 dir.join(&name),
                 dir.join(format!(
-                    "layout.toml.from-rusty-impulse.2001010{round}-120000"
+                    "layout.toml.from-impulse-shell.2001010{round}-120000"
                 )),
             )
             .unwrap();
         }
     }
     assert_eq!(
-        std::fs::read_to_string(dir.join("layout.toml.from-rusty-impulse")).unwrap(),
+        std::fs::read_to_string(dir.join("layout.toml.from-impulse-shell")).unwrap(),
         "edge = \"rusty\"\nx = 4\n"
     );
     let names = dated();

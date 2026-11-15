@@ -155,7 +155,7 @@ impl Review {
             Some(Value::Item(i)) => i,
             v => panic!("ctl: {v:?}"),
         };
-        // As RustyImpulseFamily.qml does when the shell starts.
+        // As ImpulseShellFamily.qml does when the shell starts.
         rt.call_method(bg, "load", vec![]).unwrap().unwrap();
         rt.settle();
         assert!(rt.errors().is_empty(), "{:?}", rt.errors());
@@ -178,7 +178,7 @@ impl Review {
         v
     }
 
-    /// `rusty-impulse ipc call styleReview open`, what Wallpick.qml asks of the shell: the
+    /// `impulse-shell ipc call styleReview open`, what Wallpick.qml asks of the shell: the
     /// function of the handler with that target.
     fn ipc_open(&mut self) {
         let handler = {
@@ -493,7 +493,7 @@ fn dislike_picks_another_and_done_ends_the_review() {
     );
     let Some(home) = own_home(TEST) else { return };
     picked(&home);
-    let config = home.join(".config/rusty-impulse/config.json");
+    let config = home.join(".config/impulse-shell/config.json");
     std::fs::create_dir_all(config.parent().unwrap()).unwrap();
     std::fs::write(&config, "{\"background\": {}}}").unwrap();
     let before = saved(&home);
@@ -525,7 +525,7 @@ const BAR_BEFORE: &str = r#"{"left":["workspaces"],"center":["clock"],"right":["
 const BAR_PICKED: &str = r#"{"left":["media"],"center":[],"right":["clock","workspaces"]}"#;
 
 fn config_file(home: &Path) -> PathBuf {
-    home.join(".config/rusty-impulse/config.json")
+    home.join(".config/impulse-shell/config.json")
 }
 
 fn before_file(home: &Path) -> PathBuf {

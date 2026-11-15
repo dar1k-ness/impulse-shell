@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::sync::mpsc::Receiver;
 
 /// `try_lookup.sh` looks up exactly this attribute.
-pub const APP_ATTR: (&str, &str) = ("application", "rusty-impulse");
+pub const APP_ATTR: (&str, &str) = ("application", "impulse-shell");
 const LOGIN: &str = "/org/freedesktop/secrets/collection/login";
 
 /// `try_lookup.sh`'s three outcomes (exit 0 / 1 / 2).

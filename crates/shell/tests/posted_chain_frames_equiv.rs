@@ -3,7 +3,7 @@
 //! hold the frames: Qt's loop delivers the events standing in the queue (one turn of
 //! QCoreApplication::sendPostedEvents) and then goes back to its other sources, so an animation
 //! next to the chains still steps at every frame and a Timer still fires on time. The real
-//! quickshell running the fixture vs the native shell (`rusty-impulse -p`): the frames an animation
+//! quickshell running the fixture vs the native shell (`impulse-shell -p`): the frames an animation
 //! got in the second a Timer counts, and how long that second took.
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
@@ -99,7 +99,7 @@ fn chains_of_posted_events_leave_the_frames_as_in_quickshell() {
     let base = tempfile::tempdir().unwrap();
     let [qt_moves, qt_ms, qt_laters, qt_timers] = frames("qs", &base.path().join("orig"));
     let [moves, ms, laters, timers] = frames(
-        env!("CARGO_BIN_EXE_rusty-impulse"),
+        env!("CARGO_BIN_EXE_impulse-shell"),
         &base.path().join("native"),
     );
     assert!(

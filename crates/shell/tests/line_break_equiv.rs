@@ -280,9 +280,9 @@ fn thai_line_counts(strings: &[String]) -> String {
     format!("lines in Qt {qt:?}, ours {ours:?}")
 }
 
-/// What `rusty-impulse --version` says about Thai on this machine (tools/install.sh reads it).
+/// What `impulse-shell --version` says about Thai on this machine (tools/install.sh reads it).
 fn version_says_of_thai() -> String {
-    let out = std::process::Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
         .arg("--version")
         .output()
         .unwrap();
@@ -295,7 +295,7 @@ fn version_says_of_thai() -> String {
 }
 
 /// Thai breaks between the words libthai finds, as in Qt: the image has the library, so a
-/// sentence without a space is more than one line, and `rusty-impulse --version` says so.
+/// sentence without a space is more than one line, and `impulse-shell --version` says so.
 #[test]
 fn thai_breaks_between_words() {
     if !testenv::require("qml6") {

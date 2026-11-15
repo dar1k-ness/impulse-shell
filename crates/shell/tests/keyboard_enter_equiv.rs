@@ -1,7 +1,7 @@
-//! A `wl_keyboard.enter` that reaches a shell while it is busy, rusty-impulse against Quickshell.
+//! A `wl_keyboard.enter` that reaches a shell while it is busy, impulse-shell against Quickshell.
 //!
 //! Keys in one batch with the enter of a session lock surface (what was typed while the shell
-//! read nothing the compositor sent): rusty-impulse does with them what Quickshell does.
+//! read nothing the compositor sent): impulse-shell does with them what Quickshell does.
 //! The batch is made without a clock: `proxy::Hold` stands between the shell and sway, keeps
 //! back everything sway sends from the surface's `wl_keyboard.enter` on, and passes it to the
 //! shell in one write once the last of the keys is in it.
@@ -190,7 +190,7 @@ impl Client {
         cmd.arg("-eL");
         match name {
             "qs" => cmd.arg("qs"),
-            _ => cmd.arg(env!("CARGO_BIN_EXE_rusty-impulse")),
+            _ => cmd.arg(env!("CARGO_BIN_EXE_impulse-shell")),
         };
         sway.env(&mut cmd)
             .arg("-p")
@@ -281,7 +281,7 @@ fn typed(name: &'static str) -> Option<String> {
 /// sent on the enter (`key_before_activation_equiv.rs` has the same for a layer surface).
 #[test]
 fn keys_in_one_batch_with_enter_reach_no_field_of_a_lock_surface_as_in_quickshell() {
-    let (Some(ours), Some(qs)) = (typed("rusty-impulse"), typed("qs")) else {
+    let (Some(ours), Some(qs)) = (typed("impulse-shell"), typed("qs")) else {
         return;
     };
     assert_eq!(ours, qs);

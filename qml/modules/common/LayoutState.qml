@@ -5,7 +5,7 @@ import Rustshell
 
 /**
  * The container kinds ("panel", "desktop", "sidebar") the edit-mode layout
- * (~/.config/rusty-impulse/layout.toml) defines. rusty-impulse fills containerKinds from its layout
+ * (~/.config/impulse-shell/layout.toml) defines. impulse-shell fills containerKinds from its layout
  * model; with no layout the surfaces render their built-in the original content.
  */
 Singleton {

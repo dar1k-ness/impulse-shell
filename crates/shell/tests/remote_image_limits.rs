@@ -81,7 +81,7 @@ Item {{
 
 /// Bytes kept in the download cache.
 fn cached_bytes() -> u64 {
-    std::fs::read_dir(cache().join("rusty-impulse/net")).map_or(0, |d| {
+    std::fs::read_dir(cache().join("impulse-shell/net")).map_or(0, |d| {
         d.flatten()
             .map(|e| e.metadata().map_or(0, |m| m.len()))
             .sum()

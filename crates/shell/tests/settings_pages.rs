@@ -120,10 +120,10 @@ fn settings(test: &str, config: impl Fn(&Path) -> String) -> Option<Win> {
     if !testenv::in_own_process(test) {
         let home = tempfile::tempdir().unwrap();
         let h = home.path();
-        std::fs::create_dir_all(h.join(".config/rusty-impulse")).unwrap();
+        std::fs::create_dir_all(h.join(".config/impulse-shell")).unwrap();
         std::fs::create_dir_all(h.join(".local/state/rustshell/user")).unwrap();
         std::fs::create_dir_all(h.join("bin")).unwrap();
-        std::fs::write(h.join(".config/rusty-impulse/config.json"), config(h)).unwrap();
+        std::fs::write(h.join(".config/impulse-shell/config.json"), config(h)).unwrap();
         // Whatever a page opens ends here, not in a browser: in the FIFO a test made to read
         // what was opened ([`OPENED`]), nowhere without one.
         let opened = format!(

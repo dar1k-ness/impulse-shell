@@ -56,7 +56,7 @@ RUN pacman -S --noconfirm --needed tinyxml2 gtkmm3 gtksourceviewmm cairomm \
     && install -Dm0755 -t /opt/MicroTeX build/LaTeX && cp -r build/res /opt/MicroTeX/ \
     && cd / && rm -rf /tmp/MicroTeX
 
-# google-auth venv for gcloud's token-from-key-venv.sh (RUSTY_IMPULSE_VIRTUAL_ENV).
+# google-auth venv for gcloud's token-from-key-venv.sh (IMPULSE_SHELL_VIRTUAL_ENV).
 RUN python -m venv --system-site-packages /opt/ri-venv
 # the original's venv for scripts/images, switchwall and imgtools' goldens (see requirements.txt): wheels
 # only, hash-checked; materialyoucolor's sdist builds without build isolation so its build
@@ -97,7 +97,7 @@ RUN cargo install --locked --root /home/tester/.local cargo-deny@0.20.2 && rm -r
 RUN rustup component add llvm-tools \
     && cargo install --locked --root /home/tester/.local cargo-llvm-cov@0.9.1 \
     && rm -rf /home/tester/.cargo/registry
-ENV RUSTY_IMPULSE_VIRTUAL_ENV=/opt/ri-venv \
+ENV IMPULSE_SHELL_VIRTUAL_ENV=/opt/ri-venv \
     PATH=/home/tester/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin \
     CARGO_TARGET_DIR=/target \
     XDG_RUNTIME_DIR=/tmp/xdg \
@@ -108,7 +108,7 @@ ENV RUSTY_IMPULSE_VIRTUAL_ENV=/opt/ri-venv \
     WLR_RENDERER=pixman
 COPY --chown=tester tools/testenv/sway.conf /home/tester/sway.conf
 USER root
-# Qt 6.12's own QML engine (the Qt that runs `qs -c rusty-impulse`): riaotcheck's QV4 oracle (--v4) and
+# Qt 6.12's own QML engine (the Qt that runs `qs -c impulse-shell`): riaotcheck's QV4 oracle (--v4) and
 # crates/rigen/check/v4.py. Arch's qt6 may differ in version, so it is pinned through PySide6:
 # wheels only, hash-checked (see qv4-requirements.txt).
 COPY tools/testenv/qv4-requirements.txt /tmp/qv4-venv/

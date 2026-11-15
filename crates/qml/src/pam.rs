@@ -637,7 +637,7 @@ impl Pam {
         if !dir.starts_with('/') {
             // PamContext::setConfigDirectory: `context->resolvedUrl(configDirectory).path()`.
             let joined = std::path::PathBuf::from(w.resolved_qurl(item, &dir).path());
-            // A relative declaring file (`rusty-impulse -p rel/x.qml`) must still resolve to an absolute
+            // A relative declaring file (`impulse-shell -p rel/x.qml`) must still resolve to an absolute
             // path, or the next sync would join it again and grow it on every poll.
             let abs = std::path::absolute(&joined).unwrap_or(joined);
             w.write(item, "configDirectory", Value::str(&abs.to_string_lossy()));
@@ -1433,7 +1433,7 @@ int main(void) {
         assert_eq!(run(&mut rt, r, "done"), "done:0");
     }
 
-    /// A relative declaring file (`rusty-impulse -p rel/Lock.qml`) resolves `configDirectory` once to an
+    /// A relative declaring file (`impulse-shell -p rel/Lock.qml`) resolves `configDirectory` once to an
     /// absolute path; it used to stay relative and be joined again on every poll, growing.
     #[test]
     fn relative_file_resolves_config_directory_once() {

@@ -127,7 +127,7 @@ ApplicationWindow {
 
     visible: true
     onClosing: Qt.quit()
-    title: "rusty-impulse Settings"
+    title: "Impulse Settings"
 
     Component.onCompleted: {
         MaterialThemeLoader.reapplyTheme()
@@ -281,10 +281,10 @@ ApplicationWindow {
                         expanded: navRail.expanded
                         Layout.leftMargin: navRail.inset
                         downAction: () => {
-                            Qt.openUrlExternally(`${Directories.config}/rusty-impulse/config.json`);
+                            Qt.openUrlExternally(`${Directories.config}/impulse-shell/config.json`);
                         }
                         altAction: () => {
-                            Rustshell.clipboardText = CF.FileUtils.trimFileProtocol(`${Directories.config}/rusty-impulse/config.json`);
+                            Rustshell.clipboardText = CF.FileUtils.trimFileProtocol(`${Directories.config}/impulse-shell/config.json`);
                             fab.justCopied = true;
                             revertTextTimer.restart()
                         }
@@ -538,7 +538,7 @@ ApplicationWindow {
                             property bool requested: false
                             readonly property int pageIndex: index
                             anchors.fill: parent
-                            // The new page slides in; the old one fades out over it (rusty-impulse crossfade)
+                            // The new page slides in; the old one fades out over it (impulse-shell crossfade)
                             property real shift: shown ? 0 : 14
                             visible: shown
                             enabled: shown

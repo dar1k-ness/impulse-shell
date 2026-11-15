@@ -576,7 +576,7 @@ fn shutdown_paths_have_no_fixed_waits() {
 }
 
 /// The names the stress and bench scripts stop: the shells and the compositor.
-const STOPPED: &[&str] = &["qs", "quickshell", "rusty-impulse", "Hyprland", "\"$n\""];
+const STOPPED: &[&str] = &["qs", "quickshell", "impulse-shell", "Hyprland", "\"$n\""];
 
 /// `line` sends a signal to a shell or the compositor (`pkill -x NAME`), or to the shell by its
 /// pid (`kill -TERM $p`).
@@ -643,7 +643,7 @@ fn the_scan_sees_each_way_a_script_does_not_wait_for_an_exit() {
     };
     assert_eq!(
         whys(
-            "pkill -x qs; pkill -x rusty-impulse; sleep 1.5; pkill -9 -x rusty-impulse\n# pidwait"
+            "pkill -x qs; pkill -x impulse-shell; sleep 1.5; pkill -9 -x impulse-shell\n# pidwait"
         ),
         ["sleeps a fixed time beside the signal"]
     );
@@ -659,7 +659,7 @@ fn the_scan_sees_each_way_a_script_does_not_wait_for_an_exit() {
         whys("hyprctl dispatch exit; sleep 0.5; pgrep -x Hyprland && pkill -x Hyprland"),
         ["sleeps a fixed time beside the signal"]
     );
-    let waited = "stop_shell() { local n='qs|rusty-impulse'; pkill -x \"$n\" || return 0\n  \
+    let waited = "stop_shell() { local n='qs|impulse-shell'; pkill -x \"$n\" || return 0\n  \
                   timeout 10 pidwait -x \"$n\"; [ $? != 124 ] || pkill -9 -x \"$n\"; }\n\
                   pkill hyprlock; stop_shell\nkill -TERM $p; timeout 10 pidwait -F $RUN/pid\n\
                   pkill -x kitty; sleep 2";

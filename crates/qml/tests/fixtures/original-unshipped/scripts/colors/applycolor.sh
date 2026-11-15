@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-QUICKSHELL_CONFIG_NAME="rusty-impulse"
+QUICKSHELL_CONFIG_NAME="impulse-shell"
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
@@ -99,7 +99,7 @@ apply_term() {
 }
 
 # Check if terminal theming is enabled in config
-CONFIG_FILE="$XDG_CONFIG_HOME/rusty-impulse/config.json"
+CONFIG_FILE="$XDG_CONFIG_HOME/impulse-shell/config.json"
 if [ -f "$CONFIG_FILE" ]; then
   enable_terminal=$(jq -r '.appearance.wallpaperTheming.enableTerminal' "$CONFIG_FILE")
   if [ "$enable_terminal" = "true" ]; then

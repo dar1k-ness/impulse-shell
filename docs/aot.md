@@ -1,6 +1,6 @@
 # AOT: the original's JavaScript compiled to Rust
 
-The original (rusty-impulse) is written in QML with JavaScript in its bindings, handlers and
+The original (impulse-shell) is written in QML with JavaScript in its bindings, handlers and
 functions and in 6 `.js` libraries. The installed shell does not interpret that JavaScript.
 At build time every script is compiled to a Rust function; at run time the shell looks the
 function up by a key and calls it. The QML markup itself is still read from the QML tree at
@@ -13,7 +13,7 @@ qml/*.qml, *.js
   -> qml parser, qml::ir (lowering to IR)            build time only, feature `interp`
   -> crates/rigen (IR -> Rust source)                run by crates/ricompiled-gen/build.rs
   -> crates/ricompiled/parts/p00..p31                the generated code, 32 crates
-  -> crates/ricompiled (registry: key -> function)   linked into rusty-impulse
+  -> crates/ricompiled (registry: key -> function)   linked into impulse-shell
 ```
 
 - The tree compiled is `RI_ROOT` (default `qml`, the shell's QML in this repository).
@@ -71,7 +71,7 @@ the source at run time hashes to what was compiled.
 
 ## What the installed shell refuses
 
-`rusty-impulse` is built without the `interp` feature: no parser that makes a tree of JavaScript, no
+`impulse-shell` is built without the `interp` feature: no parser that makes a tree of JavaScript, no
 IR, no tree-walking evaluator. `crates/shell/src/main.rs` fails to compile a release shell
 that got `qml/interp` through Cargo's feature unification.
 
@@ -80,7 +80,7 @@ that got `qml/interp` through Cargo's feature unification.
   `tools/install.sh` (which puts the repository's tree back), and exits with status 1.
 - `Rustshell.reload()` does the same check first and keeps the current shell running when
   the tree changed.
-- `rusty-impulse --check-tree -c rusty-impulse` (or `-p <tree>`) does only that check: status 0 if the tree is
+- `impulse-shell --check-tree -c impulse-shell` (or `-p <tree>`) does only that check: status 0 if the tree is
   the one compiled in, else the changed and the missing files and status 1.
   `tools/install.sh` asks it before an install or a rollback replaces anything.
 

@@ -1,5 +1,5 @@
 //! services/Wallpick.qml `proc`: the in-process job leaves the service in the state the
-//! `rusty-impulse wallpick` command, run as a real process, would leave it in: the last line
+//! `impulse-shell wallpick` command, run as a real process, would leave it in: the last line
 //! the command writes as the status, a non-zero exit as a failure.
 #![cfg(feature = "interp")]
 use qml::runtime::Runtime;
@@ -18,14 +18,14 @@ fn session(home: &Path) {
     std::fs::create_dir_all(home).unwrap();
 }
 
-/// The state `rusty-impulse wallpick ARGS`, run in this session, leaves a service that reads
+/// The state `impulse-shell wallpick ARGS`, run in this session, leaves a service that reads
 /// it as Wallpick.qml reads its job.
 fn command(args: &[&str]) -> String {
-    let out = std::process::Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
         .arg("wallpick")
         .args(args)
         .output()
-        .expect("run rusty-impulse wallpick");
+        .expect("run impulse-shell wallpick");
     let last = |b: &[u8]| {
         String::from_utf8_lossy(b)
             .lines()
@@ -55,12 +55,12 @@ fn run(rt: &mut Runtime, frames: &mut frames::Frames, root: usize, action: &str)
 }
 
 #[test]
-fn wallpick_proc_matches_the_rusty_impulse_wallpick_process() {
+fn wallpick_proc_matches_the_impulse_shell_wallpick_process() {
     // Both sides read HOME and the XDG directories: the test runs in a process of its own
     // with them set to a directory of its own.
     const TEST: &str = concat!(
         module_path!(),
-        "::wallpick_proc_matches_the_rusty_impulse_wallpick_process"
+        "::wallpick_proc_matches_the_impulse_shell_wallpick_process"
     );
     if !testenv::in_own_process(TEST) {
         let home = std::env::temp_dir().join(format!("wallpick-equiv-{}", std::process::id()));
@@ -77,7 +77,7 @@ fn wallpick_proc_matches_the_rusty_impulse_wallpick_process() {
         return;
     }
     let home = PathBuf::from(std::env::var_os("HOME").unwrap());
-    let config = home.join(".config/rusty-impulse/config.json");
+    let config = home.join(".config/impulse-shell/config.json");
     let mut got = vec![];
     let write_config = || {
         std::fs::create_dir_all(config.parent().unwrap()).unwrap();

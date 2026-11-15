@@ -4,7 +4,7 @@ export WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-1}
 export HYPRLAND_INSTANCE_SIGNATURE=${HYPRLAND_INSTANCE_SIGNATURE:-$(ls -t "$XDG_RUNTIME_DIR/hypr" | head -1)}
 export LANG=C.UTF-8
 PARITY=${PARITY:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}
-CFG=$HOME/.config/rusty-impulse/config.json
+CFG=$HOME/.config/impulse-shell/config.json
 SETTLE=${SETTLE:-1.5}
 
 # The wall clock is pinned by setup.sh, so durations and the log's times come from /proc/uptime
@@ -15,10 +15,10 @@ die() { log "FATAL: $*"; exit 1; }
 # The original: run.sh unpacks it here from git history (ORIG there). The checkout's own tree,
 # `qml`, imports the Impulse module, which Quickshell does not have, so `qs` cannot run it.
 ORIG_TREE=${ORIG_TREE:-$HOME/parity-original}
-# The shell under test is the original run from that tree, or native serving the `rusty-impulse` config.
+# The shell under test is the original run from that tree, or native serving the `impulse-shell` config.
 ipc() {
   if [ "${MODE:-}" = orig ]; then timeout 5 qs -p "$ORIG_TREE" ipc call "$@" >/dev/null 2>&1
-  else timeout 5 "${BIN:-$HOME/rusty-impulse/target/release/rusty-impulse}" -c rusty-impulse ipc call "$@" >/dev/null 2>&1; fi
+  else timeout 5 "${BIN:-$HOME/impulse-shell/target/release/impulse-shell}" -c impulse-shell ipc call "$@" >/dev/null 2>&1; fi
 }
 # What the shell under test puts before the names of its layers.
 ns() { if [ "${MODE:-}" = orig ]; then echo quickshell; else echo rustshell; fi; }
@@ -44,12 +44,12 @@ shell_pid() {
   [ "$(sed 's/.*) //' "/proc/$p/stat" 2>/dev/null | cut -d' ' -f20)" = "$t" ] && echo "$p"
 }
 # A shell something else started (the session's own, a bench script's) is found by its name.
-other_shell() { pgrep -x qs >/dev/null || pgrep -x quickshell >/dev/null || pgrep -x rusty-impulse >/dev/null; }
+other_shell() { pgrep -x qs >/dev/null || pgrep -x quickshell >/dev/null || pgrep -x impulse-shell >/dev/null; }
 stop_shell() {
   local p
-  p=$(shell_pid) && kill "$p"; pkill -x qs; pkill -x quickshell; pkill -x rusty-impulse
+  p=$(shell_pid) && kill "$p"; pkill -x qs; pkill -x quickshell; pkill -x impulse-shell
   for _ in $(seq 30); do shell_pid >/dev/null || other_shell || return 0; sleep 0.2; done
-  p=$(shell_pid) && kill -9 "$p"; pkill -9 -x qs; pkill -9 -x quickshell; pkill -9 -x rusty-impulse
+  p=$(shell_pid) && kill -9 "$p"; pkill -9 -x qs; pkill -9 -x quickshell; pkill -9 -x impulse-shell
 }
 
 # start_shell orig|native LOG [first]: launch from the Hyprland seat session and wait until the bar is

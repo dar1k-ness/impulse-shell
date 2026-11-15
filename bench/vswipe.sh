@@ -4,10 +4,10 @@ export XDG_RUNTIME_DIR=/run/user/1000 WAYLAND_DISPLAY=wayland-1 HYPRLAND_INSTANC
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
 N=${2:-300}
 # The original, which ORIG runs: `bench/vm.sh sync` unpacks it here (tools/parity/orig.sh). The
-# `rusty-impulse` config is the project's own tree, which Quickshell cannot load.
+# `impulse-shell` config is the project's own tree, which Quickshell cannot load.
 T=${ORIG_TREE:-$HOME/parity-original}
 # SIGTERM every shell process and return when they have exited (SIGKILL after 10 s without an exit)
-stop_shell() { local n='qs|quickshell|rusty-impulse'; pkill -x "$n" || return 0
+stop_shell() { local n='qs|quickshell|impulse-shell'; pkill -x "$n" || return 0
   timeout 10 pidwait -x "$n"; [ $? != 124 ] || { pkill -9 -x "$n"; pidwait -x "$n"; }; return 0; }
 pkill hyprlock; pkill hypridle; stop_shell
 python3 - "$N" <<'PY'
@@ -21,8 +21,8 @@ mkdir -p ~/.cache/rustshell/notifications && cp ~/.cache/quickshell/notification
 G(){ hyprctl eval "return hl.dispatch(hl.dsp.global(\"$NS:$1\"))" >/dev/null; }
 hyprctl monitors | grep -o "dpmsStatus: [01]"
 if [ "$1" = ORIG ]; then setsid quickshell -p "$T" > /tmp/vs.log 2>&1 < /dev/null &
-else cd ~/rusty-impulse; setsid ${BIN:-target/release/rusty-impulse} -c rusty-impulse > /tmp/vs.log 2>&1 < /dev/null & fi
-[ "$1" = ORIG ] && { S='quickshell|qs'; NS=quickshell; } || { S=rusty-impulse; NS=rustshell; }
+else cd ~/impulse-shell; setsid ${BIN:-target/release/impulse-shell} -c impulse-shell > /tmp/vs.log 2>&1 < /dev/null & fi
+[ "$1" = ORIG ] && { S='quickshell|qs'; NS=quickshell; } || { S=impulse-shell; NS=rustshell; }
 sleep 25; P=$(pgrep -x "$S" | head -1); [ -n "$P" ] || { echo "$1: no $S process, see /tmp/vs.log" >&2; exit 1; }
 t(){ awk '{print $14+$15}' /proc/$P/stat; }
 th(){ for f in /proc/$P/task/*/stat; do sed -E 's/^[0-9]+ \(([^)]*)\) /\1 /; s/ /_/' $f 2>/dev/null | awk '{print $1, $12+$13}'; done | awk '{sub(/_.*/,"",$1); gsub(/[0-9-]+$/,"",$1); a[$1]+=$2} END{for(k in a) print k, a[k]}' | sort; }

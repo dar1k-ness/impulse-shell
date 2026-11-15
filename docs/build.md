@@ -15,7 +15,7 @@ Needs:
 - Optional at run time: `libthai` (`libthai.so.0`, the Arch package `libthai`), opened when a
   text has Thai in it, as Qt opens it. With it a Thai line is broken between the words of
   libthai's dictionary. Without it Thai is broken at spaces only, which is what Qt does
-  without the library. `rusty-impulse --version` tells which of the two this machine gets
+  without the library. `impulse-shell --version` tells which of the two this machine gets
   (`Thai line breaking: ...`).
 - `install.sh` at the top of the repository installs the Arch packages of this list
   (docs/install.md). `tools/install.sh` installs no packages. Of the libraries above it checks `libthai` alone:
@@ -27,10 +27,10 @@ tools/build.sh
 ```
 
 It runs `cargo build --locked --release -p shell` and prints the path of the binary,
-`target/release/rusty-impulse`. `RI_ROOT=<QML tree>` chooses the tree to compile (default `qml`).
+`target/release/impulse-shell`. `RI_ROOT=<QML tree>` chooses the tree to compile (default `qml`).
 
 One commit and one QML tree give the same file, byte for byte, wherever the checkout, Cargo's
-home and the target directory are. `rusty-impulse --version` names the commit (`+changes` when a
+home and the target directory are. `impulse-shell --version` names the commit (`+changes` when a
 file differs from it) and the checksum of the tree (`tools/build.sh --sum <tree>` prints it), and
 the binary names none of the directories of the machine that built it: the script hides them
 (`--remap-path-prefix`) and fails when one is left. A copy of the sources without `.git` cannot

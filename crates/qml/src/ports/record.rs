@@ -66,16 +66,16 @@ fn save_dir(save_path: &str) -> Option<String> {
     std::path::Path::new(&dir).is_dir().then_some(dir)
 }
 
-/// The first argument of the shell binary run in the script's place: `rusty-impulse __ri-record
+/// The first argument of the shell binary run in the script's place: `impulse-shell __ri-record
 /// [--fullscreen] [--sound] [--region AREA]` is `record.sh` with those arguments
 /// ([`serve`]). The tree's `scripts/videos/record.sh`, the file the original's Hyprland keybinds
 /// name, runs it.
 pub const ARG: &str = "__ri-record";
 
-/// `jq -r .screenRecord.savePath ~/.config/rusty-impulse/config.json`: the save
+/// `jq -r .screenRecord.savePath ~/.config/impulse-shell/config.json`: the save
 /// directory the user's config names, empty when it names none.
 fn configured_save_path() -> String {
-    let file = crate::xdg::config_home().join("rusty-impulse/config.json");
+    let file = crate::xdg::config_home().join("impulse-shell/config.json");
     std::fs::read_to_string(file)
         .ok()
         .and_then(|c| serde_json::from_str::<serde_json::Value>(&c).ok())

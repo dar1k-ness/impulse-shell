@@ -31,14 +31,14 @@ fn which(tool: &str) -> PathBuf {
 }
 
 fn venv() -> Option<String> {
-    let v = std::env::var("RUSTY_IMPULSE_VIRTUAL_ENV").unwrap_or_default();
+    let v = std::env::var("IMPULSE_SHELL_VIRTUAL_ENV").unwrap_or_default();
     let ok = !v.is_empty()
         && Command::new(format!("{v}/bin/python3"))
             .args(["-c", "import materialyoucolor, PIL"])
             .status()
             .is_ok_and(|s| s.success());
     if !ok {
-        unavailable("RUSTY_IMPULSE_VIRTUAL_ENV with materialyoucolor + pillow");
+        unavailable("IMPULSE_SHELL_VIRTUAL_ENV with materialyoucolor + pillow");
         return None;
     }
     Some(v)
@@ -127,7 +127,7 @@ fn sandbox(h: &Path, bin: &Path, venv: &str, xdg: bool, setup: &str) -> Sandbox 
     }
     copy_tree(&fixture.join(".local/state"), &state);
     copy_tree(&fixture.join(".cache"), &cache);
-    let qs = cfg.join("rustshell/rusty-impulse");
+    let qs = cfg.join("rustshell/impulse-shell");
     // The terminal templates the shell ships, then the original's switchwall.sh and its helpers over
     // them: the shell's own switchwall.sh runs the port, and the reference side is the original's.
     copy_tree(&Path::new(II).join("scripts"), &qs.join("scripts"));
@@ -159,7 +159,7 @@ fn sandbox(h: &Path, bin: &Path, venv: &str, xdg: bool, setup: &str) -> Sandbox 
         ("SW_PTS".into(), h.join("pts").display().to_string()),
         ("SW_FIX".into(), format!("{DIR}/fixture")),
         ("VENV".into(), venv.into()),
-        ("RUSTY_IMPULSE_VIRTUAL_ENV".into(), venv.into()),
+        ("IMPULSE_SHELL_VIRTUAL_ENV".into(), venv.into()),
     ];
     if xdg {
         env.push(("XDG_CONFIG_HOME".into(), cfg.display().to_string()));
@@ -172,7 +172,7 @@ fn sandbox(h: &Path, bin: &Path, venv: &str, xdg: bool, setup: &str) -> Sandbox 
         .env_clear()
         .envs(env.iter().cloned())
         .env("W", h.join("Pictures/Wallpapers"))
-        .env("CFG", cfg.join("rusty-impulse/config.json"))
+        .env("CFG", cfg.join("impulse-shell/config.json"))
         .env("GEN", state.join("rustshell/user/generated"))
         .status()
         .unwrap();
@@ -343,7 +343,7 @@ fn outcome(h: &Path, code: i32, stdout: String, stderr: String) -> Outcome {
         for e in std::fs::read_dir(&d).unwrap().flatten() {
             let p = e.path();
             let rel = p.strip_prefix(h).unwrap().to_string_lossy().into_owned();
-            if rel.ends_with("rustshell/rusty-impulse")
+            if rel.ends_with("rustshell/impulse-shell")
                 || ["calls.log", "Pictures"].contains(&rel.as_str())
             {
                 continue;

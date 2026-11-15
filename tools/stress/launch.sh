@@ -1,5 +1,5 @@
 #!/bin/bash
-# launch.sh MODE LOG PIDFILE [NATIVE_BIN]: native is rusty-impulse, orig is Quickshell on the original in
+# launch.sh MODE LOG PIDFILE [NATIVE_BIN]: native is impulse-shell, orig is Quickshell on the original in
 # ~/parity-original (README.md). Run by Hyprland (exec_cmd) so the shell lives in the graphical login
 # session: the polkit agent registers for its own session, and pkexec from that session must find it.
 cd ~; echo $$ > "$3"

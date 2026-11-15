@@ -1,5 +1,5 @@
 //! `Quickshell.reload()` while the session is locked. Quickshell reloads inside one process and
-//! hands the held lock object to the next generation; rusty-impulse re-executes itself, which closes the
+//! hands the held lock object to the next generation; impulse-shell re-executes itself, which closes the
 //! Wayland connection the lock lives on. A compositor keeps a session locked whose lock client
 //! is gone (ext-session-lock-v1: "If the client dies while the session is locked, the
 //! compositor must not unlock the session in response"), and the new image starts unlocked, as
@@ -25,7 +25,7 @@ use wayland_protocols_misc::zwp_virtual_keyboard_v1::client::{
     zwp_virtual_keyboard_v1::ZwpVirtualKeyboardV1,
 };
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 /// Unlocked at start, like the original: a re-executed image holds no lock.
 const SHELL: &str = r#"import QtQuick
@@ -69,14 +69,14 @@ fn fails_without_sway() {
 #[test]
 fn the_lock_screen_tests_fail_without_sway_and_qs() {
     for test in [
-        "a_reload_under_the_original_s_lock_screen_unlocks_in_quickshell_and_waits_in_rusty_impulse",
+        "a_reload_under_the_original_s_lock_screen_unlocks_in_quickshell_and_waits_in_impulse_shell",
         "the_typed_password_and_a_pam_conversation_outlive_a_held_reload",
     ] {
         testenv::assert_fails_when_missing(test, &[("PATH", Some("/nonexistent"))]);
     }
 }
 
-/// rusty-impulse running [`SHELL`] under its own sway, with its Wayland traffic logged.
+/// impulse-shell running [`SHELL`] under its own sway, with its Wayland traffic logged.
 struct Shell {
     child: Child,
     sway: testenv::Sway,
@@ -97,14 +97,14 @@ impl Shell {
         Self::run(cmd, dir, None)
     }
 
-    /// `bin -p dir` under its own sway; `bin` is `rusty-impulse` or `qs`.
+    /// `bin -p dir` under its own sway; `bin` is `impulse-shell` or `qs`.
     fn run(mut bin: Command, dir: tempfile::TempDir, with: Option<tempfile::TempDir>) -> Self {
         let sway = testenv::Sway::start();
         let (r, w) = std::io::pipe().unwrap();
         let xdg = dir.path().join("xdg");
         // The original's Directories.qml makes this through `Impulse.Files`, which does nothing in
         // Quickshell's copy of the module: without it Config never loads there.
-        std::fs::create_dir_all(xdg.join("config/rusty-impulse")).unwrap();
+        std::fs::create_dir_all(xdg.join("config/impulse-shell")).unwrap();
         let program = bin.get_program().to_owned();
         let child = sway
             .env(bin.arg("-p").arg(dir.path()))
@@ -128,8 +128,8 @@ impl Shell {
         }
     }
 
-    /// rusty-impulse on the original's lock screen ([`lock_tree`]).
-    fn rusty_impulse_on_the_lock_screen() -> Self {
+    /// impulse-shell on the original's lock screen ([`lock_tree`]).
+    fn impulse_shell_on_the_lock_screen() -> Self {
         let dir = lock_tree();
         let mut cmd = Command::new(NATIVE);
         cmd.env("RI_INTERP", "1")
@@ -138,7 +138,7 @@ impl Shell {
         Self::run(cmd, dir, None)
     }
 
-    /// Quickshell on the original's lock screen. The tree says `import Impulse`, which rusty-impulse implements
+    /// Quickshell on the original's lock screen. The tree says `import Impulse`, which impulse-shell implements
     /// itself: Quickshell gets the same types with methods that do nothing.
     fn qs_on_the_lock_screen() -> Self {
         let dir = lock_tree();
@@ -156,7 +156,7 @@ impl Shell {
         self.log.text().replace('@', "#")
     }
 
-    /// Blocks until `f(log)` holds, on each line rusty-impulse prints.
+    /// Blocks until `f(log)` holds, on each line impulse-shell prints.
     fn wait(&self, what: &str, f: impl Fn(&str) -> bool) -> String {
         match self.log.wait(|s| f(&s.replace('@', "#"))) {
             Ok(()) => self.text(),
@@ -383,9 +383,9 @@ fn locked(s: &str) -> bool {
 /// under the lock loads the next generation at once and hands it the held lock object
 /// (`WlSessionLock::onReload`); the original's `GlobalStates.screenLocked` starts false in every
 /// generation, so the new `WlSessionLock` releases the lock it was handed: the reload unlocks
-/// the session. rusty-impulse holds the reload until the user unlocks.
+/// the session. impulse-shell holds the reload until the user unlocks.
 #[test]
-fn a_reload_under_the_original_s_lock_screen_unlocks_in_quickshell_and_waits_in_rusty_impulse() {
+fn a_reload_under_the_original_s_lock_screen_unlocks_in_quickshell_and_waits_in_impulse_shell() {
     if !testenv::require_all(&["sway", "qs"]) {
         return;
     }
@@ -400,23 +400,23 @@ fn a_reload_under_the_original_s_lock_screen_unlocks_in_quickshell_and_waits_in_
     });
     assert!(
         s.contains(".unlock_and_destroy("),
-        "Quickshell kept the session locked over a reload: rusty-impulse may now do as it does\n{}",
+        "Quickshell kept the session locked over a reload: impulse-shell may now do as it does\n{}",
         tail(&s)
     );
     let probe = qs.probe_by(|sh| sh.call("probe", "state"));
     assert!(probe.contains("PROBE locked=false "), "{probe}");
 
-    let rs = Shell::rusty_impulse_on_the_lock_screen();
-    rs.wait("rusty-impulse", |s| images(s) == 1);
+    let rs = Shell::impulse_shell_on_the_lock_screen();
+    rs.wait("impulse-shell", |s| images(s) == 1);
     rs.call("lock", "activate");
-    rs.wait("rusty-impulse's lock", locked);
+    rs.wait("impulse-shell's lock", locked);
     rs.call("probe", "reload");
     let s = rs.wait("the reload to be held or done", |s| {
         s.contains(DEFERRED) || images(s) == 2
     });
     assert!(
         s.contains(DEFERRED) && images(&s) == 1,
-        "rusty-impulse re-executed under a held session lock:\n{}",
+        "impulse-shell re-executed under a held session lock:\n{}",
         tail(&s)
     );
     let probe = rs.probe_by(|sh| sh.call("probe", "state"));
@@ -539,7 +539,7 @@ fn the_typed_password_and_a_pam_conversation_outlive_a_held_reload() {
     if !sway() {
         return;
     }
-    let sh = Shell::rusty_impulse_on_the_lock_screen();
+    let sh = Shell::impulse_shell_on_the_lock_screen();
     let Some(mut keys) = Keyboard::join(&sh.sway) else {
         return;
     };
@@ -561,7 +561,7 @@ fn the_typed_password_and_a_pam_conversation_outlive_a_held_reload() {
     });
     assert!(
         s.contains(DEFERRED) && images(&s) == 1,
-        "rusty-impulse re-executed under a held session lock:\n{}",
+        "impulse-shell re-executed under a held session lock:\n{}",
         tail(&s)
     );
     let probe = sh.probe_by(|sh| sh.call("probe", "state"));

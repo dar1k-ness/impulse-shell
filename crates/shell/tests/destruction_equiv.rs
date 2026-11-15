@@ -8,7 +8,7 @@
 //! `qml: <text>` and its exit status as `status <n>`. `<name>.qt612.txt` is the same from
 //! `qml6` of Qt 6.12.0 (`QT_FORCE_STDERR_LOGGING=1 QT_QPA_PLATFORM=offscreen qml6
 //! <name>/shell.qml`). Each test runs the real programs, which must print what is recorded,
-//! and the native shell (`rusty-impulse -p`), which must print what Quickshell does.
+//! and the native shell (`impulse-shell -p`), which must print what Quickshell does.
 //!
 //! - `quit`: a child, the object of a LazyLoader and the root.
 //! - `order`: the order of the handlers, in QML that Qt runs too: an object and its children,
@@ -89,7 +89,7 @@ fn quickshell(conf: &Path) -> Command {
 }
 
 fn native(conf: &Path) -> Command {
-    let mut c = Command::new(env!("CARGO_BIN_EXE_rusty-impulse"));
+    let mut c = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
     c.arg("-p").arg(conf).env("RI_INTERP", "1");
     c
 }

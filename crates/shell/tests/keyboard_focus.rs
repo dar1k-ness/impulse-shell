@@ -188,7 +188,7 @@ fn closed_window_keeps_no_keyboard_focus_for_its_next_surface() {
     let xdg = dir.path().join("xdg");
     let (r, out) = std::io::pipe().unwrap();
     let sh = Shell(
-        Command::new(env!("CARGO_BIN_EXE_rusty-impulse"))
+        Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
             .arg("-p")
             .arg(dir.path())
             .env("RI_INTERP", "1")

@@ -4,7 +4,7 @@
 //! QUnifiedTimer stops the driver and reads the wall clock again: the Timer due first fires
 //! when it was due on the clock that stood behind, and at that moment the others get the time
 //! the clock was behind by. A repeating Timer that this takes across several of its intervals
-//! is triggered once. The real quickshell running the fixture vs the native shell (`rusty-impulse -p`).
+//! is triggered once. The real quickshell running the fixture vs the native shell (`impulse-shell -p`).
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
 
@@ -126,7 +126,7 @@ fn both(mode: &str, busy: u32) -> Option<[Vec<(String, f64)>; 2]> {
     let base = tempfile::tempdir().unwrap();
     let qt = times("qs", &base.path().join("orig"), mode, busy);
     let ours = times(
-        env!("CARGO_BIN_EXE_rusty-impulse"),
+        env!("CARGO_BIN_EXE_impulse-shell"),
         &base.path().join("native"),
         mode,
         busy,
@@ -364,7 +364,7 @@ fn both_steps(late: &str, busy: u32, paint: bool) -> Option<[Run; 2]> {
     let base = tempfile::tempdir().unwrap();
     let qt = steps("qs", &base.path().join("orig"), late, busy, paint);
     let ours = steps(
-        env!("CARGO_BIN_EXE_rusty-impulse"),
+        env!("CARGO_BIN_EXE_impulse-shell"),
         &base.path().join("native"),
         late,
         busy,
@@ -415,7 +415,7 @@ fn late_steps(late: &str, paint: bool) -> Option<[(Run, String); 2]> {
     }
     let base = tempfile::tempdir().unwrap();
     let qt = steps_logged("qs", &base.path().join("orig"), late, 100, paint, true);
-    let ours = env!("CARGO_BIN_EXE_rusty-impulse");
+    let ours = env!("CARGO_BIN_EXE_impulse-shell");
     let ours = steps_logged(ours, &base.path().join("native"), late, 100, paint, paint);
     Some([qt, ours])
 }
@@ -532,7 +532,7 @@ fn first_steps(other: bool, nth: usize) -> Option<[(f64, usize, String); 2]> {
         .replace("BUSY", "0")
         .replace("PAINT", "true")
         .replace("OTHER", &other.to_string());
-    let ours = env!("CARGO_BIN_EXE_rusty-impulse");
+    let ours = env!("CARGO_BIN_EXE_impulse-shell");
     Some([("qs", "orig"), (ours, "native")].map(|(bin, dir)| {
         let ((steps, _), log) = run_steps(bin, &base.path().join(dir), &qml, true);
         (
@@ -666,7 +666,7 @@ fn with_two_windows_the_first_step_comes_one_vsync_after_the_start_as_under_quic
         return;
     }
     let base = tempfile::tempdir().unwrap();
-    let ours = env!("CARGO_BIN_EXE_rusty-impulse");
+    let ours = env!("CARGO_BIN_EXE_impulse-shell");
     for other in [true, false] {
         let qml = TWO.replace("OTHER", &other.to_string());
         for (bin, dir) in [("qs", "orig"), (ours, "native")] {

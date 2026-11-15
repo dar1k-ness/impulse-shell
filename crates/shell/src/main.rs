@@ -1,4 +1,4 @@
-//! rusty-impulse: native Wayland front-end running the original QML through the Rust runtime.
+//! impulse-shell: native Wayland front-end running the original QML through the Rust runtime.
 
 // std's eprintln! panics once stderr's reader is gone; `elog`'s drops the line.
 #![warn(clippy::print_stderr)]
@@ -156,7 +156,7 @@ enum Surf {
         key: PanelKey,
         on: Option<wl_output::WlOutput>,
     },
-    /// A top-level `ApplicationWindow`/`Window` (`rusty-impulse -p app.qml`): an xdg_toplevel.
+    /// A top-level `ApplicationWindow`/`Window` (`impulse-shell -p app.qml`): an xdg_toplevel.
     Toplevel(Window),
 }
 
@@ -3391,7 +3391,7 @@ impl App {
         if qml::log_on!("ri::stats") && self.frames <= 2 {
             tracing::debug!(target: "ri::stats", "frame {} {w}x{h}", self.frames);
             if let Ok(png) = cv.png() {
-                shell::ipc::write_debug_file("rusty-impulse-frame.png", &png);
+                shell::ipc::write_debug_file("impulse-shell-frame.png", &png);
             }
         }
         self.wins[k].shm_prev = Some(cv);
@@ -4025,8 +4025,8 @@ fn reload_shell(
     if rt.world.borrow().quit.is_some() {
         return;
     }
-    // The path the shell was started as ($PREFIX/bin/rusty-impulse), not /proc/self/exe: the reload
-    // runs the release installed since and keeps the comm (`rusty-impulse`) pidof/killall look for.
+    // The path the shell was started as ($PREFIX/bin/impulse-shell), not /proc/self/exe: the reload
+    // runs the release installed since and keeps the comm (`impulse-shell`) pidof/killall look for.
     let exe = qml::native::launch_path();
     let newer = std::fs::canonicalize(&exe).ok() != std::env::current_exe().ok();
     if let Some(why) = reload_refused(root, app_file, &exe, newer) {
@@ -4156,7 +4156,7 @@ fn reload_failed(rt: &mut qml::runtime::Runtime, error: &str) {
 // The shipped shell (a release build without `interp`) has no JavaScript interpreter. Cargo
 // unifies features across the packages of one invocation, so `cargo build --release` of the
 // workspace, or `-p shell` next to a package that enables `qml/interp` (rigen, aotcheck), would
-// otherwise produce an `rusty-impulse` with the interpreter that looks like the release one. Tooling
+// otherwise produce an `impulse-shell` with the interpreter that looks like the release one. Tooling
 // builds that want it ask for it: `--features shell/interp`.
 #[cfg(all(not(feature = "interp"), not(debug_assertions)))]
 const _: () = assert!(
@@ -4165,7 +4165,7 @@ const _: () = assert!(
      --release -p shell`) or ask for the interpreter (`--features shell/interp`)"
 );
 
-// The shipped shell names the commit it was built from (`rusty-impulse --version`), and a build
+// The shipped shell names the commit it was built from (`impulse-shell --version`), and a build
 // of that commit is the same file wherever it is made: tools/build.sh names the commit and
 // keeps this machine's directories out of the binary. A build that cannot tell its commit
 // does not compile, rather than say `commit unknown`.
@@ -4173,11 +4173,11 @@ const _: () = assert!(
 const _: () = assert!(
     !env!(
         "RI_COMMIT",
-        "the shipped rusty-impulse is built with tools/build.sh (tools/install.sh runs it): it \
+        "the shipped impulse-shell is built with tools/build.sh (tools/install.sh runs it): it \
          names the commit (RI_COMMIT) and keeps this machine's directories out of the binary"
     )
     .is_empty(),
-    "RI_COMMIT is empty: the shipped rusty-impulse is built with tools/build.sh"
+    "RI_COMMIT is empty: the shipped impulse-shell is built with tools/build.sh"
 );
 
 /// A build without the interpreter cannot run scripts that differ from the compiled QML tree,
@@ -4193,7 +4193,7 @@ fn refuse_stale_tree(
         return Ok(());
     }
     elog::eprintln!(
-        "rusty-impulse: {} differs from the tree this binary was compiled from and this build has no \
+        "impulse-shell: {} differs from the tree this binary was compiled from and this build has no \
          interpreter to run the changed code:",
         root.display()
     );
@@ -4201,7 +4201,7 @@ fn refuse_stale_tree(
         elog::eprintln!("  {s}");
     }
     elog::eprintln!(
-        "rusty-impulse: install again: {}",
+        "impulse-shell: install again: {}",
         shell::reload::REBUILD_HINT
     );
     Err(Fatal(None))
@@ -4213,7 +4213,7 @@ fn refuse_stale_tree(
 struct Fatal(Option<String>);
 
 fn fatal<E: std::fmt::Display>(what: &str) -> impl FnOnce(E) -> Fatal + '_ {
-    move |e| Fatal(Some(format!("rusty-impulse: {what}: {e}")))
+    move |e| Fatal(Some(format!("impulse-shell: {what}: {e}")))
 }
 
 /// The environment pragmas in the root file's header, as Quickshell's `launch()`
@@ -4398,8 +4398,8 @@ fn main() {
     let Err(Fatal(msg)) = run();
     if let Some(msg) = msg {
         elog::eprintln!("{msg}");
-        // In the instance log too: `rusty-impulse log` shows why this instance did not start.
-        let reason = msg.strip_prefix("rusty-impulse: ").unwrap_or(&msg);
+        // In the instance log too: `impulse-shell log` shows why this instance did not start.
+        let reason = msg.strip_prefix("impulse-shell: ").unwrap_or(&msg);
         shell::rilog::log(shell::rilog::Level::Critical, "default", reason);
     }
     // `exit` ends the `qs-log` thread wherever it is: wait until it wrote what is queued.
@@ -4827,7 +4827,7 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
     if let Some(v) = primary_vsync(&app.outputs) {
         app.clock.vsync = v;
     }
-    // shell.qml with its PanelFamilyLoaders, like `qs -c rusty-impulse`; RI_MODULES=a.qml,b.qml loads only
+    // shell.qml with its PanelFamilyLoaders, like `qs -c impulse-shell`; RI_MODULES=a.qml,b.qml loads only
     // those modules/rusty files plus the ShellRoot (Component.onCompleted, IpcHandler, GlobalShortcut).
     qml::native::hold_app_windows();
     // The root objects of the documents loaded, for `Component.onDestruction` at the exit.
@@ -7582,7 +7582,7 @@ impl App {
                     &self.qh,
                     surface,
                     Layer::Overlay,
-                    "rusty-impulse-shown".to_string(),
+                    "impulse-shell-shown".to_string(),
                     Some(&on),
                 );
                 layer.set_geometry(&PROBE);
@@ -12648,7 +12648,7 @@ Item {
         assert_eq!(
             msg,
             Some(format!(
-                "rusty-impulse: cannot watch child processes: {ebadf}"
+                "impulse-shell: cannot watch child processes: {ebadf}"
             ))
         );
         // SAFETY: epoll_create1(2) takes only flags.

@@ -43,8 +43,8 @@ fn theme_runs_are_serialized_and_settle_on_exit() {
     if !testenv::in_own_process(TEST) {
         let dir = tempfile::tempdir().unwrap();
         let home = dir.path();
-        std::fs::create_dir_all(home.join(".config/rusty-impulse")).unwrap();
-        std::fs::write(home.join(".config/rusty-impulse/config.json"), "{}\n").unwrap();
+        std::fs::create_dir_all(home.join(".config/impulse-shell")).unwrap();
+        std::fs::write(home.join(".config/impulse-shell/config.json"), "{}\n").unwrap();
         testenv::run_in_own_process(TEST, testenv::home_vars(home));
         return;
     }
@@ -141,8 +141,8 @@ fn theme_pick_fades_only_the_color_change() {
     if !testenv::in_own_process(TEST) {
         let dir = tempfile::tempdir().unwrap();
         let home = dir.path();
-        std::fs::create_dir_all(home.join(".config/rusty-impulse")).unwrap();
-        std::fs::write(home.join(".config/rusty-impulse/config.json"), "{}\n").unwrap();
+        std::fs::create_dir_all(home.join(".config/impulse-shell")).unwrap();
+        std::fs::write(home.join(".config/impulse-shell/config.json"), "{}\n").unwrap();
         testenv::run_in_own_process(TEST, testenv::home_vars(home));
         return;
     }

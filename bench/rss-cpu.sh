@@ -1,5 +1,5 @@
 #!/bin/bash
-# Memory and CPU of rusty-impulse and of the original in Quickshell, in three states: idle (bar and
+# Memory and CPU of impulse-shell and of the original in Quickshell, in three states: idle (bar and
 # background), panels open (both sidebars) and a wallpaper switch. Runs in the benchmark guest
 # (bench/vm.sh) after `bench/vm.sh sync`; method and results: docs/benchmarks.md.
 #   bench/rss-cpu.sh [OUT]     OUT (default ~/rss-cpu/<date>) gets samples.tsv (one line per
@@ -20,7 +20,7 @@ export LANG=C.UTF-8
 
 self=$(realpath "$0")
 repo=$(dirname "$(dirname "$self")")
-tree=$HOME/.config/rustshell/rusty-impulse
+tree=$HOME/.config/rustshell/impulse-shell
 # The original, which Quickshell runs: `bench/vm.sh sync` unpacks it here (tools/parity/orig.sh).
 # The checkout's own tree, `qml`, imports the Impulse module, which Quickshell does not have.
 orig=${ORIG_TREE:-$HOME/parity-original}
@@ -30,7 +30,7 @@ unit=ri-bench.scope
 if [ "${1:-}" = --exec ]; then
     echo $$ >"$4"
     case $2 in
-    rusty-impulse) exec rusty-impulse -c rusty-impulse >"$3" 2>&1 </dev/null ;;
+    impulse-shell) exec impulse-shell -c impulse-shell >"$3" 2>&1 </dev/null ;;
     quickshell) exec qs -p "$orig" >"$3" 2>&1 </dev/null ;;
     esac
 fi
@@ -42,7 +42,7 @@ PANELS=${PANELS:-60}
 WALL=${WALL:-60}
 out=${1:-$HOME/rss-cpu/$(date +%Y%m%d-%H%M%S)}
 walls=$HOME/Pictures/Wallpapers
-cfg=$HOME/.config/rusty-impulse/config.json
+cfg=$HOME/.config/impulse-shell/config.json
 generated=$HOME/.local/state/quickshell/user/generated
 tick=$(getconf CLK_TCK)
 
@@ -53,7 +53,7 @@ die() {
 
 ipc() {
     case $shell in
-    rusty-impulse) timeout 10 rusty-impulse -c rusty-impulse ipc "$@" ;;
+    impulse-shell) timeout 10 impulse-shell -c impulse-shell ipc "$@" ;;
     quickshell) timeout 10 qs -p "$orig" ipc "$@" ;;
     esac
 }
@@ -76,7 +76,7 @@ no_layer() { ! layer "$1"; }
 # has dropped their bar: it does so on its own turn after the client is gone, and `hyprctl`
 # has no request that waits for it.
 stop_shell() {
-    local n='rusty-impulse|quickshell|qs' rc=0
+    local n='impulse-shell|quickshell|qs' rc=0
     systemctl --user stop "$unit" 2>/dev/null || true
     if pkill -x "$n"; then
         timeout 20 pidwait -x "$n" || rc=$?
@@ -89,13 +89,13 @@ stop_shell() {
 # configuration with the first wallpaper, and the matugen configuration switchwall.sh needs.
 reset_state() {
     local old; old=~/.config/$(printf %s-%s illogical impulse)
-    rm -rf ~/.config/rusty-impulse ~/.local/state/quickshell ~/.cache/quickshell ~/.config/matugen \
+    rm -rf ~/.config/impulse-shell ~/.local/state/quickshell ~/.cache/quickshell ~/.config/matugen \
         ~/.local/state/rustshell ~/.cache/rustshell "$old"
-    mkdir -p ~/.config/rusty-impulse ~/.local/state/quickshell/user ~/.cache/quickshell
+    mkdir -p ~/.config/impulse-shell ~/.local/state/quickshell/user ~/.cache/quickshell
     # Each shell reads these under its own name for them.
     ln -s quickshell ~/.local/state/rustshell
     ln -s quickshell ~/.cache/rustshell
-    ln -s rusty-impulse "$old"
+    ln -s impulse-shell "$old"
     cp -r "$repo/crates/colorgen/tests/switchwall/fixture/home/.config/matugen" ~/.config/matugen
     jq -n --arg w "$walls/bench-a.jpg" '{background: {wallpaperPath: $w}}' >"$cfg"
     # Without it the original opens its welcome window.
@@ -214,7 +214,7 @@ one_run() {
     stop_shell
 }
 
-command -v rusty-impulse >/dev/null || die "rusty-impulse is not installed: run bench/vm.sh sync"
+command -v impulse-shell >/dev/null || die "impulse-shell is not installed: run bench/vm.sh sync"
 diff -rq "$repo/qml" "$tree" >/dev/null || die "$tree differs from $repo/qml: run bench/vm.sh sync"
 [ -f "$orig/shell.qml" ] && [ -s "$orig/.rev" ] || die "no original at $orig: run bench/vm.sh sync"
 mkdir -p "$out" "$walls"
@@ -239,8 +239,8 @@ printf 'shell\tround\tstate\tsecond\trss_kb\trss_anon_kb\tall_rss_kb\tcpu_own_ti
 printf 'shell\tround\tstate\tseconds\trss_median_mb\trss_max_mb\trss_last_mb\trss_anon_median_mb\tall_rss_median_mb\tall_rss_max_mb\tcpu_own_s\tcpu_all_s\tcpu_own_pct\tcpu_all_pct\n' >"$out/phases.tsv"
 
 for round in $(seq 1 "$ROUNDS"); do
-    order="rusty-impulse quickshell"
-    [ $((round % 2)) = 1 ] || order="quickshell rusty-impulse"
+    order="impulse-shell quickshell"
+    [ $((round % 2)) = 1 ] || order="quickshell impulse-shell"
     for shell in $order; do one_run; done
 done
 # bash drops out of the loops on an expansion error without exiting: a short table is not a result.
@@ -258,7 +258,7 @@ gawk -F'\t' '
     END {
         print "| State | Shell | RSS, MiB | RSS max, MiB | RssAnon, MiB | RSS with helpers, MiB | CPU shell, % | CPU with helpers, % | CPU shell, s | CPU with helpers, s |"
         print "|---|---|---|---|---|---|---|---|---|---|"
-        split("idle panels wallpaper", st, " "); split("rusty-impulse quickshell", sh, " ")
+        split("idle panels wallpaper", st, " "); split("impulse-shell quickshell", sh, " ")
         for (i = 1; i <= 3; i++) for (j = 1; j <= 2; j++) {
             k = sh[j] SUBSEP st[i]
             if (k in n) printf "| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n", st[i], sh[j],

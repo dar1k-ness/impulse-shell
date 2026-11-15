@@ -1,16 +1,16 @@
 //! The original's Hyprland keybinds record the screen by running a file of the config tree,
 //! `scripts/videos/record.sh --fullscreen` (Ctrl+Alt+R; with `--sound`, Super+Shift+Alt+R).
-//! The tree `tools/install.sh` installs has that file, and it hands the launch to rusty-impulse, in
+//! The tree `tools/install.sh` installs has that file, and it hands the launch to impulse-shell, in
 //! PATH or where an install for one user puts it (`~/.local/bin`, which a compositor's PATH
 //! may lack): wf-recorder starts for the whole screen in the directory the user's config
-//! names, and a second launch stops it. What `rusty-impulse __ri-record` does for every launch of the script is
+//! names, and a second launch stops it. What `impulse-shell __ri-record` does for every launch of the script is
 //! compared against the original's script in crates/qml/tests/script_ports_equiv.rs
 //! (`record_program_matches_script`).
 
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-const NATIVE: &str = env!("CARGO_BIN_EXE_rusty-impulse");
+const NATIVE: &str = env!("CARGO_BIN_EXE_impulse-shell");
 
 fn script() -> std::path::PathBuf {
     Path::new(ricompiled::ROOT).join("scripts/videos/record.sh")
@@ -36,30 +36,30 @@ fn the_keybind_launch_starts_and_stops_a_full_screen_recording() {
     if !testenv::require_all(&["sh", "bash"]) {
         return;
     }
-    starts_and_stops("bin/rusty-impulse");
-    // rusty-impulse is not in PATH and no shell runs, as with a key pressed under a compositor
+    starts_and_stops("bin/impulse-shell");
+    // impulse-shell is not in PATH and no shell runs, as with a key pressed under a compositor
     // started without ~/.local/bin in its PATH while the shell is down.
-    starts_and_stops("home/.local/bin/rusty-impulse");
+    starts_and_stops("home/.local/bin/impulse-shell");
 }
 
-/// The two launches of Ctrl+Alt+R with rusty-impulse installed as `rusty_impulse` under a directory whose
+/// The two launches of Ctrl+Alt+R with impulse-shell installed as `impulse_shell` under a directory whose
 /// `bin` is in PATH and whose `home` is the user's.
-fn starts_and_stops(rusty_impulse: &str) {
+fn starts_and_stops(impulse_shell: &str) {
     let tmp = tempfile::tempdir().unwrap();
     let (bin, home) = (tmp.path().join("bin"), tmp.path().join("home"));
     let saved = home.join("My Videos");
-    let cfg = home.join(".config/rusty-impulse");
-    let rusty_impulse = tmp.path().join(rusty_impulse);
+    let cfg = home.join(".config/impulse-shell");
+    let impulse_shell = tmp.path().join(impulse_shell);
     for d in [&bin, &cfg, &tmp.path().join("run")] {
         std::fs::create_dir_all(d).unwrap();
     }
-    std::fs::create_dir_all(rusty_impulse.parent().unwrap()).unwrap();
+    std::fs::create_dir_all(impulse_shell.parent().unwrap()).unwrap();
     std::fs::write(
         cfg.join("config.json"),
         serde_json::json!({"screenRecord": {"savePath": saved}}).to_string(),
     )
     .unwrap();
-    std::os::unix::fs::symlink(NATIVE, &rusty_impulse).unwrap();
+    std::os::unix::fs::symlink(NATIVE, &impulse_shell).unwrap();
     // The shells other tests run are not this user's.
     testenv::install_script(&bin.join("pidof"), "#!/bin/sh\nexit 1\n");
     let log = tmp.path().join("wf-recorder.log");
@@ -120,16 +120,16 @@ fn starts_and_stops(rusty_impulse: &str) {
 }
 
 /// Super+Shift+R is two keybinds: the shell's region picker, and `qs ... ipc call TEST_ALIVE ||
-/// record.sh` for a shell that is down. Where rusty-impulse is installed without Quickshell there is
-/// no `qs` to ask, and the file runs on every press: it asks rusty-impulse, and starts nothing when a
+/// record.sh` for a shell that is down. Where impulse-shell is installed without Quickshell there is
+/// no `qs` to ask, and the file runs on every press: it asks impulse-shell, and starts nothing when a
 /// shell answers. With `qs` installed, or with arguments, it does what the original's script does.
 #[test]
 fn a_region_press_is_left_to_a_shell_that_answers() {
     if !testenv::require_all(&["sh"]) {
         return;
     }
-    // (qs installed, the shell answers, the script's arguments) -> what rusty-impulse is run with.
-    let alive = "-c rusty-impulse ipc call TEST_ALIVE\n";
+    // (qs installed, the shell answers, the script's arguments) -> what impulse-shell is run with.
+    let alive = "-c impulse-shell ipc call TEST_ALIVE\n";
     for (qs, answers, args, ran, code) in [
         (false, true, &[][..], alive.to_owned(), 0),
         (false, false, &[][..], format!("{alive}__ri-record\n"), 7),
@@ -146,11 +146,11 @@ fn a_region_press_is_left_to_a_shell_that_answers() {
         let (bin, home) = (tmp.path().join("bin"), tmp.path().join("home"));
         std::fs::create_dir_all(&bin).unwrap();
         std::fs::create_dir_all(home.join(".local/bin")).unwrap();
-        let log = tmp.path().join("rusty-impulse.log");
-        // An rusty-impulse that writes down how it was run: `ipc call` tells whether a shell
+        let log = tmp.path().join("impulse-shell.log");
+        // An impulse-shell that writes down how it was run: `ipc call` tells whether a shell
         // answered, anything else ends with 7.
         testenv::install_script(
-            &home.join(".local/bin/rusty-impulse"),
+            &home.join(".local/bin/impulse-shell"),
             &format!(
                 "#!/bin/sh\necho \"$*\" >> '{}'\n[ \"$3\" = ipc ] || exit 7\nexit {}\n",
                 log.display(),

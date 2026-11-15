@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """aotcheck's QV4 oracle (see v4.rs): evaluates each program of a JSON-lines file (one JSON
-string per line, a JS expression) in Qt's V4 engine, the Qt that runs `qs -c rusty-impulse`, and prints
+string per line, a JS expression) in Qt's V4 engine, the Qt that runs `qs -c impulse-shell`, and prints
 one result per line (`\\`, newlines escaped). Needs PySide6 6.12 (PySide6-Essentials) and
 system_qt.py (tools/testenv) next to this file: the Qt that answers is the system's, with the
 system's ICU, not the one inside the wheel."""

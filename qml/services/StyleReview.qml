@@ -34,7 +34,7 @@ Singleton {
     }
 
     function begin() {
-        // The edit mode is loaded for a layout with containers only (RustyImpulseFamily.qml).
+        // The edit mode is loaded for a layout with containers only (ImpulseShellFamily.qml).
         if (LayoutState.containerKinds.length === 0)
             return;
         root.liked = false;

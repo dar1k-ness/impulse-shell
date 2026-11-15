@@ -39,7 +39,7 @@ impl Drop for Shell {
 fn shell(test: &str, config: &str) -> Option<Shell> {
     if !testenv::in_own_process(test) {
         let home = tempfile::tempdir().unwrap();
-        let cfg = home.path().join(".config/rusty-impulse");
+        let cfg = home.path().join(".config/impulse-shell");
         std::fs::create_dir_all(&cfg).unwrap();
         std::fs::write(cfg.join("config.json"), config).unwrap();
         testenv::run_in_own_process(test, testenv::home_vars(home.path()));

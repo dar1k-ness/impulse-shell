@@ -12,7 +12,7 @@ builds it from `data/syntax/doxygen.xml` with `data/generators/generate-doxygenl
 (`data/CMakeLists.txt` runs the script at build time), and `lua.xml` includes it. The copy
 here is the output of that script of the same commit, run on the same `doxygen.xml`.
 
-Only the data is used. No code of KSyntaxHighlighting, Qt or KDE is built into rusty-impulse: the
+Only the data is used. No code of KSyntaxHighlighting, Qt or KDE is built into impulse-shell: the
 files are read by `crates/qml/src/syntax/kate.rs`.
 
 The texts of the licences are beside this file: `MIT.txt` and `LGPL-2.0-or-later.txt`, both

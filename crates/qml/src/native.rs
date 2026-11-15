@@ -786,7 +786,7 @@ impl ProcIo {
             // The child is gone, how it ended is unknown (`ECHILD`: something else reaped
             // it, or SIGCHLD is ignored): `exited` is still emitted, with exit code -1.
             Err(e) => {
-                elog::eprintln!("rusty-impulse: cannot wait for child {pid}: {e}");
+                elog::eprintln!("impulse-shell: cannot wait for child {pid}: {e}");
                 None
             }
         };
@@ -1186,7 +1186,7 @@ pub(crate) fn resolve(prog: &str, env: Option<&Value>) -> Option<std::path::Path
         .find(|p| crate::osutil::is_executable(p))
 }
 
-/// The path this process was started as, links not resolved (`$PREFIX/bin/rusty-impulse`, a link to
+/// The path this process was started as, links not resolved (`$PREFIX/bin/impulse-shell`, a link to
 /// the current release), fixed by the first call: reload and the shell's own windows run it,
 /// so they reach the release installed since, and still start once the running binary's
 /// release was removed. It is `argv[0]`. A path is used if it is an executable file: this
@@ -1194,7 +1194,7 @@ pub(crate) fn resolve(prog: &str, env: Option<&Value>) -> Option<std::path::Path
 /// tools/install.sh leaves under that name while it switches releases does). A bare name is
 /// used only if PATH leads from it to this binary: the shell's own windows and helpers are
 /// started under names that are not theirs (`qs`, `ri-pam`). Otherwise, and once the path is
-/// gone, the binary's own path, then `/proc/self/exe`. A relative path (`bin/rusty-impulse`, or the
+/// gone, the binary's own path, then `/proc/self/exe`. A relative path (`bin/impulse-shell`, or the
 /// name found through a relative PATH entry) is made absolute at that first call, from the
 /// directory the process was started in.
 pub fn launch_path() -> std::path::PathBuf {
@@ -1345,7 +1345,7 @@ pub unsafe fn signal_sender(info: *const libc::siginfo_t) -> SignalSender {
 
 /// Says in the log (stderr) that the termination signal `sig` ends the shell and who sent it
 /// (`None`: not known), with the sender's name when the caller has it:
-/// `rusty-impulse: ending on signal 15 (SIGTERM) sent by pid 1234 (killall)`. Without the line a shell
+/// `impulse-shell: ending on signal 15 (SIGTERM) sent by pid 1234 (killall)`. Without the line a shell
 /// that `killall` or a session manager ended and one the kernel killed (SIGKILL, which no
 /// process can report) leave the same log, one that just stops. One write(2) from a buffer on
 /// the stack: async-signal-safe, for the handlers of a shell that is still starting.
@@ -1373,7 +1373,7 @@ pub fn log_ending_signal(sig: i32, sender: Option<SignalSender>, sender_name: Op
         }
     }
     let mut l = Line([0; 128], 0);
-    l.text(b"rusty-impulse: ending on signal ");
+    l.text(b"impulse-shell: ending on signal ");
     l.number(sig);
     l.text(match sig {
         libc::SIGTERM => b" (SIGTERM)",
@@ -1458,7 +1458,7 @@ static CROSSFADE: std::sync::Mutex<(u64, std::time::Duration)> =
 
 /// The windows the same loop turn's changes redraw fade their next frame in over their previous
 /// one. Each process asks for its own fades where its colors change (MaterialThemeLoader, right
-/// before it applies them), so a theme switch fades every rusty-impulse window exactly when its colors
+/// before it applies them), so a theme switch fades every impulse-shell window exactly when its colors
 /// change.
 fn bump_crossfade(ms: u64) {
     let mut c = CROSSFADE.lock().unwrap();
@@ -1701,7 +1701,7 @@ thread_local! {
     /// App windows asked for while the shell's startup panels have not reserved their exclusive
     /// zones yet (None: not holding). welcome.qml opens at first run from shell.qml's load, before
     /// the bar is on screen; Hyprland would center it on the whole output instead of the area left
-    /// under the bar (`qs -c rusty-impulse` starts it through bash and a second qs, which takes longer).
+    /// under the bar (`qs -c impulse-shell` starts it through bash and a second qs, which takes longer).
     /// Only the main thread asks for app windows (QML handlers) and releases them.
     static HELD_APP_WINDOWS: std::cell::RefCell<Option<Vec<HeldSpawn>>> =
         const { std::cell::RefCell::new(None) };
@@ -2851,7 +2851,7 @@ pub(crate) mod tests {
         log.rewind().unwrap();
         log.read_to_string(&mut text).unwrap();
         assert!(
-            text.contains(&format!("rusty-impulse: cannot wait for child {pid}: ")),
+            text.contains(&format!("impulse-shell: cannot wait for child {pid}: ")),
             "stderr: {text:?}"
         );
     }

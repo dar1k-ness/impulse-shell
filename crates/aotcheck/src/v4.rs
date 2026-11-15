@@ -3,7 +3,7 @@
 //! by both backends passes it. Here each sampled the original binding is replayed as a closed program:
 //! its source text verbatim, with every free name it reads bound to the value the reference
 //! runtime holds (a JSON-like literal), and its result canonicalised in JS. The program runs
-//! in the native interpreter and in QV4 (PySide6's QQmlEngine, the Qt that runs `qs -c rusty-impulse`);
+//! in the native interpreter and in QV4 (PySide6's QQmlEngine, the Qt that runs `qs -c impulse-shell`);
 //! any difference is an engine divergence (McKeeman, "Differential Testing for Software").
 use crate::{Rc_ptr, St};
 use qml::eval::{Ex, Frame, Interp, Scope};
