@@ -58,7 +58,7 @@ fn main() {
         config_home: home.join(".config"),
         cache_home: home.join(".cache"),
         state_home: home.join(".local/state"),
-        script_dir: home.join(".config/rustshell/impulse-shell/scripts/colors"),
+        script_dir: home.join(".local/share/impulse-shell/scripts/colors"),
         home: home.clone(),
     };
     let c = Arc::new(Count(home, AtomicUsize::new(0)));

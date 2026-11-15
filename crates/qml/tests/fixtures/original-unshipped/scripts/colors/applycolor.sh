@@ -4,9 +4,10 @@ QUICKSHELL_CONFIG_NAME="impulse-shell"
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
-CONFIG_DIR="$XDG_CONFIG_HOME/rustshell/$QUICKSHELL_CONFIG_NAME"
-CACHE_DIR="$XDG_CACHE_HOME/rustshell"
-STATE_DIR="$XDG_STATE_HOME/rustshell"
+# The shell's tree, ~/.local/share/$QUICKSHELL_CONFIG_NAME as installed: the one this script is in.
+CONFIG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+CACHE_DIR="$XDG_CACHE_HOME/impulse-shell"
+STATE_DIR="$XDG_STATE_HOME/impulse-shell"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 term_alpha=100 #Set this to < 100 make all your terminals transparent

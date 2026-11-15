@@ -29,7 +29,7 @@ original is in git history, below).
 ## The two sides
 
 - Native: `impulse-shell` built in the guest from the checkout, running the `impulse-shell` config
-  (`~/.config/rustshell/impulse-shell`), which `bench/vm.sh sync` makes a copy of the checkout's `qml`.
+  (`~/.local/share/impulse-shell`), which `bench/vm.sh sync` makes a copy of the checkout's `qml`.
 - Original: Quickshell running the original's own QML. That tree is not in the checkout: since #53 `qml` is
   the project's own tree and imports the `Impulse` module, which Quickshell does not have
   (`module "Impulse" is not installed`). `orig.sh` takes it from git history, `ref/ii` of the last
@@ -71,7 +71,7 @@ Results in `OUT`: `orig/` and `native/` (shots, shell logs, `state.log`, `overla
   two runs of one shell: live values (CPU, memory), a random icon. One line per
   rectangle with the reason. The lines that start with `renamed` are the names the project changed
   on purpose and the original still shows: the app id and title of the shell's own windows in the
-  bar (`org.rustshell`, `Impulse Settings`) and the config folder in the Assistant hint of
+  bar (`org.impulse-shell`, `Impulse Settings`) and the config folder in the Assistant hint of
   the left sidebar. Each covers the differing words and one pixel around them, nothing else of
   the shot.
 - `areas` in `policy.json` are rectangles of a shot with limits of their own, for a difference the

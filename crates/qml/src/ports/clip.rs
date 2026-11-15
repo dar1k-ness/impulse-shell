@@ -172,7 +172,7 @@ impl Job {
                 )
                 .0
             }
-            // The original's `/tmp/rustshell/media/cliphist` is shared: the directory must be ours
+            // The original's `/tmp/impulse-shell/media/cliphist` is shared: the directory must be ours
             // and the file is decoded to a temporary in it, renamed into place when done (a
             // symlink planted there is replaced, never written through; a failed decode
             // leaves no truncated image behind for the `-f` check).

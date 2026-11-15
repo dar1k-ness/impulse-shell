@@ -772,7 +772,7 @@ impl Shell {
         )
         .unwrap();
         // qml/services/FirstRunExperience.qml opens the welcome window over a home without it.
-        let state = home.path().join(".local/state/rustshell/user");
+        let state = home.path().join(".local/state/impulse-shell/user");
         std::fs::create_dir_all(&state).unwrap();
         std::fs::write(state.join("first_run.txt"), "greeted").unwrap();
         furnish(home.path());
@@ -1635,7 +1635,7 @@ fn gif_picture(shot: &Shot) -> Option<usize> {
 /// the decode was quick, or the taskbar's clock at the next minute. So the file is big (a
 /// decode of all of it outlasts the opening) and the clock shows the year.
 ///
-/// The widget copies the file into the original's fixed `/tmp/rustshell/media/images`, which every
+/// The widget copies the file into the original's fixed `/tmp/impulse-shell/media/images`, which every
 /// shell removes when it starts: no other test runs meanwhile (`.config/nextest.toml`).
 #[test]
 fn floating_image_plays_its_gif() {
@@ -1669,7 +1669,7 @@ fn floating_image_plays_its_gif() {
     // qml/modules/common/Persistent.qml: the widgets the overlay opens with.
     let furnish = |home: &Path| {
         std::fs::write(
-            home.join(".local/state/rustshell/states.json"),
+            home.join(".local/state/impulse-shell/states.json"),
             r#"{"overlay":{"open":["floatingImage"],"floatingImage":{"x":700,"y":300}}}"#,
         )
         .unwrap();

@@ -29,8 +29,8 @@ struct Fx {
 }
 
 const TMP_MEDIA: &[&str] = &[
-    "/tmp/rustshell/media/images",
-    "/tmp/rustshell/media/cliphist",
+    "/tmp/impulse-shell/media/images",
+    "/tmp/impulse-shell/media/cliphist",
 ];
 
 /// The reference tools the original's commands run; a missing one fails the test (`testenv`).
@@ -71,7 +71,7 @@ fn own_process(test: &str) -> bool {
     std::io::BufReader::new(stdout)
         .read_line(&mut addr)
         .unwrap();
-    // The original's fixed /tmp/rustshell/media paths (`TMP_MEDIA`): one test at a time.
+    // The original's fixed /tmp/impulse-shell/media paths (`TMP_MEDIA`): one test at a time.
     static RUN: Mutex<()> = Mutex::new(());
     let _run = RUN.lock().unwrap_or_else(|e| e.into_inner());
     let mut vars = testenv::home_vars(&root.path().join("home"));
@@ -204,8 +204,9 @@ type Act<'a> = &'a dyn Fn(&mut Runtime, usize) -> Vec<String>;
 /// Whether the spawn hook runs `a` for real: the commands of the members under test, and
 /// `rm`/`mkdir` inside the test trees. Everything else the original starts fails, in both runs alike.
 fn allowed(f: &Fx, a: &[String]) -> bool {
-    let inside =
-        |p: &str| p.starts_with(f.root.to_str().unwrap()) || p.starts_with("/tmp/rustshell/media/");
+    let inside = |p: &str| {
+        p.starts_with(f.root.to_str().unwrap()) || p.starts_with("/tmp/impulse-shell/media/")
+    };
     match a {
         [c, rest @ ..] if c == "rm" || c == "mkdir" => rest
             .iter()
@@ -387,7 +388,7 @@ const CONTENTS: &[&str] = &[
 ];
 
 fn first_run_path(f: &Fx) -> PathBuf {
-    f.home.join(".local/state/rustshell/user/first_run.txt")
+    f.home.join(".local/state/impulse-shell/user/first_run.txt")
 }
 
 fn marker(f: &Fx) {
@@ -425,7 +426,7 @@ fn directories_cleanup() {
         return;
     }
     let setup = |f: &Fx| {
-        let cache = f.home.join(".cache/rustshell/media");
+        let cache = f.home.join(".cache/impulse-shell/media");
         let c = cache.join("coverart");
         std::fs::create_dir_all(c.join("sub/deeper")).unwrap();
         std::fs::write(c.join("a.png"), "x").unwrap();
@@ -507,7 +508,7 @@ fn first_run_marker() {
             let home = home_of(rt);
             let url = rt.get(s, "firstRunFilePath").to_js_string();
             assert!(url.starts_with("file:///"), "{url}");
-            let marker = format!("{home}/.local/state/rustshell/user/first_run.txt");
+            let marker = format!("{home}/.local/state/impulse-shell/user/first_run.txt");
             let mut seen = vec![];
             call(rt, s, "enableNextTime");
             seen.push(read(&marker));
@@ -526,7 +527,7 @@ fn first_run_marker() {
         },
         &[],
     );
-    let marker = "~/.local/state/rustshell/user/first_run.txt";
+    let marker = "~/.local/state/impulse-shell/user/first_run.txt";
     let home = std::env::var("HOME").unwrap();
     assert!(
         has(&snap, &format!("{home}{}: None", &marker[1..]))

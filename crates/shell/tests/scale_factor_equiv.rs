@@ -138,7 +138,7 @@ fn two_outputs() -> testenv::Sway {
         "output HEADLESS-2 position 1920 0",
         "default_border none",
         "for_window [app_id=\"org.quickshell\"] floating enable",
-        "for_window [app_id=\"org.rustshell\"] floating enable",
+        "for_window [app_id=\"org.impulse-shell\"] floating enable",
     ] {
         swaymsg(&sway, &[cmd]);
     }

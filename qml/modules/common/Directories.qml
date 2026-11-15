@@ -25,7 +25,7 @@ Singleton {
     property string assetsPath: Rustshell.shellPath("assets")
     property string favicons: FileUtils.trimFileProtocol(`${Directories.cache}/media/favicons`)
     property string coverArt: FileUtils.trimFileProtocol(`${Directories.cache}/media/coverart`)
-    property string tempImages: "/tmp/rustshell/media/images"
+    property string tempImages: "/tmp/impulse-shell/media/images"
     property string latexOutput: FileUtils.trimFileProtocol(`${Directories.cache}/media/latex`)
     property string shellConfig: FileUtils.trimFileProtocol(`${Directories.config}/impulse-shell`)
     property string shellConfigName: "config.json"
@@ -36,8 +36,8 @@ Singleton {
     property string notificationsPath: FileUtils.trimFileProtocol(`${Directories.cache}/notifications/notifications.json`)
     property string generatedMaterialThemePath: FileUtils.trimFileProtocol(`${Directories.state}/user/generated/colors.json`)
     property string generatedWallpaperCategoryPath: FileUtils.trimFileProtocol(`${Directories.state}/user/generated/wallpaper/category.txt`)
-    property string cliphistDecode: FileUtils.trimFileProtocol(`/tmp/rustshell/media/cliphist`)
-    property string screenshotTemp: "/tmp/rustshell/media/screenshot"
+    property string cliphistDecode: FileUtils.trimFileProtocol(`/tmp/impulse-shell/media/cliphist`)
+    property string screenshotTemp: "/tmp/impulse-shell/media/screenshot"
     property string userActions: FileUtils.trimFileProtocol(`${Directories.shellConfig}/actions`)
     property string userAvatarPathAccountsService: FileUtils.trimFileProtocol(`/var/lib/AccountsService/icons/${SystemInfo.username}`)
     property string userAvatarPathRicersAndWeirdSystems: FileUtils.trimFileProtocol(`${Directories.home}.face`)

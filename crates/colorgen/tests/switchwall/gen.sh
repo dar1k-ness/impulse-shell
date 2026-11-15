@@ -45,16 +45,16 @@ case_() {
   local H=$WORK/$name
   rm -rf "$H"; mkdir -p "$H"
   cp -r "$HERE/fixture/home/." "$H/"
-  mkdir -p "$H/.config/rustshell/impulse-shell/assets/images" "$H/pts"
-  cp -r "$II/scripts" "$H/.config/rustshell/impulse-shell/"
-  cp -r "$UNSHIPPED/scripts/." "$H/.config/rustshell/impulse-shell/scripts/"
-  cp "$II/assets/images/default_wallpaper.png" "$H/.config/rustshell/impulse-shell/assets/images/"
-  sed -i "s|/dev/pts/\*|\$SW_PTS/*|; s|\^/dev/pts/|^\$SW_PTS/|" "$H/.config/rustshell/impulse-shell/scripts/colors/applycolor.sh"
+  mkdir -p "$H/.local/share/impulse-shell/assets/images" "$H/pts"
+  cp -r "$II/scripts" "$H/.local/share/impulse-shell/"
+  cp -r "$UNSHIPPED/scripts/." "$H/.local/share/impulse-shell/scripts/"
+  cp "$II/assets/images/default_wallpaper.png" "$H/.local/share/impulse-shell/assets/images/"
+  sed -i "s|/dev/pts/\*|\$SW_PTS/*|; s|\^/dev/pts/|^\$SW_PTS/|" "$H/.local/share/impulse-shell/scripts/colors/applycolor.sh"
   : > "$H/pts/0"; : > "$H/pts/1"; : > "$H/pts/ptmx"
-  local W=$H/Pictures/Wallpapers CFG=$H/.config/impulse-shell/config.json GEN=$H/.local/state/rustshell/user/generated
+  local W=$H/Pictures/Wallpapers CFG=$H/.config/impulse-shell/config.json GEN=$H/.local/state/impulse-shell/user/generated
   (cd "$H" && W=$W CFG=$CFG GEN=$GEN bash -c "$setup")
   mkdir -p "$OUT/$name/pre"
-  (cd "$H" && find .config/impulse-shell .local -type f 2>/dev/null) | while read -r f; do
+  (cd "$H" && find .config/impulse-shell .local/state -type f 2>/dev/null) | while read -r f; do
     mkdir -p "$OUT/$name/pre/$(dirname "$f")"; sed "s|$H|@HOME@|g" "$H/$f" > "$OUT/$name/pre/$f"
   done
   local args=()
@@ -64,7 +64,7 @@ case_() {
   # Every process the script starts inherits fd 3, the pipe into `cat`: the pipeline ends once
   # the script's background jobs (`&`, `& disown`) have exited too.
   (cd "$H" && env -i HOME="$H" PATH="$WORK/bin:$HOME/.cargo/bin:/usr/bin:/bin" SW_LOG="$H/calls.log" SW_PTS="$H/pts" SW_FIX="$HERE/fixture" VENV="$VENV" \
-    IMPULSE_SHELL_VIRTUAL_ENV="$VENV" bash "$H/.config/rustshell/impulse-shell/scripts/colors/switchwall.sh" "${args[@]}" >/dev/null 2>"$H/stderr.log"; echo $? > "$H/rc") 3>&1 | cat
+    IMPULSE_SHELL_VIRTUAL_ENV="$VENV" bash "$H/.local/share/impulse-shell/scripts/colors/switchwall.sh" "${args[@]}" >/dev/null 2>"$H/stderr.log"; echo $? > "$H/rc") 3>&1 | cat
   local O=$OUT/$name
   mkdir -p "$O"
   printf '%s\n' "$@" > "$O/args"

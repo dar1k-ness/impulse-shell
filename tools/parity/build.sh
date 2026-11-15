@@ -14,7 +14,7 @@ if [ -d .git ]; then rev=$(git describe --always --dirty --abbrev=12); else rev=
 # setup.sh pins the clock to 2026-01-15: cargo then cannot download crates (TLS) and outputs get
 # dates older than their sources. Build on the real time; the next run.sh pins it again.
 real_clock
-config=${XDG_CONFIG_HOME:-$HOME/.config}/rustshell/impulse-shell
+config=${XDG_DATA_HOME:-$HOME/.local/share}/impulse-shell
 export RI_ROOT=${RI_ROOT:-$SRC/qml}
 [ -f "$RI_ROOT/shell.qml" ] || die "no QML tree at $RI_ROOT: bench/vm.sh sync"
 # tools/build.sh, as tools/install.sh: the binary names its commit (a copy without .git: the one

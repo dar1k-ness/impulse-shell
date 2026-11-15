@@ -262,7 +262,7 @@ fn real_file() {
             .collect(),
         reset: reset.iter().map(|k| k.to_string()).collect(),
     };
-    let shader = "/home/u/.config/rustshell/impulse-shell/services/hyprlandAntiFlashbangShader/anti-flashbang.glsl";
+    let shader = "/home/u/.local/share/impulse-shell/services/hyprlandAntiFlashbangShader/anti-flashbang.glsl";
     let game = [
         ("animations:enabled", "false"),
         ("decoration:shadow:enabled", "false"),

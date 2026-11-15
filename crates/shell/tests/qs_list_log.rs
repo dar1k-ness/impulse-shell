@@ -193,7 +193,10 @@ impl Env {
             let want = self.run(qt, args, extra);
             let (out, err, code) = self.run(Path::new(NATIVE), args, extra);
             // The native shell names the directories by its own name for them.
-            let theirs = |s: String| s.replace("/rustshell/", "/quickshell/");
+            let theirs = |s: String| {
+                s.replace("/rustshell/", "/quickshell/")
+                    .replace("/rt/impulse-shell/", "/rt/quickshell/")
+            };
             let got = (theirs(out), theirs(err), code);
             if want == got {
                 return;
@@ -221,8 +224,8 @@ fn list_and_log_match_quickshell() {
     std::fs::create_dir_all(&t_dir).unwrap();
     // The native shell reads the same directories under its own name.
     std::fs::create_dir_all(&rt).unwrap();
-    for d in [&cfg, &rt] {
-        std::os::unix::fs::symlink("quickshell", d.join("rustshell")).unwrap();
+    for (d, own) in [(&cfg, "rustshell"), (&rt, "impulse-shell")] {
+        std::os::unix::fs::symlink("quickshell", d.join(own)).unwrap();
     }
     std::fs::write(t_dir.join("shell.qml"), "import Quickshell\nShellRoot {}\n").unwrap();
     let t_cfg = t_dir.join("shell.qml").to_string_lossy().into_owned();
@@ -692,7 +695,7 @@ fn qt_written_matches(env: &Env, qt: &Path, root: &Path) {
     let rt = root.join("qt-rt");
     // The native shell reads what Quickshell writes there under its own name.
     std::fs::create_dir_all(&rt).unwrap();
-    std::os::unix::fs::symlink("quickshell", rt.join("rustshell")).unwrap();
+    std::os::unix::fs::symlink("quickshell", rt.join("impulse-shell")).unwrap();
     let dir = root.join("cfg/quickshell/w");
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(

@@ -21,7 +21,7 @@ python3 -c "import evdev, numpy, PIL" 2>/dev/null || die "python-evdev, python-n
 [ "$(fc-match -f '%{family}' 'Google Sans Flex')" = "Google Sans Flex" ] ||
   die "Google Sans Flex (kdeglobals application font) is not installed: $need"
 [ -w /dev/uinput ] || die "/dev/uinput is not writable (uinput module of the running kernel, group input): $need"
-[ -f "$HOME/.config/rustshell/impulse-shell/shell.qml" ] || die "no impulse-shell config at ~/.config/rustshell/impulse-shell: bench/vm.sh sync"
+[ -f "$HOME/.local/share/impulse-shell/shell.qml" ] || die "no impulse-shell config at ~/.local/share/impulse-shell: bench/vm.sh sync"
 # The region selector finds content regions with scripts/images/find_regions.py in this environment;
 # without it the original shows none and the scene compares nothing.
 VENV=/opt/ri-venv
@@ -48,8 +48,12 @@ mkdir -p "$(dirname "$CFG")" "$HOME/.local/state/quickshell/user" "$HOME/.cache/
 # The original and this shell read the same settings, colours and history here, as they
 # did while they had the same names for them.
 for d in "$HOME/.local/state" "$HOME/.cache"; do
-  [ -L "$d/rustshell" ] || rm -rf "$d/rustshell"
-  ln -sfn quickshell "$d/rustshell"
+  # (The link of a guest set up before this shell's directories had one name.)
+  [ ! -L "$d/rustshell" ] || rm "$d/rustshell"
+  if [ ! -L "$d/impulse-shell" ] && [ -d "$d/impulse-shell" ]; then
+    cp -a "$d/impulse-shell/." "$d/quickshell/" && rm -rf "$d/impulse-shell"
+  fi
+  ln -sfn quickshell "$d/impulse-shell"
 done
 old=$HOME/.config/$(printf %s-%s illogical impulse)
 [ -L "$old" ] || rm -rf "$old"
@@ -67,7 +71,7 @@ if [ ! -f "$WALL" ] || [ ! -f "$HOME/.local/state/quickshell/user/generated/colo
   # terminal templates they read are in the installed tree.
   SW=$(mktemp -d)
   # the original's switchwall.sh goes over the installed one, which hands the work to impulse-shell.
-  cp -r "$HOME/.config/rustshell/impulse-shell/scripts" "$SW/"
+  cp -r "$HOME/.local/share/impulse-shell/scripts" "$SW/"
   cp -r "$SRC/crates/qml/tests/fixtures/original-unshipped/scripts/." "$SW/scripts/" || die "original-unshipped scripts (needs the checkout at $SRC: bench/vm.sh sync)"
   IMPULSE_SHELL_VIRTUAL_ENV=$VENV bash "$SW/scripts/colors/switchwall.sh" \
     --image "$WALL" --mode dark > "$HOME/.cache/parity-switchwall.log" 2>&1

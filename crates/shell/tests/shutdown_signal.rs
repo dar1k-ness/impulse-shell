@@ -84,7 +84,7 @@ fn sigterm_exits_in_order() {
         "the shell did not serve t:\n{}",
         log.text()
     );
-    let by_id = run.join("rustshell/by-id");
+    let by_id = run.join("impulse-shell/by-id");
     assert_eq!(std::fs::read_dir(&by_id).unwrap().count(), 1);
     // Opened while the sleeper is surely alive: the shell has not been signalled yet.
     let sleeper = testenv::PidFd::open(sleeper);
@@ -311,7 +311,7 @@ fn sigterm_pending_at_the_reload_exec_ends_the_next_image_in_order() {
     let (dir, run) = (t.path().join("shell"), t.path().join("run"));
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("shell.qml"), FIXTURE).unwrap();
-    let instances = run.join("rustshell/by-id");
+    let instances = run.join("impulse-shell/by-id");
     std::fs::create_dir_all(&instances).unwrap();
     let (rd, wr) = std::io::pipe().unwrap();
     // bash stands for the previous image. It registers an instance as that image did (an id

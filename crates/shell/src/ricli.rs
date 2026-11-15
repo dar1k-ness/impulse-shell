@@ -87,8 +87,7 @@ pub fn dispatch() -> (PathBuf, Option<PathBuf>) {
         Some("log") => std::process::exit(log(&o)),
         Some("wallpick") if native => std::process::exit(qml::jobs_wallpick::cli(
             &o.words[1..],
-            &PathBuf::from(std::env::var("HOME").unwrap_or_default())
-                .join(".config/rustshell/impulse-shell"),
+            &qml::xdg::shell_tree(),
         )),
         _ => {}
     }
@@ -108,10 +107,11 @@ fn launch_target(o: &Opts) -> (PathBuf, Option<PathBuf>) {
     let (path, name) = config_selection(o, false);
     if path.is_none() && name.is_none() {
         // Native convention: a bare directory argument, else the original.
-        let root = o.words.first().map(PathBuf::from).unwrap_or_else(|| {
-            PathBuf::from(std::env::var("HOME").unwrap_or_default())
-                .join(".config/rustshell/impulse-shell")
-        });
+        let root = o
+            .words
+            .first()
+            .map(PathBuf::from)
+            .unwrap_or_else(qml::xdg::shell_tree);
         return (root, None);
     }
     let file = match locate_config(path, name) {
@@ -139,7 +139,7 @@ fn launch_target(o: &Opts) -> (PathBuf, Option<PathBuf>) {
 fn version() -> String {
     format!(
         "impulse-shell {} (commit {})\nQML tree: sum {}\nJavaScript interpreter: {}\n\
-         Thai line breaking: {}\n",
+         Thai line breaking: {}\nDirectories: {}\n",
         env!("CARGO_PKG_VERSION"),
         option_env!("RI_COMMIT").unwrap_or("unknown"),
         ricompiled::ROOT_SUM,
@@ -149,6 +149,7 @@ fn version() -> String {
         } else {
             "at spaces only (libthai.so.0 is not installed)"
         },
+        qml::xdg::APP,
     )
 }
 
@@ -294,17 +295,46 @@ fn config_base_dirs() -> Vec<PathBuf> {
     dirs.into_iter().map(|d| d.join("rustshell")).collect()
 }
 
+/// Where the shell's own tree is installed: `impulse-shell` under `$XDG_DATA_HOME`, then under
+/// each of `$XDG_DATA_DIRS` (a package's copy). tools/install.sh puts the tree in the first.
+fn tree_dirs() -> Vec<PathBuf> {
+    let mut dirs = vec![qml::xdg::data_home()];
+    let xdg = std::env::var("XDG_DATA_DIRS").unwrap_or_default();
+    let extra: Vec<PathBuf> = xdg
+        .split(':')
+        .filter(|s| s.starts_with('/'))
+        .map(PathBuf::from)
+        .collect();
+    if extra.is_empty() {
+        dirs.extend(["/usr/local/share".into(), "/usr/share".into()]);
+    } else {
+        dirs.extend(extra);
+    }
+    dirs.into_iter().map(|d| d.join(qml::xdg::APP)).collect()
+}
+
 /// quickshell's `locateConfigFile`: the absolute, cleaned path of the shell's root QML file.
-/// A named config is looked up in each base directory in turn, and not in one that holds a
-/// `shell.qml` itself (`locateNamedConfig`): that file is the default config there. The
-/// deprecated `manifest.conf` is not read.
+/// The config named `impulse-shell` is the shell's own tree where one is installed
+/// ([`tree_dirs`]). Any other named config, and that one where no tree is installed, is looked
+/// up in each base directory in turn, and not in one that holds a `shell.qml` itself
+/// (`locateNamedConfig`): that file is the default config there. The deprecated
+/// `manifest.conf` is not read.
 fn locate_config(path: Option<String>, name: Option<String>) -> Result<String, String> {
     let mut file = match path {
         Some(p) => PathBuf::from(p),
         None => {
             let name = name.unwrap_or_else(|| "default".into());
             let mut found = None;
+            if name == qml::xdg::APP {
+                found = tree_dirs()
+                    .into_iter()
+                    .map(|d| d.join("shell.qml"))
+                    .find(|f| f.is_file());
+            }
             for base in config_base_dirs() {
+                if found.is_some() {
+                    break;
+                }
                 if base.join("shell.qml").is_file() {
                     if name == "default" {
                         found = Some(base.join("shell.qml"));

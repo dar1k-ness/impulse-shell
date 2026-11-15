@@ -244,7 +244,7 @@ fn download_image(io: &Pipes, path: &str, url: &str, ua: &str) -> i32 {
     })
 }
 
-/// `mkdir -p $(dirname F)`. In the shared `/tmp` (FloatingImage's `/tmp/rustshell/media/images`)
+/// `mkdir -p $(dirname F)`. In the shared `/tmp` (FloatingImage's `/tmp/impulse-shell/media/images`)
 /// the directory is reached through [`crate::privfs`], and whatever but a regular file sits
 /// at `F` (a planted symlink) is removed, never followed.
 fn image_dir(path: &str) -> bool {
@@ -449,7 +449,7 @@ mod start_tests {
 mod image_downloader_tests {
     use std::os::unix::fs::PermissionsExt;
 
-    // FloatingImage's `/tmp/rustshell/media/images` is shared: a symlink planted where the
+    // FloatingImage's `/tmp/impulse-shell/media/images` is shared: a symlink planted where the
     // image goes is replaced, never read or written through, and the directory is private.
     #[test]
     fn temp_image_does_not_follow_symlinks() {

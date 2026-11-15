@@ -127,7 +127,7 @@ fn sandbox(h: &Path, bin: &Path, venv: &str, xdg: bool, setup: &str) -> Sandbox 
     }
     copy_tree(&fixture.join(".local/state"), &state);
     copy_tree(&fixture.join(".cache"), &cache);
-    let qs = cfg.join("rustshell/impulse-shell");
+    let qs = h.join(".local/share/impulse-shell");
     // The terminal templates the shell ships, then the original's switchwall.sh and its helpers over
     // them: the shell's own switchwall.sh runs the port, and the reference side is the original's.
     copy_tree(&Path::new(II).join("scripts"), &qs.join("scripts"));
@@ -173,7 +173,7 @@ fn sandbox(h: &Path, bin: &Path, venv: &str, xdg: bool, setup: &str) -> Sandbox 
         .envs(env.iter().cloned())
         .env("W", h.join("Pictures/Wallpapers"))
         .env("CFG", cfg.join("impulse-shell/config.json"))
-        .env("GEN", state.join("rustshell/user/generated"))
+        .env("GEN", state.join("impulse-shell/user/generated"))
         .status()
         .unwrap();
     assert!(st.success(), "setup {setup}");
@@ -343,7 +343,7 @@ fn outcome(h: &Path, code: i32, stdout: String, stderr: String) -> Outcome {
         for e in std::fs::read_dir(&d).unwrap().flatten() {
             let p = e.path();
             let rel = p.strip_prefix(h).unwrap().to_string_lossy().into_owned();
-            if rel.ends_with("rustshell/impulse-shell")
+            if rel.ends_with(".local/share/impulse-shell")
                 || ["calls.log", "Pictures"].contains(&rel.as_str())
             {
                 continue;

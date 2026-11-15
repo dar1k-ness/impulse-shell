@@ -89,6 +89,21 @@ pub fn state_home_in(env: &Env) -> PathBuf {
     pick(env, "XDG_STATE_HOME", ".local/state").into()
 }
 
+/// The one name of the shell's own directories under the XDG base directories: its settings
+/// (`$XDG_CONFIG_HOME`), its tree (`$XDG_DATA_HOME`), its state (`$XDG_STATE_HOME`) and its
+/// cache (`$XDG_CACHE_HOME`), and of its directories under `$XDG_RUNTIME_DIR` and `/tmp`.
+/// tools/install.sh puts the tree there and moves an older install's directories over.
+pub const APP: &str = "impulse-shell";
+
+/// The installed tree, what `impulse-shell -c impulse-shell` runs: `$XDG_DATA_HOME/impulse-shell`.
+pub fn shell_tree() -> PathBuf {
+    shell_tree_in(&var)
+}
+
+pub fn shell_tree_in(env: &Env) -> PathBuf {
+    data_home_in(env).join(APP)
+}
+
 /// `String` forms for the callers that build paths with `format!`.
 pub fn s(p: PathBuf) -> String {
     p.to_string_lossy().into_owned()

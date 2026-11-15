@@ -1,7 +1,7 @@
 #!/bin/bash
 # Install the native shell as `impulse-shell` (its own name: it no longer poses as Quickshell's `qs`).
 # Hyprland starts it as `impulse-shell -c impulse-shell`; `impulse-shell ipc call ...` is its Qt-free IPC client. A
-# real `qs` does not reach it: its socket is under $XDG_RUNTIME_DIR/rustshell, not Quickshell's. `pidof qs`
+# real `qs` does not reach it: its socket is under $XDG_RUNTIME_DIR/impulse-shell, not Quickshell's. `pidof qs`
 # checks (hypridle lock_cmd) must also accept `pidof impulse-shell`.
 #   tools/install.sh              build and install, keeping the release it replaces
 #   tools/install.sh --rollback   switch back to that release (again: forward to the newer one)
@@ -11,6 +11,9 @@
 #   tools/install.sh --rollback-good  switch back to the release marked good
 #   tools/install.sh --status     the current and the previous release, the impulse-shell config, and
 #                                 how many replaced configs are kept
+#   tools/install.sh --settle     make the shell's directories those of the current release
+#                                 again (see below): what a shell that still ran during an
+#                                 install wrote under the names that were moved is moved too
 #   tools/install.sh --uninstall  removes the releases and the link to them; the impulse-shell config, the
 #                                 kept configs and an impulse-shell of another origin stay
 #   tools/install.sh --help       this text
@@ -22,10 +25,44 @@
 #   from. It has no JavaScript interpreter and refuses to start on a tree whose scripts differ
 #   from this one's.
 # Run it as the user whose shell it is, not as root (sudo, doas, pkexec, su): it uses sudo
-# itself where the target directories need it. The impulse-shell config is ~/.config/rustshell/impulse-shell
-# ($XDG_CONFIG_HOME), what `impulse-shell -c impulse-shell` runs: an install makes it a copy of the tree it
-# built, with the files' executable bits. A relative XDG_CONFIG_HOME or XDG_STATE_HOME is
-# ignored, as the XDG Base Directory Specification and impulse-shell have it.
+# itself where the target directories need it. The impulse-shell config, the tree of the shell's own
+# files, is ~/.local/share/impulse-shell ($XDG_DATA_HOME), what `impulse-shell -c impulse-shell` runs: an
+# install makes it a copy of the tree it built, with the files' executable bits. A relative
+# XDG_CONFIG_HOME, XDG_DATA_HOME, XDG_STATE_HOME or XDG_CACHE_HOME is ignored, as the XDG Base
+# Directory Specification and impulse-shell have it.
+#
+# All that the shell keeps in the user's home has the one name impulse-shell:
+#   ~/.config/impulse-shell        the user's settings and layout   ($XDG_CONFIG_HOME)
+#   ~/.local/share/impulse-shell   the tree                         ($XDG_DATA_HOME)
+#   ~/.local/state/impulse-shell   its state, and the replaced configs (below)  ($XDG_STATE_HOME)
+#   ~/.cache/impulse-shell         its cache                        ($XDG_CACHE_HOME)
+# A release from before that (its `--version` has no line `Directories: impulse-shell`) has its
+# tree in ~/.config/rustshell/impulse-shell, its state in ~/.local/state/rustshell and its
+# cache in ~/.cache/rustshell. The directories follow the release that is the current one:
+# once an install or a rollback has switched, and whenever one finds them otherwise,
+#   - the tree where the other kind of release has it is removed if it is a kept release's
+#     tree, and kept as a replaced config (below) if it was edited;
+#   - for a release with the one name, what is in the state and the cache under the old name
+#     is moved to the new one, nothing in it is lost: of a file both have, the one written
+#     last stays and the other is kept in ~/.local/state/impulse-shell/before-move-<time>
+#     (of the cache: dropped). The old names are then gone. For a release from before, the two
+#     old names become links to the new ones, so it reads the same state and cache;
+#   - the user's own files that name these directories, the app id or /tmp/rustshell (in
+#     hypr, matugen, fish, kitty, foot, fuzzel and wlogout of ~/.config, the shell's
+#     config.json, the path of the wallpaper) are rewritten to the names the release has. A
+#     file's text from before the first rewrite is kept under
+#     ~/.local/state/impulse-shell/before-dirs/; a line that names the build from before the
+#     rename is left as it is, and so are the files of those directories while the Hyprland
+#     files start that build (tools/carry-over.sh --dots new rewrites them then).
+#     Hyprland is told to read its files again when one of hypr was rewritten (hyprctl
+#     reload): the rules and the binds it holds name the other app id and directories.
+# While the build from before the rename is installed (old_names_note), ~/.config/rustshell
+# stays, as that build's tree is in it, and the two old names of the state and the cache stay
+# as links: it reads them. A shell that runs during an install or a rollback that changes
+# the directories has to be restarted: it still names the ones that were moved, and writes
+# its state there again. --settle, once it is stopped, moves that over as well (the next
+# install or rollback does the same), and removes what it left for this login under the old
+# name in $XDG_RUNTIME_DIR and /tmp.
 #
 # The binary and the QML tree it was compiled from are one release:
 #   $PREFIX/bin/impulse-shell                    -> ../lib/impulse-shell/current/impulse-shell
@@ -37,8 +74,9 @@
 # (`impulse-shell --version`) and whether it runs the tree (`impulse-shell --check-tree`), and replaces
 # nothing if it has one or does not. It then puts the release's tree in the impulse-shell config's place
 # and asks the binary the way Hyprland starts it, `impulse-shell -c impulse-shell --check-tree`: if that does not
-# find the config and run it (a shell.qml of the user's own in ~/.config/rustshell hides the
-# named configs beside it: Quickshell's rule), the install or rollback is undone.
+# find the config and run it (for a release from before the one name, a shell.qml of the
+# user's own in ~/.config/rustshell hides the named configs beside it: Quickshell's rule),
+# the install or rollback is undone.
 # A binary that $PREFIX/bin/impulse-shell runs and no install put there (a plain file, a link to a
 # build elsewhere) is kept as a release first, legacy-<id>, so it can be rolled back to. Its
 # tree is the config it ran, and a rollback puts that config back as it was: a link in it to
@@ -67,13 +105,15 @@
 # removed by the script. An install and a rollback do not restart a running shell.
 #
 # The shell's own windows (Settings, Welcome, the conflicts window) have the app id
-# org.rustshell. An install writes that id's desktop entry and icon into the user's data
-# directory, ~/.local/share ($XDG_DATA_HOME):
-#   applications/org.rustshell.desktop
-#   icons/hicolor/scalable/apps/org.rustshell.svg
+# org.impulse-shell (org.rustshell with a release from before the one name). An install
+# writes that id's desktop entry and icon into the user's data directory, ~/.local/share
+# ($XDG_DATA_HOME):
+#   applications/org.impulse-shell.desktop
+#   icons/hicolor/scalable/apps/org.impulse-shell.svg
 # There impulse-shell finds the icon the bar, the overview and the dock show for these windows
 # (without them: a placeholder). Both files are written out of this script, so a copy of the
-# script alone installs them. A rollback leaves them; --uninstall removes them.
+# script alone installs them. A rollback writes those of the release it switches to;
+# --uninstall removes them.
 set -euo pipefail
 PREFIX=${PREFIX:-/usr/local}
 bin_dir=$PREFIX/bin
@@ -87,16 +127,48 @@ state_home=${XDG_STATE_HOME-}
 [[ $state_home == /* ]] || state_home=$HOME/.local/state
 data_home=${XDG_DATA_HOME-}
 [[ $data_home == /* ]] || data_home=$HOME/.local/share
-for v in XDG_CONFIG_HOME XDG_STATE_HOME XDG_DATA_HOME; do
+cache_home=${XDG_CACHE_HOME-}
+[[ $cache_home == /* ]] || cache_home=$HOME/.cache
+for v in XDG_CONFIG_HOME XDG_STATE_HOME XDG_DATA_HOME XDG_CACHE_HOME; do
     [[ -z ${!v-} || ${!v} == /* ]] ||
         echo "install.sh: $v=${!v} is not an absolute path and is ignored, as impulse-shell ignores it (XDG Base Directory Specification)" >&2
 done
-config_tree=$config_home/rustshell/impulse-shell
 state_dir=$state_home/impulse-shell
-# The desktop entry and the icon of the shell's own windows, by their app id.
-app_id=org.rustshell
-app_entry=$data_home/applications/$app_id.desktop
-app_icon=$data_home/icons/hicolor/scalable/apps/$app_id.svg
+# The name a release from before the one name has for its directories, and the tree of each
+# kind of release.
+old_word=rustshell
+new_tree=$data_home/impulse-shell
+old_tree=$config_home/$old_word/impulse-shell
+# What depends on the release: $layout is `new` (the one name) or `old`, $config_tree the
+# impulse-shell config, the tree that release runs, and $app_id the app id of its own windows, with
+# their desktop entry and icon.
+use_layout() {
+    layout=$1
+    if [ "$1" = new ]; then
+        config_tree=$new_tree app_id=org.impulse-shell
+    else
+        config_tree=$old_tree app_id=org.$old_word
+    fi
+    app_entry=$data_home/applications/$app_id.desktop
+    app_icon=$data_home/icons/hicolor/scalable/apps/$app_id.svg
+}
+use_layout new
+# Which of the two the binary `$1` has: it says so in its --version. One that does not answer
+# (a binary from before releases) is from before the one name.
+layout_of() {
+    local out
+    out=$(exec -c "$1" --version 2>/dev/null) || out=
+    if grep -qx 'Directories: impulse-shell' <<<"$out"; then echo new; else echo old; fi
+}
+# The same for the release `$1`. A binary from before releases (adopt_bin) is never run to
+# ask: its release says which it has, by the file `one-name`.
+use_release() {
+    if [ -e "$lib/releases/$1/unverified" ]; then
+        if [ -e "$lib/releases/$1/one-name" ]; then use_layout new; else use_layout old; fi
+    else
+        use_layout "$(layout_of "$lib/releases/$1/impulse-shell")"
+    fi
+}
 
 die() { echo "install.sh: $*" >&2; exit 1; }
 # The message of a function whose caller still has something to put back: status 1.
@@ -150,14 +222,16 @@ accepts() { (exec -c "$1" --check-tree -p "$2"); }
 # Whether the binary `$1`, started the way Hyprland starts the shell (`impulse-shell -c impulse-shell`), finds
 # the impulse-shell config and runs it as it is: status 0 with its answer on stdout if it does, 1 with
 # the reason on stderr if not. It finds a named config by Quickshell's rule (locateConfigFile):
-# in the first of $XDG_CONFIG_HOME/rustshell and the quickshell directories of
-# $XDG_CONFIG_DIRS that holds it, and never in one that has a shell.qml of its own. HOME and
-# those two variables decide the answer; the rest of the environment is left out as for accepts.
+# in the first of $XDG_CONFIG_HOME/rustshell and the rustshell directories of
+# $XDG_CONFIG_DIRS that holds it, and never in one that has a shell.qml of its own; a release
+# with the one name looks first for its tree, impulse-shell in $XDG_DATA_HOME and
+# $XDG_DATA_DIRS. HOME and those four variables decide the answer; the rest of the
+# environment is left out as for accepts.
 launches() {
     local out rc=0 at v
     out=$(
         for v in $(compgen -e); do
-            case $v in HOME | XDG_CONFIG_HOME | XDG_CONFIG_DIRS) ;; *) export -n "$v" ;; esac
+            case $v in HOME | XDG_CONFIG_HOME | XDG_CONFIG_DIRS | XDG_DATA_HOME | XDG_DATA_DIRS) ;; *) export -n "$v" ;; esac
         done
         exec "$1" -c impulse-shell --check-tree
     ) || rc=$?
@@ -168,8 +242,8 @@ launches() {
     fi
     {
         echo "install.sh: \`impulse-shell -c impulse-shell\`, how Hyprland starts the shell, does not run the impulse-shell config $config_tree (exit status $rc${out:+; it says: $out})"
-        [ ! -f "$config_home/rustshell/shell.qml" ] ||
-            echo "install.sh: $config_home/rustshell/shell.qml is a config of its own: with it there, Quickshell and impulse-shell look up no named config such as impulse-shell in that directory. Move it, with the files it uses, to $config_home/rustshell/default/ and it stays the default config"
+        [ "$layout" = new ] || [ ! -f "$config_home/$old_word/shell.qml" ] ||
+            echo "install.sh: $config_home/$old_word/shell.qml is a config of its own: with it there, Quickshell and impulse-shell look up no named config such as impulse-shell in that directory. Move it, with the files it uses, to $config_home/$old_word/default/ and it stays the default config"
     } >&2
     return 1
 }
@@ -341,7 +415,7 @@ EOS
 # switch did not replace it, undone otherwise; `undo` as `$1` (this run, on a signal): undone
 # in both cases.
 recover() {
-    local j_cur='' j_prev='' j_to='' j_other='' j_drop='' j_live='' j_old='' j_new='' j_kept='' j_bin='' d finished=1
+    local j_cur='' j_prev='' j_to='' j_other='' j_drop='' j_live='' j_old='' j_new='' j_kept='' j_bin='' d t finished=1
     if switching && [ ! -e "$switch/journal" ]; then
         echo "install.sh: $lib/current names a switch that is gone: no release is the current one" >&2
         set_link current ""
@@ -398,8 +472,13 @@ recover() {
     $SUDO rm -rf "$switch" "$switch.new" "$lib/releases/.staging"
     # Copies that a killed run made and did not use: of a release's tree beside the config,
     # of an edited config in the state directory.
-    d=$(realpath "$config_tree" 2>/dev/null) || d=$config_tree
-    for d in "$(dirname "$d")"/.ri-restore.?????? "$state_dir"/.replaced-*; do
+    for t in "$new_tree" "$old_tree"; do
+        d=$(realpath "$t" 2>/dev/null) || d=$t
+        for d in "$(dirname "$d")"/.ri-restore.??????; do
+            [ ! -d "$d" ] || rm -rf "$d"
+        done
+    done
+    for d in "$state_dir"/.replaced-*; do
         [ ! -d "$d" ] || rm -rf "$d"
     done
 }
@@ -547,6 +626,7 @@ lock() {
     flock -n 9 || die "another install, rollback or uninstall is running on $lib"
     trap interrupted INT TERM HUP
     recover
+    settle
 }
 # Copies the binary `$1` and the tree `$2` into the new release `$3`, which appears complete
 # or not at all. Files reached through links are copied as files (a config of links into a
@@ -595,8 +675,12 @@ adopt_bin() {
     foreign_bin || return 0
     was_cur=$(readlink "$lib/current" 2>/dev/null) || was_cur=
     legacy=$(new_id "$from" legacy-)
+    # It is not run to ask which directories it has: the ones where its config is, those of
+    # a release from before the one name if there is none.
+    if [ ! -f "$old_tree/shell.qml" ] && [ -f "$new_tree/shell.qml" ]; then use_layout new; else use_layout old; fi
     [ ! -f "$config_tree/shell.qml" ] || running=$config_tree
     store "$from" "$running" "$legacy" unverified adopted_copy
+    [ "$layout" != new ] || in_prefix touch "$lib/releases/$legacy/one-name"
     # The name becomes the link to that copy now: from here on `current` says what runs. The
     # copy, then `current`, are on the disk before the name leads to them.
     flush "$lib/releases/$legacy"
@@ -620,6 +704,8 @@ install_release() {
     adopt_bin "$tree" "nothing was installed"
     cur=$(release current) || cur=
     prev=$(release previous) || prev=
+    # From here on the directories are the ones the new binary has.
+    use_layout "$(layout_of "$bin")"
     if [ -n "$cur" ] && [ ! -e "$lib/releases/$cur/unverified" ] &&
         cmp -s "$bin" "$lib/releases/$cur/impulse-shell" && same_tree "$tree" "$lib/releases/$cur/tree"; then
         replace_tree "$lib/releases/$cur/tree" "$lib/releases/$cur/tree" || exit 1
@@ -632,7 +718,7 @@ install_release() {
         keep_tree
         link_bin
         drop_qs_link
-        put_app_icon
+        settle
         echo "$bin_dir/impulse-shell is already this build ($cur)"
         optional "$lib/releases/$cur/impulse-shell"
         return 0
@@ -660,7 +746,7 @@ install_release() {
     staged=
     keep_tree
     drop_qs_link
-    put_app_icon
+    settle
     prune "$id" "$keep"
     echo "installed $bin_dir/impulse-shell ($id)"
     [ "$keep" = "$cur" ] || echo "it replaces $cur, which has the same binary"
@@ -790,6 +876,266 @@ say_kept() {
         echo "$state_dir holds ${#copies[@]} such copies; they are yours to remove"
 }
 
+# Whether the build from before the rename is installed: it has the old names for its
+# directories and its app id, whichever release of this directory is the current one.
+old_build() {
+    local was=rusty
+    was+=-impulse
+    [ -e "$bin_dir/$was" ] || [ -e "$PREFIX/lib/$was/current" ] || [ -e "$config_home/$old_word/$was" ]
+}
+settle_note() { echo "install.sh: note: $*" >&2; }
+# The text `$1` as a pattern of `sed -E`, and as the replacement of its `s` with `#`.
+sed_pat() { sed -e 's/[][\\.*^$#+?(){}|]/\\&/g' <<<"$1"; }
+sed_to() { sed -e 's/[\\&#]/\\&/g' <<<"$1"; }
+# Rewrites stdin, a text of the user's, so that it names the directories, the app id and the
+# directory in /tmp as the releases of $layout have them. Only where a whole name stands, and
+# not in a line that names the build from before the rename: that one keeps the old names.
+# For a release from before the one name the state and the cache are left as they are named:
+# both names lead to the same place then (settle links them).
+rename_dirs() {
+    local was=rusty W=$old_word A=impulse-shell e='([^[:alnum:]_.-]|$)' home=XDG_DATA
+    was+=-impulse
+    # A text that reads the variable of the config directory without a default gets $HOME
+    # where the data directory is the default one: that variable is not always set.
+    [ "$data_home" != "$HOME/.local/share" ] || home=HOME
+    if [ "$layout" = new ]; then
+        [ "$home" != HOME ] || home='HOME\1/.local/share'
+        [ "$home" != XDG_DATA ] || home='XDG_DATA_HOME\1'
+        sed -E \
+            -e "/$was/b" \
+            -e "s#$(sed_pat "$old_tree")$e#$(sed_to "$new_tree")\\1#g" \
+            -e "s#$(sed_pat "$state_home/$W")$e#$(sed_to "$state_home/$A")\\1#g" \
+            -e "s#$(sed_pat "$cache_home/$W")$e#$(sed_to "$cache_home/$A")\\1#g" \
+            -e "s#\\\$\\{XDG_CONFIG_HOME:-(\\\$HOME|\\\$\\{HOME\\}|~)/\\.config\\}/$W/$A$e#\${XDG_DATA_HOME:-\\1/.local/share}/$A\\2#g" \
+            -e "s#XDG_CONFIG_HOME(\\}?[\"']?)/$W/$A$e#$home/$A\\2#g" \
+            -e "s#\\.config/$W/$A$e#.local/share/$A\\1#g" \
+            -e "s#\\.config/$W/(\\\$\\{?qsConfig\\}?)#.local/share/\\1#g" \
+            -e "s#((\\.local/state|\\.cache|XDG_STATE_HOME|XDG_CACHE_HOME)\\}?[\"']?/)$W$e#\\1$A\\3#g" \
+            -e "s#/tmp/$W$e#/tmp/$A\\1#g" \
+            -e "s#org(\\\\*)\\.$W([^[:alnum:]_-]|\$)#org\\1.$A\\2#g"
+    else
+        sed -E \
+            -e "/$was/b" \
+            -e "s#$(sed_pat "$new_tree")$e#$(sed_to "$old_tree")\\1#g" \
+            -e "s#\\\$\\{XDG_DATA_HOME:-(\\\$HOME|\\\$\\{HOME\\}|~)/\\.local/share\\}/$A$e#\${XDG_CONFIG_HOME:-\\1/.config}/$W/$A\\2#g" \
+            -e "s#XDG_DATA_HOME(\\}?[\"']?)/$A$e#XDG_CONFIG_HOME\\1/$W/$A\\2#g" \
+            -e "s#\\.local/share/$A$e#.config/$W/$A\\1#g" \
+            -e "s#\\.local/share/(\\\$\\{?qsConfig\\}?)#.config/$W/\\1#g" \
+            -e "s#/tmp/$A$e#/tmp/$W\\1#g" \
+            -e "s#org(\\\\*)\\.$A([^[:alnum:]_-]|\$)#org\\1.$W\\2#g"
+    fi
+}
+# The user's own files that may name them, NUL-separated: what something reads (by its
+# suffix, or a script without one) in the directories of ~/.config that end-4's dots fill,
+# the shell's settings, and the path of the wallpaper in its state (a wallpaper of the tree).
+dots_files() {
+    local d f was=rusty
+    was+=-impulse
+    for d in hypr matugen fish kitty foot fuzzel wlogout; do
+        [ -d "$config_home/$d" ] || continue
+        # The Hyprland files start the build from before the rename: these files are that
+        # build's, and tools/carry-over.sh keeps and rewrites them when the shell is switched.
+        # (In a line Hyprland reads: not in a comment, nor in a copy kept beside a file.)
+        ! grep -rhsE --include='*.lua' --include='*.conf' "(^|[^[:alnum:]_-])$was([^[:alnum:]_]|\$)" "$config_home/hypr" |
+            grep -qvE '^[[:space:]]*(--|#)' || continue
+        while IFS= read -r -d '' f; do
+            case ${f##*/} in
+            *.lua | *.conf | *.toml | *.fish | *.sh | *.py | *.css | *.scss | *.json | *.jsonc | *.ini | *.kdl | *.rasi | \
+                *.yaml | *.yml | *.txt | *.colors | *.theme | *.qss | *.xml | *.desktop | *.service) ;;
+            *.*) continue ;;
+            esac
+            printf '%s\0' "$f"
+        done < <(find "$config_home/$d" -name .git -prune -o -type f -print0 2>/dev/null)
+    done
+    for f in "$config_home/impulse-shell/config.json" "$state_dir/user/generated/wallpaper/path.txt"; do
+        [ ! -f "$f" ] || printf '%s\0' "$f"
+    done
+}
+# Rewrites the file `$1` (rename_dirs) if it is a text that names the other directories,
+# through a file beside it, with its mode. Its text from before the first rewrite is kept
+# under $state_dir/before-dirs, by its path in ~/.config.
+rename_in() {
+    local f=$1 tmp keep=
+    [ -f "$f" ] && [ ! -L "$f" ] && [ -s "$f" ] && grep -qI . "$f" || return 0
+    if rename_dirs <"$f" 2>/dev/null | cmp -s - "$f"; then return 0; fi
+    case $f in "$config_home"/*) keep=$state_dir/before-dirs/${f#"$config_home"/} ;; esac
+    if [ -n "$keep" ] && [ ! -e "$keep" ]; then
+        mkdir -p "${keep%/*}" && cp -p -- "$f" "$keep" || return 1
+    fi
+    tmp=$(mktemp "${f%/*}/.impulse-shell.XXXXXX") && cp -p -- "$f" "$tmp" &&
+        rename_dirs <"$f" >"$tmp" && mv -f -- "$tmp" "$f" || {
+        rm -f -- "${tmp:-}"
+        return 1
+    }
+    case $f in "$config_home"/hypr/*) hypr_rewritten=1 ;; esac
+    echo "$f: names the directories of this release now${keep:+ (its text before: $keep)}"
+}
+# Moves what the directory `$1` holds into the directory `$2`, and removes `$1`. A directory
+# both have is gone through. Of a file both have, with other contents, `$2` gets the one
+# written last, and the other is kept in `$3` (no `$3`: dropped).
+merge_into() {
+    local e b
+    for e in "$1"/* "$1"/.[!.]* "$1"/..?*; do
+        [ -e "$e" ] || [ -L "$e" ] || continue
+        b=${e##*/}
+        if [ ! -e "$2/$b" ] && [ ! -L "$2/$b" ]; then
+            mv -T -- "$e" "$2/$b" || return 1
+        elif [ -d "$e" ] && [ ! -L "$e" ] && [ -d "$2/$b" ] && [ ! -L "$2/$b" ]; then
+            merge_into "$e" "$2/$b" "${3:+$3/$b}" || return 1
+        elif [ -f "$e" ] && [ ! -L "$e" ] && [ -f "$2/$b" ] && cmp -s -- "$e" "$2/$b"; then
+            rm -f -- "$e" || return 1
+        elif [ "$e" -nt "$2/$b" ]; then
+            if [ -n "$3" ]; then
+                mkdir -p -- "$3" && mv -T -- "$2/$b" "$3/$b" || return 1
+            else
+                rm -rf -- "$2/$b" || return 1
+            fi
+            mv -T -- "$e" "$2/$b" || return 1
+        elif [ -n "$3" ]; then
+            mkdir -p -- "$3" && mv -T -- "$e" "$3/$b" || return 1
+        else
+            rm -rf -- "$e" || return 1
+        fi
+    done
+    rmdir -- "$1"
+}
+# The state or the cache in `$1` ($XDG_STATE_HOME, $XDG_CACHE_HOME): for a release with the
+# one name what is under the old name is moved to the new one (merge_into, `$2` its `$3`);
+# the old name is then a link to the new one where a build reads it: a release from before
+# the one name, the build from before the rename.
+dirs_moved=
+hypr_rewritten=
+move_named() {
+    local o=$1/$old_word n=$1/impulse-shell
+    if [ -L "$o" ] && [ "$(readlink "$o")" = impulse-shell ]; then
+        [ "$layout" != new ] || old_build || rm -f -- "$o"
+        return 0
+    fi
+    if [ "$layout" = new ] && { [ -d "$o" ] || [ -L "$o" ]; }; then
+        if [ ! -e "$n" ] && [ ! -L "$n" ]; then
+            mv -T -- "$o" "$n"
+        elif [ -d "$o" ] && [ ! -L "$o" ] && [ -d "$n" ]; then
+            merge_into "$o" "$n" "$2"
+        else
+            false
+        fi || {
+            settle_note "cannot move $o to $n: the shell does not read $o any more, what is in it is yours to move"
+            return 0
+        }
+        echo "moved $o to $n"
+        dirs_moved=1
+    fi
+    if [ "$layout" != new ] || old_build; then
+        [ -e "$o" ] || [ -L "$o" ] || [ ! -d "$n" ] || ln -s impulse-shell "$o" ||
+            settle_note "cannot make the link $o to $n: a build that reads $o starts without the state or the cache in $n"
+    fi
+}
+# A Python environment made in the state directory under its old name (the dots' installer
+# makes one, .venv) names itself by its path in its scripts: they get the new one.
+fix_venv() {
+    local v=$state_dir/.venv was=$state_home/$old_word/.venv f
+    [ -f "$v/pyvenv.cfg" ] || return 0
+    for f in "$v/pyvenv.cfg" "$v"/bin/*; do
+        [ -f "$f" ] && [ ! -L "$f" ] && grep -qIF -- "$was" "$f" || continue
+        sed -i -E -e "s#$(sed_pat "$was")#$(sed_to "$v")#g" "$f" || return 1
+    done
+}
+# Under the lock, when no switch is in progress: makes the directories those of the release
+# that is the current one (see the head of this file). Every step can be made again: a run
+# that was killed in it, or a rollback made by an older copy of this script, is completed by
+# the next run. What cannot be done is said and left: the release that is installed stays.
+settle() {
+    local cur
+    cur=$(release current) || return 0
+    use_release "$cur"
+    settle_steps "$cur" || settle_note "the directories of the shell could not all be made those of $cur; the next install or rollback tries again"
+}
+# What a shell with the old names left for this login, outside the home: its sockets and logs
+# in $XDG_RUNTIME_DIR and its temporary files in /tmp. They go once no such shell runs (each
+# one that does has its pid in by-pid there).
+old_session() {
+    local run=${XDG_RUNTIME_DIR-} p
+    [[ $run == /* ]] || return 0
+    run=$run/$old_word
+    for p in "$run"/by-pid/*; do
+        [ ! -e "$p" ] && [ ! -L "$p" ] || ! kill -0 "${p##*/}" 2>/dev/null || return 0
+    done
+    rm -rf "$run" 2>/dev/null || true
+    [ ! -O "/tmp/$old_word" ] || [ -L "/tmp/$old_word" ] || rm -rf "/tmp/$old_word" 2>/dev/null || true
+}
+settle_steps() {
+    local other r to aside f
+    if [ "$layout" = new ]; then other=$old_tree; else other=$new_tree; fi
+    # The tree where the other kind of release has it.
+    if [ -L "$other" ]; then
+        settle_note "$other is a link (to $(readlink "$other")) and stays: the shell runs $config_tree now"
+    elif [ -d "$other" ] && [ ! -f "$other/shell.qml" ]; then
+        rmdir "$other" 2>/dev/null || settle_note "$other is not a tree of the shell and stays"
+    elif [ -d "$other" ]; then
+        # Its .git is not part of a release: it stays with the config.
+        if [ -e "$other/.git" ] && [ -d "$config_tree" ] && [ ! -e "$config_tree/.git" ]; then
+            mv -T "$other/.git" "$config_tree/.git" || true
+        fi
+        for r in current previous good; do
+            r=$(release "$r") || continue
+            if same_tree "$other" "$lib/releases/$r/tree"; then
+                rm -rf "$other"
+                break
+            fi
+        done
+        if [ -e "$other" ]; then
+            # Under its name at once: recover removes what a killed run left as .replaced-*.
+            to=$state_dir/replaced-$(date -u +%Y%m%dT%H%M%SZ).$(mktemp -u XXXXXX)
+            mkdir -p "$state_dir" && mv -T "$other" "$to" || return 1
+            echo "$other had changes since its install: kept at $to"
+        fi
+        echo "the impulse-shell config is $config_tree now ($other is gone)"
+        dirs_moved=1
+        flush "$(dirname "$other")"
+    fi
+    aside=$state_dir/before-move-$(date -u +%Y%m%dT%H%M%SZ)
+    move_named "$state_home" "$aside"
+    move_named "$cache_home" ""
+    [ ! -d "$aside" ] ||
+        echo "$aside holds the files that $state_home/$old_word and $state_dir both had, with other contents, as they were not written last (yours to remove)"
+    if [ "$layout" = new ]; then
+        fix_venv || settle_note "cannot rewrite the paths in $state_dir/.venv"
+        old_build || rmdir "$config_home/$old_word" 2>/dev/null || true
+        old_session
+    fi
+    # The desktop entry and the icon: those of this release's app id. The other id's go,
+    # unless the build from before the rename has that id.
+    if [ "$layout" = new ]; then
+        use_layout old
+        old_build || drop_app_icon
+        use_layout new
+    else
+        use_layout new
+        drop_app_icon
+        use_layout old
+    fi
+    put_app_icon
+    while IFS= read -r -d '' f; do
+        rename_in "$f" || settle_note "cannot rewrite $f, which names directories this release does not have"
+    done < <(dots_files)
+    # Hyprland holds the rules and the binds it read: told to read its files again, it has
+    # those of this release's app id and directories.
+    if [ -n "$hypr_rewritten" ]; then
+        if [ -n "${HYPRLAND_INSTANCE_SIGNATURE-}" ] && command -v hyprctl >/dev/null 2>&1 &&
+            timeout 5 hyprctl reload >/dev/null 2>&1; then
+            echo "Hyprland read its files again (hyprctl reload)"
+        else
+            echo "have Hyprland read its files again (hyprctl reload): the rules and the binds it holds are those from before"
+        fi
+    fi
+    hypr_rewritten=
+    if [ -n "$dirs_moved" ] && pgrep -x impulse-shell -u "$(id -u)" >/dev/null 2>&1; then
+        echo "restart the shell: one that is running still names the directories that were moved"
+    fi
+    dirs_moved=
+    return 0
+}
+
 # Under the lock: whether the previous release was put back without this script, its binary
 # copied to the name and its tree to the config (a watcher that rolls back by hand). It is
 # that release, not a new one, so nothing is copied: the links are switched to say what
@@ -800,6 +1146,7 @@ put_back_by_hand() {
     foreign_bin || return 1
     prev=$(release previous) && [ "$prev" != "$1" ] || return 1
     cmp -s "$bin_dir/impulse-shell" "$lib/releases/$prev/impulse-shell" || return 1
+    use_release "$prev"
     [ -f "$config_tree/shell.qml" ] && same_tree "$config_tree" "$lib/releases/$prev/tree" || return 1
     if point previous "$1" && point current "$prev" && flush "$lib" && link_bin; then return 0; fi
     $SUDO rm -f "$lib/.previous.new" "$lib/.current.new" "$bin_dir/.impulse-shell.new" || true
@@ -840,6 +1187,9 @@ rollback() {
         die "no previous release to roll back to$(old_names_note)"
     fi
     target=$lib/releases/$prev
+    # The directories are the ones the release to switch to has: where the current one has
+    # others, there is no config at that place, and it gets its release's.
+    use_release "$prev"
     if [ ! -f "$config_tree/shell.qml" ]; then
         # No impulse-shell config for the older binary to run: it gets its release's, as from an install.
         restore=1
@@ -869,6 +1219,7 @@ rollback() {
         fi
     fi
     keep_tree
+    settle
 }
 
 # Marks the current release as the one that has proved good: it stays until another is marked.
@@ -904,6 +1255,7 @@ status() {
         return 0
     fi
     cur=$(release current) || die "nothing is installed under $lib"
+    use_release "$cur"
     prev=$(release previous) || prev=none
     echo "current:  $cur"
     echo "previous: $prev"
@@ -958,7 +1310,7 @@ drop_edit_bind() {
 }
 
 uninstall() {
-    local name=$bin_dir/impulse-shell ours=
+    local name=$bin_dir/impulse-shell ours= t
     as_the_user
     [ "$(readlink "$name" 2>/dev/null)" != ../lib/impulse-shell/current/impulse-shell ] || ours=1
     # Only the link an install made is the script's to remove.
@@ -971,7 +1323,11 @@ uninstall() {
     drop_qs_link
     unlink_bin
     $SUDO rm -rf "$lib"
-    drop_app_icon
+    for t in new old; do
+        use_layout "$t"
+        [ "$t" = new ] || ! old_build || continue
+        drop_app_icon
+    done
     drop_edit_bind
     if [ -n "$ours" ]; then
         echo "removed $name and $lib"
@@ -980,8 +1336,10 @@ uninstall() {
         [ ! -e "$name" ] && [ ! -L "$name" ] ||
             echo "left: $name, which is not the link an install makes (it has another origin)"
     fi
-    [ ! -e "$config_tree" ] ||
-        echo "left: the impulse-shell config $config_tree, the tree impulse-shell ran (yours to remove)"
+    for t in "$new_tree" "$old_tree"; do
+        [ ! -e "$t" ] ||
+            echo "left: the impulse-shell config $t, the tree impulse-shell ran (yours to remove)"
+    done
     if compgen -G "$state_dir/replaced-*" >/dev/null; then
         echo "kept: the impulse-shell configs that installs and rollbacks replaced, in $state_dir (yours to remove)"
     fi
@@ -1012,6 +1370,12 @@ case ${1:-} in
 --status)
     status
     exit
+    ;;
+--settle)
+    as_the_user
+    [ -d "$lib/releases" ] || die "nothing is installed under $lib"
+    lock
+    exit 0
     ;;
 "") ;;
 *) die "unknown argument '$1' (tools/install.sh --help)" ;;

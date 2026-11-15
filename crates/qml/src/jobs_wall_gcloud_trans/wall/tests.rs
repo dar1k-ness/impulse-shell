@@ -642,7 +642,7 @@ fn wall_runs_switchwall_in_process() {
         }
     });
     let home = dir.join("home");
-    for d in [".config/impulse-shell", ".config/rustshell/impulse-shell"] {
+    for d in [".config/impulse-shell", ".local/share/impulse-shell"] {
         std::fs::create_dir_all(home.join(d)).unwrap();
     }
     std::fs::write(

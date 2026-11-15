@@ -25,7 +25,7 @@ fn ri() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../qml")
 }
 
-const SCREENSHOT_TEMP: &str = "/tmp/rustshell/media/screenshot";
+const SCREENSHOT_TEMP: &str = "/tmp/impulse-shell/media/screenshot";
 
 /// GCloudVision.qml, GCloudTranslate.qml and MultiTurnProcess.qml as the original had them.
 const COMMANDS: [(&str, &str); 3] = [

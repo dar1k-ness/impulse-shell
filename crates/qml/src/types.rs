@@ -1015,7 +1015,7 @@ pub fn standard_location_in(loc: i64, env: &crate::xdg::Env) -> Vec<String> {
     let data = s(xdg::data_home_in(env));
     let config = s(xdg::config_home_in(env));
     let sys_data = ["/usr/local/share", "/usr/share"];
-    let app = "rustshell";
+    let app = xdg::APP;
     match loc {
         0 => vec![user_dir("DESKTOP", "Desktop")],
         1 => vec![user_dir("DOCUMENTS", "Documents")],

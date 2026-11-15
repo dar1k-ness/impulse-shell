@@ -13,7 +13,11 @@
 #      The Rust toolchain comes from rustup (rust-toolchain.toml names the version); a `rust`
 #      package that is installed instead is replaced by `rustup`, which provides it.
 #   2. the sources: this checkout, or a clone (see above).
-#   3. build and install: PREFIX=~/.local tools/install.sh (docs/install.md).
+#   3. build and install: PREFIX=~/.local tools/install.sh (docs/install.md). The shell's
+#      directories have one name, impulse-shell: ~/.config/impulse-shell (settings),
+#      ~/.local/share/impulse-shell (its tree), ~/.local/state/impulse-shell,
+#      ~/.cache/impulse-shell. What an older release kept under ~/.config/rustshell,
+#      ~/.local/state/rustshell and ~/.cache/rustshell is moved there.
 #   4. the user's data and files: tools/carry-over.sh, then tools/carry-over.sh --dots new. The
 #      settings, state and caches are copied to the new names, and the Hyprland files call and
 #      start impulse-shell where they called and started Quickshell. Nothing old is removed.
@@ -310,6 +314,9 @@ switch() {
     step "switching: Hyprland reloads its config, ${was:+\`${was% }\` stops, }\`$name -c $name\` starts"
     hc reload >/dev/null
     stop qs quickshell "$prev" "$name"
+    # A release from before the shell's directories had one name ran until now: what it
+    # still wrote under the names the install moved is moved as well.
+    PREFIX=$HOME/.local "$src/tools/install.sh" --settle || true
     hypr_exec "$bin -c $name >$log 2>&1" || true
     for ((i = 0; i < wait * 2; i++)); do
         if [ -n "$(pids "$name")" ] && [ "$(nlayers "$word")" -gt 0 ]; then

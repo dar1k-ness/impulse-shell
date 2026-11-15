@@ -11,9 +11,9 @@ const BIND: &str = r#"hl.bind("SUPER + ALT + E", hl.dsp.global("rustshell:editMo
 /// What install.sh asks of the binary it installs: it has no JavaScript interpreter and the
 /// tree it is given, also where Hyprland starts it from, is the one it was compiled from.
 const BINARY: &str = r#"#!/bin/sh
-if [ "$1" = --version ]; then echo 'impulse-shell test'; echo 'JavaScript interpreter: none'; exit 0; fi
+if [ "$1" = --version ]; then echo 'impulse-shell test'; echo 'JavaScript interpreter: none'; echo 'Directories: impulse-shell'; exit 0; fi
 if [ "$1 $2 $3" = '-c impulse-shell --check-tree' ]; then
-    set -- --check-tree -p "$(realpath "$HOME/.config/rustshell/impulse-shell")"
+    set -- --check-tree -p "$(realpath "$HOME/.local/share/impulse-shell")"
 fi
 [ "$1" = --check-tree ] && [ "$2" = -p ] || exit 2
 [ "$(cat "$3/shell.qml")" = '// tree a' ] || exit 1

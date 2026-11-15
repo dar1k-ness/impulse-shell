@@ -309,7 +309,7 @@ scene_waffle() {
 # Standalone apps (`qs -p FILE`): the original runs its own file under Quickshell, native the
 # `impulse-shell` config's as `$BIN -p FILE`.
 app() {
-  if [ "$MODE" = native ]; then hdsp "hl.dsp.exec_cmd(\"${BIN} -p $HOME/.config/rustshell/impulse-shell/$1.qml\")"
+  if [ "$MODE" = native ]; then hdsp "hl.dsp.exec_cmd(\"${BIN} -p $HOME/.local/share/impulse-shell/$1.qml\")"
   else hdsp "hl.dsp.exec_cmd(\"qs -p $ORIG_TREE/$1.qml\")"; fi
 }
 app_close() { pkill -f "[-]p .*/$1.qml"; sleep 1.5; }
@@ -323,7 +323,7 @@ scene_killDialog() { app killDialog; shot killDialog 6; app_close killDialog; }
 # probe copied into the tree first. Run as `run.sh probe`.
 scene_probe() {
   local qs=qs tree=$ORIG_TREE
-  [ "$MODE" = native ] && qs=${BIN:-$HOME/impulse-shell/target/release/impulse-shell} tree=$HOME/.config/rustshell/impulse-shell
+  [ "$MODE" = native ] && qs=${BIN:-$HOME/impulse-shell/target/release/impulse-shell} tree=$HOME/.local/share/impulse-shell
   # The probe is written in the original's words; this shell gets it in its own.
   if [ "$MODE" = native ]; then
     sed -e 's/^import Quickshell/import Rustshell/' -e 's/^import qs[.]/import ri./' -e 's/[.]modules[.]i\{2\}[.]/.modules.rusty./' \

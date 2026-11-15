@@ -114,7 +114,7 @@ the shots and are not compared.
   notification, the wavy slider of the welcome window: `masks.json`, one line each with the reason.
   With no cpufreq in the guest the overlay's Resources widget says `of NaN GHz` in the original and
   `of --` in native, inside the same mask.
-- **Renamed on purpose (masked).** Native is `impulse-shell` under `org.rustshell`, the original
+- **Renamed on purpose (masked).** Native is `impulse-shell` under `org.impulse-shell`, the original
   has its own name under `org.quickshell`. The bar shows both for the shell's own windows
   (`settings`, `ptr_hold_settingsClose*`, `welcome`; `killDialog` the app id only), and the
   Assistant hint of the left sidebar names the config folder twice (`sidebarLeft`,

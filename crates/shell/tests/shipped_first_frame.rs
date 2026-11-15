@@ -114,9 +114,9 @@ fn compiled_tree_draws_its_bar() {
     // copied there as they arrive, so a hang nextest ends shows where and after what.
     let sway = testenv::Sway::start_shown();
     let home = tempfile::tempdir().unwrap();
-    let configs = home.path().join(".config/rustshell");
-    std::fs::create_dir_all(&configs).unwrap();
-    std::os::unix::fs::symlink(tree, configs.join("impulse-shell")).unwrap();
+    let data = home.path().join(".local/share");
+    std::fs::create_dir_all(&data).unwrap();
+    std::os::unix::fs::symlink(tree, data.join("impulse-shell")).unwrap();
     let (r, w) = std::io::pipe().unwrap();
     let mut cmd = Command::new(
         std::env::var_os("RI_SHIPPED_BIN").unwrap_or(env!("CARGO_BIN_EXE_impulse-shell").into()),

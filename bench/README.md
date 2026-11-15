@@ -4,7 +4,7 @@ All numbers in PRs come from this setup; use it unchanged so runs are comparable
 
 ## Guest
 - Arch Linux cloud image (qcow2) under QEMU/KVM: `qemu-run.sh` (6 vCPU, 8 GB, virtio-vga 1920x1080, VNC :5, ssh on host port 2222). cloud-init user `dar1k` (wheel, video, input, seat; passwordless sudo).
-- Packages: hyprland, quickshell (provides `/usr/bin/qs`), the shell's QML at `~/.config/rustshell/impulse-shell` (a copy of `qml`), libnotify, perf, rust toolchain. Rendering is Mesa llvmpipe (no DRM GPU in the VM).
+- Packages: hyprland, quickshell (provides `/usr/bin/qs`), the shell's QML at `~/.local/share/impulse-shell` (a copy of `qml`), libnotify, perf, rust toolchain. Rendering is Mesa llvmpipe (no DRM GPU in the VM).
 - Hyprland runs on the virtio-vga output; the scripts kill any running `qs`/`impulse-shell` and start the one under test.
 - Building the full shell (crate `ricompiled`) needs ~7.5 GB rustc RSS: add swap in the guest (btrfs: `btrfs filesystem mkswapfile --size 12g /swapfile && swapon /swapfile`).
 - `gsync.sh` copies the host checkout to guest `~/impulse-shell` (tar, no delete: remove stale files by hand) and builds there.
@@ -23,7 +23,7 @@ It has its own guest, built from pinned inputs by `vm.sh` (the guest above was s
 
 ```sh
 bench/vm.sh create                      # once: image, packages, Hyprland on tty1 (guest-setup.sh, hyprland.lua)
-bench/vm.sh sync                        # this checkout -> guest, qml -> ~/.config/rustshell/impulse-shell, build + install impulse-shell, the original -> ~/parity-original,
+bench/vm.sh sync                        # this checkout -> guest, qml -> ~/.local/share/impulse-shell, build + install impulse-shell, the original -> ~/parity-original,
                                         # what tools/parity and tools/stress run (tools/parity/provision.sh, tools/stress/setup.sh)
 bench/vm.sh ssh impulse-shell/bench/rss-cpu.sh  # about 25 minutes; prints the table, results in guest ~/rss-cpu/<date>
 bench/vm.sh stop

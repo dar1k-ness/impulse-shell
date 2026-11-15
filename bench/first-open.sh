@@ -84,11 +84,11 @@ stop_shell() {
 reset_state() {
     local old; old=~/.config/$(printf %s-%s illogical impulse)
     rm -rf ~/.config/impulse-shell ~/.local/state/quickshell ~/.cache/quickshell ~/.config/matugen \
-        ~/.local/state/rustshell ~/.cache/rustshell "$old"
+        ~/.local/state/impulse-shell ~/.cache/impulse-shell "$old"
     mkdir -p ~/.config/impulse-shell ~/.local/state/quickshell/user ~/.cache/quickshell
     # Each shell reads these under its own name for them.
-    ln -s quickshell ~/.local/state/rustshell
-    ln -s quickshell ~/.cache/rustshell
+    ln -s quickshell ~/.local/state/impulse-shell
+    ln -s quickshell ~/.cache/impulse-shell
     ln -s impulse-shell "$old"
     cp -r "$repo/crates/colorgen/tests/switchwall/fixture/home/.config/matugen" ~/.config/matugen
     jq -n --arg w "$walls/bench-a.jpg" '{background: {wallpaperPath: $w}}' >"$cfg"

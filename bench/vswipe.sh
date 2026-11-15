@@ -17,7 +17,7 @@ d=[{"notificationId":i,"actions":[],"appIcon":"","appName":"histapp%d"%(i%int(__
 json.dump(d,open("/home/dar1k/.cache/quickshell/notifications/notifications.json","w"),indent=2)
 PY
 # The native shell reads its history under its own name for the directory.
-mkdir -p ~/.cache/rustshell/notifications && cp ~/.cache/quickshell/notifications/notifications.json ~/.cache/rustshell/notifications/
+mkdir -p ~/.cache/impulse-shell/notifications && cp ~/.cache/quickshell/notifications/notifications.json ~/.cache/impulse-shell/notifications/
 G(){ hyprctl eval "return hl.dispatch(hl.dsp.global(\"$NS:$1\"))" >/dev/null; }
 hyprctl monitors | grep -o "dpmsStatus: [01]"
 if [ "$1" = ORIG ]; then setsid quickshell -p "$T" > /tmp/vs.log 2>&1 < /dev/null &

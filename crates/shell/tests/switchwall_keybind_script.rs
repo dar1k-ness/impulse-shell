@@ -88,8 +88,13 @@ fn the_script_hands_its_arguments_to_the_impulse_shell_in_path() {
         std::fs::create_dir_all(d).unwrap();
     }
     std::os::unix::fs::symlink(NATIVE, bin.join("impulse-shell")).unwrap();
-    // Nothing in this home names a wallpaper or a colour: `--noswitch` has nothing to keep.
-    let out = Command::new(script())
+    // The script in a tree of its own, without the wallpaper the shipped tree falls back to:
+    // nothing in this home names a wallpaper or a colour, so `--noswitch` has nothing to keep.
+    let colors = tmp.path().join("tree/scripts/colors");
+    std::fs::create_dir_all(&colors).unwrap();
+    let copy = colors.join("switchwall.sh");
+    std::fs::copy(script(), &copy).unwrap();
+    let out = Command::new(&copy)
         .arg("--noswitch")
         .env_clear()
         .env("PATH", format!("{}:/usr/bin:/bin", bin.display()))

@@ -53,7 +53,7 @@ ShellRoot {
 /// instance `pid` is entered in Quickshell's part too, under the path of its config.
 fn known_to_qs(pid: u32) {
     let rt = std::path::PathBuf::from(std::env::var_os("XDG_RUNTIME_DIR").unwrap());
-    let own = rt.join("rustshell");
+    let own = rt.join("impulse-shell");
     let id = std::fs::read_link(own.join("by-pid").join(pid.to_string())).unwrap();
     let id = id.file_name().unwrap().to_owned();
     let theirs = rt.join("quickshell");

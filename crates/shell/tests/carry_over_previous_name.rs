@@ -1,8 +1,9 @@
 //! A home that ran the shell under its previous name is carried over from that build:
 //! `tools/carry-over.sh` copies its settings, cache and icon to the new name, `--dots new` makes
 //! the user's own files name the new build and `--dots old` puts them back. Nothing of the
-//! previous build is changed, and the state under the engine's word, which both builds read, is
-//! not copied. Each test has a home of its own.
+//! previous build is changed, and the state under the engine's word, which that build reads, is
+//! not copied: `tools/install.sh` moves it to the new build's name and leaves the old name as a
+//! link. Each test has a home of its own.
 //!
 //! The previous name is put together from halves here: `tools/rename/rename.py` renames it
 //! wherever it stands whole.
@@ -143,7 +144,7 @@ fn the_settings_the_cache_and_the_icon_are_copied_to_the_new_name() {
     // The copy names the new build's tree; what does not name the build is as it was.
     assert_eq!(
         home.read(".config/impulse-shell/config.json"),
-        "{\"background\": {\"wallpaperPath\": \"~/.config/rustshell/impulse-shell/assets/images/default_wallpaper.png\"}, \"bar\": {\"bottom\": true}}\n"
+        "{\"background\": {\"wallpaperPath\": \"~/.local/share/impulse-shell/assets/images/default_wallpaper.png\"}, \"bar\": {\"bottom\": true}}\n"
     );
     assert_eq!(
         home.read(".config/impulse-shell/layout.toml"),
@@ -154,7 +155,8 @@ fn the_settings_the_cache_and_the_icon_are_copied_to_the_new_name() {
         "png"
     );
     assert_eq!(home.read(".local/share/icons/impulse-shell.svg"), "<svg/>");
-    // The previous build's settings are untouched, and the state both builds read is one place.
+    // The previous build's settings are untouched, and its state is not copied: the install
+    // moves that.
     assert_eq!(home.tree(&format!(".config/{WAS}")), settings);
     assert_eq!(home.tree(".local/state/rustshell"), state);
     let state_dirs: Vec<String> = std::fs::read_dir(home.path().join(".local/state"))
@@ -190,12 +192,12 @@ fn the_users_files_name_the_new_build_and_the_previous_one_after_going_back() {
         home.hypr("keybinds.lua"),
         "hl.bind(\"CTRL + SUPER + R\", hl.dsp.exec_cmd(\"killall ydotool qs quickshell impulse-shell; $HOME/.local/bin/impulse-shell-start\"))\n\
          hl.bind(\"SUPER + J\", hl.dsp.exec_cmd(\"$HOME/.local/bin/impulse-shell -c $qsConfig ipc call bar toggle\"))\n\
-         hl.bind(\"SUPER + I\", hl.dsp.exec_cmd(\"$HOME/.local/bin/impulse-shell -p ~/.config/rustshell/impulse-shell/settings.qml\"))\n\
+         hl.bind(\"SUPER + I\", hl.dsp.exec_cmd(\"$HOME/.local/bin/impulse-shell -p ~/.local/share/impulse-shell/settings.qml\"))\n\
          hl.bind(\"SUPER + N\", hl.dsp.global(\"rustshell:sidebarRightToggle\"))\n"
     );
     assert_eq!(
         home.hypr("variables.lua"),
-        "hl.env(\"qsConfig\", \"impulse-shell\")\nhl.env(\"IMPULSE_SHELL_VIRTUAL_ENV\", \"~/.local/state/rustshell/.venv\")\n"
+        "hl.env(\"qsConfig\", \"impulse-shell\")\nhl.env(\"IMPULSE_SHELL_VIRTUAL_ENV\", \"~/.local/state/impulse-shell/.venv\")\n"
     );
     home.carry_over(&["--dots", "old"]);
     for (name, text) in files() {
@@ -222,5 +224,8 @@ fn a_home_that_never_had_the_previous_name_is_carried_over_from_the_first_one() 
     );
     home.carry_over(&[]);
     assert_eq!(home.read(".config/impulse-shell/config.json"), "{}\n");
-    assert_eq!(home.read(".local/state/rustshell/user/todo.json"), "[]\n");
+    assert_eq!(
+        home.read(".local/state/impulse-shell/user/todo.json"),
+        "[]\n"
+    );
 }

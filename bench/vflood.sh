@@ -17,7 +17,7 @@ d=[{"notificationId":i,"actions":[],"appIcon":"","appName":"histapp%d"%(i%4),"bo
 json.dump(d,open("/home/dar1k/.cache/quickshell/notifications/notifications.json","w"),indent=2)
 PY
 # The native shell reads its history under its own name for the directory.
-mkdir -p ~/.cache/rustshell/notifications && cp ~/.cache/quickshell/notifications/notifications.json ~/.cache/rustshell/notifications/
+mkdir -p ~/.cache/impulse-shell/notifications && cp ~/.cache/quickshell/notifications/notifications.json ~/.cache/impulse-shell/notifications/
 if [ "$1" = ORIG ]; then setsid quickshell -p "$T" > /tmp/vf.log 2>&1 < /dev/null &
 else cd ~/impulse-shell; setsid ${BIN:-target/release/impulse-shell} -c impulse-shell > /tmp/vf.log 2>&1 < /dev/null & fi
 [ "$1" = ORIG ] && { S='quickshell|qs'; C="-p $T"; Q=qs; } || { S=impulse-shell; C="-c impulse-shell"; Q=${BIN:-target/release/impulse-shell}; }

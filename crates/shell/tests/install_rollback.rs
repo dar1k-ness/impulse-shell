@@ -35,8 +35,21 @@ impl Sandbox {
         self.prefix().join("lib/impulse-shell")
     }
 
-    /// The impulse-shell config `impulse-shell -c impulse-shell` runs.
+    /// The impulse-shell config `impulse-shell -c impulse-shell` runs: the shell's tree.
     fn config(&self) -> PathBuf {
+        self.data().join("impulse-shell")
+    }
+
+    /// What is in the directory of the config besides the desktop entry and the icon an
+    /// install writes there: the config, and what a run left beside it.
+    fn beside(&self) -> Vec<String> {
+        let mut names = names(&self.data());
+        names.retain(|n| n != "applications" && n != "icons");
+        names
+    }
+
+    /// Where a release from before the shell's directories had one name has that tree.
+    fn old_config(&self) -> PathBuf {
         self.dir.join("config/rustshell/impulse-shell")
     }
 
@@ -69,6 +82,9 @@ impl Sandbox {
             .env("XDG_CONFIG_HOME", self.dir.join("config"))
             .env("XDG_STATE_HOME", self.state())
             .env_remove("XDG_DATA_HOME")
+            .env_remove("XDG_DATA_DIRS")
+            .env_remove("XDG_CACHE_HOME")
+            .env_remove("HYPRLAND_INSTANCE_SIGNATURE")
             .env("RI_ROOT", self.source())
             .env_remove("NOBUILD")
             .env_remove("BIN")
@@ -101,7 +117,9 @@ impl Sandbox {
         cmd.args(args)
             .env("HOME", self.dir.join("home"))
             .env("XDG_CONFIG_HOME", self.dir.join("config"))
-            .env_remove("XDG_CONFIG_DIRS");
+            .env_remove("XDG_CONFIG_DIRS")
+            .env_remove("XDG_DATA_HOME")
+            .env_remove("XDG_DATA_DIRS");
         cmd
     }
 
@@ -132,12 +150,27 @@ impl Sandbox {
     /// answers `--check-tree -p DIR` and `-c impulse-shell --check-tree` as the real one does and does
     /// nothing else.
     fn fake(&self, name: &str, tree: &str) -> PathBuf {
+        self.fake_with(
+            name,
+            tree,
+            "echo 'Directories: impulse-shell'; ",
+            AS_LAUNCHED,
+        )
+    }
+
+    /// The same for a release from before the shell's directories had one name: its
+    /// `--version` does not name them, and it looks its tree up as a named config.
+    fn fake_old(&self, name: &str, tree: &str) -> PathBuf {
+        self.fake_with(name, tree, "", AS_LAUNCHED_OLD)
+    }
+
+    fn fake_with(&self, name: &str, tree: &str, directories: &str, as_launched: &str) -> PathBuf {
         self.executable(
             name,
             &format!(
                 "#!/bin/sh\n# {name}\n\
-                 if [ \"$1\" = --version ]; then echo 'impulse-shell {name}'; echo 'JavaScript interpreter: none'; exit 0; fi\n\
-                 {AS_LAUNCHED}\
+                 if [ \"$1\" = --version ]; then echo 'impulse-shell {name}'; echo 'JavaScript interpreter: none'; {directories}exit 0; fi\n\
+                 {as_launched}\
                  [ \"$1\" = --check-tree ] && [ \"$2\" = -p ] || exit 2\n\
                  if [ \"$(cat \"$3/shell.qml\")\" = '// tree {tree}' ]; then\n\
                  \x20   echo \"impulse-shell: $3 has the scripts this binary was compiled from\"\n\
@@ -181,10 +214,23 @@ fn writable_again(dir: &Path) {
     }
 }
 
-/// What a stand-in `impulse-shell` does with `-c impulse-shell --check-tree`: the real one's lookup of the config
-/// named impulse-shell (Quickshell's `locateConfigFile`, with the XDG Base Directory Specification's rule
-/// for a relative `XDG_CONFIG_HOME`), then the same answer as for `--check-tree -p` on it.
+/// What a stand-in `impulse-shell` does with `-c impulse-shell --check-tree`: the real one's lookup of its
+/// tree (`impulse-shell` in the data directory, with the XDG Base Directory Specification's rule for a
+/// relative `XDG_DATA_HOME`), then the same answer as for `--check-tree -p` on it.
 const AS_LAUNCHED: &str = r#"if [ "$1 $2 $3" = '-c impulse-shell --check-tree' ]; then
+    case ${XDG_DATA_HOME-} in /*) base=$XDG_DATA_HOME ;; *) base=$HOME/.local/share ;; esac
+    if [ ! -f "$base/impulse-shell/shell.qml" ]; then
+        echo 'Could not find "impulse-shell" config directory in any valid config path.' >&2
+        exit 255
+    fi
+    set -- --check-tree -p "$(realpath "$base/impulse-shell")"
+fi
+"#;
+
+/// The same for a release from before the shell's directories had one name: its lookup of the
+/// config named impulse-shell (Quickshell's `locateConfigFile`, with the same rule for a relative
+/// `XDG_CONFIG_HOME`).
+const AS_LAUNCHED_OLD: &str = r#"if [ "$1 $2 $3" = '-c impulse-shell --check-tree' ]; then
     case ${XDG_CONFIG_HOME-} in /*) base=$XDG_CONFIG_HOME ;; *) base=$HOME/.config ;; esac
     if [ -f "$base/rustshell/shell.qml" ] || [ ! -f "$base/rustshell/impulse-shell/shell.qml" ]; then
         echo 'Could not find "impulse-shell" config directory in any valid config path.' >&2
@@ -389,7 +435,7 @@ fn rollback_restores_the_binary_and_its_tree_and_rolls_forward_again() {
         .unwrap();
     assert!(check.status.success(), "{}", text(&check.stderr));
     // The replaced tree was release B's as stored: nothing else is left behind.
-    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
+    assert_eq!(s.beside(), ["impulse-shell"]);
     assert!(!s.state().exists(), "{:?}", listing(&s.state()));
 
     ok(&s.rollback());
@@ -437,7 +483,7 @@ if [ ! -e "$d/last" ] || [ "$(cat "$d/last")" != "$key" ] || [ -n "$(find "$RI_R
     echo compile >> "$d/calls"
     {
         echo '#!/bin/sh'
-        echo "if [ \"\$1\" = --version ]; then cat '$d/version'; echo 'JavaScript interpreter: none'; exit 0; fi"
+        echo "if [ \"\$1\" = --version ]; then cat '$d/version'; echo 'JavaScript interpreter: none'; echo 'Directories: impulse-shell'; exit 0; fi"
         # What a test has the binary hold besides its script.
         [ ! -e "$d/names" ] || sed 's/^/# /' "$d/names"
         cat <<'EOS'
@@ -636,7 +682,7 @@ fn rollback_keeps_a_config_edited_since_its_install() {
     let kept = s.state().join("impulse-shell").join(&kept[0]);
     assert_eq!(listing(&kept), edited);
     assert!(text(&out.stdout).contains(kept.to_str().unwrap()));
-    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
+    assert_eq!(s.beside(), ["impulse-shell"]);
 }
 
 /// An install replaces the config and keeps one edited since its install, as a rollback does.
@@ -656,7 +702,7 @@ fn install_keeps_a_config_edited_since_its_install() {
     let kept = s.state().join("impulse-shell").join(&kept[0]);
     assert_eq!(listing(&kept), edited);
     assert!(text(&out.stdout).contains(kept.to_str().unwrap()));
-    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
+    assert_eq!(s.beside(), ["impulse-shell"]);
 }
 
 /// A config no install put there (the original's own, before the first install) is kept too.
@@ -834,7 +880,11 @@ fn a_link_out_of_the_config_a_rollback_kept_is_stored_as_its_file() {
     let dots = s.dir.join("dots");
     std::fs::create_dir_all(&dots).unwrap();
     std::fs::write(dots.join("Stowed.qml"), "// stowed\n").unwrap();
-    link("../../../dots/Stowed.qml", s.config().join("Relative.qml")).unwrap();
+    link(
+        "../../../../dots/Stowed.qml",
+        s.config().join("Relative.qml"),
+    )
+    .unwrap();
     link(dots.join("Stowed.qml"), s.config().join("Absolute.qml")).unwrap();
     link(s.config().join("shell.qml"), s.config().join("Own.qml")).unwrap();
     link("modules/Bar.qml", s.config().join("Bar.qml")).unwrap();
@@ -1080,10 +1130,10 @@ fn an_install_writes_the_icon_of_the_shells_own_windows() {
 }
 
 /// The two files go into `XDG_DATA_HOME` if it is an absolute path, as the shell reads it
-/// (crates/qml/src/xdg.rs), and an install that cannot write them is still an install: the
-/// shell runs without them.
+/// (crates/qml/src/xdg.rs), beside the shell's tree. Where that directory cannot be made
+/// there is no place for the tree either, and nothing is installed.
 #[test]
-fn the_icon_follows_xdg_data_home_and_an_install_does_not_need_it() {
+fn the_icon_follows_xdg_data_home() {
     let s = Sandbox::new("app-icon-data-home");
     write_tree(&s.source(), "A");
     let a = s.fake("impulse-shell-a", "A");
@@ -1116,16 +1166,12 @@ fn the_icon_follows_xdg_data_home_and_an_install_does_not_need_it() {
     ok(&run(&["--uninstall"], Path::new("data")));
     assert_eq!(exist(&s.data()), (false, false));
 
-    // A data directory that cannot be made.
+    // A data directory that cannot be made: the shell's tree goes there too, so nothing is
+    // installed.
     std::fs::write(s.dir.join("file"), "").unwrap();
     let out = run(&[], &s.dir.join("file/data"));
-    ok(&out);
-    let err = text(&out.stderr);
-    assert!(err.contains("show a placeholder as their icon"), "{err}");
-    assert_eq!(s.installed(), std::fs::read(&a).unwrap());
-    assert!(s.starts());
-    ok(&run(&["--uninstall"], &s.dir.join("file/data")));
-    assert!(!s.lib().exists());
+    refused(&out, "nothing changed");
+    assert_eq!(s.releases(), [""; 0]);
 }
 
 /// Through sudo, $HOME and the impulse-shell config are root's, not the user's:
@@ -1352,7 +1398,7 @@ fn a_rollback_that_cannot_keep_the_edited_config_changes_nothing() {
     assert_eq!(listing(&s.config()), edited);
     assert_eq!(s.installed(), std::fs::read(&b).unwrap());
     assert_eq!((s.release("current"), s.release("previous")), links);
-    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
+    assert_eq!(s.beside(), ["impulse-shell"]);
 }
 
 /// An install that cannot keep the edited config changes nothing either: the release it
@@ -1375,7 +1421,7 @@ fn an_install_that_cannot_keep_the_edited_config_changes_nothing() {
     assert_eq!(listing(&s.config()), edited);
     assert_eq!((listing(&s.prefix()), s.release("current")), before);
     assert_eq!(s.installed(), std::fs::read(&a).unwrap());
-    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
+    assert_eq!(s.beside(), ["impulse-shell"]);
 }
 
 /// With no impulse-shell config (another HOME, or none yet) the install builds the repository's tree and
@@ -1591,7 +1637,7 @@ enum Hook<'a> {
 const TO_THE_SWITCH: &str = "ln * releases/.switch */.current.new";
 /// Between the two renames that replace the config: the old one is aside, the new one not
 /// yet in its place.
-const THE_NEW_CONFIG: &str = "mv -T */.ri-restore.?????? */rustshell/impulse-shell";
+const THE_NEW_CONFIG: &str = "mv -T */.ri-restore.?????? */share/impulse-shell";
 /// The config is replaced, no link is switched.
 const PREVIOUS: &str = "ln */.previous.new";
 /// `current` is made to name a release: the switch's last step (and, before there was a
@@ -1601,11 +1647,11 @@ const TO_A_RELEASE: &str = "ln * releases/[0-9]* */.current.new";
 /// The copy of the QML tree into a new release.
 const THE_RELEASE: &str = "tar -C */source --exclude=.git -chf - .";
 /// The copy of an edited config into the state directory.
-const THE_EDITED_CONFIG: &str = "tar -C */rustshell/impulse-shell --exclude=.git -c*f - .";
+const THE_EDITED_CONFIG: &str = "tar -C */share/impulse-shell --exclude=.git -c*f - .";
 /// A binary from before releases gives its name to the link to its release.
 const THE_NAME: &str = "mv -Tf */.impulse-shell.new */bin/impulse-shell";
 /// The undo's first step: the new config goes back beside the config's place.
-const THE_CONFIG_BACK: &str = "mv -T */rustshell/impulse-shell */.ri-restore.??????";
+const THE_CONFIG_BACK: &str = "mv -T */share/impulse-shell */.ri-restore.??????";
 
 /// `tools/install.sh ARGS` with stand-ins for `ln`, `mv` and `tar` that do what `hook` says.
 fn hooked(s: &Sandbox, hook: &Hook, args: &[&str], bin: Option<&Path>) -> Output {
@@ -1747,7 +1793,7 @@ fn an_install_that_cannot_switch_the_links_leaves_the_installed_release_running(
         let b = s.fake("impulse-shell-b", "B");
         ok(&s.install(&b));
         std::fs::write(s.config().join("note.txt"), "mine").unwrap();
-        let before = (listing(&s.prefix()), listing(&s.dir.join("config")));
+        let before = (listing(&s.prefix()), listing(&s.dir.join("home/.local")));
 
         write_tree(&s.source(), "C");
         let out = without_the_link(&s, link, &[], Some(&s.fake("impulse-shell-c", "C")));
@@ -1758,7 +1804,7 @@ fn an_install_that_cannot_switch_the_links_leaves_the_installed_release_running(
             "{link}: the installed binary does not run the config the install left"
         );
         assert_eq!(
-            (listing(&s.prefix()), listing(&s.dir.join("config"))),
+            (listing(&s.prefix()), listing(&s.dir.join("home/.local"))),
             before,
             "{link}"
         );
@@ -1779,7 +1825,11 @@ fn a_first_install_that_cannot_switch_the_links_installs_nothing() {
     let a = s.fake("impulse-shell-a", "A");
     let out = without_the_link(&s, ".current.new", &[], Some(&a));
     assert_eq!(out.status.code(), Some(1), "{}", text(&out.stderr));
-    assert!(!s.dir.join("config").exists(), "{:?}", listing(&s.config()));
+    assert!(
+        !s.dir.join("home/.local").exists(),
+        "{:?}",
+        listing(&s.config())
+    );
     assert_eq!(s.releases(), [""; 0]);
     assert_eq!(s.release("current"), None);
     refused(&out, "nothing was installed");
@@ -1861,7 +1911,7 @@ fn a_rollback_without_a_impulse_shell_config_makes_one_from_its_release() {
     write_tree(&s.source(), "B");
     let b = s.fake("impulse-shell-b", "B");
     ok(&s.install(&b));
-    std::fs::remove_dir_all(s.dir.join("config")).unwrap();
+    std::fs::remove_dir_all(s.dir.join("home/.local")).unwrap();
     let before = listing(&s.prefix());
 
     refused(
@@ -1869,7 +1919,7 @@ fn a_rollback_without_a_impulse_shell_config_makes_one_from_its_release() {
         "nothing changed",
     );
     assert_eq!(listing(&s.prefix()), before);
-    assert!(!s.dir.join("config").exists());
+    assert!(!s.config().exists());
 
     let out = s.rollback();
     ok(&out);
@@ -2023,7 +2073,7 @@ fn c_is_installed_over_b(s: &Sandbox, b: &Path, c: &Path) {
     assert_eq!(std::fs::read(previous).unwrap(), std::fs::read(b).unwrap());
     assert_eq!(listing(&s.config()), listing(&s.source()));
     assert!(runs_the_config(s));
-    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
+    assert_eq!(s.beside(), ["impulse-shell"]);
     assert_eq!(s.releases().len(), 2, "{:?}", s.releases());
     assert_eq!(kept(s).len(), 1, "{:?}", kept(s));
 }
@@ -2063,7 +2113,7 @@ fn an_install_killed_while_it_switches_leaves_a_shell_that_starts() {
             let b = s.fake("impulse-shell-b", "B");
             ok(&s.install(&b));
             std::fs::write(s.config().join("note.txt"), "mine").unwrap();
-            let before = (listing(&s.prefix()), listing(&s.dir.join("config")));
+            let before = (listing(&s.prefix()), listing(&s.dir.join("home/.local")));
 
             write_tree(&s.source(), "C");
             let c = s.fake("impulse-shell-c", "C");
@@ -2074,7 +2124,7 @@ fn an_install_killed_while_it_switches_leaves_a_shell_that_starts() {
                 "{step}: the installed binary does not run the config that is left"
             );
             if signal != "KILL" {
-                let after = (listing(&s.prefix()), listing(&s.dir.join("config")));
+                let after = (listing(&s.prefix()), listing(&s.dir.join("home/.local")));
                 assert_eq!(after, before, "{step}");
                 assert_eq!(kept(&s), [""; 0], "{step}");
                 assert!(text(&out.stderr).contains("interrupted"), "{step}");
@@ -2109,7 +2159,7 @@ fn a_rollback_killed_while_it_switches_leaves_a_shell_that_starts() {
             let b = s.fake("impulse-shell-b", "B");
             ok(&s.install(&b));
             std::fs::write(s.config().join("note.txt"), "mine").unwrap();
-            let before = (listing(&s.prefix()), listing(&s.dir.join("config")));
+            let before = (listing(&s.prefix()), listing(&s.dir.join("home/.local")));
 
             let out = hooked(&s, &Hook::Kill(at, signal), &["--rollback"], None);
             was_killed(&s, &out, signal);
@@ -2120,7 +2170,7 @@ fn a_rollback_killed_while_it_switches_leaves_a_shell_that_starts() {
             // Which release the next rollback ends on.
             let mut ends_on = &a;
             if signal != "KILL" {
-                let after = (listing(&s.prefix()), listing(&s.dir.join("config")));
+                let after = (listing(&s.prefix()), listing(&s.dir.join("home/.local")));
                 assert_eq!(after, before, "{step}");
                 assert_eq!(kept(&s), [""; 0], "{step}");
             } else if !s.config().join("note.txt").exists() {
@@ -2138,11 +2188,7 @@ fn a_rollback_killed_while_it_switches_leaves_a_shell_that_starts() {
             );
             assert!(runs_the_config(&s), "{step}");
             assert_ne!(s.release("previous").unwrap(), current, "{step}");
-            assert_eq!(
-                names(s.config().parent().unwrap()),
-                ["impulse-shell"],
-                "{step}"
-            );
+            assert_eq!(s.beside(), ["impulse-shell"], "{step}");
             assert_eq!(s.releases().len(), 2, "{step}: {:?}", s.releases());
             assert_eq!(kept(&s).len(), 1, "{step}: {:?}", kept(&s));
         }
@@ -2172,11 +2218,7 @@ fn a_first_install_killed_while_it_switches_is_installed_by_the_next() {
             ok(&s.install(&a));
             assert_eq!(s.installed(), std::fs::read(&a).unwrap(), "{step}");
             assert_eq!(listing(&s.config()), listing(&s.source()), "{step}");
-            assert_eq!(
-                names(s.config().parent().unwrap()),
-                ["impulse-shell"],
-                "{step}"
-            );
+            assert_eq!(s.beside(), ["impulse-shell"], "{step}");
             assert_eq!(s.releases().len(), 1, "{step}: {:?}", s.releases());
             let copies = kept(&s);
             assert_eq!(copies.len(), 1, "{step}: {copies:?}");
@@ -2293,11 +2335,7 @@ fn a_first_install_over_a_linked_binary_that_fails_leaves_that_binary_running() 
             // Undone: the name runs the binary that ran before, with the config it ran.
             assert_eq!(s.installed(), std::fs::read(&theirs).unwrap(), "step {i}");
             assert_eq!(listing(&s.config()), config, "step {i}");
-            assert_eq!(
-                names(s.config().parent().unwrap()),
-                ["impulse-shell"],
-                "step {i}"
-            );
+            assert_eq!(s.beside(), ["impulse-shell"], "step {i}");
         }
         ok(&s.install(&a));
         assert_eq!(s.installed(), std::fs::read(&a).unwrap(), "step {i}");
@@ -2387,7 +2425,7 @@ fn a_failed_first_install_puts_back_a_link_that_led_nowhere() {
             text(&out.stderr)
         );
         assert_eq!(s.releases(), [""; 0], "step {i}");
-        assert!(!s.dir.join("config").exists(), "step {i}");
+        assert!(!s.dir.join("home/.local").exists(), "step {i}");
     }
 }
 
@@ -2525,7 +2563,8 @@ fn their_shell_qml(s: &Sandbox) -> PathBuf {
     s.dir.join("config/rustshell/shell.qml")
 }
 
-/// A `shell.qml` of the user's own in `~/.config/rustshell` is
+/// For a release from before the shell's directories had one name, whose tree is the config
+/// named impulse-shell: a `shell.qml` of the user's own in `~/.config/rustshell` is
 /// their default config, and with it there neither Quickshell nor impulse-shell looks up a named
 /// config in that directory: `impulse-shell -c impulse-shell`, how Hyprland starts the shell, would not find the
 /// impulse-shell config. A first install says so and installs nothing; with the file moved to where
@@ -2537,7 +2576,7 @@ fn a_first_install_the_shell_would_not_start_from_installs_nothing() {
     std::fs::write(their_shell_qml(&s), "// mine\n").unwrap();
     let config_dir = listing(&s.dir.join("config"));
     write_tree(&s.source(), "A");
-    let a = s.fake("impulse-shell-a", "A");
+    let a = s.fake_old("impulse-shell-a", "A");
     let out = s.install(&a);
     refused(
         &out,
@@ -2571,19 +2610,19 @@ fn a_first_install_the_shell_would_not_start_from_installs_nothing() {
 fn an_install_or_rollback_the_shell_would_not_start_from_changes_nothing() {
     let s = Sandbox::new("own-config");
     write_tree(&s.source(), "A");
-    ok(&s.install(&s.fake("impulse-shell-a", "A")));
+    ok(&s.install(&s.fake_old("impulse-shell-a", "A")));
     write_tree(&s.source(), "B");
-    let b = s.fake("impulse-shell-b", "B");
+    let b = s.fake_old("impulse-shell-b", "B");
     ok(&s.install(&b));
     ok(&s.script(&["--status"], None));
     std::fs::write(their_shell_qml(&s), "// mine\n").unwrap();
-    std::fs::write(s.config().join("note.txt"), "mine").unwrap();
+    std::fs::write(s.old_config().join("note.txt"), "mine").unwrap();
     let before = (listing(&s.prefix()), listing(&s.dir.join("config")));
     const WHY: &str = "would not start as `impulse-shell -c impulse-shell`";
 
     write_tree(&s.source(), "C");
     refused(
-        &s.install(&s.fake("impulse-shell-c", "C")),
+        &s.install(&s.fake_old("impulse-shell-c", "C")),
         &format!("{WHY}; nothing was installed"),
     );
     let after = (listing(&s.prefix()), listing(&s.dir.join("config")));
@@ -2596,7 +2635,7 @@ fn an_install_or_rollback_the_shell_would_not_start_from_changes_nothing() {
     assert_eq!(kept(&s), [""; 0]);
 
     // The installed build again: neither the config (but for the note) nor a link changes.
-    std::fs::remove_file(s.config().join("note.txt")).unwrap();
+    std::fs::remove_file(s.old_config().join("note.txt")).unwrap();
     let before = (listing(&s.prefix()), listing(&s.dir.join("config")));
     write_tree(&s.source(), "B");
     refused(&s.install(&b), &format!("{WHY}; nothing changed"));
@@ -2617,62 +2656,78 @@ fn an_install_or_rollback_the_shell_would_not_start_from_changes_nothing() {
     assert!(s.starts());
 }
 
-/// The real binary finds the config named impulse-shell as the stand-ins of these tests do: in
-/// `$XDG_CONFIG_HOME/rustshell/impulse-shell`, and not when that directory has a `shell.qml` of its own,
-/// nor through a relative `XDG_CONFIG_HOME`, which it ignores.
+/// The real binary finds its tree as the stand-ins of these tests do: `impulse-shell` in the data
+/// directory, and not through a relative `XDG_DATA_HOME`, which it ignores. Where there is no
+/// tree it finds the config named impulse-shell as a release from before the one name does: in
+/// `$XDG_CONFIG_HOME/rustshell/impulse-shell`, and not when that directory has a `shell.qml` of its own.
 #[test]
 fn the_shell_finds_the_impulse_shell_config_as_it_is_started() {
     let s = Sandbox::new("real-lookup");
-    let asked = |config_home: &Path, cwd: &Path| {
-        Command::new(env!("CARGO_BIN_EXE_impulse-shell"))
-            .args(["-c", "impulse-shell", "--check-tree"])
+    let asked = |data_home: Option<&Path>, cwd: &Path| {
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_impulse-shell"));
+        cmd.args(["-c", "impulse-shell", "--check-tree"])
             .current_dir(cwd)
             .env("HOME", s.dir.join("home"))
-            .env("XDG_CONFIG_HOME", config_home)
+            .env("XDG_CONFIG_HOME", s.dir.join("config"))
             .env_remove("XDG_CONFIG_DIRS")
-            .output()
-            .unwrap()
+            .env_remove("XDG_DATA_HOME")
+            .env("XDG_DATA_DIRS", s.dir.join("none"));
+        if let Some(d) = data_home {
+            cmd.env("XDG_DATA_HOME", d);
+        }
+        cmd.output().unwrap()
     };
-    let none = asked(&s.dir.join("config"), &s.dir);
+    let line = format!(
+        "impulse-shell: {} has the scripts this binary was compiled from\n",
+        std::fs::canonicalize(ricompiled::ROOT).unwrap().display()
+    );
+    let none = asked(None, &s.dir);
     assert_eq!(none.status.code(), Some(255), "{}", text(&none.stderr));
     std::fs::create_dir_all(s.config().parent().unwrap()).unwrap();
     std::os::unix::fs::symlink(ricompiled::ROOT, s.config()).unwrap();
-    let found = asked(&s.dir.join("config"), &s.dir);
+    let found = asked(None, &s.dir);
     assert!(found.status.success(), "{}", text(&found.stderr));
-    let tree = std::fs::canonicalize(ricompiled::ROOT).unwrap();
     assert_eq!(
         text(&found.stdout),
-        format!(
-            "impulse-shell: {} has the scripts this binary was compiled from\n",
-            tree.display()
-        ),
+        line,
         "tools/install.sh compares this line"
     );
 
-    std::fs::write(their_shell_qml(&s), "// mine\n").unwrap();
-    let hidden = asked(&s.dir.join("config"), &s.dir);
-    assert_eq!(hidden.status.code(), Some(255), "{}", text(&hidden.stdout));
-    let err = text(&hidden.stderr);
-    assert!(
-        err.contains("Could not find \"impulse-shell\" config directory"),
-        "{err}"
-    );
-    std::fs::remove_file(their_shell_qml(&s)).unwrap();
-
-    // A relative XDG_CONFIG_HOME names this very directory from the parent of `config`, and is
-    // not used: the config is looked up under $HOME/.config, where there is none.
-    let relative = asked(Path::new("config"), &s.dir);
+    // XDG_DATA_HOME names the directory, if it is an absolute path. A relative one names
+    // this very directory from the parent of `data`, and is not used: the tree is looked up
+    // under $HOME/.local/share.
+    let data = s.dir.join("data");
+    std::fs::create_dir(&data).unwrap();
+    let nothing_there = asked(Some(&data), &s.dir);
+    assert_eq!(nothing_there.status.code(), Some(255));
+    std::fs::rename(s.config(), data.join("impulse-shell")).unwrap();
+    let found = asked(Some(&data), &s.dir);
+    assert!(found.status.success(), "{}", text(&found.stderr));
+    let relative = asked(Some(Path::new("data")), &s.dir);
     assert_eq!(
         relative.status.code(),
         Some(255),
         "{}",
         text(&relative.stdout)
     );
-    let home_config = s.dir.join("home/.config/rustshell");
-    std::fs::create_dir_all(&home_config).unwrap();
-    std::fs::rename(s.config(), home_config.join("impulse-shell")).unwrap();
-    let relative = asked(Path::new("config"), &s.dir);
+    std::fs::rename(data.join("impulse-shell"), s.config()).unwrap();
+    let relative = asked(Some(Path::new("data")), &s.dir);
     assert!(relative.status.success(), "{}", text(&relative.stderr));
+
+    // No tree: the config named impulse-shell, as Quickshell finds a named config.
+    std::fs::create_dir_all(s.old_config().parent().unwrap()).unwrap();
+    std::fs::rename(s.config(), s.old_config()).unwrap();
+    let found = asked(None, &s.dir);
+    assert!(found.status.success(), "{}", text(&found.stderr));
+    assert_eq!(text(&found.stdout), line);
+    std::fs::write(their_shell_qml(&s), "// mine\n").unwrap();
+    let hidden = asked(None, &s.dir);
+    assert_eq!(hidden.status.code(), Some(255), "{}", text(&hidden.stdout));
+    let err = text(&hidden.stderr);
+    assert!(
+        err.contains("Could not find \"impulse-shell\" config directory"),
+        "{err}"
+    );
 }
 
 /// A relative `XDG_CONFIG_HOME` or `XDG_STATE_HOME` is not valid
@@ -2694,7 +2749,7 @@ fn relative_xdg_directories_are_ignored_as_the_shell_ignores_them() {
         relative(&mut cmd);
         cmd.env("BIN", bin).output().unwrap()
     };
-    let config = s.dir.join("home/.config/rustshell/impulse-shell");
+    let config = s.config();
     write_tree(&s.source(), "A");
     let out = install(&s.fake("impulse-shell-a", "A"));
     ok(&out);
@@ -2774,7 +2829,7 @@ fn each_step_of_a_switch_is_on_the_disk_before_the_next() {
     ok(&s.install(&s.fake("impulse-shell-a", "A")));
     write_tree(&s.source(), "B");
     let b = s.fake("impulse-shell-b", "B");
-    let (prefix, config_dir) = (s.prefix(), s.dir.join("config"));
+    let (prefix, config_dir) = (s.prefix(), s.dir.join("home/.local"));
     let current = prefix
         .join("lib/impulse-shell/current")
         .display()
@@ -2881,7 +2936,7 @@ type Listing = Vec<(PathBuf, Vec<u8>)>;
 
 /// The prefix and the config directory: what a run that changes nothing leaves as it was.
 fn installed_state(s: &Sandbox) -> (Listing, Listing) {
-    (listing(&s.prefix()), listing(&s.dir.join("config")))
+    (listing(&s.prefix()), listing(&s.dir.join("home/.local")))
 }
 
 fn set_mode(p: &Path, mode: u32) {
@@ -3016,7 +3071,7 @@ fn an_edited_config_with_a_link_that_leads_nowhere_is_kept_and_replaced() {
     assert_eq!(both.len(), 2, "{both:?}");
     let second = both.iter().find(|name| **name != first[0]).unwrap();
     assert_eq!(copy(second), edited);
-    assert_eq!(names(s.config().parent().unwrap()), ["impulse-shell"]);
+    assert_eq!(s.beside(), ["impulse-shell"]);
 }
 
 /// replaced-* in the state directory are the configs that were replaced.
@@ -3322,7 +3377,7 @@ fn a_signal_while_the_release_is_stored_changes_nothing() {
         let out = hooked(&s, &Hook::Kill(THE_RELEASE, signal), &[], Some(&c));
         was_killed(&s, &out, signal);
         assert_eq!(s.installed(), std::fs::read(&b).unwrap(), "{step}");
-        assert_eq!(listing(&s.dir.join("config")), before.1, "{step}");
+        assert_eq!(listing(&s.dir.join("home/.local")), before.1, "{step}");
         assert!(runs_the_config(&s), "{step}");
         if signal != "KILL" {
             assert_eq!(installed_state(&s), before, "{step}");
@@ -3652,11 +3707,7 @@ fn uninstall_after_a_killed_switch_leaves_a_whole_config() {
         ok(&out);
         assert!(!s.lib().exists(), "`{at}`");
         assert_eq!(names(&s.prefix().join("bin")), [""; 0], "`{at}`");
-        assert_eq!(
-            names(s.config().parent().unwrap()),
-            ["impulse-shell"],
-            "`{at}`"
-        );
+        assert_eq!(s.beside(), ["impulse-shell"], "`{at}`");
         let copies = kept(&s);
         if i == 0 {
             // Killed between the two renames: the config that was there is back.
@@ -4022,4 +4073,370 @@ fn mark_good_refuses_another_binary_and_a_later_mark_replaces_the_first() {
     assert_eq!(id_of(&s, "good").as_deref(), Some(id_b.as_str()));
     assert_eq!(id_of(&s, "previous").as_deref(), Some(id_b.as_str()));
     assert!(!s.releases().contains(&id_a), "{:?}", s.releases());
+}
+
+/// The build from before the rename (in halves: `tools/rename/rename.py` renames the name
+/// wherever it stands whole).
+const BEFORE_THE_RENAME: &str = concat!("rusty", "-impulse");
+
+fn put(p: &Path, text: &str) {
+    std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+    std::fs::write(p, text).unwrap();
+}
+
+fn read(p: &Path) -> String {
+    std::fs::read_to_string(p).unwrap_or_else(|e| panic!("{}: {e}", p.display()))
+}
+
+/// The paths under `dir` that have the old name of the shell's directories in them.
+fn old_names(dir: &Path) -> Vec<PathBuf> {
+    let mut found = Vec::new();
+    let mut dirs = vec![dir.to_path_buf()];
+    while let Some(d) = dirs.pop() {
+        for e in std::fs::read_dir(&d).into_iter().flatten().flatten() {
+            let p = e.path();
+            if e.file_name().to_string_lossy().contains("rustshell") {
+                found.push(p.clone());
+            }
+            if p.is_dir() && !p.is_symlink() && p != d.join("prefix") {
+                dirs.push(p);
+            }
+        }
+    }
+    found.sort();
+    found
+}
+
+/// What the user's Hyprland file holds while a release from before the one name is installed,
+/// and once one with the one name is.
+const RULES_OLD: &str = "\
+hl.bind(\"SUPER + I\", hl.dsp.exec_cmd(\"impulse-shell -p ~/.config/rustshell/impulse-shell/settings.qml\"))
+hl.env(\"IMPULSE_SHELL_VIRTUAL_ENV\", \"~/.local/state/rustshell/.venv\")
+hl.windowrule({ match = { class = \"org.rustshell\" }, float = true })
+hl.windowrule({ match = { class = \"^(org\\\\.rustshell)$\" }, pin = true })
+windowrule = float, class:^(org\\.rustshell)$
+hl.bind(\"SUPER + L\", hl.dsp.global(\"rustshell:lock\"))
+exec = cat /tmp/rustshell/media/x ${XDG_CONFIG_HOME:-$HOME/.config}/rustshell/impulse-shell/a
+";
+const RULES_NEW: &str = "\
+hl.bind(\"SUPER + I\", hl.dsp.exec_cmd(\"impulse-shell -p ~/.local/share/impulse-shell/settings.qml\"))
+hl.env(\"IMPULSE_SHELL_VIRTUAL_ENV\", \"~/.local/state/impulse-shell/.venv\")
+hl.windowrule({ match = { class = \"org.impulse-shell\" }, float = true })
+hl.windowrule({ match = { class = \"^(org\\\\.impulse-shell)$\" }, pin = true })
+windowrule = float, class:^(org\\.impulse-shell)$
+hl.bind(\"SUPER + L\", hl.dsp.global(\"rustshell:lock\"))
+exec = cat /tmp/impulse-shell/media/x ${XDG_DATA_HOME:-$HOME/.local/share}/impulse-shell/a
+";
+
+fn rules(s: &Sandbox) -> PathBuf {
+    s.dir.join("config/hypr/custom/rules.lua")
+}
+
+fn settings(s: &Sandbox) -> PathBuf {
+    s.dir.join("config/impulse-shell/config.json")
+}
+
+/// A home as a release from before the shell's directories had one name leaves it: the
+/// release A with its tree as the config named impulse-shell, the state and the cache under
+/// the old name, the user's settings and layout, and a Hyprland file that names all of it.
+fn an_old_home(s: &Sandbox) {
+    write_tree(&s.source(), "A");
+    ok(&s.install(&s.fake_old("impulse-shell-a", "A")));
+    assert_eq!(listing(&s.old_config()), listing(&s.source()));
+    put(&s.state().join("rustshell/states.json"), "{\"open\":1}\n");
+    put(&s.state().join("rustshell/user/todo.json"), "[\"mine\"]\n");
+    put(
+        &s.dir.join("home/.cache/rustshell/media/coverart/x"),
+        "cover",
+    );
+    put(
+        &settings(s),
+        &format!(
+            "{{\"bar\":{{\"bottom\":true}},\"wallpaper\":\"{}/assets/w.png\"}}\n",
+            s.old_config().display()
+        ),
+    );
+    put(
+        &s.dir.join("config/impulse-shell/layout.toml"),
+        "[[panel]]\nedge = \"left\"\n",
+    );
+    put(&rules(s), RULES_OLD);
+}
+
+/// An install of a release with the one name over one from before: the tree, the state and
+/// the cache are under `impulse-shell`, with what they held; the settings and the layout are
+/// the same; the user's files name the directories as they are now, their text from before
+/// is kept; nothing in the home has the old name. A rollback to the older release puts its
+/// tree back where it looks for it and has it read the same state and cache.
+#[test]
+fn an_install_moves_the_directories_of_an_older_release_to_the_one_name() {
+    let s = Sandbox::new("one-name");
+    an_old_home(&s);
+    let layout = read(&s.dir.join("config/impulse-shell/layout.toml"));
+    let (old_entry, old_icon) = (
+        s.data().join("applications/org.rustshell.desktop"),
+        s.data()
+            .join("icons/hicolor/scalable/apps/org.rustshell.svg"),
+    );
+    assert!(old_entry.exists() && old_icon.exists());
+
+    write_tree(&s.source(), "B");
+    let out = s.install(&s.fake("impulse-shell-b", "B"));
+    ok(&out);
+    assert!(s.starts(), "{}", text(&out.stderr));
+    assert_eq!(listing(&s.config()), listing(&s.source()));
+    let state = s.state().join("impulse-shell");
+    assert_eq!(read(&state.join("states.json")), "{\"open\":1}\n");
+    assert_eq!(read(&state.join("user/todo.json")), "[\"mine\"]\n");
+    assert_eq!(
+        read(&s.dir.join("home/.cache/impulse-shell/media/coverart/x")),
+        "cover"
+    );
+    assert_eq!(
+        read(&settings(&s)),
+        format!(
+            "{{\"bar\":{{\"bottom\":true}},\"wallpaper\":\"{}/assets/w.png\"}}\n",
+            s.config().display()
+        )
+    );
+    assert_eq!(
+        read(&s.dir.join("config/impulse-shell/layout.toml")),
+        layout
+    );
+    assert_eq!(read(&rules(&s)), RULES_NEW);
+    assert_eq!(
+        read(&state.join("before-dirs/hypr/custom/rules.lua")),
+        RULES_OLD
+    );
+    let (entry, icon) = app_icon_files(&s.data());
+    assert!(entry.exists() && icon.exists());
+    assert_eq!(old_names(&s.dir), Vec::<PathBuf>::new());
+    // The tree was the older release's as installed: no copy of it is kept.
+    assert_eq!(
+        kept(&s)
+            .iter()
+            .filter(|n| n.starts_with("replaced-"))
+            .count(),
+        0,
+        "{:?}",
+        kept(&s)
+    );
+
+    // Back to the older release: its tree where it looks for it, the state and the cache
+    // through the old names, its app id in the user's file.
+    ok(&s.rollback());
+    assert!(s.starts());
+    write_tree(&s.source(), "A");
+    assert_eq!(listing(&s.old_config()), listing(&s.source()));
+    assert!(!s.config().exists());
+    for d in [s.state(), s.dir.join("home/.cache")] {
+        assert_eq!(
+            std::fs::read_link(d.join("rustshell")).unwrap(),
+            Path::new("impulse-shell")
+        );
+    }
+    assert_eq!(
+        read(&s.state().join("rustshell/states.json")),
+        "{\"open\":1}\n"
+    );
+    let rolled = read(&rules(&s));
+    assert!(
+        rolled.contains("~/.config/rustshell/impulse-shell/settings.qml")
+            && rolled.contains("class = \"org.rustshell\"")
+            && rolled.contains("/tmp/rustshell/media/x"),
+        "{rolled}"
+    );
+    assert!(old_entry.exists() && old_icon.exists() && !entry.exists() && !icon.exists());
+
+    // And forward again.
+    ok(&s.rollback());
+    assert!(s.starts());
+    assert_eq!(read(&rules(&s)), RULES_NEW);
+    assert_eq!(read(&state.join("states.json")), "{\"open\":1}\n");
+    assert_eq!(old_names(&s.dir), Vec::<PathBuf>::new());
+}
+
+/// Hyprland holds the rules it read. An install or a rollback that rewrites a file of the
+/// user's under `hypr` tells the Hyprland of this session to read its files again; one that
+/// rewrites none does not.
+#[test]
+fn hyprland_is_told_to_read_the_files_that_were_rewritten() {
+    let s = Sandbox::new("one-name-reload");
+    an_old_home(&s);
+    let said = s.dir.join("hyprctl.said");
+    let stand_ins = s.dir.join("stand-ins");
+    std::fs::create_dir(&stand_ins).unwrap();
+    s.executable(
+        "stand-ins/hyprctl",
+        &format!(
+            "#!/bin/sh\necho \"$HYPRLAND_INSTANCE_SIGNATURE: $*\" >>'{}'\n",
+            said.display()
+        ),
+    );
+    let path = format!("{}:{}", stand_ins.display(), std::env::var("PATH").unwrap());
+    let run = |args: &[&str], bin: Option<&Path>| {
+        let mut cmd = s.command(args);
+        cmd.env("PATH", &path)
+            .env("HYPRLAND_INSTANCE_SIGNATURE", "here");
+        if let Some(bin) = bin {
+            cmd.env("BIN", bin);
+        }
+        let out = cmd.output().unwrap();
+        ok(&out);
+        text(&out.stdout)
+    };
+    let told = || std::fs::read_to_string(&said).unwrap_or_default();
+
+    write_tree(&s.source(), "B");
+    let out = run(&[], Some(&s.fake("impulse-shell-b", "B")));
+    assert_eq!(read(&rules(&s)), RULES_NEW);
+    assert!(out.contains("Hyprland read its files again"), "{out}");
+    assert_eq!(told(), "here: reload\n");
+
+    // Back to the older release: its app id in the rules, read again.
+    let out = run(&["--rollback"], None);
+    assert!(read(&rules(&s)).contains("class = \"org.rustshell\""));
+    assert!(out.contains("Hyprland read its files again"), "{out}");
+    assert_eq!(told(), "here: reload\nhere: reload\n");
+
+    // Forward, and a release of the same directories over it: nothing of `hypr` to rewrite.
+    run(&["--rollback"], None);
+    assert_eq!(told(), "here: reload\n".repeat(3));
+    write_tree(&s.source(), "C");
+    let out = run(&[], Some(&s.fake("impulse-shell-c", "C")));
+    assert!(!out.contains("hyprctl reload"), "{out}");
+    assert_eq!(told(), "here: reload\n".repeat(3));
+
+    // No Hyprland of this session to tell: the script says what is left to do.
+    let s = Sandbox::new("one-name-no-reload");
+    an_old_home(&s);
+    write_tree(&s.source(), "B");
+    let out = s.install(&s.fake("impulse-shell-b", "B"));
+    ok(&out);
+    assert!(
+        text(&out.stdout).contains("have Hyprland read its files again (hyprctl reload)"),
+        "{}",
+        text(&out.stdout)
+    );
+}
+
+/// A tree that was edited under the old name is kept as a replaced config, as an install
+/// keeps one it replaces.
+#[test]
+fn a_tree_edited_under_the_old_name_is_kept_when_the_directories_move() {
+    let s = Sandbox::new("one-name-edited");
+    an_old_home(&s);
+    put(&s.old_config().join("note.txt"), "mine");
+    write_tree(&s.source(), "B");
+    ok(&s.install(&s.fake("impulse-shell-b", "B")));
+    assert_eq!(listing(&s.config()), listing(&s.source()));
+    let copies: Vec<String> = kept(&s)
+        .into_iter()
+        .filter(|n| n.starts_with("replaced-"))
+        .collect();
+    assert_eq!(copies.len(), 1, "{copies:?}");
+    let copy = s.state().join("impulse-shell").join(&copies[0]);
+    assert_eq!(read(&copy.join("note.txt")), "mine");
+    assert_eq!(read(&copy.join("shell.qml")), "// tree A\n");
+    assert_eq!(old_names(&s.dir), Vec::<PathBuf>::new());
+}
+
+/// While the build from before the rename is installed, its tree stays where it is and the
+/// old names of the state and the cache stay as links to the new ones: that build reads them.
+/// The user's files that start it are that build's, and are left as they are.
+#[test]
+fn the_build_from_before_the_rename_keeps_what_it_reads() {
+    let s = Sandbox::new("one-name-before");
+    an_old_home(&s);
+    let theirs = s
+        .dir
+        .join("config/rustshell")
+        .join(BEFORE_THE_RENAME)
+        .join("shell.qml");
+    put(&theirs, "// theirs\n");
+    let execs = s.dir.join("config/hypr/hyprland/execs.lua");
+    put(
+        &execs,
+        &format!("hl.exec_cmd(\"$HOME/.local/bin/{BEFORE_THE_RENAME}-shell\")\n"),
+    );
+    write_tree(&s.source(), "B");
+    ok(&s.install(&s.fake("impulse-shell-b", "B")));
+    assert!(s.starts());
+    assert!(!s.old_config().exists());
+    assert_eq!(read(&theirs), "// theirs\n");
+    for d in [s.state(), s.dir.join("home/.cache")] {
+        assert_eq!(
+            std::fs::read_link(d.join("rustshell")).unwrap(),
+            Path::new("impulse-shell")
+        );
+    }
+    assert_eq!(
+        read(&s.state().join("rustshell/user/todo.json")),
+        "[\"mine\"]\n"
+    );
+    assert_eq!(read(&rules(&s)), RULES_OLD);
+    assert!(s.data().join("applications/org.rustshell.desktop").exists());
+}
+
+/// A shell that still ran during the install wrote its state under the old name again:
+/// `--settle` moves that over. Of a file both names have, the one written last stays and the
+/// other is kept.
+/// What a shell with the old names left in `$XDG_RUNTIME_DIR` goes once none runs: while one
+/// does (its pid is in `by-pid`), its sockets stay.
+#[test]
+fn the_old_name_in_the_runtime_directory_goes_when_no_shell_with_it_runs() {
+    let s = Sandbox::new("one-name-runtime");
+    an_old_home(&s);
+    write_tree(&s.source(), "B");
+    let run = s.dir.join("rt");
+    let me = std::process::id().to_string();
+    put(&run.join("rustshell/by-id/a/log.log"), "old");
+    put(&run.join("rustshell/by-pid").join(&me), "");
+    let with_run = |args: &[&str]| {
+        s.command(args)
+            .env("XDG_RUNTIME_DIR", &run)
+            .output()
+            .unwrap()
+    };
+    ok(&s.install(&s.fake("impulse-shell-b", "B")));
+    ok(&with_run(&["--settle"]));
+    assert_eq!(read(&run.join("rustshell/by-id/a/log.log")), "old");
+
+    // A pid no process has: above the kernel's largest (pid_max is at most 2^22).
+    std::fs::rename(
+        run.join("rustshell/by-pid").join(&me),
+        run.join("rustshell/by-pid/4194999"),
+    )
+    .unwrap();
+    ok(&with_run(&["--settle"]));
+    assert_eq!(names(&run), Vec::<String>::new());
+}
+
+#[test]
+fn settle_moves_what_a_shell_that_still_ran_wrote_under_the_old_name() {
+    let s = Sandbox::new("one-name-settle");
+    an_old_home(&s);
+    write_tree(&s.source(), "B");
+    ok(&s.install(&s.fake("impulse-shell-b", "B")));
+    let state = s.state().join("impulse-shell");
+    set_times(&state.join("states.json"), long_ago());
+    put(&s.state().join("rustshell/states.json"), "{\"open\":2}\n");
+    put(&s.state().join("rustshell/user/notes.txt"), "later\n");
+    put(&s.dir.join("home/.cache/rustshell/media/y"), "y");
+
+    ok(&s.script(&["--settle"], None));
+    assert_eq!(read(&state.join("states.json")), "{\"open\":2}\n");
+    assert_eq!(read(&state.join("user/notes.txt")), "later\n");
+    assert_eq!(read(&state.join("user/todo.json")), "[\"mine\"]\n");
+    assert_eq!(read(&s.dir.join("home/.cache/impulse-shell/media/y")), "y");
+    let aside: Vec<String> = kept(&s)
+        .into_iter()
+        .filter(|n| n.starts_with("before-move-"))
+        .collect();
+    assert_eq!(aside.len(), 1, "{:?}", kept(&s));
+    assert_eq!(
+        read(&state.join(&aside[0]).join("states.json")),
+        "{\"open\":1}\n"
+    );
+    assert_eq!(old_names(&s.dir), Vec::<PathBuf>::new());
 }

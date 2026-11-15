@@ -10,7 +10,7 @@ use std::sync::{Arc, Mutex};
 const DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/switchwall");
 const II: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../qml");
 const OUTPUT_DIRS: [&str; 10] = [
-    ".local",
+    ".local/state",
     ".cache",
     ".config/hypr",
     ".config/fuzzel",
@@ -208,7 +208,7 @@ fn prepare(case: &Path) -> (PathBuf, String, Vec<String>, Paths) {
     let h = home.to_str().unwrap().to_string();
     let ident = |b: Vec<u8>| b;
     copy_tree(&Path::new(DIR).join("fixture/home"), &home, &ident);
-    let script_dir = home.join(".config/rustshell/impulse-shell/scripts/colors");
+    let script_dir = home.join(".local/share/impulse-shell/scripts/colors");
     copy_tree(
         &Path::new(II).join("scripts/colors/terminal"),
         &script_dir.join("terminal"),
@@ -216,7 +216,7 @@ fn prepare(case: &Path) -> (PathBuf, String, Vec<String>, Paths) {
     );
     copy_tree(
         &Path::new(II).join("assets/images"),
-        &home.join(".config/rustshell/impulse-shell/assets/images"),
+        &home.join(".local/share/impulse-shell/assets/images"),
         &ident,
     );
     std::fs::create_dir_all(home.join("pts")).unwrap();
@@ -417,7 +417,7 @@ fn kept_wallpaper_named_by_the_request_is_the_one_used() {
         };
         assert_eq!(run(&req, &paths, &sys, Io::STD), 0);
         wait_background();
-        let scheme = home.join(".local/state/rustshell/user/generated/scheme_type.txt");
+        let scheme = home.join(".local/state/impulse-shell/user/generated/scheme_type.txt");
         let scheme = std::fs::read_to_string(scheme).unwrap();
         let _ = std::fs::remove_dir_all(&home);
         scheme.trim().to_string()

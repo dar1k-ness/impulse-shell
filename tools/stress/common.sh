@@ -1,5 +1,5 @@
 . ~/henv
-# The shell under test and what addresses its IPC. native: impulse-shell on ~/.config/rustshell/impulse-shell (a
+# The shell under test and what addresses its IPC. native: impulse-shell on ~/.local/share/impulse-shell (a
 # copy of this checkout's qml), `impulse-shell -c impulse-shell` (Quickshell's `qs` does not find it). orig: Quickshell on the original in ~/parity-original
 # (README.md: tools/parity/orig.sh puts it there; Quickshell cannot load qml, which imports the
 # Impulse module), `qs -p ~/parity-original`. The mode is $MODE of the script that starts the shell;

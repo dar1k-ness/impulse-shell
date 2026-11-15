@@ -20,7 +20,7 @@ export LANG=C.UTF-8
 
 self=$(realpath "$0")
 repo=$(dirname "$(dirname "$self")")
-tree=$HOME/.config/rustshell/impulse-shell
+tree=$HOME/.local/share/impulse-shell
 # The original, which Quickshell runs: `bench/vm.sh sync` unpacks it here (tools/parity/orig.sh).
 # The checkout's own tree, `qml`, imports the Impulse module, which Quickshell does not have.
 orig=${ORIG_TREE:-$HOME/parity-original}
@@ -90,11 +90,11 @@ stop_shell() {
 reset_state() {
     local old; old=~/.config/$(printf %s-%s illogical impulse)
     rm -rf ~/.config/impulse-shell ~/.local/state/quickshell ~/.cache/quickshell ~/.config/matugen \
-        ~/.local/state/rustshell ~/.cache/rustshell "$old"
+        ~/.local/state/impulse-shell ~/.cache/impulse-shell "$old"
     mkdir -p ~/.config/impulse-shell ~/.local/state/quickshell/user ~/.cache/quickshell
     # Each shell reads these under its own name for them.
-    ln -s quickshell ~/.local/state/rustshell
-    ln -s quickshell ~/.cache/rustshell
+    ln -s quickshell ~/.local/state/impulse-shell
+    ln -s quickshell ~/.cache/impulse-shell
     ln -s impulse-shell "$old"
     cp -r "$repo/crates/colorgen/tests/switchwall/fixture/home/.config/matugen" ~/.config/matugen
     jq -n --arg w "$walls/bench-a.jpg" '{background: {wallpaperPath: $w}}' >"$cfg"

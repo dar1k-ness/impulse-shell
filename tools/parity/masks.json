@@ -1,5 +1,5 @@
 {
- "_doc": "Rectangles [x, y, w, h, reason] left out of the pixel diff because what they show differs between any two runs, even of the same shell: live values, a random choice, the phase of an animation that never stops. Keys are fnmatch patterns on shot names; every matching line applies. Each one was measured on two runs of one shell (REPORT.md). The rectangles marked `renamed` are the other kind: a name the shell shows that the project changed on purpose (the shell's own name, now `impulse-shell`, and `org.quickshell`, now `org.rustshell`), each as tight as the words themselves, one pixel around the pixels that differ.",
+ "_doc": "Rectangles [x, y, w, h, reason] left out of the pixel diff because what they show differs between any two runs, even of the same shell: live values, a random choice, the phase of an animation that never stops. Keys are fnmatch patterns on shot names; every matching line applies. Each one was measured on two runs of one shell (REPORT.md). The rectangles marked `renamed` are the other kind: a name the shell shows that the project changed on purpose (the shell's own name, now `impulse-shell`, and `org.quickshell`, now `org.impulse-shell`), each as tight as the words themselves, one pixel around the pixels that differ.",
  "*": [[440, 0, 230, 34, "bar Resources: live RAM/swap/CPU percentages and rings"]],
  "bar_vertical*": [[10, 302, 28, 80, "vertical bar Resources: live rings"]],
  "bar_bottom*": [[440, 1046, 230, 34, "bottom bar Resources: live RAM/swap/CPU percentages and rings"]],
@@ -15,20 +15,20 @@
   [836, 450, 314, 246, "the original's own bug: after a widget is switched back on it draws the Resources widget inside the Crosshair frame"]
  ],
  "welcome": [
-  [83, 7, 57, 12, "renamed: the bar shows the active window's app id, `org.quickshell` in the original and `org.rustshell` in native; the rectangle starts after `org.`"],
+  [83, 7, 82, 12, "renamed: the bar shows the active window's app id, `org.quickshell` in the original and `org.impulse-shell` in native; the rectangle starts after `org.`"],
   [62, 19, 180, 15, "renamed: the bar shows the active window's title, the original's own name before `Welcome` and `Impulse Welcome` in native"],
   [700, 724, 182, 26, "welcome window: wavy slider, an animation that never stops"],
   [970, 724, 182, 26, "welcome window: wavy slider, an animation that never stops"]
  ],
  "settings": [
-  [83, 7, 57, 12, "renamed: the bar shows the active window's app id, `org.quickshell` in the original and `org.rustshell` in native; the rectangle starts after `org.`"],
+  [83, 7, 82, 12, "renamed: the bar shows the active window's app id, `org.quickshell` in the original and `org.impulse-shell` in native; the rectangle starts after `org.`"],
   [62, 19, 171, 15, "renamed: the bar shows the active window's title, the original's own name before `Settings` and `Impulse Settings` in native"]
  ],
  "ptr_hold_settingsClose*": [
-  [83, 7, 57, 12, "renamed: the bar shows the active window's app id, `org.quickshell` in the original and `org.rustshell` in native; the rectangle starts after `org.`"],
+  [83, 7, 82, 12, "renamed: the bar shows the active window's app id, `org.quickshell` in the original and `org.impulse-shell` in native; the rectangle starts after `org.`"],
   [62, 19, 171, 15, "renamed: the bar shows the active window's title, the original's own name before `Settings` and `Impulse Settings` in native"]
  ],
- "killDialog": [[83, 7, 57, 12, "renamed: the bar shows the active window's app id, `org.quickshell` in the original and `org.rustshell` in native; the rectangle starts after `org.`"]],
+ "killDialog": [[83, 7, 82, 12, "renamed: the bar shows the active window's app id, `org.quickshell` in the original and `org.impulse-shell` in native; the rectangle starts after `org.`"]],
  "sidebarLeft": [
   [294, 139, 118, 16, "renamed: the Assistant hint names the config folder, under its own name in the original and `impulse-shell/` in native, at the end of its first line"],
   [214, 630, 187, 15, "renamed: the same folder in the hint's example, `menu.sh` in the original's own folder under `~/.config/` against `~/.config/impulse-shell/menu.sh`, from the folder name to the end of the line"]

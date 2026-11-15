@@ -48,7 +48,8 @@ printf '[Service]\nExecStart=%s run\n[Install]\nWantedBy=hyprland-session.target
     >"$HOME/.config/systemd/user/$was-rollback-watch.service"
 
 cp "$repo/install.sh" "$src/" && cp "$repo/tools/carry-over.sh" "$src/tools/" && : >"$src/Cargo.toml"
-program "$src/tools/install.sh" 'mkdir -p "$PREFIX/bin" "$HOME/.config/rustshell/impulse-shell" && cp /usr/bin/sleep "$PREFIX/bin/impulse-shell"'
+program "$src/tools/install.sh" '[ "${1-}" != --settle ] || exit 0
+mkdir -p "$PREFIX/bin" "$HOME/.local/share/impulse-shell" && cp /usr/bin/sleep "$PREFIX/bin/impulse-shell"'
 cp /usr/bin/sleep "$HOME/.local/bin/$was"
 program "$HOME/.local/bin/$was-shell" 'exit 0'
 echo 'ShellRoot {}' >"$HOME/.config/rustshell/$was/shell.qml"

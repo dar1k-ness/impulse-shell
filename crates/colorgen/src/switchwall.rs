@@ -54,11 +54,16 @@ impl Paths {
             script_dir,
         }
     }
+    /// The shell's tree, `$XDG_DATA_HOME/impulse-shell` as installed: the one these scripts
+    /// are in.
     pub fn qs_config_dir(&self) -> PathBuf {
-        self.config_home.join("rustshell/impulse-shell")
+        match self.script_dir.parent().and_then(Path::parent) {
+            Some(tree) if !tree.as_os_str().is_empty() => tree.to_path_buf(),
+            _ => self.home.join(".local/share/impulse-shell"),
+        }
     }
     pub fn state_dir(&self) -> PathBuf {
-        self.state_home.join("rustshell")
+        self.state_home.join("impulse-shell")
     }
     pub fn generated(&self) -> PathBuf {
         self.state_dir().join("user/generated")
@@ -1068,7 +1073,7 @@ fn switch(r: &Run, s: State) -> i32 {
         }
         _ => {}
     }
-    let _ = std::fs::create_dir_all(p.cache_home.join("rustshell/user/generated"));
+    let _ = std::fs::create_dir_all(p.cache_home.join("impulse-shell/user/generated"));
     if p.shell_config().is_file()
         && r.cfg(&["appearance", "wallpaperTheming", "enableAppsAndShell"])
             .as_deref()

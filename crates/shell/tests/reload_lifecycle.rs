@@ -154,7 +154,7 @@ fn sigterm_during_the_reload_turn_ends_the_shell() {
         shell.log.text()
     );
     assert_eq!(
-        std::fs::read_dir(shell.run.join("rustshell/by-id"))
+        std::fs::read_dir(shell.run.join("impulse-shell/by-id"))
             .unwrap()
             .count(),
         0,

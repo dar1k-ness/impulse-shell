@@ -242,7 +242,7 @@ fn wrapper_lifetime_and_replace() {
         return;
     }
     let home = PathBuf::from(std::env::var_os("HOME").unwrap());
-    let history = home.join("cache/rustshell/notifications/notifications.json");
+    let history = home.join("cache/impulse-shell/notifications/notifications.json");
     // A notification restored from an earlier run's history, with its saved image copy.
     let png = home.join("cache/impulse-shell/notification-images/0-7-1.png");
     std::fs::create_dir_all(png.parent().unwrap()).unwrap();

@@ -80,7 +80,7 @@ mv_ 1230 19; sleep 2; grim $V/clock_popup.png; mv_ 960 600; sleep 1
 T=$(grim -t ppm -g "1200,0 720x40" - | python3 $V/traypos.py 1200); echo "vis.tray at=${T:-none}" >> $V/vis.txt
 [ -n "$T" ] && click $T 0xC1; sleep 2; grim $V/tray_menu.png; ydotool key 1:1 1:0 >/dev/null; sleep 1
 $Q -c impulse-shell ipc call sidebarRight open >/dev/null; sleep 2; grim $V/sidebar.png; $Q -c impulse-shell ipc call sidebarRight close >/dev/null; sleep 1
-hyprctl dispatch "hl.dsp.exec_cmd(\"setsid $Q -p $HOME/.config/rustshell/impulse-shell/settings.qml\")" >/dev/null; sleep 6
+hyprctl dispatch "hl.dsp.exec_cmd(\"setsid $Q -p $HOME/.local/share/impulse-shell/settings.qml\")" >/dev/null; sleep 6
 SP=$(for p in $(pgrep -f "(bin/qs|impulse-shell) -p .*settings.qml"); do [ "$(readlink /proc/$p/exe)" = $HOME/.local/bin/impulse-shell ] && echo $p; done | head -1)
 mv_ 507 779; c0=$(cputicks $SP); t0=$(date +%s%N); ydotool click 0xC0 >/dev/null; last=; lt=0
 while :; do m=$(grim -g "760,240 600x120" - | md5sum | cut -c1-8); ms=$(( ($(date +%s%N)-t0)/1000000 ))

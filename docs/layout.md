@@ -13,7 +13,7 @@
 | `crates/bits` | Build-time check that the flags of a hand-numbered bit set are distinct single bits, and a test that no such flag in `crates/` is declared outside it. |
 | `crates/testenv` | Test support: what a test does when its reference tool is missing. |
 | `crates/testscenes` | Test support: compiles the QML scenes of the shell's tests (`crates/shell/tests/scenes`) with `rigen`, so they run without the interpreter too. Tests only. |
-| `qml` | The shell's QML: what it is built from and tested against, and what an install copies to `~/.config/rustshell/impulse-shell`. |
+| `qml` | The shell's QML: what it is built from and tested against, and what an install copies to `~/.local/share/impulse-shell`. |
 | `install.sh` | The whole install by one command on Arch Linux: packages, build, install, the user's settings and Hyprland files, the start (docs/install.md). |
 | `tools/install.sh` | Build and install. |
 | `tools/testenv` | The test image (`Containerfile`) and the gate script (`ri-gate`). |

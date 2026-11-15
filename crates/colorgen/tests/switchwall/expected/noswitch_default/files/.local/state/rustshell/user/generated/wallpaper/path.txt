@@ -1,1 +1,0 @@
-@HOME@/.config/rustshell/impulse-shell/assets/images/default_wallpaper.png

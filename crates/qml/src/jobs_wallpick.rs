@@ -56,8 +56,8 @@ impl Ctx {
 
     fn dirs(&self) -> wallpick::Dirs {
         wallpick::Dirs {
-            state: self.state_home.join("rustshell/user/wallpick"),
-            cache: self.cache_home.join("rustshell/wallpick"),
+            state: self.state_home.join("impulse-shell/user/wallpick"),
+            cache: self.cache_home.join("impulse-shell/wallpick"),
             downloads: self.pictures.join("Wallpapers"),
         }
     }
@@ -758,7 +758,7 @@ mod tests {
         }
         let own = images.join("default_wallpaper.png");
         std::fs::copy(format!("{pics}/syn_gray.png"), own).unwrap();
-        let generated = c.state_home.join("rustshell/user/generated");
+        let generated = c.state_home.join("impulse-shell/user/generated");
         let colors = || std::fs::read_to_string(generated.join("material_colors.scss")).unwrap();
         let io = Io {
             out: &|_| {},

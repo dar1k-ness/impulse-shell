@@ -206,7 +206,7 @@ fn ocr(path: &str, stop: &Arc<crate::svc::Stop>) -> Vec<u8> {
         .unwrap_or_default()
 }
 
-/// The capture into `path`: the original's `/tmp/rustshell/media/screenshot` is shared, so its
+/// The capture into `path`: the original's `/tmp/impulse-shell/media/screenshot` is shared, so its
 /// directory must be ours (made private) and the file is renamed into place, never written
 /// through a symlink planted there.
 pub fn save_temp(path: &str, png: &[u8]) -> bool {

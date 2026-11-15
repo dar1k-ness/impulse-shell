@@ -445,7 +445,7 @@ impl Client<'_> {
                 .map(|r| r.is_ok())
         };
         for (prop, v) in [
-            ("DesktopId", "org.rustshell".into()),
+            ("DesktopId", "org.impulse-shell".into()),
             ("RequestedAccuracyLevel", ACCURACY_EXACT.into()),
             ("TimeThreshold", threshold.into()),
         ] {

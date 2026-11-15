@@ -2511,7 +2511,7 @@ fn region_temp_screenshot_removed_on_cancel() {
     assert!(!exists(&late));
 }
 
-// The original's `/tmp/rustshell/media/{cliphist,screenshot}` are shared: a symlink planted where an
+// The original's `/tmp/impulse-shell/media/{cliphist,screenshot}` are shared: a symlink planted where an
 // image goes is replaced, never written through.
 #[test]
 fn cliphist_decode_does_not_follow_symlinks() {

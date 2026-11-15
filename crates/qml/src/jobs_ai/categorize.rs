@@ -21,7 +21,7 @@ fn basename(p: &str) -> String {
 }
 
 /// `magick "$src" -resize 200x -quality 50 "$dst"`, kept in memory: the original's fixed
-/// `/tmp/rustshell/ai/wallpaper.jpg` can be another user's symlink or swapped image.
+/// `/tmp/impulse-shell/ai/wallpaper.jpg` can be another user's symlink or swapped image.
 pub fn resize(src: &str) -> Result<Vec<u8>, String> {
     let data =
         crate::osutil::read_regular(Path::new(src), imgtools::limit::MAX_DECODED_BYTES as u64)

@@ -145,8 +145,8 @@ fn stock_calls_through_qs_reach_the_new_build_and_the_old_one_after_going_back()
             "impulse-shell -c impulse-shell ipc call bar toggle",
             "impulse-shell -c impulse-shell ipc call overview toggle",
             "impulse-shell -c impulse-shell ipc call cliphistService update",
-            "impulse-shell -p ~/.config/rustshell/impulse-shell/welcome.qml",
-            "impulse-shell -p ~/.config/rustshell/impulse-shell/settings.qml",
+            "impulse-shell -p ~/.local/share/impulse-shell/welcome.qml",
+            "impulse-shell -p ~/.local/share/impulse-shell/settings.qml",
         ]
     );
     // By its full path: ~/.local/bin is not on the PATH these commands run with.

@@ -115,7 +115,7 @@ fn isolate(out: &Path) -> PathBuf {
     if !cfg.exists() {
         std::fs::write(&cfg, "{}\n").unwrap();
     }
-    home.join(".local/state/rustshell/user/generated/colors.json")
+    home.join(".local/state/impulse-shell/user/generated/colors.json")
 }
 
 fn set_palette(colors: &Path, from: &Path) {

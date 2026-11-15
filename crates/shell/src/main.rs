@@ -10520,7 +10520,7 @@ impl WindowHandler for App {
 }
 
 /// Qt sets the toplevel's app_id from QGuiApplication::desktopFileName, which Quickshell sets.
-const APP_ID: &str = "org.rustshell";
+const APP_ID: &str = "org.impulse-shell";
 
 fn is_app_window(w: &qml::runtime::World, i: usize) -> bool {
     let has = |ty: &str| w.items[i].types.iter().any(|t| t == ty);

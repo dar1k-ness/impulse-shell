@@ -5,7 +5,7 @@
 # two file systems. tools/install.sh says it leaves a shell that starts; a file system's own
 # journal keeps the order of the steps made on it, and nothing keeps the order between two.
 #
-# Each case puts $PREFIX and $XDG_CONFIG_HOME on two file systems on loop devices behind
+# Each case puts $PREFIX and $XDG_DATA_HOME (where the shell's tree is) on two file systems on loop devices behind
 # dm-flakey, installs release A (for a rollback: A, then B) and has all of it written. Then
 # the script installs B (or rolls back), and the power cut is modelled like this:
 #   - one file system, X, stops writing to its disk right after its K-th `sync -f` from the
@@ -81,10 +81,10 @@ for s in "${sides[@]}"; do
     mkdir "$W/$s"
 done
 mkdir "$W/home" "$W/hooks" "$W/ctl"
-export PREFIX=$W/prefix/usr HOME=$W/home XDG_CONFIG_HOME=$W/config/xdg XDG_STATE_HOME=$W/home/state
+export PREFIX=$W/prefix/usr HOME=$W/home XDG_CONFIG_HOME=$W/home/config XDG_DATA_HOME=$W/config/xdg XDG_STATE_HOME=$W/home/state
 export RI_ROOT=$W/source PC_DIR=$W PC_PATH=$real_path
 lib=$PREFIX/lib/impulse-shell
-cfg=$XDG_CONFIG_HOME/rustshell/impulse-shell
+cfg=$XDG_DATA_HOME/impulse-shell
 
 # A stand-in impulse-shell compiled from the tree `$2`: --version, --check-tree -p DIR and
 # -c impulse-shell --check-tree as the real one answers them.
@@ -92,14 +92,14 @@ fake() {
     cat >"$W/$1" <<EOS
 #!/bin/sh
 # $1
-if [ "\$1" = --version ]; then echo 'impulse-shell $1'; echo 'JavaScript interpreter: none'; exit 0; fi
+if [ "\$1" = --version ]; then echo 'impulse-shell $1'; echo 'JavaScript interpreter: none'; echo 'Directories: impulse-shell'; exit 0; fi
 if [ "\$1 \$2 \$3" = '-c impulse-shell --check-tree' ]; then
-    case \${XDG_CONFIG_HOME-} in /*) base=\$XDG_CONFIG_HOME ;; *) base=\$HOME/.config ;; esac
-    if [ -f "\$base/rustshell/shell.qml" ] || [ ! -f "\$base/rustshell/impulse-shell/shell.qml" ]; then
+    case \${XDG_DATA_HOME-} in /*) base=\$XDG_DATA_HOME ;; *) base=\$HOME/.local/share ;; esac
+    if [ ! -f "\$base/impulse-shell/shell.qml" ]; then
         echo 'Could not find "impulse-shell" config directory in any valid config path.' >&2
         exit 255
     fi
-    set -- --check-tree -p "\$(realpath "\$base/rustshell/impulse-shell")"
+    set -- --check-tree -p "\$(realpath "\$base/impulse-shell")"
 fi
 [ "\$1" = --check-tree ] && [ "\$2" = -p ] || exit 2
 if [ "\$(cat "\$3/shell.qml")" = '// tree $2' ]; then
@@ -190,8 +190,10 @@ run_hooked() {
     ) 2>/dev/null || true
 }
 plain() { PATH=$real_path bash "$script" "$@" >"$W/log" 2>&1; }
+# What is beside the config, but for the desktop entry and the icon an install writes there.
+beside() { ls -A "$(dirname "$cfg")" | grep -vx -e applications -e icons; }
 starts() {
-    env -i PATH="$real_path" HOME="$HOME" XDG_CONFIG_HOME="$XDG_CONFIG_HOME" \
+    env -i PATH="$real_path" HOME="$HOME" XDG_DATA_HOME="$XDG_DATA_HOME" \
         "$PREFIX/bin/impulse-shell" -c impulse-shell --check-tree >"$W/starts" 2>&1
 }
 state() {
@@ -204,8 +206,8 @@ state() {
 
 steps=(
     'ln * releases/.switch */.current.new'
-    'mv -T */rustshell/impulse-shell */.ri-restore.??????.replaced'
-    'mv -T */.ri-restore.?????? */rustshell/impulse-shell'
+    'mv -T */xdg/impulse-shell */.ri-restore.??????.replaced'
+    'mv -T */.ri-restore.?????? */xdg/impulse-shell'
     'ln */.previous.new'
     'ln * releases/[!.]* */.current.new'
     end
@@ -272,8 +274,8 @@ one() {
     # The next run finishes or undoes what was cut, and installs.
     rm -f "$W/ctl/kill_at" "$W/ctl/freeze"
     if ! BIN=$W/b plain || ! starts || [ "$(state)" != "current=b config=b" ] ||
-        [ "$(ls -A "$(dirname "$cfg")")" != impulse-shell ]; then
-        echo "  the next install: $(state), beside the config: $(ls -A "$(dirname "$cfg")" | tr '\n' ' '): $(tail -n 3 "$W/log" | tr '\n' ' ')"
+        [ "$(beside)" != impulse-shell ]; then
+        echo "  the next install: $(state), beside the config: $(beside | tr '\n' ' '): $(tail -n 3 "$W/log" | tr '\n' ' ')"
         broken=$((broken + 1))
     fi
 }

@@ -18,9 +18,9 @@ d=[{"notificationId":i,"actions":[],"appIcon":"","appName":"histapp%d"%(i%4),"bo
 json.dump(d,open("/home/dar1k/.cache/quickshell/notifications/notifications.json","w"),indent=2)
 PY
 # The native shell reads its history under its own name for the directory.
-mkdir -p ~/.cache/rustshell/notifications && cp ~/.cache/quickshell/notifications/notifications.json ~/.cache/rustshell/notifications/
+mkdir -p ~/.cache/impulse-shell/notifications && cp ~/.cache/quickshell/notifications/notifications.json ~/.cache/impulse-shell/notifications/
 if [ "$M" = ORIG ]; then setsid quickshell ${QSARGS} -p "$T" > $O/shell.log 2>&1 < /dev/null &
-else setsid ${BIN:-$HOME/bin/impulse-shell} ~/.config/rustshell/impulse-shell > $O/shell.log 2>&1 < /dev/null & fi
+else setsid ${BIN:-$HOME/bin/impulse-shell} ~/.local/share/impulse-shell > $O/shell.log 2>&1 < /dev/null & fi
 [ "$M" = ORIG ] && { S='quickshell|qs'; C="-p $T"; Q=qs; } || { S=impulse-shell; C="-c impulse-shell"; Q=${BIN:-$HOME/bin/impulse-shell}; }
 sleep ${WAIT:-40}; P=$(pgrep -x "$S" | head -1); [ -n "$P" ] || { echo "$M: no $S process, see $O/shell.log" >&2; exit 1; }
 t(){ awk '{print $14+$15}' /proc/$P/stat; }

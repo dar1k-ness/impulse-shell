@@ -295,7 +295,7 @@ pub fn start(config: &Path) -> std::io::Result<Server> {
 
     let display = display_connection();
     let mut info = Vec::new();
-    for s in [id, &config, &path_id, "org.rustshell"] {
+    for s in [id, &config, &path_id, "org.impulse-shell"] {
         put_str(&mut info, s);
     }
     let ms = now.as_millis() as i64;
@@ -1061,7 +1061,7 @@ pub fn put_str(out: &mut Vec<u8>, s: &str) {
     }
 }
 
-/// `$XDG_RUNTIME_DIR/rustshell` (QsPaths::baseRunDir).
+/// `$XDG_RUNTIME_DIR/impulse-shell` (QsPaths::baseRunDir).
 pub(crate) fn base_run_dir() -> std::path::PathBuf {
     let run = std::env::var("XDG_RUNTIME_DIR")
         .ok()
@@ -1070,7 +1070,7 @@ pub(crate) fn base_run_dir() -> std::path::PathBuf {
             // SAFETY: getuid has no preconditions and always succeeds.
             format!("/run/user/{}", unsafe { libc::getuid() })
         });
-    Path::new(&run).join("rustshell")
+    Path::new(&run).join(qml::xdg::APP)
 }
 
 /// Display an instance was launched on, as quickshell's `getDisplayConnection`.
@@ -1165,7 +1165,7 @@ pub fn is_debug_dump(c: &Call, opts: &qml::debug::Opts) -> bool {
 }
 
 /// Writes the diagnostics file `name` into this instance's run directory
-/// (`$XDG_RUNTIME_DIR/rustshell/by-id/<id>`, private; never through a symlink) and returns
+/// (`$XDG_RUNTIME_DIR/impulse-shell/by-id/<id>`, private; never through a symlink) and returns
 /// its path.
 pub fn write_debug_file(name: &str, data: &[u8]) -> Option<std::path::PathBuf> {
     write_private(
@@ -1196,7 +1196,7 @@ mod tests {
     fn md5() {
         assert_eq!(super::md5_hex(b""), "d41d8cd98f00b204e9800998ecf8427e");
         assert_eq!(
-            super::md5_hex(b"/home/dar1k/.config/rustshell/impulse-shell/shell.qml").len(),
+            super::md5_hex(b"/home/dar1k/.local/share/impulse-shell/shell.qml").len(),
             32
         );
     }
@@ -1218,7 +1218,7 @@ mod tests {
     #[test]
     fn debug_files_never_follow_symlinks() {
         let t = tempfile::tempdir().unwrap();
-        let dir = t.path().join("run/rustshell/by-id/x");
+        let dir = t.path().join("run/impulse-shell/by-id/x");
         std::fs::create_dir_all(&dir).unwrap();
         let victim = t.path().join("victim");
         std::fs::write(&victim, "keep").unwrap();

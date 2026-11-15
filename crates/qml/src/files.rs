@@ -125,7 +125,7 @@ pub fn remove(_: &mut Interp, _this: &Value, args: &[Value]) -> R<Value> {
 }
 
 /// `void removeTree(string path)`: PATH and everything in it (`rm -rf`), reached without
-/// following a symlink on the way (the original's directories in the shared `/tmp/rustshell`).
+/// following a symlink on the way (the original's directories in the shared `/tmp/impulse-shell`).
 pub fn remove_tree_call(_: &mut Interp, _this: &Value, args: &[Value]) -> R<Value> {
     let p = arg(args, 0);
     detached("removeTree", &[&p.clone()], move || {

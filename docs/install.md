@@ -50,13 +50,14 @@ NOBUILD=1 tools/install.sh    # install the existing build (the one in Cargo's t
 BIN=<file> tools/install.sh   # install an impulse-shell built elsewhere
 tools/install.sh --rollback   # back to the release the last install replaced
 tools/install.sh --status     # the current and the previous release, and the impulse-shell config
+tools/install.sh --settle     # move what a shell that ran during an install still wrote under the old directory names
 tools/install.sh --mark-good  # the current release has proved good: kept until another one is marked
 tools/install.sh --rollback-good  # back to the release marked good
 tools/install.sh --uninstall
 ```
 
 - It compiles this checkout's `qml` (`RI_ROOT` overrides) and makes the impulse-shell config
-  `~/.config/rustshell/impulse-shell`, what `impulse-shell -c impulse-shell` runs, a copy of it, with the files'
+  `~/.local/share/impulse-shell`, what `impulse-shell -c impulse-shell` runs, a copy of it, with the files'
   executable bits. A config that was there with other content is kept as
   `~/.local/state/impulse-shell/replaced-<time>.<random>`, a link in it as the link; the script never
   removes these copies. Run it as the user whose shell it is, not as root (`sudo`, `doas`,
@@ -69,14 +70,46 @@ tools/install.sh --uninstall
   interpreter (`impulse-shell --version`) and whether it runs the tree (`impulse-shell --check-tree`). If
   it has one, or does not run the tree, nothing is installed. This holds for `BIN=` and
   `NOBUILD=1` too.
+- All that the shell keeps in the home directory has one name, `impulse-shell`:
+
+  | Directory | What is in it |
+  | --- | --- |
+  | `~/.config/impulse-shell` (`$XDG_CONFIG_HOME`) | the user's settings and layout |
+  | `~/.local/share/impulse-shell` (`$XDG_DATA_HOME`) | the tree of the shell's own files |
+  | `~/.local/state/impulse-shell` (`$XDG_STATE_HOME`) | its state, and the configs an install replaced |
+  | `~/.cache/impulse-shell` (`$XDG_CACHE_HOME`) | its cache |
+
+  Its sockets are in `$XDG_RUNTIME_DIR/impulse-shell`, its temporary files in
+  `/tmp/impulse-shell`, and its own windows have the app id `org.impulse-shell`.
+- A release from before that kept its tree in `~/.config/rustshell/impulse-shell`, its state in
+  `~/.local/state/rustshell` and its cache in `~/.cache/rustshell`, and its windows had the app
+  id `org.rustshell`. An install over one moves all of it to the one name: nothing is lost (a
+  tree that was edited is kept as a replaced config), and the user's own files that name those
+  directories or that app id (in `hypr`, `matugen`, `fish`, `kitty`, `foot`, `fuzzel` and
+  `wlogout` of `~/.config`, and the shell's `config.json`) are rewritten; a file's text from
+  before is kept under `~/.local/state/impulse-shell/before-dirs/`. When a file of `hypr` was
+  rewritten, the script has the Hyprland of the session read its files again (`hyprctl reload`),
+  so that its window rules and binds name the app id and the directories that are there; with
+  no session to tell, it says to do that. Restart a shell that ran
+  during such an install (the one-command `install.sh` does), then `tools/install.sh --settle`
+  moves what it still wrote under the old names and removes `$XDG_RUNTIME_DIR/rustshell` and
+  `/tmp/rustshell`, once no shell with those names runs. A rollback to a release from before puts its
+  tree back where it looks for it, makes `~/.local/state/rustshell` and `~/.cache/rustshell`
+  links to the new directories and puts the old names back into those files; the next install
+  moves everything again. While the build from before the rename is installed, its tree in
+  `~/.config/rustshell` and those two links stay: it reads them.
 - With the config in place, an install or a rollback asks the binary the way Hyprland starts
-  it, `impulse-shell -c impulse-shell --check-tree`. `impulse-shell` finds the config named impulse-shell as Quickshell does: in
-  `~/.config/rustshell/impulse-shell`, unless `~/.config/rustshell` has a `shell.qml` of its own. That
-  file is then the default config and no named config beside it is looked up: the install or
-  rollback is undone and says so. Move the file, with the files it uses, to
-  `~/.config/rustshell/default/`: it stays the default config, and the original is found.
-- A relative `XDG_CONFIG_HOME` or `XDG_STATE_HOME` is ignored, by `impulse-shell` and by the script
-  (XDG Base Directory Specification): the defaults under `$HOME` are used.
+  it, `impulse-shell -c impulse-shell --check-tree`. `impulse-shell` finds its tree in
+  `~/.local/share/impulse-shell` (then in `impulse-shell` of `$XDG_DATA_DIRS`). Where there is
+  none, and for any other name, it finds a named config as Quickshell does: in
+  `~/.config/rustshell/<name>`, unless `~/.config/rustshell` has a `shell.qml` of its own. That
+  file is then the default config and no named config beside it is looked up. For a release
+  from before the one name that hides the shell's tree: the install or rollback is undone and
+  says so. Move the file, with the files it uses, to `~/.config/rustshell/default/`: it stays
+  the default config, and the original is found.
+- A relative `XDG_CONFIG_HOME`, `XDG_DATA_HOME`, `XDG_STATE_HOME` or `XDG_CACHE_HOME` is ignored,
+  by `impulse-shell` and by the script (XDG Base Directory Specification): the defaults under
+  `$HOME` are used.
 - If `$PREFIX/bin/impulse-shell` runs a binary that no install put there (a file copied there, a link
   to a build elsewhere), that binary is first kept as a release, `legacy-<id>`, with the
   config it ran: `--rollback` goes back to it, and it still runs if the install fails. A

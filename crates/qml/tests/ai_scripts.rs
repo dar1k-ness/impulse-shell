@@ -903,8 +903,8 @@ fn categorize_matches_script() {
     assert_eq!(r[0], r[1]);
 }
 
-/// The original resizes into the fixed `/tmp/rustshell/ai/wallpaper.jpg`: a symlink planted
-/// there (by whoever made `/tmp/rustshell` first) gets the JPEG written through it. The
+/// The original resizes into the fixed `/tmp/impulse-shell/ai/wallpaper.jpg`: a symlink planted
+/// there (by whoever made `/tmp/impulse-shell` first) gets the JPEG written through it. The
 /// native job keeps the resized image in memory and never touches that path.
 #[test]
 fn categorize_does_not_write_through_tmp_wallpaper_symlink() {
@@ -914,7 +914,7 @@ fn categorize_does_not_write_through_tmp_wallpaper_symlink() {
     )) {
         return;
     }
-    const FIXED: &str = "/tmp/rustshell/ai/wallpaper.jpg";
+    const FIXED: &str = "/tmp/impulse-shell/ai/wallpaper.jpg";
     let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
     bus();
     let reply = "{\"candidates\": [{\"content\": {\"parts\": [{\"text\": \"city\"}]}}]}";
@@ -924,7 +924,7 @@ fn categorize_does_not_write_through_tmp_wallpaper_symlink() {
     wallpaper(&img);
     let victim = d.join("victim.txt");
     std::fs::write(&victim, "victim data\n").unwrap();
-    std::fs::create_dir_all("/tmp/rustshell/ai").unwrap();
+    std::fs::create_dir_all("/tmp/impulse-shell/ai").unwrap();
     let _ = std::fs::remove_file(FIXED);
     std::os::unix::fs::symlink(&victim, FIXED).unwrap();
     let (mut o, mut e) = (String::new(), String::new());

@@ -46,7 +46,7 @@ for case in ["img_dark_auto", "noswitch_color"]:
             env = {"HOME": h, "PATH": f"{work}/bin:{os.environ['HOME']}/.cargo/bin:/usr/bin:/bin", "SW_LOG": f"{h}/calls.log",
                    "SW_PTS": f"{h}/pts", "SW_FIX": os.environ.get("SW_FIX", ""), "VENV": os.environ["VENV"],
                    "IMPULSE_SHELL_VIRTUAL_ENV": os.environ["VENV"]}
-            argv = (["bash", f"{h}/.config/rustshell/impulse-shell/scripts/colors/switchwall.sh"] + a) if kind == "legacy" else [swbench, h] + a
+            argv = (["bash", f"{h}/.local/share/impulse-shell/scripts/colors/switchwall.sh"] + a) if kind == "legacy" else [swbench, h] + a
             if i == 0:
                 n = execs(argv, env, h)
                 continue

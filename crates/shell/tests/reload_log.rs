@@ -84,7 +84,7 @@ fn reload_continues_the_instance_log() {
         .wait(|l| loads(l) == 1)
         .unwrap_or_else(|l| panic!("the shell never loaded:\n{l}"));
     let instances = || -> Vec<_> {
-        std::fs::read_dir(run.join("rustshell/by-id"))
+        std::fs::read_dir(run.join("impulse-shell/by-id"))
             .unwrap()
             .map(|e| e.unwrap().path())
             .collect()

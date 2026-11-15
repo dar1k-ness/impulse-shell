@@ -44,7 +44,7 @@ restart, it took all 26 passwords whose keys it received, from 3 ms after the en
 lost 8 of the 9 typed up to 1 s after the enter and none of the 12 typed later. Without `dies`,
 ten times `vm.sh sync` and `lock` at once: 150 rounds of 150.
 
-The two modes run two trees. `native` is `impulse-shell` on `~/.config/rustshell/impulse-shell`, a copy of this
+The two modes run two trees. `native` is `impulse-shell` on `~/.local/share/impulse-shell`, a copy of this
 checkout's `qml`. `orig` is Quickshell on the original in the guest's `~/parity-original`, started
 as `qs -p ~/parity-original`: Quickshell cannot load `qml`, which imports the `Impulse` module only
 `impulse-shell` has. The original is `ref/ii` of the last commit of `main` that had it, read from git
@@ -81,7 +81,7 @@ The scripts address the running shell's IPC through `$QS` (`common.sh`): `impuls
 - `hyprrestart.sh`: kills Hyprland under the shell.
 - `longcycle.sh N`: N rounds opening/closing every panel; prints RSS and live/slot
   counts from `ri-live.txt` (written by `impulse-shell -c impulse-shell ipc call ri-debug dump` into the instance's
-  `$XDG_RUNTIME_DIR/rustshell/by-id/<id>/`; the shell must run with `RI_DEBUG=dump`).
+  `$XDG_RUNTIME_DIR/impulse-shell/by-id/<id>/`; the shell must run with `RI_DEBUG=dump`).
 - `vis.sh OUTDIR`: arch-pc visual pass on the running native (overview, clock popup, tray menu, sidebar,
   Settings About, waffle Creativity folder). The tray icon is located on screen (left of the bar's
   unpinned dot; `vis.tray at=none` = no tray item); the Creativity folder opens via its label button,

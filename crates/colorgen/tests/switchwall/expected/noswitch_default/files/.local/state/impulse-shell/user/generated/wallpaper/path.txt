@@ -1,0 +1,1 @@
+@HOME@/.local/share/impulse-shell/assets/images/default_wallpaper.png

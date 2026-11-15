@@ -148,8 +148,8 @@ sync)
     copy
     tools
     # install.sh compiles the checkout's qml into the binary and makes
-    # ~/.config/rustshell/impulse-shell a copy of it, as on the PC.
-    guest 'rm -rf ~/.config/rustshell/impulse-shell ~/.local/state/impulse-shell && cd ~/impulse-shell && tools/install.sh'
+    # ~/.local/share/impulse-shell a copy of it, as on the PC.
+    guest 'rm -rf ~/.local/share/impulse-shell ~/.local/state/impulse-shell && cd ~/impulse-shell && tools/install.sh'
     # The original, which the benchmarks measure impulse-shell against: the tree tools/parity
     # compares the view with, unpacked the same way (guest ~/parity-original).
     "$repo/tools/parity/orig.sh"

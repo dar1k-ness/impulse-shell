@@ -358,7 +358,7 @@ fn own_home(test: &str) -> Option<PathBuf> {
 }
 
 fn state_file(home: &Path) -> PathBuf {
-    home.join(".local/state/rustshell/user/wallpick/state.json")
+    home.join(".local/state/impulse-shell/user/wallpick/state.json")
 }
 
 /// The picker's state after a pick: `w1.jpg` is the wallpaper on the screen.

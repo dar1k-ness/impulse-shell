@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # Copies what a user keeps under the old names (illogical-impulse, ii, ii-rs, quickshell) to the
-# new ones (impulse-shell, rustshell). Nothing under an old name is changed or removed, so the
-# old build still finds everything it reads: going back to it loses nothing.
+# new one: impulse-shell, the one name of the shell's directories (its settings in ~/.config,
+# its tree in ~/.local/share, its state in ~/.local/state, its cache in ~/.cache). Nothing
+# under an old name is changed or removed, so the old build still finds everything it reads:
+# going back to it loses nothing.
 #
 # A home that ran the shell under its previous name (its tree is ~/.config/rustshell/<that
 # name>) is carried over from that build instead: its settings, cache, icon and keyring item,
-# and the user's own files that name it. The engine's word is the same for both, so the state
-# and the caches under it (~/.local/state/rustshell, ~/.cache/rustshell) are one place the two
-# builds share: nothing is copied there.
+# and the user's own files that name it. Its state and its caches (~/.local/state/rustshell,
+# ~/.cache/rustshell) are one place the two builds share: tools/install.sh moves them to the
+# new name and leaves the old one as a link for that build, nothing is copied there.
 #
 #   tools/carry-over.sh              copy the data: settings, state, caches, the icon, the keyring
 #                                    item. What is already there under a new name is left alone
@@ -31,7 +33,9 @@
 set -euo pipefail
 shopt -s nullglob dotglob
 
-# The names. WORD is what replaces "quickshell" in the names that are this project's own.
+# The names. WORD is what replaces "quickshell" in the names that are this project's own and
+# no directory: the layers' prefix, the global shortcuts'. (Before the shell's directories had
+# the one name it was their name too: what a text names so is rewritten, see rewrite.)
 OLD_APP=illogical-impulse NEW_APP=impulse-shell
 OLD_BIN=ii-rs NEW_BIN=impulse-shell
 OLD_TREE=ii NEW_TREE=impulse-shell
@@ -71,10 +75,33 @@ usage() { awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' 
 pairs() {
     printf '%s\n' \
         "$config/$OLD_APP" "$config/$NEW_APP" \
-        "$state/$OLD_WORD" "$state/$NEW_WORD" \
-        "$cache/$OLD_WORD" "$cache/$NEW_WORD" \
         "$cache/$OLD_BIN" "$cache/$NEW_BIN" \
         "$data/icons/$OLD_APP.svg" "$data/icons/$NEW_APP.svg"
+    # The state and the cache the previous name's build has are this build's own (see above).
+    [ "$OLD_WORD" = "$NEW_WORD" ] || printf '%s\n' \
+        "$state/$OLD_WORD" "$state/$NEW_BIN" \
+        "$cache/$OLD_WORD" "$cache/$NEW_BIN"
+}
+# What a run from before the one name wrote into the log for the pair that ends in `$1`: the
+# state and the cache went under the engine's word then, and tools/install.sh has moved them.
+logged_as() {
+    case $1 in "$state/$NEW_BIN" | "$cache/$NEW_BIN") echo "${1%/*}/$NEW_WORD" ;; *) echo "$1" ;; esac
+}
+# Makes a text that names the shell's directories as they were before the one name (the tree
+# in ~/.config/WORD/impulse-shell, the state and the cache under WORD), the app id org.WORD or
+# /tmp/WORD name them as they are: what the rewrite below has made, and what one from before
+# the one name made (the texts this script keeps for --dots new).
+one_name() {
+    local W=$NEW_WORD A=$NEW_BIN e='([^[:alnum:]_.-]|$)' home='XDG_DATA_HOME\1'
+    [ "$data" != "$HOME/.local/share" ] || home='HOME\1/.local/share'
+    sed -E \
+        -e "s#\\\$\\{XDG_CONFIG_HOME:-(\\\$HOME|\\\$\\{HOME\\}|~)/\\.config\\}/$W/$A$e#\${XDG_DATA_HOME:-\\1/.local/share}/$A\\2#g" \
+        -e "s#XDG_CONFIG_HOME(\\}?[\"']?)/$W/$A$e#$home/$A\\2#g" \
+        -e "s#\\.config/$W/$A$e#.local/share/$A\\1#g" \
+        -e "s#\\.config/$W/(\\\$\\{?qsConfig\\}?)#.local/share/\\1#g" \
+        -e "s#((\\.local/state|\\.cache|XDG_STATE_HOME|XDG_CACHE_HOME)\\}?[\"']?/)$W$e#\\1$A\\3#g" \
+        -e "s#/tmp/$W$e#/tmp/$A\\1#g" \
+        -e "s#org(\\\\*)\\.$W([^[:alnum:]_-]|\$)#org\\1.$A\\2#g"
 }
 
 # What rewrites a text that names the old build into one that names the new build. A file is
@@ -105,7 +132,7 @@ rewrite() {
         -e "/(^|[^[:alnum:]_-])alias[ =]/s#(^|[^[:alnum:]_./-])qs( +-c +[\"']?$OLD_TREE[\"']?([^[:alnum:]_-]|\$))#\\1$client\\2#g" \
         -e "s#(^|[^[:alnum:]_./-])(qs +-c +[\"']?)$OLD_TREE([\"']?)([^[:alnum:]_\"'-]|\$)#\\1\\2\\x01\\3\\4#g" \
         -e "s#$OLD_WORD:#$NEW_WORD:#g" \
-        -e "s#org\\.$OLD_WORD#org.$NEW_WORD#g" \
+        -e "s#org(\\\\*)\\.$OLD_WORD#org\\1.$NEW_WORD#g" \
         -e "s#(^|[^[:alnum:]_.-])$OLD_WORD/$OLD_TREE([^[:alnum:]_-]|\$)#\\1$NEW_WORD/$NEW_TREE\\2#g" \
         -e "s#((\\.config|\\.local/state|\\.cache|_HOME\\}?|_home|_dir|Home|Dir)[\"' .]*/)$OLD_WORD([^[:alnum:]_-]|\$)#\\1$NEW_WORD\\3#g" \
         -e "s#/tmp/$OLD_WORD([^[:alnum:]_-]|\$)#/tmp/$NEW_WORD\\1#g" \
@@ -116,7 +143,8 @@ rewrite() {
         -e "s#hl-virtual-keyboard-$OLD_BIN#hl-virtual-keyboard-$NEW_BIN#g" \
         -e "s#__ii_superIntr#__ri_superIntr#g" \
         -e "s#(-c[ \"',]+|qsConfig[\"']?[ ]*[=,][ ]*[\"'])$OLD_TREE([^[:alnum:]_-]|\$)#\\1$NEW_TREE\\2#g" \
-        -e "s#\\x01#$OLD_TREE#g"
+        -e "s#\\x01#$OLD_TREE#g" |
+        one_name
 }
 # From the previous name the engine's word stays, so only whole names change. The start script
 # goes first: its new name is not the old one with the new name put in.
@@ -125,7 +153,8 @@ if [ "$OLD_WORD" = "$NEW_WORD" ]; then
         sed -E \
             -e "s#(^|[^[:alnum:]_.-])$OLD_START([^[:alnum:]_.-]|\$)#\\1$NEW_BIN-start\\2#g" \
             -e "s#$OLD_APP#$NEW_APP#g" \
-            -e "s#$OLD_ENV#IMPULSE_SHELL_#g"
+            -e "s#$OLD_ENV#IMPULSE_SHELL_#g" |
+            one_name
     }
 fi
 names_old() { ! rewrite <"$1" | cmp -s - "$1"; }
@@ -181,7 +210,8 @@ copy_pair() {
     [ -e "$old" ] || [ -L "$old" ] || { say "nothing under $old"; return 0; }
     if [ -e "$new" ] || [ -L "$new" ]; then
         if [ -z "$force" ]; then
-            if [ -f "$own/log" ] && grep -qF -e " copied $old -> $new" -e " added $old -> $new" "$own/log"; then
+            if [ -f "$own/log" ] && grep -qF -e " copied $old -> $new" -e " added $old -> $new" \
+                -e " copied $old -> $(logged_as "$new")" -e " added $old -> $(logged_as "$new")" "$own/log"; then
                 say "already carried over: $new"
             elif [ -d "$old" ] && [ ! -L "$old" ] && [ -d "$new" ] && [ ! -L "$new" ]; then
                 add_missing "$old" "$new"
@@ -596,8 +626,8 @@ status() {
     while IFS= read -r f; do echo "names the old build, a copy kept beside a file, never rewritten: $f"; done < <(dot_files kept)
     while IFS= read -r f; do echo "names the old build, not one of the files --dots rewrites: $f"; done < <(strays)
     [ ! -r /etc/geoclue/geoclue.conf ] || ! grep -q "^\[org\.$OLD_WORD\]" /etc/geoclue/geoclue.conf ||
-        grep -q "^\[org\.$NEW_WORD\]" /etc/geoclue/geoclue.conf ||
-        echo "/etc/geoclue/geoclue.conf allows org.$OLD_WORD by name and not org.$NEW_WORD: the new build gets no location until a section [org.$NEW_WORD] is added beside it"
+        grep -q "^\[org\.$NEW_BIN\]" /etc/geoclue/geoclue.conf ||
+        echo "/etc/geoclue/geoclue.conf allows org.$OLD_WORD by name and not org.$NEW_BIN: the new build gets no location until a section [org.$NEW_BIN] is added beside it"
     [ ! -f "$own/log" ] || { echo "done so far ($own/log):"; sed 's/^/  /' "$own/log"; }
 }
 

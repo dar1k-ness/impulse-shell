@@ -22,9 +22,10 @@ XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 PICTURES_DIR=$(get_pictures_dir)
-CONFIG_DIR="$XDG_CONFIG_HOME/rustshell/$QUICKSHELL_CONFIG_NAME"
-CACHE_DIR="$XDG_CACHE_HOME/rustshell"
-STATE_DIR="$XDG_STATE_HOME/rustshell"
+# The shell's tree, ~/.local/share/$QUICKSHELL_CONFIG_NAME as installed: the one this script is in.
+CONFIG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+CACHE_DIR="$XDG_CACHE_HOME/impulse-shell"
+STATE_DIR="$XDG_STATE_HOME/impulse-shell"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 mkdir -p "$PICTURES_DIR/Wallpapers"

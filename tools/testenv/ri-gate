@@ -210,7 +210,7 @@ step_shipped_build() {
     mkdir -p "$installed"
     chown -R tester "$installed" 2>/dev/null
     as-tester env PREFIX="$installed/prefix" XDG_CONFIG_HOME="$installed/config" \
-        XDG_STATE_HOME="$installed/state" tools/install.sh
+        XDG_DATA_HOME="$installed/data" XDG_STATE_HOME="$installed/state" tools/install.sh
 }
 # The AOT-only shell's tests, its refusals (startup_errors' tests gated on not(interp)), its
 # binary, which holds no JavaScript parser or evaluator (shipped_binary), and tools/install.sh
@@ -229,13 +229,13 @@ step_shipped_tests() {
     }
     "$bin" --version || return 1
     "$bin" --version | grep -qx 'JavaScript interpreter: none' || return 1
-    env -i "$bin" --check-tree -p "$installed/config/rustshell/impulse-shell" || return 1
-    env -i HOME="$installed" XDG_CONFIG_HOME="$installed/config" "$bin" -c impulse-shell --check-tree || return 1
+    env -i "$bin" --check-tree -p "$installed/data/impulse-shell" || return 1
+    env -i HOME="$installed" XDG_DATA_HOME="$installed/data" "$bin" -c impulse-shell --check-tree || return 1
     if grep -aqE 'oxc_parser|oxc_ast|qml/src/ir\.rs' "$bin"; then
         echo "$bin holds interpreter code"
         return 1
     fi
-    as-tester env RI_SHIPPED_BIN="$bin" RI_SHIPPED_TREE="$installed/config/rustshell/impulse-shell" \
+    as-tester env RI_SHIPPED_BIN="$bin" RI_SHIPPED_TREE="$installed/data/impulse-shell" \
         $shipped_commit $nextest_shipped -p shell --test shipped_first_frame --test shipped_panels || rc=1
     return $rc
 }

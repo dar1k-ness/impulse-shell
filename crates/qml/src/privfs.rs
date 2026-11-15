@@ -1,4 +1,4 @@
-//! Files in shared, world-writable places (the original's `/tmp/rustshell/...` directories) written
+//! Files in shared, world-writable places (the original's `/tmp/impulse-shell/...` directories) written
 //! without following anybody else's symlinks. The directory is reached by file descriptor one
 //! component at a time; every component must belong to this user or to root (a root-owned
 //! world-writable one only when sticky, like `/tmp`), so nobody else can swap a component

@@ -66,7 +66,7 @@ already reached that level during the flood). Still below the original (1357 ano
 
 ### Guest-only: interpreted fallback
 
-The guest's `~/.config/rustshell/impulse-shell` is older than `qml` (no assistant chat; `Persistent.qml`,
+The guest's `~/.local/share/impulse-shell` is older than `qml` (no assistant chat; `Persistent.qml`,
 `LauncherSearch.qml`, `LeftSidebarButton.qml`, `SidebarLeftContent.qml`, OSK files differ), so those files run
 interpreted. Builds made later the same day from the same sources (`9dbae36`, `2577151`, `685f425`) then log
 `Persistent is not defined` / `LauncherSearch is not defined` at startup, while the `9dbae36` gate binary built at

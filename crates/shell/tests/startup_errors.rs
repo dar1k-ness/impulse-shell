@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// What makes an instance findable and look alive or dead to `qs list` / `qs ipc` under the
-/// run dir `run` (`$XDG_RUNTIME_DIR/rustshell`): its lock, its socket, its `by-pid` link and
+/// run dir `run` (`$XDG_RUNTIME_DIR/impulse-shell`): its lock, its socket, its `by-pid` link and
 /// its link under `by-shell/<path id>`. The logs and the shared `by-path` link are not.
 fn registration(run: &Path) -> Vec<PathBuf> {
     let mut found = Vec::new();
@@ -87,7 +87,7 @@ fn startup_error_is_in_the_instance_log() {
         .output()
         .unwrap();
     assert_eq!(out.status.code(), Some(1), "{out:?}");
-    let instances: Vec<_> = std::fs::read_dir(dir.join("rustshell/by-id"))
+    let instances: Vec<_> = std::fs::read_dir(dir.join("impulse-shell/by-id"))
         .unwrap()
         .map(|e| e.unwrap().path())
         .collect();
@@ -131,7 +131,7 @@ fn failed_start(test: &str, src: &str) -> (Option<i32>, String, bool, Vec<PathBu
         .env_remove("WAYLAND_SOCKET")
         .output()
         .unwrap();
-    let run = dir.join("rustshell");
+    let run = dir.join("impulse-shell");
     // `by-path/<path id>` is linked last when the instance registers, and stays.
     let registered = std::fs::read_dir(run.join("by-path")).is_ok_and(|mut d| d.next().is_some());
     let left = registration(&run);
@@ -248,7 +248,7 @@ fn a_tree_that_lacks_a_compiled_file_is_refused() {
             "started without {gone}, the tree was not refused:\n{err}"
         );
         assert!(
-            registration(&dir.path().join("rustshell")).is_empty(),
+            registration(&dir.path().join("impulse-shell")).is_empty(),
             "started without {gone}, left registered"
         );
     }

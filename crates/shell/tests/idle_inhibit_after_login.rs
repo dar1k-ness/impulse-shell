@@ -63,7 +63,7 @@ fn keep_awake_stays_off_after_a_login() {
     }
     let base = tempfile::tempdir().unwrap();
     let home = base.path().join("home");
-    let state = home.join(".local/state/rustshell");
+    let state = home.join(".local/state/impulse-shell");
     std::fs::create_dir_all(&state).unwrap();
     let file = state.join("states.json");
     let before = serde_json::json!({

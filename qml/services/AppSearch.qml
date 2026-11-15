@@ -97,7 +97,7 @@ Singleton {
 
     // The app id of the shell's own windows (Settings, Welcome), as crates/shell/src/main.rs
     // has it, and the name the screen shows in its place.
-    readonly property string ownAppId: "org.rustshell"
+    readonly property string ownAppId: "org.impulse-shell"
     readonly property string ownName: "Impulse"
 
     // What is shown where a window is named by its class: the class, and for the shell's own

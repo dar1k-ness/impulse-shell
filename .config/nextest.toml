@@ -67,7 +67,7 @@ sway = { max-threads = 1 }
 easyeffects = { max-threads = 1 }
 # Process names pidof/killall see machine-wide: kded6, mako, dunst, hyprlock, hyprsunset, yay.
 conflict-names = { max-threads = 1 }
-# the original's fixed /tmp/rustshell/ai (request.sh, the upload temp files, wallpaper.jpg).
+# the original's fixed /tmp/impulse-shell/ai (request.sh, the upload temp files, wallpaper.jpg).
 quickshell-ai = { max-threads = 1 }
 
 [[profile.default.overrides]]
@@ -115,7 +115,7 @@ test-group = "conflict-names"
 filter = "binary_id(qml::ai_scripts) & test(/^categorize_/)"
 test-group = "quickshell-ai"
 
-# the original's fixed /tmp/rustshell/media/{cliphist,images}, which file_cmds_equiv snapshots. Every
+# the original's fixed /tmp/impulse-shell/media/{cliphist,images}, which file_cmds_equiv snapshots. Every
 # test that loads the original's Directories singleton renews cliphist at startup (Directories.qml's
 # `rm -rf; mkdir -p`, or the native 0700 one), and dozens across binaries do, so no group of
 # writers can be kept complete: the readers run with no other test instead.
@@ -123,7 +123,7 @@ test-group = "quickshell-ai"
 filter = "binary_id(qml::file_cmds_equiv)"
 threads-required = "num-test-threads"
 
-# The same /tmp/rustshell/media/images: the overlay's Floating Image copies its picture there
+# The same /tmp/impulse-shell/media/images: the overlay's Floating Image copies its picture there
 # and reads it back, and every shell that starts removes the directory (Directories.qml's
 # `Files.removeTree(tempImages)`). A shell of another test starting between the copy and the
 # read leaves the widget with no file to open, and the test waiting for a picture.
