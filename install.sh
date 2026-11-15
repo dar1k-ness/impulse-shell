@@ -23,6 +23,15 @@
 #      started again: the session is not left without a shell. Outside a session nothing is
 #      started: the next login starts it.
 #
+# A home that runs this shell under its previous name (its tree is ~/.config/rustshell/<that
+# name>) is switched from that build: step 4 carries its settings over and makes the files that
+# started it start impulse-shell, by ~/.local/bin/impulse-shell-start where they named that
+# build's start script (this puts the script there); step 5 stops that build's shell. A
+# rollback watch that looked after that build is turned off before its shell is stopped: it
+# would start that build again, or go back further, now or at the next login. It is turned on
+# again when step 5 puts back what ran before. This installs no watch of its own. Nothing of
+# that build is removed; the last lines say how to go back to it.
+#
 # Back to the original afterwards: tools/carry-over.sh --dots old, then log in again;
 # tools/install.sh --uninstall removes the build.
 #
@@ -69,14 +78,17 @@ main() {
     case $rc in 0 | 3 | 4) ;; *) die "tools/carry-over.sh failed; the build is installed, the Hyprland files are untouched" ;; esac
     step "making the Hyprland files call and start $bin"
     "$src/tools/carry-over.sh" --dots new --quiet || die "tools/carry-over.sh --dots new failed; put the files back with: $src/tools/carry-over.sh --dots old"
-    grep -rqsE "(^|[^[:alnum:]_-])$name +-c " "$config/hypr" ||
+    start_script
+    grep -rqsE "(^|[^[:alnum:]_-])($name +-c |$name-start([^[:alnum:]_.-]|\$))" "$config/hypr" ||
         echo "note: nothing under $config/hypr starts the shell: make Hyprland run \`$bin -c $name\` at login"
 
     if [ -z "$start" ]; then
+        watch_off later
         echo "installed. Not started (--no-start): the next login starts it."
     elif in_session; then
         switch
     else
+        watch_off later
         echo "installed. This is not a Hyprland session, so nothing was started: log in to Hyprland and the shell is there."
     fi
 }
@@ -88,6 +100,16 @@ config=${XDG_CONFIG_HOME-}
 [[ $config == /* ]] || config=$HOME/.config
 src=
 before=
+# The shell under its previous name: its process, its start script, the unit of its rollback
+# watch. (The name is put together from halves: tools/rename/rename.py renames it wherever it
+# stands whole.)
+prev=rusty
+prev+=-impulse
+prev_start=$HOME/.local/bin/$prev-shell
+prev_unit=$prev-rollback-watch.service
+# The script of that watch, once watch_off has turned it off; how watch_on turns it on again.
+prev_watch=
+watch_back=()
 
 die() {
     echo "install.sh: $*" >&2
@@ -166,7 +188,7 @@ sources() {
 hc() { hyprctl "$@" 2>&1; }
 in_session() { [ -n "${HYPRLAND_INSTANCE_SIGNATURE-}" ] && command -v hyprctl >/dev/null && hyprctl version >/dev/null 2>&1; }
 pids() { pgrep -u "$(id -u)" -x "$1" || true; }
-# The layers (panels) a shell has on screen: Quickshell's are "quickshell:...", ours "$word:...".
+# The layers (panels) a shell has on screen: their names begin with its word and a colon.
 nlayers() { hc layers -j | jq --arg ns "$1:" '[.[].levels[][] | select(.namespace | startswith($ns))] | length' 2>/dev/null || echo 0; }
 # Runs a command the way Hyprland runs one of its own (its environment, not this terminal's):
 # through the Lua config's dispatcher, or the older config's.
@@ -195,14 +217,68 @@ stop() {
     done
 }
 
+# The start script the previous build's files named, under this build's name: where the
+# Hyprland files name it now (tools/carry-over.sh --dots new wrote that) and it is not there,
+# it is put there. tools/pc/switch puts the same one; tools/install.sh --uninstall leaves it.
+start_script() {
+    local s=$HOME/.local/bin/$name-start
+    grep -rqsE "(^|[^[:alnum:]_.-])$name-start([^[:alnum:]_.-]|\$)" "$config/hypr" || return 0
+    [ ! -x "$s" ] || return 0
+    step "putting the start script the Hyprland files name: $s"
+    mkdir -p -- "${s%/*}" && cat >"$s.new" <<EOF && chmod 755 "$s.new" && mv -f -- "$s.new" "$s" || die "cannot write $s"
+#!/bin/bash
+# Starts $name from the home directory, what it prints going to its log. The
+# Hyprland files start it by this script where they started the build before it by that one's.
+cd ~
+exec "\$HOME/.local/bin/$name" -c $name >"\${XDG_RUNTIME_DIR:-/tmp}/$name.log" 2>&1 </dev/null
+EOF
+}
+
+# The rollback watch of the previous build looks after that build's process and, at each login,
+# expects it to be the shell: left on, it starts that build again or goes back further. It is
+# turned off by its own script (which removes its unit; the unit names the script), else by
+# systemctl. "later": the shell that runs is not stopped now, so the watch keeps running until
+# the logout and is only not started at the next login.
+watch_off() {
+    local unit=$config/systemd/user/$prev_unit p
+    [ -e "$unit" ] || return 0
+    command -v systemctl >/dev/null || return 0
+    prev_watch=$(sed -n 's/^ExecStart=\(.*\) run$/\1/p' "$unit" | head -n 1)
+    if [ "${1-}" = later ]; then
+        systemctl --user disable "$prev_unit" >/dev/null 2>&1 || true
+        watch_back=(systemctl --user enable "$prev_unit")
+        echo "the rollback watch of $prev will not start at the next login ($prev_unit is disabled); on again: ${watch_back[*]}"
+        return 0
+    fi
+    step "turning off the rollback watch of $prev ($prev_unit): its shell is stopped next"
+    if [ -n "$prev_watch" ] && [ -x "$prev_watch" ]; then
+        "$prev_watch" stop >/dev/null 2>&1 || true
+        watch_back=("$prev_watch" enable)
+    else
+        watch_back=(systemctl --user enable --now "$prev_unit")
+    fi
+    systemctl --user disable --now "$prev_unit" >/dev/null 2>&1 || true
+    p=$(cat "${XDG_RUNTIME_DIR:-/tmp}/$prev-rollback-watch.pid" 2>/dev/null || true)
+    if [[ $p =~ ^[0-9]+$ ]] && grep -qa rollback-watch "/proc/$p/cmdline" 2>/dev/null; then kill "$p" 2>/dev/null || true; fi
+}
+watch_on() {
+    [ ${#watch_back[@]} != 0 ] || return 0
+    if "${watch_back[@]}" >/dev/null 2>&1; then
+        echo "install.sh: the rollback watch of $prev is on again" >&2
+    else
+        echo "install.sh: the rollback watch of $prev did not start; again: ${watch_back[*]}" >&2
+    fi
+}
+
 # What Hyprland started at login from a line that called qs keeps that text until the next
 # login: end-4's clipboard watchers (wl-paste --watch bash -c '... qs -c $qsConfig ipc call
 # cliphistService update'), which tell the shell that the clipboard history has changed. They
-# are stopped and started again from the lines as they are now.
+# are stopped and started again from the lines as they are now. So are the ones that called
+# the shell under its previous name.
 restart_watchers() {
     local p line stopped=''
     for p in $(pids wl-paste); do
-        if tr '\0' ' ' <"/proc/$p/cmdline" 2>/dev/null | grep -qE '(^|[^[:alnum:]_./-])qs +-c '; then
+        if tr '\0' ' ' <"/proc/$p/cmdline" 2>/dev/null | grep -qE "(^|[^[:alnum:]_./-])qs +-c |(^|[^[:alnum:]_.-])$prev +-c "; then
             kill "$p" 2>/dev/null && stopped=1
         fi
     done
@@ -225,18 +301,26 @@ switch() {
         fi
     done
     # What runs now, to start it again if the new shell does not come up: its command line.
-    for p in $(pids qs) $(pids quickshell) $(pids "$name"); do
+    for p in $(pids qs) $(pids quickshell) $(pids "$prev") $(pids "$name"); do
         was=$(tr '\0' ' ' <"/proc/$p/cmdline" 2>/dev/null) && [ -n "$was" ] && break
     done
+    # The previous build is started again the way its files start it: by its start script.
+    [ -z "$(pids "$prev")" ] || [ ! -x "$prev_start" ] || was=$prev_start
+    watch_off
     step "switching: Hyprland reloads its config, ${was:+\`${was% }\` stops, }\`$name -c $name\` starts"
     hc reload >/dev/null
-    stop qs quickshell "$name"
+    stop qs quickshell "$prev" "$name"
     hypr_exec "$bin -c $name >$log 2>&1" || true
     for ((i = 0; i < wait * 2; i++)); do
         if [ -n "$(pids "$name")" ] && [ "$(nlayers "$word")" -gt 0 ]; then
             restart_watchers
             echo "installed and running: $bin (pid $(pids "$name" | head -n 1)), its log: $log"
-            echo "back to the original: $src/tools/carry-over.sh --dots old, then log in again"
+            if [ ${#watch_back[@]} != 0 ]; then
+                echo "the rollback watch of $prev is off, and this installs none"
+                echo "back to $prev: $src/tools/carry-over.sh --dots old, then log in again, then: ${watch_back[*]}"
+            else
+                echo "back to the original: $src/tools/carry-over.sh --dots old, then log in again"
+            fi
             return 0
         fi
         sleep 0.5
@@ -257,6 +341,7 @@ switch() {
         hc reload >/dev/null
         hypr_exec "${was% }" || true
         echo "install.sh: the build stays installed; the Hyprland files are the ones from before" >&2
+        watch_on
         ;;
     esac
     exit 2
