@@ -52,10 +52,14 @@ Scope {
             property var activeWorkspaceWithFullscreen: workspacesForMonitor.filter(workspace => ((workspace.toplevels.values.filter(window => window.wayland?.fullscreen)[0] != undefined) && workspace.active))[0]
             property bool fullscreen: activeWorkspaceWithFullscreen != undefined
 
+            // The overlay stays until it has faded out after the edit mode ended.
+            property bool leaving: false
             LazyLoader {
-                active: controller.active && !monitorScope.fullscreen
+                active: (controller.active || monitorScope.leaving) && !monitorScope.fullscreen
                 component: EditOverlay {
                     screen: monitorScope.modelData
+                    Component.onCompleted: monitorScope.leaving = true
+                    onGoneChanged: if (gone) monitorScope.leaving = false
                 }
             }
         }

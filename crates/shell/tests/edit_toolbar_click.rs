@@ -286,7 +286,8 @@ impl Edit {
     }
 
     /// The overlay's toolbar button showing `icon` (its `text`, or `iconText` beside a label):
-    /// the bottom toolbar's, which is made after the two buttons by the selected widget.
+    /// the bottom toolbar's, or one of the two by the selected widget (its settings, its
+    /// removal).
     fn button(&self, icon: &str) -> usize {
         let mut w = self.rt.world.borrow_mut();
         let found = w.of_type("RippleButton").into_iter().rfind(|&b| {
@@ -379,7 +380,7 @@ impl Edit {
         }
     }
 
-    /// Whether the overlay's widget settings dialog (a Loader) is loaded.
+    /// Whether the overlay's widget settings dialog (EditOverlay.qml `settingsDialog`) is up.
     fn settings_open(&self) -> bool {
         let mut w = self.rt.world.borrow_mut();
         let dialog = w
@@ -387,8 +388,17 @@ impl Edit {
             .into_iter()
             .find(|&l| !w.dead.contains(&l) && w.read(l, "shown").is_some());
         let dialog = dialog.expect("no settings dialog");
-        w.read(dialog, "active").is_some_and(|v| v.truthy())
-            || w.read(dialog, "shown").is_some_and(|v| v.truthy())
+        w.read(dialog, "shown").is_some_and(|v| v.truthy())
+    }
+
+    /// Where the layout has the desktop's second widget.
+    fn second_xy(&self) -> (i32, i32) {
+        let w = self.rt.world.borrow();
+        let l = w.layout.as_ref().unwrap().editor().layout();
+        match l.monitors[0].containers[0].widgets[1].place {
+            qml::layout_model::Place::Desktop { x, y, .. } => (x, y),
+            ref p => panic!("{p:?}"),
+        }
     }
 
     /// Whether the widget catalog (EditOverlay.qml `catalogDialog`) is up.
@@ -498,14 +508,7 @@ fn a_toolbar_press_released_outside_its_button_is_canceled() {
     assert_eq!(e.read("selectedId").to_js_string(), "clock");
     assert!(e.read("canUndo").truthy() && e.read("canRedo").truthy());
     let before = e.saved();
-    let icons = [
-        "undo",
-        "redo",
-        "delete",
-        "settings",
-        "side_navigation",
-        "check",
-    ];
+    let icons = ["undo", "redo", "side_navigation", "check"];
     for icon in icons {
         let b = e.button(icon);
         assert!(e.read_of(b, "enabled").truthy(), "{icon} is disabled");
@@ -578,6 +581,8 @@ fn a_trash_click_removes_the_widget_and_undo_restores_the_file() {
     e.click((200.0, 150.0));
     assert_eq!(e.read("selectedId").to_js_string(), "clock");
     let (bytes, ino) = e.saved();
+    // The trash by the selected widget, once it has faded in.
+    e.frames(30);
     let trash = e.button("delete");
     let at = e.center(trash);
     e.click(at);
@@ -679,6 +684,29 @@ fn a_catalog_tile_adds_the_widget_selected_and_undo_removes_it() {
     assert!(e.rt.errors().is_empty(), "{:?}", e.rt.errors());
 }
 
+/// A desktop widget dragged off its catalog tile is added and carried: it is let go under the
+/// pointer, not where a click on the tile would have put it, as one more widget of the layout.
+#[test]
+fn a_catalog_tile_dragged_out_puts_the_widget_where_it_is_let_go() {
+    let mut e = Edit::new("carry", 100, 100);
+    let add = e.button("add");
+    let at = e.center(add);
+    e.click(at);
+    e.frames(30);
+    assert!(e.palette_open(), "the catalog did not open");
+    let tile = e.tile("clock").expect("no clock tile");
+    let from = e.center(tile);
+    let to = (900.0, 600.0);
+    e.drag(from, to);
+    e.frames(30);
+    assert_eq!(e.ids(0), ["clock", "clock-1"]);
+    assert_eq!(e.read("selectedId").to_js_string(), "clock-1");
+    // A new clock is 200 by 100 here and is held by its middle.
+    assert_eq!(e.second_xy(), (800, 550), "{:?}", e.rt.errors());
+    assert!(!e.palette_open(), "the catalog stayed open");
+    assert!(e.rt.errors().is_empty(), "{:?}", e.rt.errors());
+}
+
 /// The settings dialog of a bar widget shows where it sits, and a click on another zone moves
 /// it there as one saved edit; undo puts the file back.
 #[test]
@@ -694,7 +722,8 @@ fn the_settings_dialog_moves_a_bar_widget_to_another_zone() {
     };
     assert_eq!(place(&e, "zone").as_deref(), Some("center"));
     assert_eq!(place(&e, "width").as_deref(), Some("auto"));
-    let gear = e.button("settings");
+    e.frames(30);
+    let gear = e.button("tune");
     let at = e.center(gear);
     e.click(at);
     e.frames(30);

@@ -6,8 +6,8 @@ import ri.modules.common
 import ri.modules.common.widgets
 
 /**
- * Edit mode's settings of one widget: a panel at the side of the overlay, the side the widget
- * is not on, so the widget stays in view and shows each change as it is made. The overlay
+ * Edit mode's settings of one widget: a panel beside the widget, which stays in view and shows
+ * each change as it is made. The overlay
  * sets `connector` and `widgetId` (the selected widget: selecting another shows that one's
  * settings) and opens it from the gear or a double click. Its groups, in the manner of a
  * settings page: the options of the widget type's schema, then its size (a desktop widget's
@@ -30,6 +30,9 @@ Item {
     // The widget's outline in the overlay, which the panel keeps off; `busy` while it is
     // dragged, when the panel stays where it is.
     property var avoid: null
+    // The outlines of all widgets: of two sides with room, the panel takes the one where it
+    // hides less of them.
+    property var others: []
     property bool busy: false
     property bool show: false
     signal zonePicked(string zone)
@@ -40,26 +43,81 @@ Item {
 
     readonly property real panelWidth: 400
     readonly property real margin: Appearance.sizes.elevationMargin * 2
-    // The panel is on the right, or on the left while the widget is where it would be.
+    // The panel stands beside its widget: right or left of it, where there is room, else at
+    // the side of the overlay the widget is not on. It is placed when it opens and when another
+    // widget is selected; after that it only moves when the widget comes under it.
+    readonly property real gap: 28
+    property real atX: 0
+    property real midY: 0
     property bool onLeft: false
-    function pickSide() {
-        const f = root.avoid;
-        if (f === null || root.busy)
-            return;
-        const underRight = f.x + f.width > root.width - root.margin - root.panelWidth;
-        const underLeft = f.x < root.margin + root.panelWidth;
-        if (!root.onLeft && underRight && !underLeft)
-            root.onLeft = true;
-        else if (root.onLeft && underLeft && !underRight)
-            root.onLeft = false;
+    function covers(f) {
+        return f.x < panel.restX + panel.width && f.x + f.width > panel.restX && f.y < panel.restY + panel.height && f.y + f.height > panel.restY;
     }
-    onAvoidChanged: root.pickSide()
-    onBusyChanged: root.pickSide()
-    onShowChanged: root.pickSide()
+    // How much of the other widgets the panel would hide with its left edge at `x`, beside a
+    // widget whose middle is at height `mid`.
+    function hidden(x, mid) {
+        const y = Math.max(root.margin, Math.min(root.height - root.margin - panel.height, mid - panel.height / 2));
+        let area = 0;
+        for (const o of root.others) {
+            if (o.id === root.widgetId)
+                continue;
+            const w = Math.min(o.x + o.width, x + root.panelWidth) - Math.max(o.x, x);
+            const h = Math.min(o.y + o.height, y + panel.height) - Math.max(o.y, y);
+            if (w > 0 && h > 0)
+                area += w * h;
+        }
+        return area;
+    }
+    function seat(always) {
+        const f = root.avoid;
+        if (!f || root.busy || !(always || root.covers(f)))
+            return;
+        const right = f.x + f.width + root.gap;
+        const left = f.x - root.gap - root.panelWidth;
+        const far = root.width - root.margin - root.panelWidth;
+        const mid = f.y + f.height / 2;
+        if (right <= far && (left < root.margin || root.hidden(right, mid) <= root.hidden(left, mid))) {
+            root.atX = right;
+            root.onLeft = false;
+        } else if (left >= root.margin) {
+            root.atX = left;
+            root.onLeft = true;
+        } else {
+            root.onLeft = f.x + f.width / 2 > root.width / 2;
+            root.atX = root.onLeft ? root.margin : far;
+        }
+        root.midY = f.y + f.height / 2;
+    }
+    onAvoidChanged: root.seat(false)
+    onBusyChanged: root.seat(false)
+    // Opens the panel beside the widget: it is put there at once and then slides in.
+    function open() {
+        root.glide = false;
+        root.seat(true);
+        root.glide = true;
+        root.refused = false;
+        root.show = true;
+    }
+    property bool glide: false
+    // What a row shows for the moment between its widget's fields going and the row itself.
+    readonly property var noField: ({
+            "key": "",
+            "label": "",
+            "kind": "",
+            "value": "",
+            "input": "",
+            "error": "",
+            "min": null,
+            "max": null,
+            "options": [],
+            "isDefault": true
+        })
     onWidgetIdChanged: {
         root.refused = false;
         if (root.widgetId === "" && root.show)
             root.dismiss();
+        else
+            Qt.callLater(() => root.seat(true));
     }
 
     visible: panel.opacity > 0
@@ -84,16 +142,22 @@ Item {
     Rectangle {
         id: panel
         readonly property real padding: 20
-        readonly property real restX: root.onLeft ? root.margin : root.width - root.margin - panel.width
+        readonly property real restX: root.atX
+        readonly property real restY: Math.max(root.margin, Math.min(root.height - root.margin - panel.height, root.midY - panel.height / 2))
         width: root.panelWidth
         height: Math.min(keyScope.implicitHeight + panel.padding * 2, root.height - root.margin * 2)
-        // Slides in from its side, and across when the widget goes under it.
+        // Slides in from its side, and along when the widget comes under it.
         x: Math.round(root.show ? panel.restX : panel.restX + (root.onLeft ? -40 : 40))
-        y: Math.round((root.height - panel.height) / 2)
+        y: Math.round(panel.restY)
         radius: Appearance.rounding.large
         color: Appearance.m3colors.m3surfaceContainerHigh
         opacity: root.show ? 1 : 0
         Behavior on x {
+            enabled: root.glide
+            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
+        }
+        Behavior on y {
+            enabled: root.glide
             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
         }
         Behavior on opacity {
@@ -148,7 +212,7 @@ Item {
                         color: Appearance.colors.colPrimaryContainer
                         MaterialSymbol {
                             anchors.centerIn: parent
-                            text: settings.icon
+                            text: settings.icon ?? ""
                             iconSize: 24
                             color: Appearance.colors.colOnPrimaryContainer
                         }
@@ -158,7 +222,7 @@ Item {
                         spacing: 0
                         StyledText {
                             Layout.fillWidth: true
-                            text: settings.title
+                            text: settings.title ?? ""
                             elide: Text.ElideRight
                             color: Appearance.colors.colOnSurface
                             font.pixelSize: Appearance.font.pixelSize.larger
@@ -196,7 +260,7 @@ Item {
                     id: flick
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    visible: settings.valid
+                    visible: settings.valid ?? false
                     implicitHeight: groups.implicitHeight
                     contentHeight: groups.implicitHeight
                     clip: true
@@ -216,7 +280,7 @@ Item {
                                 delegate: WidgetSettingsField {
                                     required property int index
                                     Layout.fillWidth: true
-                                    field: settings.fields[index]
+                                    field: settings.fields[index] ?? root.noField
                                     onChanged: value => settings.setValue(field.key, value)
                                     onReset: settings.resetValue(field.key)
                                 }
@@ -316,7 +380,7 @@ Item {
                         implicitWidth: 36
                         implicitHeight: 36
                         buttonRadius: Appearance.rounding.full
-                        enabled: settings.canUndo
+                        enabled: settings.canUndo ?? false
                         onClicked: settings.undo()
                         contentItem: MaterialSymbol {
                             anchors.centerIn: parent
@@ -333,7 +397,7 @@ Item {
                         implicitWidth: 36
                         implicitHeight: 36
                         buttonRadius: Appearance.rounding.full
-                        enabled: settings.canRedo
+                        enabled: settings.canRedo ?? false
                         onClicked: settings.redo()
                         contentItem: MaterialSymbol {
                             anchors.centerIn: parent

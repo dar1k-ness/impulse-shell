@@ -826,3 +826,188 @@ fn a_free_widget_is_dragged_and_the_layout_keeps_where_it_is_dropped() {
     drop(rt);
     std::fs::remove_dir_all(&d).unwrap();
 }
+
+/// A widget moved in edit mode is where the pointer has it until it is let go (the outline
+/// alone shows where it would land), then slides to its place; and every widget of the desktop
+/// stays the one it was: an edit moves the views, it does not make them anew.
+#[test]
+fn a_widget_moved_in_edit_mode_follows_the_pointer_and_no_widget_is_made_anew() {
+    if !own_home("a_widget_moved_in_edit_mode_follows_the_pointer_and_no_widget_is_made_anew") {
+        return;
+    }
+    let layout = format!(
+        "{}\n[[monitor.container.widget]]\nid = \"weather\"\ntype = \"desktop-weather\"\n\
+         x = 400\ny = 100\nsettings = {{ placementStrategy = \"free\" }}\n",
+        LAYOUT.replace("x = 1800\ny = 900", "x = 900\ny = 500")
+    );
+    let (w, h) = (1920.0, 1080.0);
+    let d = tree_with("edit-move", w, h, &layout, "");
+    std::fs::remove_file(d.join("GlobalStates.qml")).unwrap();
+    std::fs::write(
+        d.join("GlobalStates.qml"),
+        "pragma Singleton\nimport QtQuick\nQtObject { property bool screenLocked: false }\n",
+    )
+    .unwrap();
+    // The overlay's controller, as EditOverlay.qml has one per monitor.
+    std::fs::write(
+        d.join("main.qml"),
+        format!(
+            "import QtQuick\nimport Impulse\nimport ri.modules.rusty.background\nItem {{\n    \
+             width: {w}\n    height: {h}\n    \
+             EditController {{ id: ctl; connector: \"DP-1\" }}\n    \
+             function edit(): bool {{ return ctl.start() }}\n    \
+             function press(x: real, y: real): bool {{ return ctl.press(x, y) }}\n    \
+             function move(x: real, y: real) {{ ctl.move(x, y) }}\n    \
+             function release(x: real, y: real): bool {{ return ctl.release(x, y) }}\n    \
+             function landing(): string {{ const g = ctl.ghost; return g === null ? \"\" : \
+             g.x + \" \" + g.y + \" \" + g.apart + \" \" + g.carried }}\n    \
+             DesktopLayoutContent {{ anchors.fill: parent; connector: \"DP-1\" }}\n}}\n"
+        ),
+    )
+    .unwrap();
+    qml::builtins::set_clock(Some(testenv::local_time_ms(12, 0)));
+    let mut rt = Runtime::new(Some(d.clone()));
+    rt.load_singletons(&[
+        d.clone(),
+        d.join("modules/common"),
+        d.join("modules/common/functions"),
+        d.join("services"),
+    ]);
+    rt.world.borrow_mut().open_layout(d.join("layout.toml"));
+    rt.settle();
+    let main = rt.load_file(&d.join("main.qml")).unwrap();
+    rt.settle();
+    rt.world.borrow_mut().window_rects.insert(
+        main,
+        qml::edit_mode::WinRect {
+            connector: "DP-1".into(),
+            x: 0.0,
+            y: 0.0,
+            w,
+            h,
+        },
+    );
+    let mut host = Host::new(&mut rt, main, [w, h]);
+    let config = *rt.world.borrow().singletons.get("Config").expect("Config");
+    for name in ["clock", "weather"] {
+        let mut wd = rt.world.borrow_mut();
+        let mut o = config;
+        for k in ["options", "background", "widgets", name] {
+            o = match wd.read(o, k) {
+                Some(Value::Item(i)) => i,
+                v => panic!("{k}: {v:?}"),
+            };
+        }
+        wd.write(o, "enable", Value::Bool(true));
+        wd.write(o, "placementStrategy", Value::Str("free".into()));
+    }
+    host.frames(&mut rt, 30);
+    let widget = |rt: &Runtime, t: &str| {
+        let wd = rt.world.borrow();
+        (0..wd.items.len())
+            .find(|&i| !wd.dead.contains(&i) && wd.items[i].types.iter().any(|x| x == t))
+            .unwrap_or_else(|| panic!("no {t}"))
+    };
+    let on_monitor = |rt: &Runtime, t: &str| {
+        let own = widget(rt, t);
+        let mut wd = rt.world.borrow_mut();
+        let n = |wd: &mut qml::runtime::World, k: &str| wd.read(own, k).unwrap().to_number();
+        let size = (n(&mut wd, "width"), n(&mut wd, "height"));
+        (wd.scene_pos(own, Some(main)), size)
+    };
+    let in_file = || {
+        let text = std::fs::read_to_string(d.join("layout.toml")).unwrap();
+        let l = qml::layout_model::Layout::parse(&text).unwrap();
+        let c = &l.monitors[0].containers[0];
+        match c.widgets.iter().find(|wd| wd.id == "clock").unwrap().place {
+            qml::layout_model::Place::Desktop { x, y, .. } => (x as f64, y as f64),
+            ref p => panic!("{p:?}"),
+        }
+    };
+    let call = |rt: &mut Runtime, f: &str, x: f64, y: f64| {
+        let r = rt.call_method(main, f, vec![Value::Num(x), Value::Num(y)]);
+        rt.settle();
+        r.unwrap().unwrap()
+    };
+    assert!(
+        rt.call_method(main, "edit", vec![])
+            .unwrap()
+            .unwrap()
+            .truthy()
+    );
+    host.frames(&mut rt, 5);
+    let before = (widget(&rt, "ClockWidget"), widget(&rt, "WeatherWidget"));
+    let ((x, y), (cw, ch)) = on_monitor(&rt, "ClockWidget");
+    assert_eq!((x, y), (900.0, 500.0));
+    // The clock is dragged until its left edge is 5 px off the weather's: near enough to
+    // snap to it (SNAP_DISTANCE), so it would land at 400.
+    let (px, py) = (x + cw / 2.0, y + ch / 2.0);
+    let (dx, dy) = (405.0 - x, 300.0);
+    assert!(call(&mut rt, "press", px, py).truthy());
+    // The landing place the overlay is told of: it is `apart` only where the widget, which is
+    // itself under the pointer, would land somewhere else.
+    let landing = |rt: &mut Runtime| match rt.call_method(main, "landing", vec![]).unwrap().unwrap()
+    {
+        Value::Str(s) => s.to_string(),
+        v => panic!("{v:?}"),
+    };
+    let mut together = 0;
+    for k in 1..=20 {
+        let f = k as f64 / 20.0;
+        call(&mut rt, "move", px + dx * f, py + dy * f);
+        host.frame(&mut rt);
+        let (at, _) = on_monitor(&rt, "ClockWidget");
+        let told = landing(&mut rt);
+        if told.is_empty() {
+            continue;
+        }
+        let here = format!("{} {} false true", at.0, at.1);
+        assert!(
+            told.ends_with(" true true") || told == here,
+            "step {k}: the widget is at {at:?}, the landing place told is {told:?}"
+        );
+        together += usize::from(told == here);
+    }
+    assert!(
+        together > 10,
+        "on the way the widget is its own landing place: {together} of 20 steps"
+    );
+    assert_eq!(
+        landing(&mut rt),
+        "400 800 true true",
+        "by the weather's edge the landing place is apart from the widget"
+    );
+    assert_eq!(
+        on_monitor(&rt, "ClockWidget").0,
+        (405.0, 800.0),
+        "held, the clock is where the pointer has it"
+    );
+    assert_eq!(
+        in_file(),
+        (900.0, 500.0),
+        "nothing is written before the drop"
+    );
+    assert!(call(&mut rt, "release", px + dx, py + dy).truthy());
+    let landed = in_file();
+    assert_eq!(
+        landed,
+        (400.0, 800.0),
+        "it lands snapped to the weather's edge"
+    );
+    host.frame(&mut rt);
+    let (sliding, _) = on_monitor(&rt, "ClockWidget");
+    assert!(
+        sliding.0 > 400.0 && sliding.0 < 405.0,
+        "let go, it slides to its place: at {sliding:?} a frame later"
+    );
+    host.frames(&mut rt, 60);
+    assert_eq!(on_monitor(&rt, "ClockWidget").0, landed);
+    assert_eq!(
+        (widget(&rt, "ClockWidget"), widget(&rt, "WeatherWidget")),
+        before,
+        "the widgets are the ones they were"
+    );
+    assert!(rt.errors().is_empty(), "{:?}", rt.errors());
+    drop(rt);
+    std::fs::remove_dir_all(&d).unwrap();
+}

@@ -303,7 +303,7 @@ fn shown_rects(
 }
 
 /// `shown`: widget key -> `{x, y, width, height}` where it shows ([`fitted`]); the widget shown
-/// mid-resize in edit mode has `sized` too.
+/// mid-drag in edit mode has `live` too, and `sized` when the drag is a resize.
 pub(crate) fn shown_value(
     w: &mut World,
     item: usize,
@@ -312,7 +312,8 @@ pub(crate) fn shown_value(
     bounds: Bounds,
 ) -> Value {
     let o = crate::eval::new_obj();
-    let sized = live(w, connector, id).filter(|l| l.2).map(|l| l.0);
+    let live = live(w, connector, id);
+    let sized = live.as_ref().filter(|l| l.2).map(|l| l.0.clone());
     for (key, r) in fitted(w, item, connector, id, bounds).iter() {
         let mut shown = vec![
             ("x", Value::Num(r.x as f64)),
@@ -323,6 +324,10 @@ pub(crate) fn shown_value(
         if sized.as_deref() == Some(key.as_str()) {
             // Mid-resize in edit mode: shown at this size, not its natural one.
             shown.push(("sized", Value::Bool(true)));
+        }
+        if live.as_ref().is_some_and(|l| l.0 == *key) {
+            // Mid-drag in edit mode: it is where the pointer has it, not where it rests.
+            shown.push(("live", Value::Bool(true)));
         }
         crate::eval::set_own(&o, key, obj(shown));
     }

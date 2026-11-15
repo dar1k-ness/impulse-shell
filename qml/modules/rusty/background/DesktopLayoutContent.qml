@@ -61,24 +61,56 @@ DesktopContainer {
         }
     }
 
+    // The widgets by key, and the keys in their order. A widget's view is made once and stays
+    // while the layout changes around it (an edit moves it, it is not made anew): the views
+    // are made by key, and `keys` changes only when a widget comes, goes or changes order.
+    // The widget moved or resized by hand last.
+    property string raised: ""
+    property var byKey: ({})
+    property var keys: []
+    function keyOf(widget) {
+        return widget.key ?? widget.id;
+    }
+    function gather() {
+        const now = {};
+        const order = [];
+        for (let i = 0; i < root.widgets.length; i++) {
+            const key = root.keyOf(root.widgets[i]);
+            now[key] = root.widgets[i];
+            order.push(key);
+        }
+        // A widget that went keeps what it was until its view is gone.
+        for (let i = 0; i < root.keys.length; i++) {
+            if (now[root.keys[i]] === undefined)
+                now[root.keys[i]] = root.byKey[root.keys[i]];
+        }
+        root.byKey = now;
+        if (order.join("\n") !== root.keys.join("\n"))
+            root.keys = order;
+    }
+    onWidgetsChanged: root.gather()
+    Component.onCompleted: root.gather()
+
     Repeater {
-        model: root.widgets
+        model: root.keys
 
         delegate: Item {
             id: cell
-            required property var modelData
-            // Where it shows on this monitor (fitted after a resolution or scale change).
-            readonly property var box: root.shown[cell.key] ?? cell.modelData
             // What names it in `shown` and `setNaturalSize`: its id, or for a widget of an
             // unplugged monitor shown here until that monitor comes back, a key of its own.
-            readonly property string key: cell.modelData.key ?? cell.modelData.id
+            required property string modelData
+            readonly property string key: cell.modelData
+            // The widget as the layout has it.
+            readonly property var widget: root.byKey[cell.key]
+            // Where it shows on this monitor (fitted after a resolution or scale change).
+            readonly property var box: root.shown[cell.key] ?? cell.widget
             // A widget of an unplugged monitor is edited on its own monitor, not here.
-            readonly property bool visiting: (cell.modelData.guest ?? "") !== ""
+            readonly property bool visiting: (cell.widget.guest ?? "") !== ""
             readonly property bool editable: root.editing && !cell.visiting
             // A widget the layout gives no size has its own, as QML sizes an item by its
             // implicit size; the container fits it on the monitor and off the others by it.
             // A resize in edit mode shows the new size live (`box.sized`) before it is saved.
-            readonly property bool natural: (cell.modelData.natural ?? false) && !(cell.box.sized ?? false)
+            readonly property bool natural: (cell.widget.natural ?? false) && !(cell.box.sized ?? false)
             readonly property real naturalWidth: host.item?.implicitWidth ?? 0
             readonly property real naturalHeight: host.item?.implicitHeight ?? 0
             // A widget that places itself (the original's wallpaper placement) shows where it puts
@@ -86,7 +118,7 @@ DesktopContainer {
             readonly property bool selfPlaced: host.item?.wallpaperPlaced ?? false
             // A widget shows while the config flag its type is enabled by is on, fading in and
             // out as the original's FadeLoader does; faded out, it is not loaded and takes no place.
-            readonly property bool turnedOff: !root.flagOn(cell.modelData.enabledBy ?? "")
+            readonly property bool turnedOff: !root.flagOn(cell.widget.enabledBy ?? "")
             readonly property bool showing: cell.opacity > 0
 
             function reportNaturalSize() {
@@ -107,10 +139,47 @@ DesktopContainer {
             }
 
             onPlacedAtChanged: cell.reportPlacement()
-            x: cell.placedAt ? cell.placedAt.x : cell.box.x
-            y: cell.placedAt ? cell.placedAt.y : cell.box.y
+            // In edit mode a widget is where the pointer has it while it is dragged (`box.live`)
+            // and slides to its place when it is let go, undone or moved by its settings.
+            property bool slides: false
+            readonly property real placeX: cell.placedAt ? cell.placedAt.x : cell.box.x
+            readonly property real placeY: cell.placedAt ? cell.placedAt.y : cell.box.y
+            function settle(slide) {
+                cell.slides = slide && editController.active && !(cell.box.live ?? false);
+                cell.x = cell.placedAt ? cell.placedAt.x : cell.box.x;
+                cell.y = cell.placedAt ? cell.placedAt.y : cell.box.y;
+            }
+            // The widget in the hand goes over the others, and stays over them while it slides to
+            // its place: there it is off them again.
+            readonly property bool held: cell.box.live ?? false
+            onHeldChanged: {
+                if (cell.held)
+                    root.raised = cell.key;
+            }
+            z: root.raised === cell.key ? 1 : 0
+            onPlaceXChanged: cell.settle(true)
+            onPlaceYChanged: cell.settle(true)
+            Behavior on x {
+                enabled: cell.slides
+                animation: Appearance.animation.elementMoveEnter.numberAnimation.createObject(this)
+            }
+            Behavior on y {
+                enabled: cell.slides
+                animation: Appearance.animation.elementMoveEnter.numberAnimation.createObject(this)
+            }
             width: cell.natural && cell.naturalWidth > 0 ? cell.naturalWidth : cell.box.width
             height: cell.natural && cell.naturalHeight > 0 ? cell.naturalHeight : cell.box.height
+            // Its size follows the handle while it is pulled; a size its settings or an undo give
+            // it is taken softly.
+            readonly property bool resizes: editController.active && !(cell.box.live ?? false)
+            Behavior on width {
+                enabled: cell.resizes
+                animation: Appearance.animation.elementResize.numberAnimation.createObject(this)
+            }
+            Behavior on height {
+                enabled: cell.resizes
+                animation: Appearance.animation.elementResize.numberAnimation.createObject(this)
+            }
 
             opacity: cell.turnedOff ? 0 : 1
             visible: cell.showing
@@ -121,6 +190,7 @@ DesktopContainer {
             onNaturalWidthChanged: cell.reportNaturalSize()
             onNaturalHeightChanged: cell.reportNaturalSize()
             Component.onCompleted: {
+                cell.settle(false);
                 root.setHidden(cell.key, !cell.showing);
                 cell.reportNaturalSize();
                 cell.reportPlacement();
@@ -137,10 +207,10 @@ DesktopContainer {
                 id: host
                 anchors.fill: parent
                 surface: "desktop"
-                widgetType: cell.showing ? cell.modelData.type : ""
+                widgetType: cell.showing ? cell.widget.type : ""
                 // The edit overlay finds a widget by it on this monitor's layout.
-                layoutId: cell.visiting ? "" : cell.modelData.id
-                settings: cell.modelData.settings
+                layoutId: cell.visiting ? "" : cell.widget.id
+                settings: cell.widget.settings
                 placement: ({
                         screenWidth: root.width,
                         screenHeight: root.height,
@@ -150,7 +220,7 @@ DesktopContainer {
                         widgetId: cell.key,
                         // The box has a size of the layout's, not the widget's own.
                         sized: !cell.natural,
-                        guest: (cell.modelData.guest ?? "") !== "",
+                        guest: (cell.widget.guest ?? "") !== "",
                         wallpaperSafetyTriggered: root.wallpaperSafetyTriggered
                     })
             }
@@ -172,10 +242,9 @@ DesktopContainer {
                 drag.target: cell
                 cursorShape: moveArea.pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
                 onReleased: {
-                    if (!root.placeWidget(cell.modelData.id, cell.x, cell.y)) {
-                        cell.x = cell.box.x;
-                        cell.y = cell.box.y;
-                    }
+                    // Refused, it goes back; accepted, it is where the layout fitted it.
+                    root.placeWidget(cell.widget.id, cell.x, cell.y);
+                    cell.settle(false);
                 }
             }
 
@@ -204,10 +273,10 @@ DesktopContainer {
                     cell.height = Math.max(1, resizeArea.startHeight + p.y - resizeArea.pressY);
                 }
                 onReleased: {
-                    if (!root.resizeWidget(cell.modelData.id, cell.width, cell.height)) {
-                        cell.width = cell.box.width;
-                        cell.height = cell.box.height;
-                    }
+                    root.resizeWidget(cell.widget.id, cell.width, cell.height);
+                    // The view stays after the resize: its size follows the layout again.
+                    cell.width = Qt.binding(() => cell.natural && cell.naturalWidth > 0 ? cell.naturalWidth : cell.box.width);
+                    cell.height = Qt.binding(() => cell.natural && cell.naturalHeight > 0 ? cell.naturalHeight : cell.box.height);
                 }
 
                 Rectangle {

@@ -263,6 +263,9 @@ pub struct Drop {
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Preview {
     pub ghost: Rect,
+    /// A desktop widget moved within its container, where the pointer has it: the widget
+    /// itself is shown there, the ghost where it would land.
+    pub raw: Option<Rect>,
     pub valid: bool,
     pub target: Option<Rect>,
     pub guides: Vec<Guide>,
@@ -955,6 +958,7 @@ impl Scene<'_> {
                 match got {
                     Some(r) => Preview {
                         ghost: Rect::of(r),
+                        raw: None,
                         valid: true,
                         target: region.map(|r| r.rect),
                         guides,
@@ -1023,6 +1027,7 @@ impl Scene<'_> {
                 };
                 Preview {
                     ghost,
+                    raw: None,
                     valid: true,
                     target: region.map(|r| r.rect),
                     guides: vec![],
@@ -1069,6 +1074,7 @@ impl Scene<'_> {
                 }
                 Preview {
                     ghost,
+                    raw: None,
                     valid: true,
                     target: region.map(|r| r.rect),
                     guides: vec![],
@@ -1170,6 +1176,7 @@ impl Scene<'_> {
                             .collect();
                         Preview {
                             ghost: land,
+                            raw: same.then_some(moved),
                             valid: true,
                             target: Some(region.rect),
                             guides,
@@ -1236,6 +1243,7 @@ impl Scene<'_> {
                 };
                 Preview {
                     ghost,
+                    raw: None,
                     valid: true,
                     target: Some(region.rect),
                     guides: vec![],
@@ -1278,6 +1286,7 @@ impl Scene<'_> {
                 }
                 Preview {
                     ghost,
+                    raw: None,
                     valid: true,
                     target: Some(region.rect),
                     guides: vec![],
@@ -2122,9 +2131,10 @@ fn gather(w: &mut World, connector: &str) -> (Vec<Frame>, Vec<Region>) {
     (frames, regions)
 }
 
-/// Where a desktop widget of `container` shows mid-drag: the valid landing place of a move or
-/// resize within that container, so the widget itself follows the pointer (as in Plasma);
-/// nothing is written until the drop. A widget dragged out of its container stays put. The
+/// Where a desktop widget of `container` shows mid-drag, while the drag has a valid landing
+/// place within that container: a move where the pointer has it, a resize at the size it would
+/// get, so the widget itself follows the pointer (as in Plasma); nothing is written until the
+/// drop. A widget dragged out of its container stays put. The
 /// flag: a resize, which sizes even a widget that otherwise takes its natural size.
 pub(crate) fn live_desktop(
     w: &World,
@@ -2138,6 +2148,11 @@ pub(crate) fn live_desktop(
     };
     let px = |v: f64| v.round().clamp(1.0, u32::MAX as f64) as u32;
     container.widgets.iter().any(|wd| wd.id == g.id).then(|| {
+        // A move shows the widget where the pointer has it; it lands where the ghost is.
+        let (x, y) = match p.raw.filter(|_| g.mode == Mode::Move) {
+            Some(raw) => (raw.x.round() as i32, raw.y.round() as i32),
+            None => (x, y),
+        };
         let r = DRect {
             x,
             y,
@@ -2786,6 +2801,13 @@ pub(crate) fn sync(w: &mut World) -> bool {
             let v = rect_value(&p.ghost);
             if let Value::Obj(o) = &v {
                 crate::eval::set_own(o, "valid", Value::Bool(p.valid));
+                // Whether the landing place is away from where the widget itself is shown: a
+                // desktop widget that is carried lands where it is unless it snaps or is fitted.
+                let apart = p.raw.as_ref().is_none_or(|raw| {
+                    raw.x.round() != p.ghost.x.round() || raw.y.round() != p.ghost.y.round()
+                });
+                crate::eval::set_own(o, "apart", Value::Bool(apart));
+                crate::eval::set_own(o, "carried", Value::Bool(p.raw.is_some()));
             }
             v
         });
