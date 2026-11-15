@@ -19,6 +19,27 @@ Item {
         }
     }
 
+    // A sidebar that is not shown makes the rows of its notifications when something asks for
+    // them: the click that opens it, which then waits for all of them. A closed sidebar asks a
+    // moment after it is made and after its notifications change instead, so opening it has
+    // none left to make.
+    Connections {
+        target: Notifications
+        function onListChanged() {
+            if (!GlobalStates.sidebarRightOpen)
+                fillWhileClosed.restart();
+        }
+    }
+    Timer {
+        id: fillWhileClosed
+        interval: 1000
+        running: true
+        onTriggered: {
+            if (!GlobalStates.sidebarRightOpen)
+                listview.fillRows();
+        }
+    }
+
     NotificationListView { // Scrollable window
         id: listview
         anchors.left: parent.left

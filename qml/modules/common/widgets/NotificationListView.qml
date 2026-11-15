@@ -10,6 +10,13 @@ StyledListView { // Scrollable window
     property bool popup: false
     // Every expanded group folds.
     signal collapseGroups()
+    signal fillGroups()
+
+    // The groups and their notifications, made now also in a window that is not shown.
+    function fillRows() {
+        root.forceLayout();
+        root.fillGroups();
+    }
 
     spacing: 3
 
@@ -27,6 +34,9 @@ StyledListView { // Scrollable window
             Notifications.groupsByAppName[modelData]
         Connections {
             target: root
+            function onFillGroups() {
+                group.fillRows();
+            }
             function onCollapseGroups() {
                 if (group.expanded)
                     group.toggleExpanded();

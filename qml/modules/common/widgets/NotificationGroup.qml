@@ -72,6 +72,11 @@ MouseArea { // Notification group area
         }
     }
 
+    // Its notifications' rows, made now also in a window that is not shown.
+    function fillRows() {
+        notificationsColumn.forceLayout();
+    }
+
     function toggleExpanded() {
         if (expanded) implicitHeightAnim.enabled = true;
         else implicitHeightAnim.enabled = false;

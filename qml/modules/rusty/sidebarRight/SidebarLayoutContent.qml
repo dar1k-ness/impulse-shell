@@ -153,7 +153,13 @@ Item {
 
         Repeater {
             id: sectionRepeater
-            model: container.sections
+            // A change of the layout makes the widget it adds and no other again: a section is
+            // the one it was while it starts with the same widget (`key`), and takes its new
+            // rows; so do the rows and the cells below.
+            model: ScriptModel {
+                values: container.sections ?? []
+                objectProp: "key"
+            }
             delegate: Rectangle {
                 id: section
                 required property var modelData
@@ -198,11 +204,13 @@ Item {
 
                     Repeater {
                         id: rowRepeater
-                        model: section.grid ? section.modelData.rows : []
+                        model: ScriptModel {
+                            values: Array(section.grid ? section.modelData.rows.length : 0)
+                        }
                         delegate: ButtonGroup {
                             id: row
-                            required property var modelData
                             required property int index
+                            readonly property var cells: section.modelData.rows[row.index] ?? []
                             readonly property var cellHeights: {
                                 const heights = {};
                                 for (let c = 0; c < cellRepeater.count; c++) {
@@ -217,7 +225,10 @@ Item {
 
                             Repeater {
                                 id: cellRepeater
-                                model: row.modelData
+                                model: ScriptModel {
+                                    values: row.cells
+                                    objectProp: "id"
+                                }
                                 delegate: SidebarCell {
                                     required property var modelData
                                     required property int index
@@ -262,7 +273,10 @@ Item {
 
         Repeater {
             id: probeRepeater
-            model: container.probes
+            model: ScriptModel {
+                values: container.probes ?? []
+                objectProp: "id"
+            }
             delegate: SidebarCell {
                 id: probe
                 required property var modelData

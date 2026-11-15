@@ -6896,6 +6896,13 @@ impl World {
                 }
                 c = self.items[x].parent;
             }
+            // QQuickRootItem is a focus scope: it has active focus while an item of its
+            // window does, so "is the focus in this window" needs no walk of the window's items.
+            let root = match self.items[win].inherits("Window") {
+                true => self.window_content(win),
+                false => self.window_root(win),
+            };
+            chain.push(root);
         }
         if next == self.focus_active && chain == self.focus_chain {
             return;
@@ -23572,6 +23579,7 @@ impl WorldHost {
             w.delegators_pending.push((item, seq));
             drop(w);
             delegators_sync(&self.0, since);
+            view_apply_pending(&self.0, item);
             fire_sync(&self.0);
             return Some(Value::Undefined);
         }
@@ -25122,6 +25130,10 @@ fn view_rows_now(world: &Rc<RefCell<World>>, view: usize, moved: bool) {
         if let Some(p) = w.polish_held.iter().position(|&v| v == view) {
             w.polish_held.remove(p);
             w.deleg_gen += 1;
+            w.deleg_rev = u64::MAX;
+        } else if in_hidden_window(&w, view) && w.deleg_memo.remove(&view).is_some() {
+            // A view in a hidden window holds its model's changes until the window shows: a
+            // call that needs the rows makes them now.
             w.deleg_rev = u64::MAX;
         }
         let rooted = w.polish_roots.insert(root);
@@ -38463,8 +38475,9 @@ fn sidebar_cell_value(
     ])
 }
 
-/// A sidebar section as QML reads it: `{ grid, rows: [[cell]] }`, a block being one row of one
-/// cell ([`sidebar_cell_value`]).
+/// A sidebar section as QML reads it: `{ key, grid, rows: [[cell]] }`, a block being one row of
+/// one cell ([`sidebar_cell_value`]). `key` is the same while the section is of the same kind
+/// and starts with the same widget: what the sidebar knows a section it has made by.
 fn sidebar_section_value(
     s: &crate::layout_model::sidebar::Section,
     reg: &crate::widgets::Registry,
@@ -38472,16 +38485,23 @@ fn sidebar_section_value(
     use crate::layout_model::sidebar::Section;
     let cell = |c: &crate::layout_model::sidebar::Cell| sidebar_cell_value(c, reg);
     let obj = sidebar_obj;
-    let (grid, rows) = match s {
+    let (grid, first, rows) = match s {
         Section::Grid(rows) => (
             true,
+            rows.first().and_then(|r| r.first()),
             rows.iter()
                 .map(|r| Value::array(r.iter().map(cell).collect()))
                 .collect(),
         ),
-        Section::Block(c) => (false, vec![Value::array(vec![cell(c)])]),
+        Section::Block(c) => (false, Some(c), vec![Value::array(vec![cell(c)])]),
     };
+    let key = format!(
+        "{} {}",
+        if grid { "grid" } else { "block" },
+        first.map_or("", |c| &c.id)
+    );
     obj(vec![
+        ("key", Value::str(&key)),
         ("grid", Value::Bool(grid)),
         ("rows", Value::array(rows)),
     ])
@@ -46054,6 +46074,55 @@ Item {
         rt.settle();
         assert_eq!(dels(&rt), 3);
         assert_eq!(rt.get(lv, "count").to_number(), 3.0);
+        assert!(rt.errors().is_empty(), "{:?}", rt.errors());
+    }
+
+    /// QQuickItemView::forceLayout lays the view out inside the call, in a window that is not
+    /// shown too: the rows of a model changed there are made by it, and showing the window
+    /// makes none again.
+    #[test]
+    fn force_layout_makes_the_rows_of_a_view_in_a_hidden_window() {
+        let mut rt = Runtime::new(None);
+        let root = rt
+            .load_str(
+                r#"import QtQuick
+import Rustshell
+Item {
+    id: root
+    property bool shown: false
+    property var names: ["a"]
+    function fill() { view.forceLayout(); }
+    PanelWindow {
+        visible: root.shown
+        ListView {
+            id: view
+            width: 100; height: 300
+            model: ScriptModel { values: root.names }
+            delegate: Item { required property var modelData; width: 100; height: 20 }
+        }
+    }
+}"#,
+            )
+            .unwrap();
+        rt.world.borrow_mut().frame_paced = true;
+        rt.settle();
+        let win = rt.world.borrow_mut().of_type("PanelWindow")[0];
+        let lv = rt.world.borrow_mut().of_type("ListView")[0];
+        let rows = |rt: &Runtime| rt.world.borrow().delegated[&lv].1.clone();
+        let names = |n: &[&str]| Value::array(n.iter().map(|s| Value::str(s)).collect());
+        rt.set(root, "names", names(&["a", "b", "c"]));
+        rt.settle();
+        assert_eq!(rows(&rt).len(), 1, "held while the window is hidden");
+        rt.call_method(root, "fill", vec![]).unwrap().unwrap();
+        rt.settle();
+        let made = rows(&rt);
+        assert_eq!(made.len(), 3, "forceLayout made them");
+        rt.set(root, "shown", Value::Bool(true));
+        rt.settle();
+        rt.set_polish_wins(Some(win));
+        rt.polish(&[win]);
+        rt.settle();
+        assert_eq!(rows(&rt), made, "showing the window made none again");
         assert!(rt.errors().is_empty(), "{:?}", rt.errors());
     }
 

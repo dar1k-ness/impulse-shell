@@ -31,7 +31,10 @@ ListView {
     function scrollToStart() {
         scrollAnim.complete();
         root.positionViewAtBeginning();
-        root.scrollTargetY = root.contentY;
+        // The rows it makes there let pending changes through: one that replaces the content
+        // this view is in (a sidebar opened for a layout just edited) leaves no view to scroll.
+        if (root)
+            root.scrollTargetY = root.contentY;
     }
 
     maximumFlickVelocity: 3500

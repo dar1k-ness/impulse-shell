@@ -65,17 +65,17 @@ Singleton {
         }
     }
 
-    function hasActive(element) {
-        return element?.activeFocus || Array.from(
-            element?.children
-        ).some(
-            (child) => hasActive(child)
-        );
+    // Whether an item of `window` has active focus: the window's root item has it then. Asked of
+    // that one item, not of every item of the window: a sidebar that builds its content while
+    // open changes a list of children per item it makes, and each change would ask again.
+    function hasActive(window) {
+        const content = window?.contentItem;
+        return ((content?.parent ?? content)?.activeFocus) ?? false;
     }
 
     HyprlandFocusGrab {
         id: grab
-        windows: root.dismissable.every(w => !w?.focusable) || root.dismissable.some(w => hasActive(w?.contentItem)) ? [...root.dismissable, ...root.persistent, ...root.pinned] : [...root.dismissable, ...root.pinned]
+        windows: root.dismissable.every(w => !w?.focusable) || root.dismissable.some(w => hasActive(w)) ? [...root.dismissable, ...root.persistent, ...root.pinned] : [...root.dismissable, ...root.pinned]
         active: root.dismissable.length > 0
         onCleared: () => {
             root.dismiss();
