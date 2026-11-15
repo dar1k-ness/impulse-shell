@@ -6,12 +6,20 @@ the QML module directory, the config tree, the `II_*` variables and the test nam
 them. Pass 2 renames the engine the shell implements (`quickshell` in our own paths, layer
 namespaces, D-Bus names and the QML module) to the name in ENGINE.
 
+Pass 4 renames the project a second time, rusty-impulse to impulse-shell (NEW): the program,
+its config and settings directories, the release directory, the variables and test names made
+from the name. What the screen shows becomes the short name (SHOWN). The engine keeps its names
+(`rustshell`, the `Rustshell` module, `ri.`, `RI_*`, the `rusty` panel family and module
+directory). It reads the files passes 1 to 3 leave alone too, the carry-over and the PC scripts:
+in them it is the new build that gets the new name.
+
 Neither pass touches what belongs to someone else: the files under SKIP, the lines that credit
 end-4, or a word that only looks like a name (`ASCII`, the `ii_CN` locale, a `(ii)` D-Bus
 signature). Both are idempotent: running one twice changes nothing the second time.
 
     tools/rename/rename.py --pass 1            # rename, in the working tree
     tools/rename/rename.py --pass 1 --check    # what it would change, changing nothing
+    tools/rename/apply4.sh [PICK...]           # pass 4 as a commit on the checked-out head
 """
 
 import argparse
@@ -23,6 +31,9 @@ import sys
 import prose
 
 ENGINE = "rustshell"  # what the engine is called instead of quickshell; one word, no dash
+
+NEW = "impulse-shell"  # pass 4: the program, its directories, the repository
+SHOWN = "Impulse"  # pass 4: what the screen shows
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -125,6 +136,17 @@ KEEP_PATH = (
     "tools/rename/",
     "tools/carry-over.sh",
     "tools/pc/",
+)
+
+# Pass 4 reads everything of ours, the carry-over and the PC scripts too.
+SKIP4 = (
+    "vendor/",
+    "Cargo.lock",
+    "tools/rename/",
+)
+KEEP_PATH4 = (
+    "vendor/",
+    "tools/rename/",
 )
 
 # A line that credits the original keeps its name (GPL).
@@ -1200,7 +1222,55 @@ SKIP3 = (
 )
 
 
+def rules4():
+    old = "rusty-impulse"
+    return [
+        # what the screen shows: window titles, the About page, the welcome window, in every language
+        (r'title: "' + old + '"', 'title: "' + SHOWN + '"', r"^qml/"),
+        (old + r" (?=Settings\b|Welcome\b)", SHOWN + " "),
+        (old, SHOWN, r"^qml/translations/"),
+        (r"\| " + old + "`", "| " + SHOWN + "`", r"^qml/modules/settings/About\.qml$"),
+        (r"\(" + old + r"\)\]\(", "(" + SHOWN + ")]("),
+        # the script that starts the shell at login
+        (old + r"-shell\b", NEW + "-start"),
+        (r"\$NEW_BIN-shell\b", "$NEW_BIN-start", r"^tools/carry-over\.sh$"),
+        # the article before the name
+        (r"\b([Aa]) (`?)" + old + r"\b", r"\1n \2" + NEW),
+        # the name itself, as a program, a directory, a variable, a type, a function
+        (old, NEW),
+        (r"RUSTY_IMPULSE", NEW.upper().replace("-", "_")),
+        (r"RustyImpulse", "".join(w.capitalize() for w in NEW.split("-"))),
+        (r"rustyImpulse", NEW.split("-")[0] + "".join(w.capitalize() for w in NEW.split("-")[1:])),
+        (r"rusty_impulse", NEW.replace("-", "_")),
+    ]
+
+
+def paths4():
+    return [
+        (r"rusty-impulse-shell$", NEW + "-start"),
+        (r"rusty-impulse", NEW),
+        (r"RustyImpulse", "".join(w.capitalize() for w in NEW.split("-"))),
+        (r"rusty_impulse", NEW.replace("-", "_")),
+    ]
+
+
+def renamed4(text, rel=""):
+    """`text` as pass 4 leaves it: what a hand edit of passes 1 to 3 reads in a tree renamed twice."""
+    for rx, rep, *only in rules4():
+        if not only or re.search(only[0], rel):
+            text = re.sub(rx, rep, text)
+    return text
+
+
+def renamed4_path(rel):
+    for rx, rep in paths4():
+        rel = re.sub(rx, rep, rel)
+    return rel
+
+
 def rules(stage):
+    if stage == 4:
+        return rules4()
     if stage == 3:
         return LEFT
     if stage == 1:
@@ -1359,6 +1429,8 @@ def rules(stage):
     ]
 
 def paths(stage):
+    if stage == 4:
+        return paths4()
     if stage == 3:
         return []
     if stage == 1:
@@ -1426,6 +1498,7 @@ def after_pass_1():
 OLD_NAMES = [
     ("ii", r"(?<![A-Za-z0-9])ii(?![A-Za-z0-9])|(?<=\\[nt])ii\b|\bII_[A-Z]|\bii(gen|compiled)|\bIi[A-Z]"),
     ("illogical-impulse", r"(?i)illogical[-_ ]?impulse"),
+    ("rusty-impulse", r"(?i)rusty[-_ ]?impulse"),
     (
         "quickshell",
         r"(\.config|\.cache|\.local/state|/tmp|RUNTIME_DIR\}?)/quickshell\b|quickshell:[a-zA-Z$]"
@@ -1765,12 +1838,14 @@ def stale():
     allowed = [(re.compile(f), re.compile(l) if l else None) for f, l, _ in ALLOWED]
     found = 0
     for rel in tracked():
-        if rel.startswith(SKIP):
+        if rel.startswith(SKIP4):
             continue
         here = [l for f, l in allowed if f.search(rel)]
-        if None in here:
-            continue
+        # The name pass 4 replaced is looked for in the files the other passes leave alone too.
+        first = rel.startswith(SKIP) or None in here
         for k, rx in old:
+            if first and k != "rusty-impulse":
+                continue
             if rx.search(rel):
                 found += 1
                 print(f"{rel}: the path has {k}")
@@ -1780,9 +1855,10 @@ def stale():
         except (FileNotFoundError, IsADirectoryError, UnicodeDecodeError):
             continue
         for n, line in enumerate(lines, 1):
-            if CREDIT.search(line) or any(l.search(line) for l in here):
-                continue
+            kept = CREDIT.search(line) or any(l and l.search(line) for l in here)
             for k, rx in old:
+                if k != "rusty-impulse" and (first or kept):
+                    continue
                 if k == "quickshell" and rel.startswith(SKIP2):
                     continue  # written in real Quickshell's words
                 if rx.search(line):
@@ -1795,7 +1871,7 @@ def stale():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--stale", action="store_true", help="list what is left of the old names")
-    ap.add_argument("--pass", dest="stage", type=int, default=1, choices=(1, 2, 3))
+    ap.add_argument("--pass", dest="stage", type=int, default=1, choices=(1, 2, 3, 4))
     ap.add_argument("--check", action="store_true")
     a = ap.parse_args()
     if a.stale:
@@ -1806,7 +1882,7 @@ def main():
 
     edited = moved = 0
     for rel in tracked():
-        if rel.startswith(SKIP) or (a.stage == 3 and rel.startswith(SKIP3)):
+        if rel.startswith(SKIP4 if a.stage == 4 else SKIP) or (a.stage == 3 and rel.startswith(SKIP3)):
             continue
         rules_here = content
         if a.stage == 2 and rel.startswith(SKIP2):
@@ -1825,7 +1901,7 @@ def main():
             continue
         lines = text.split("\n")
         for i, line in enumerate(lines):
-            if CREDIT.search(line):
+            if a.stage != 4 and CREDIT.search(line):
                 continue
             new = line
             for rx, rep, only in rules_here:
@@ -1847,7 +1923,7 @@ def main():
                     f.write(new_text)
 
     for rel in tracked():
-        if rel.startswith(SKIP2 if a.stage == 2 else KEEP_PATH):
+        if rel.startswith(SKIP2 if a.stage == 2 else KEEP_PATH4 if a.stage == 4 else KEEP_PATH):
             continue
         new = rel
         for rx, rep in renames:
@@ -1862,13 +1938,15 @@ def main():
                 while was != ROOT and not os.listdir(was):
                     os.rmdir(was)
                     was = os.path.dirname(was)
-    for rel, was, now in EDITS[a.stage]:
+    for rel, was, now in EDITS.get(a.stage, []):
         full = os.path.join(ROOT, rel)
+        if not os.path.exists(full) and os.path.exists(os.path.join(ROOT, renamed4_path(rel))):
+            full = os.path.join(ROOT, renamed4_path(rel))  # the tree is renamed a second time (pass 4)
         if rel == PC_DEFAULT and not os.path.exists(full):
             continue
         with open(full) as f:
             text = f.read()
-        if now in text:
+        if now in text or renamed4(now, rel) in text:
             continue
         if was not in text:
             sys.exit(f"{rel}: the text of a hand edit is not there:\n{was}")
@@ -1888,7 +1966,7 @@ def main():
                     with open(test, "w") as f:
                         f.write(text)
                     subprocess.run(["git", "-C", ROOT, "add", rel], check=True)
-    if a.stage == 3 and not a.check:
+    if a.stage in (3, 4) and not a.check:
         subprocess.run(["cargo", "fmt", "--all"], cwd=ROOT, check=True)
     if a.stage == 2 and not a.check:
         subprocess.run(["cargo", "fmt", "--all"], cwd=ROOT, check=True)
