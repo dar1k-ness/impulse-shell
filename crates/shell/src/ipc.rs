@@ -163,6 +163,69 @@ impl Server {
         Self::new(UnixListener::bind(path)?, Registration::default())
     }
 
+    /// Lets the listening socket and the instance's lock stay open across the exec of a
+    /// reload: a client that connects while the process changes its image finds the instance
+    /// alive and waits in the socket's backlog for the next image, as it does for a shell
+    /// that is starting. Returns the variable that names both to the next image
+    /// ([`inherited`]); [`Server::close_on_exec`] undoes it when the exec fails.
+    pub fn keep_across_exec(&self) -> Option<(&'static str, String)> {
+        let fds = self.handed_on()?;
+        // SAFETY: fcntl(2) F_SETFD on descriptors this server owns.
+        (fds.iter())
+            .all(|fd| unsafe { libc::fcntl(*fd, libc::F_SETFD, 0) } == 0)
+            .then(|| (INHERITED_ENV, format!("{},{}", fds[0], fds[1])))
+    }
+
+    /// Closes the socket and the lock on exec again, after [`Server::keep_across_exec`] and
+    /// a failed exec.
+    pub fn close_on_exec(&self) {
+        for fd in self.handed_on().into_iter().flatten() {
+            // SAFETY: as in `keep_across_exec`.
+            unsafe { libc::fcntl(fd, libc::F_SETFD, libc::FD_CLOEXEC) };
+        }
+    }
+
+    /// Whether a client is in the middle of a call that the exec of a reload would cut off:
+    /// accepted here, with its request not read in full yet or its answer not written out.
+    /// Waits for it to go on, at most until it has been silent for [`MID_CALL`]; `true` once
+    /// it has, and the main loop serves it before the exec. A client still in the socket's
+    /// backlog is in the middle of nothing: the next image accepts it
+    /// ([`Server::keep_across_exec`]).
+    pub fn mid_call(&self) -> bool {
+        let c = self.conns.borrow();
+        let mut wait = Duration::ZERO;
+        let mut fds: Vec<libc::pollfd> = (c.map.values())
+            .filter_map(|conn| {
+                let events = if !conn.out.is_empty() {
+                    libc::POLLOUT
+                } else if !conn.listening && !conn.closing && !conn.eof && !conn.busy
+                    // Answered, it only reads the answer; more bytes are its next request.
+                    && (!conn.served || !conn.buf.is_empty())
+                {
+                    libc::POLLIN
+                } else {
+                    return None;
+                };
+                let left = MID_CALL.checked_sub(conn.last.elapsed())?;
+                wait = wait.max(left);
+                Some(libc::pollfd {
+                    fd: conn.s.as_raw_fd(),
+                    events,
+                    revents: 0,
+                })
+            })
+            .collect();
+        // SAFETY: `fds` holds `fds.len()` entries of open connections.
+        let n = unsafe { libc::poll(fds.as_mut_ptr(), fds.len() as _, wait.as_millis() as _) };
+        !fds.is_empty() && n > 0
+    }
+
+    /// The listening socket and the instance's lock file.
+    fn handed_on(&self) -> Option<[i32; 2]> {
+        let lock = self._registered.lock.as_ref()?;
+        Some([self.conns.borrow().listener.as_raw_fd(), lock.as_raw_fd()])
+    }
+
     /// The epoll fd to watch for readability; then call [`Server::requests`].
     pub fn fd(&self) -> std::os::fd::BorrowedFd<'_> {
         // SAFETY: the epoll fd lives as long as `self`.
@@ -193,6 +256,7 @@ impl Server {
                 c.send(req.conn, &out);
                 if let Some(conn) = c.map.get_mut(&req.conn) {
                     conn.busy = false;
+                    conn.served = true;
                     conn.listening = listening;
                 }
             }
@@ -266,7 +330,10 @@ impl Listener {
 /// Quickshell does: `qs ipc call` finds the instance from then on, and its calls wait until
 /// the main loop answers them. An error names the step and path that failed; whatever was
 /// registered before it is removed again.
-pub fn start(config: &Path) -> std::io::Result<Server> {
+/// `inherited` is what the image that re-executed itself into this one left open
+/// ([`Server::keep_across_exec`]): if it is this instance's, the instance goes on with that
+/// lock and that socket, never unlocked and never without a listener in between.
+pub fn start(config: &Path, inherited: Option<Inherited>) -> std::io::Result<Server> {
     use std::io::{Error, ErrorKind};
     let ctx = |what: &str, p: &Path| {
         let what = format!("{what} {}", p.display());
@@ -309,31 +376,54 @@ pub fn start(config: &Path) -> std::io::Result<Server> {
     let mut registered = Registration::default();
     registered.dir = Some(inst.clone());
     let lock_path = inst.join("instance.lock");
-    let mut lock = std::fs::OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .truncate(false)
-        .open(&lock_path)
-        .map_err(ctx("open", &lock_path))?;
-    // A POSIX record lock, not an OFD lock: Quickshell's `qs` client reads the holder's pid
-    // with F_GETLK, which reports -1 for an OFD lock (fcntl(2)). The file is truncated only
-    // once the lock is ours, so a live holder's info is never clobbered.
-    if !set_lock(&lock, libc::F_WRLCK) {
-        return Err(ctx("lock", &lock_path)(Error::last_os_error()));
-    }
-    registered.paths.push(lock_path.clone());
-    lock.set_len(0)
-        .and_then(|()| lock.write_all(&info))
-        .map_err(ctx("write", &lock_path))?;
+    let sock = inst.join("ipc.sock");
+    // Opening the lock file here would end an inherited lock: a process's record locks on
+    // a file go when it closes any descriptor of that file (fcntl(2)).
+    let inherited = inherited.filter(|i| i.is_of(&inst));
+    let (lock, listener) = match inherited {
+        Some(Inherited { listener, lock }) => {
+            use std::os::unix::fs::FileExt;
+            // Held since the previous image took it (record locks are preserved across
+            // execve(2)); taking it again changes nothing. The info is the previous
+            // image's, of the same instance: written in place, the file is never empty.
+            if !set_lock(&lock, libc::F_WRLCK) {
+                return Err(ctx("lock", &lock_path)(Error::last_os_error()));
+            }
+            registered.paths.push(lock_path.clone());
+            lock.write_all_at(&info, 0)
+                .and_then(|()| lock.set_len(info.len() as u64))
+                .map_err(ctx("write", &lock_path))?;
+            (lock, listener)
+        }
+        None => {
+            let mut lock = std::fs::OpenOptions::new()
+                .read(true)
+                .write(true)
+                .create(true)
+                .truncate(false)
+                .open(&lock_path)
+                .map_err(ctx("open", &lock_path))?;
+            // A POSIX record lock, not an OFD lock: Quickshell's `qs` client reads the
+            // holder's pid with F_GETLK, which reports -1 for an OFD lock (fcntl(2)). The
+            // file is truncated only once the lock is ours, so a live holder's info is never
+            // clobbered.
+            if !set_lock(&lock, libc::F_WRLCK) {
+                return Err(ctx("lock", &lock_path)(Error::last_os_error()));
+            }
+            registered.paths.push(lock_path.clone());
+            lock.set_len(0)
+                .and_then(|()| lock.write_all(&info))
+                .map_err(ctx("write", &lock_path))?;
+            // The socket listens before any link makes the instance findable: a client that
+            // finds it connects at once, and its call waits in the backlog until the main
+            // loop answers.
+            let _ = std::fs::remove_file(&sock);
+            let listener = UnixListener::bind(&sock).map_err(ctx("bind", &sock))?;
+            (lock, listener)
+        }
+    };
     // Held as long as the instance is registered: `qs` treats an unlocked instance as dead.
     registered.lock = Some(lock);
-
-    // The socket listens before any link makes the instance findable: a client that finds it
-    // connects at once, and its call waits in the backlog until the main loop answers.
-    let sock = inst.join("ipc.sock");
-    let _ = std::fs::remove_file(&sock);
-    let listener = UnixListener::bind(&sock).map_err(ctx("bind", &sock))?;
     registered.paths.push(sock);
 
     let inst_c = std::fs::canonicalize(&inst).map_err(ctx("resolve", &inst))?;
@@ -449,6 +539,69 @@ fn remove_instance(base: &Path, dir: &Path) {
     let _ = std::fs::remove_dir_all(dir);
 }
 
+/// Names to the next image of a reload the listening socket and the lock file of this
+/// instance, open across the exec ([`Server::keep_across_exec`]): `<socket>,<lock>`.
+pub const INHERITED_ENV: &str = "RI_IPC_FDS";
+
+/// The listening socket and the held lock file the previous image left to this one.
+pub struct Inherited {
+    listener: UnixListener,
+    lock: std::fs::File,
+}
+
+impl Inherited {
+    /// Whether these are the socket and the lock file of the instance directory `inst`.
+    fn is_of(&self, inst: &Path) -> bool {
+        use std::os::unix::fs::MetadataExt;
+        let same_file = |f: &std::fs::File, p: &Path| match (f.metadata(), std::fs::metadata(p)) {
+            (Ok(a), Ok(b)) => (a.dev(), a.ino()) == (b.dev(), b.ino()),
+            _ => false,
+        };
+        let bound = self.listener.local_addr().ok();
+        bound.as_ref().and_then(|a| a.as_pathname()) == Some(&inst.join("ipc.sock"))
+            && std::fs::symlink_metadata(inst.join("ipc.sock")).is_ok()
+            && same_file(&self.lock, &inst.join("instance.lock"))
+    }
+}
+
+/// What [`INHERITED_ENV`] names, if it is a listening socket and an open regular file, both
+/// closed on exec from here on; the caller removes the variable.
+pub fn inherited() -> Option<Inherited> {
+    let value = std::env::var(INHERITED_ENV).ok()?;
+    let (sock, lock) = value.split_once(',')?;
+    let (sock, lock): (i32, i32) = (sock.parse().ok()?, lock.parse().ok()?);
+    let kind = |fd: i32| {
+        // SAFETY: `stat` is a C struct of integers, valid all-zero.
+        let mut st: libc::stat = unsafe { std::mem::zeroed() };
+        // SAFETY: fstat(2) of any number only fills `st` or fails with EBADF.
+        (fd > 2 && unsafe { libc::fstat(fd, &mut st) } == 0).then_some(st.st_mode & libc::S_IFMT)
+    };
+    if sock == lock || kind(sock) != Some(libc::S_IFSOCK) || kind(lock) != Some(libc::S_IFREG) {
+        return None;
+    }
+    for fd in [sock, lock] {
+        // SAFETY: fcntl(2) on a descriptor fstat just found open.
+        unsafe { libc::fcntl(fd, libc::F_SETFD, libc::FD_CLOEXEC) };
+    }
+    // SAFETY: an open socket the previous image left to this one; nothing else here owns it.
+    let listener = unsafe { UnixListener::from_raw_fd(sock) };
+    // SAFETY: an open file the previous image left to this one; nothing else here owns it.
+    let lock = unsafe { std::fs::File::from_raw_fd(lock) };
+    let mut listening: libc::c_int = 0;
+    let mut len = std::mem::size_of::<libc::c_int>() as libc::socklen_t;
+    // SAFETY: getsockopt(2) writes an int of `len` bytes to `listening`.
+    let r = unsafe {
+        libc::getsockopt(
+            sock,
+            libc::SOL_SOCKET,
+            libc::SO_ACCEPTCONN,
+            (&raw mut listening).cast(),
+            &mut len,
+        )
+    };
+    (r == 0 && listening != 0).then_some(Inherited { listener, lock })
+}
+
 /// What the image a `Rustshell.reload()` executes needs to go on as this instance
 /// ([`resume_instance`]): the instance id and the launch time in milliseconds.
 pub fn reload_marker() -> String {
@@ -460,8 +613,9 @@ pub fn reload_marker() -> String {
 /// re-executed itself into this one registered: a Quickshell reload keeps the process, and
 /// with it the instance, its launch time and its log. Call before anything asks for the
 /// instance. `false` (and a new instance) unless the id is one of this process, its directory
-/// exists and no other process holds its lock.
-pub fn resume_instance(marker: &str) -> bool {
+/// exists and no other process holds its lock: this process does if `inherited` is that
+/// instance's.
+pub fn resume_instance(marker: &str, inherited: Option<&Inherited>) -> bool {
     let Some((id, ms)) = marker.split_once('/') else {
         return false;
     };
@@ -475,7 +629,9 @@ pub fn resume_instance(marker: &str) -> bool {
     {
         return false;
     }
-    if !is_dead(&base_run_dir().join("by-id").join(id)) {
+    let dir = base_run_dir().join("by-id").join(id);
+    // `is_dead` opens the lock file, which would end the lock this process holds on it.
+    if !inherited.is_some_and(|i| i.is_of(&dir)) && !is_dead(&dir) {
         return false;
     }
     let launched = std::time::Duration::from_millis(ms);
@@ -516,6 +672,10 @@ const MAX_PENDING_OUT: usize = 1 << 20;
 /// sign that it is stuck. Nothing wakes the loop for it: the age is looked at only when a new
 /// client arrives and all [`MAX_CONNS`] places are taken ([`Conns::expire_idle`]).
 const IDLE: Duration = Duration::from_secs(30);
+/// How long a client that connected may take to send its call, or to read its answer, before
+/// a reload goes on without it ([`Server::mid_call`]): a call arrives in the same moment as
+/// the connection, so only a client that is stuck takes this long.
+const MID_CALL: Duration = Duration::from_millis(200);
 /// epoll key of the listening socket; connections count up from it.
 const LISTENER: u64 = 0;
 
@@ -545,6 +705,8 @@ struct Conn {
     /// Nothing more to answer: close once `out` is written.
     closing: bool,
     listening: bool,
+    /// A request of this client was answered: it reads the answer and leaves.
+    served: bool,
     last: Instant,
 }
 
@@ -648,6 +810,7 @@ impl Conns {
                         eof: false,
                         closing: false,
                         listening: false,
+                        served: false,
                         last,
                     },
                 );
@@ -1417,6 +1580,48 @@ mod tests {
         extra.set_nonblocking(true).unwrap();
         let e = (&extra).read(&mut [0u8; 1]).expect_err("new client closed");
         assert_eq!(e.kind(), std::io::ErrorKind::WouldBlock);
+    }
+
+    /// The exec of a reload waits for a client this image has accepted: its call is served
+    /// first. A client still in the backlog is the next image's, one that was answered only
+    /// reads its answer, and one that sends nothing holds the exec for `MID_CALL`, no longer.
+    #[test]
+    fn a_reload_waits_for_a_client_in_the_middle_of_its_call() {
+        use std::io::Write;
+        use std::os::unix::net::UnixStream;
+        let (server, _dir, path) = server();
+        let newest = |s: &super::Server| *s.conns.borrow().map.keys().max().unwrap();
+        let set_last = |s: &super::Server, key: u64, at: std::time::Instant| {
+            s.conns.borrow_mut().map.get_mut(&key).unwrap().last = at;
+        };
+        let now = std::time::Instant::now;
+        assert!(!server.mid_call(), "no client");
+
+        let mut caller = UnixStream::connect(&path).unwrap();
+        assert!(!server.mid_call(), "a client in the backlog");
+        wait(&server);
+        assert!(server.requests().is_empty());
+        // Accepted this moment, however long the test's own steps take.
+        set_last(&server, newest(&server), now() + super::MID_CALL);
+        caller.write_all(&call_bytes("t", "f")).unwrap();
+        assert!(
+            server.mid_call(),
+            "its call has arrived: served before the exec"
+        );
+        let mut reqs = server.requests();
+        assert_eq!(reqs.len(), 1);
+        server.reply(reqs.remove(0), super::CallResult::Done(None));
+        assert!(!server.mid_call(), "an answered client");
+
+        let _silent = UnixStream::connect(&path).unwrap();
+        wait(&server);
+        assert!(server.requests().is_empty());
+        set_last(
+            &server,
+            newest(&server),
+            now().checked_sub(super::MID_CALL).unwrap(),
+        );
+        assert!(!server.mid_call(), "a client silent for MID_CALL");
     }
 
     /// Out of descriptors, a queued client is accepted with the reserve and closed (it reads

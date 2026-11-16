@@ -50,6 +50,7 @@ ShellRoot {
         function reload(): void { Quickshell.reload(true) }
         function unlockAndReload(): void { root.locked = false; Quickshell.reload(true) }
         function probe(): void { console.log("PROBE " + lock.locked + " " + lock.secure) }
+        function ping(): void {}
     }
 }
 "#;
@@ -174,19 +175,22 @@ impl Shell {
 
     /// `ipc call target func`; returns once the shell has run the function.
     fn call(&self, target: &str, func: &str) {
+        let ok = self.client(target, func).stdout(Stdio::null()).status();
+        let ok = ok.unwrap().success();
+        assert!(ok, "ipc call {target} {func}:\n{}", tail(&self.text()));
+    }
+
+    /// The `ipc call target func` client of this shell.
+    fn client(&self, target: &str, func: &str) -> Command {
         let xdg = self.dir.path().join("xdg");
-        let ok = self
-            .sway
-            .env(Command::new(&self.program).arg("-p").arg(self.dir.path()))
+        let mut cmd = Command::new(&self.program);
+        self.sway
+            .env(cmd.arg("-p").arg(self.dir.path()))
             .env("XDG_CONFIG_HOME", xdg.join("config"))
             .env("XDG_STATE_HOME", xdg.join("state"))
             .env("XDG_CACHE_HOME", xdg.join("cache"))
-            .args(["ipc", "call", target, func])
-            .stdout(Stdio::null())
-            .status()
-            .unwrap()
-            .success();
-        assert!(ok, "ipc call {target} {func}:\n{}", tail(&self.text()));
+            .args(["ipc", "call", target, func]);
+        cmd
     }
 
     /// What QML reads now: the `PROBE` line printed for this call.
@@ -577,4 +581,106 @@ fn the_typed_password_and_a_pam_conversation_outlive_a_held_reload() {
         "the conversation did not get the password typed before the reload:\n{}",
         tail(&s)
     );
+}
+
+/// What the `ipc call` clients in `clients` said that failed: each is `lock FUNC`, run by
+/// its own thread again and again until `until` returns.
+fn calling_while<R>(sh: &Shell, clients: &[&str], until: impl FnOnce() -> R) -> (R, Vec<String>) {
+    let stop = std::sync::atomic::AtomicBool::new(false);
+    std::thread::scope(|t| {
+        let callers: Vec<_> = (clients.iter())
+            .map(|func| {
+                let mut cmd = sh.client("lock", func);
+                let stop = &stop;
+                t.spawn(move || {
+                    let mut failed = Vec::new();
+                    while !stop.load(std::sync::atomic::Ordering::Relaxed) {
+                        let out = cmd.output().unwrap();
+                        if !out.status.success() {
+                            let said = [out.stdout, out.stderr].concat();
+                            failed.push(String::from_utf8_lossy(&said).trim().to_string());
+                        }
+                    }
+                    failed
+                })
+            })
+            .collect();
+        let r = until();
+        stop.store(true, std::sync::atomic::Ordering::Relaxed);
+        let failed = callers.into_iter().flat_map(|c| c.join().unwrap());
+        (r, failed.collect())
+    })
+}
+
+/// Calls made while the shell re-executes itself. The instance's lock and its listening
+/// socket stay open across the exec, so a client finds the instance at every moment and its
+/// call waits in the socket's backlog for the next image, as a call to a shell that is
+/// starting does. Closed at the exec and bound again by the next image, they left some
+/// 20 ms in which a call ended with "No running instances" or "Error occurred while waiting
+/// for response": a key's action lost, or `lock activate` of an idle daemon.
+#[test]
+fn calls_made_during_a_reload_are_answered() {
+    if !sway() {
+        return;
+    }
+    let sh = Shell::start();
+    sh.wait("the first image", |s| images(s) == 1);
+    for image in 2..=7 {
+        let ((), failed) = calling_while(&sh, &["ping"; 4], || {
+            sh.ipc("reload");
+            sh.wait("the next image", |s| images(s) == image);
+        });
+        assert!(
+            failed.is_empty(),
+            "calls failed while image {image} took over: {failed:?}\n{}",
+            tail(&sh.text())
+        );
+    }
+    // The instance the first image registered, served by the last one.
+    sh.ipc("ping");
+}
+
+/// The call that must not be lost: a lock asked for in the moment of a reload. Every such
+/// call is answered, and the session is locked after it, by the image that was asked: the
+/// one leaving, which then stays until the unlock, or the next one.
+#[test]
+fn a_lock_asked_during_a_reload_locks_the_session() {
+    if !sway() {
+        return;
+    }
+    let sh = Shell::start();
+    sh.wait("the first image", |s| images(s) == 1);
+    let locks = |s: &str| s.matches("session lock: locked").count();
+    for round in 1..=6 {
+        let (before, started) = (locks(&sh.text()), images(&sh.text()));
+        // The lock is asked for as the exec begins, or, every other round, around the call
+        // that asks for the reload.
+        let after = round % 2 == 1;
+        if after {
+            sh.ipc("reload");
+        }
+        let ((), failed) = calling_while(&sh, &["lock"; 3], || {
+            if !after {
+                sh.ipc("reload");
+            }
+            sh.wait("the lock", |s| locks(s) > before);
+        });
+        assert!(
+            failed.is_empty(),
+            "round {round}: lock calls failed: {failed:?}\n{}",
+            tail(&sh.text())
+        );
+        assert_eq!(sh.probe(), "PROBE true true", "round {round}");
+        // Unlocked for the next round; a reload the lock held back happens now.
+        let held = images(&sh.text()) == started;
+        sh.ipc("unlock");
+        if held {
+            let s = sh.wait("the image after the unlock", |s| images(s) > started);
+            assert!(s.contains(DEFERRED), "round {round}:\n{}", tail(&s));
+        }
+        sh.wait("the unlock", |s| {
+            s.matches("session lock: released").count() >= locks(s)
+        });
+        assert_eq!(sh.probe(), "PROBE false false", "round {round}");
+    }
 }

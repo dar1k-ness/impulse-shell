@@ -78,6 +78,8 @@ once with the answer; the limit is only reached when there is none.
 | `crates/wallpick/src/http.rs` | `const ANSWER` | 30 s for the response's head: a site that took the request and says nothing must not hold the pick. | `crates/wallpick/src/http.rs` `a_server_that_never_answers_is_given_up_at_the_limit` |
 | `crates/wallpick/src/http.rs` | `timeout_recv_response(Some(limits.answer))` | `ANSWER` given to ureq. | `crates/wallpick/src/http.rs` `a_server_that_never_answers_is_given_up_at_the_limit` |
 | `crates/wallpick/src/http.rs` | `const BODY_STALL` | 30 s of silence in the middle of a body (a thumbnail, a wallpaper, a model file) fails the download instead of hanging the worker; each read that brings bytes starts it again, so a slow transfer is never cut off. | `crates/wallpick/src/http.rs` `a_body_that_stalls_fails_the_download` |
+| `crates/shell/src/ipc.rs` | `const MID_CALL` | A reload's exec waits for a client the leaving image has accepted until its call has arrived and is answered (it may be the call that locks the session); the exec would cut it off. The call comes with the connection, so the wait ends at once; a client that connected and sends nothing holds the exec for 200 ms since its last byte, no longer. | `crates/shell/src/ipc.rs` `a_reload_waits_for_a_client_in_the_middle_of_its_call` |
+| `crates/shell/src/ipc.rs` | `libc::poll(fds.as_mut_ptr()` | The wait of the row above, on those clients' sockets: ends when one of them is readable or gone. | `crates/shell/src/ipc.rs` `a_reload_waits_for_a_client_in_the_middle_of_its_call` |
 
 ## Grace and give-up deadlines
 

@@ -4081,6 +4081,7 @@ fn reload_shell(
     app_file: Option<&std::path::Path>,
     app: &mut App,
     documents: &[usize],
+    ipc: Option<&shell::ipc::Server>,
 ) {
     use std::os::unix::process::CommandExt;
     let App {
@@ -4140,11 +4141,16 @@ fn reload_shell(
             let fd = std::os::fd::AsRawFd::as_raw_fd(fd).to_string();
             (shell::reload::SURFACES_ENV, fd)
         });
+        // The IPC socket stays open too, with the instance's lock: a call made while the
+        // process changes its image waits for the next one instead of finding no shell.
+        let calls = ipc.and_then(|s| s.keep_across_exec());
         let named = [shell::shutdown::INHERITED_ENV, shell::rilog::INHERITED_ENV];
         let told = env.iter().filter(|(k, _)| named.contains(k));
         let keep: Vec<i32> = told
             .chain(&kept)
-            .filter_map(|(_, fd)| fd.parse().ok())
+            .chain(&calls)
+            .flat_map(|(_, fds)| fds.split(','))
+            .filter_map(|fd| fd.parse().ok())
             .collect();
         shell::reload::close_on_exec_except(&shell::reload::open_descriptors(), &keep);
         let mut args = std::env::args_os();
@@ -4155,7 +4161,11 @@ fn reload_shell(
             .env(RELOADED_ENV, shell::ipc::reload_marker())
             .envs(env.iter().map(|(k, v)| (k, v)))
             .envs(kept)
+            .envs(calls)
             .exec();
+        if let Some(s) = ipc {
+            s.close_on_exec();
+        }
         // The shell goes on: its shortcuts are registered again at the next sync.
         shortcuts.clear();
         *shortcuts_rev = None;
@@ -4541,7 +4551,10 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
     // instance, as a Quickshell reload stays the same instance.
     let predecessor = std::env::var(RELOADED_ENV).ok();
     let reloaded = predecessor.is_some();
-    let resumed = predecessor.is_some_and(|marker| shell::ipc::resume_instance(&marker));
+    // Its IPC socket and instance lock, open across the exec.
+    let inherited_ipc = shell::ipc::inherited();
+    let resumed = predecessor
+        .is_some_and(|marker| shell::ipc::resume_instance(&marker, inherited_ipc.as_ref()));
     #[expect(
         clippy::disallowed_methods,
         reason = "before the threads that read the environment start"
@@ -4566,6 +4579,7 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         shell::reload::SURFACES_ENV,
         shell::shutdown::INHERITED_ENV,
         shell::rilog::INHERITED_ENV,
+        shell::ipc::INHERITED_ENV,
     ] {
         #[expect(
             clippy::disallowed_methods,
@@ -4615,7 +4629,7 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
     let mut ipc = if app_file.is_some() {
         None
     } else {
-        shell::ipc::start(&root.join("shell.qml"))
+        shell::ipc::start(&root.join("shell.qml"), inherited_ipc.filter(|_| resumed))
             .inspect_err(|e| elog::eprintln!("ipc: could not register quickshell instance: {e}"))
             .ok()
     };
@@ -5433,6 +5447,8 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
     // `Rustshell.reload()` was called and the shell has not re-executed yet: it waits for a
     // held session lock to be released (`App::lock_holds_reload`).
     let mut reload_wanted = false;
+    // The session lock holds that reload back.
+    let mut reload_held = false;
     // Why the Wayland connection broke, which ends the loop.
     let mut broke: Option<String> = None;
     loop {
@@ -5543,15 +5559,28 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         }
         app.note_start_panels();
         app.release_predecessor();
-        if qml::native::take_reload() {
-            reload_wanted = true;
-            if app.lock_holds_reload() {
-                elog::eprintln!("reload: the session is locked; reloading once it is unlocked");
-            }
+        let asked = qml::native::take_reload();
+        reload_wanted |= asked;
+        // Said when the lock begins to hold a reload (asked for under the lock, or the lock
+        // came with a call served first, below) and for every reload asked for under it.
+        let held = reload_wanted && app.lock_holds_reload();
+        if held && (asked || !reload_held) {
+            elog::eprintln!("reload: the session is locked; reloading once it is unlocked");
         }
-        if reload_wanted && !app.lock_holds_reload() {
+        reload_held = held;
+        if reload_wanted && !app.lock_holds_reload() && ipc.as_ref().is_some_and(|s| s.mid_call()) {
+            // A call that is arriving comes first (it may be the one that locks the
+            // session): served by the next turn, which decides again.
+            ipc_ready.set(true);
+        } else if reload_wanted && !app.lock_holds_reload() {
             reload_wanted = false;
-            reload_shell(&root, app_file.as_deref(), &mut app, &documents);
+            reload_shell(
+                &root,
+                app_file.as_deref(),
+                &mut app,
+                &documents,
+                ipc.as_ref(),
+            );
             // It came back: the reload was refused and the tree was told so in this turn.
             // What its handlers changed is laid out and drawn now, not at the next event.
             busy |= frame(&mut app);
