@@ -5591,10 +5591,6 @@ fn place(w: &mut World, i: usize) {
         return;
     }
     place_inner(w, i);
-    // Arranged by the full pass at show, which must not find it memoised.
-    if unarranged_hidden(w, i) {
-        return;
-    }
     // A shown ToolTip is placed in window coordinates, which ancestors moving change too.
     let ks = kids(w, i);
     if ks.iter().all(|c| w.memo_p.contains(c))
@@ -7769,9 +7765,7 @@ fn place_inner(w: &mut World, i: usize) {
     baseline_offset(w, i);
     let ch = visual_kids(w, i);
     let (pw, ph) = (num(w, i, "width"), num(w, i, "height"));
-    if unarranged_hidden(w, i) {
-        // Layouts and positioners arrange in updatePolish, which Qt runs only for a shown window.
-    } else if let Some(o) = linear_axis(w, i) {
+    if let Some(o) = linear_axis(w, i) {
         let lin = linear_children(w, i, &ch);
         let children: Vec<Child> = lin.iter().map(|x| x.1.clone()).collect();
         let cells = layout_cells(w, i, o, &lin);
@@ -9125,14 +9119,11 @@ thread_local! {
     static FRESH_CLEAN: std::cell::RefCell<HashMap<usize, u64>> = Default::default();
 }
 
-/// Items under `root` have been laid out: later writes to them are ordinary changes. A hidden
-/// pass leaves Layouts and positioners unarranged, so the geometry of items below them keeps
-/// settling until the first shown pass (`World::settling`).
+/// Items under `root` have been laid out: later writes to them are ordinary changes.
 pub fn clear_fresh(w: &mut World, root: usize) {
-    if w.fresh.is_empty() && w.settling.is_empty() {
+    if w.fresh.is_empty() {
         return;
     }
-    let hidden = HIDDEN_PASS.with(|f| f.get());
     let sig = w.tree_gen;
     let clean = FRESH_CLEAN
         .with_borrow(|m| m.get(&root).copied())
@@ -9141,54 +9132,17 @@ pub fn clear_fresh(w: &mut World, root: usize) {
     if clean && !check {
         return;
     }
-    let mut settled = true;
-    let mut under = false;
-    let mut a = w.items[root].parent;
-    while hidden
-        && !under
-        && let Some(x) = a
-    {
-        under = unarranged_hidden(w, x);
-        a = w.items[x].parent;
-    }
-    let mut stack = vec![(root, under)];
-    while let Some((i, under)) = stack.pop() {
+    let mut stack = vec![root];
+    while let Some(i) = stack.pop() {
         if w.fresh.remove(&i) {
             picture_laid_out(w, i);
             if check {
                 tracing::warn!(target: "ri::check", "freshcheck {root}: stale fresh {i}");
             }
-            if under {
-                w.settling.insert(i);
-                settled = false;
-            }
-        } else if !hidden {
-            w.settling.remove(&i);
-        } else if w.settling.contains(&i) {
-            settled = false;
         }
-        let under = under || unarranged_hidden(w, i);
-        stack.extend(w.items[i].children.iter().map(|&c| (c, under)));
+        stack.extend(w.items[i].children.iter().copied());
     }
-    if settled {
-        FRESH_CLEAN.with_borrow_mut(|m| m.insert(root, sig));
-    }
-}
-
-thread_local!(static HIDDEN_PASS: std::cell::Cell<bool> = const { std::cell::Cell::new(false) });
-
-/// Layouts and positioners arrange in updatePolish, which Qt runs only for a shown window.
-fn unarranged_hidden(w: &World, i: usize) -> bool {
-    HIDDEN_PASS.with(|f| f.get())
-        && (linear_axis(w, i).is_some() || is(w, i, "Flow") || is_positioner(w, i))
-}
-
-/// Lays out a window that is not shown: like Qt, Layouts and positioners leave their children
-/// where they are (a never-shown window's at 0) until the window is shown and laid out in full.
-pub fn layout_hidden_window(rt: &mut Runtime, fonts: &mut Fonts, win: usize, size: [f64; 2]) {
-    HIDDEN_PASS.with(|f| f.set(true));
-    layout_window(rt, fonts, win, size);
-    HIDDEN_PASS.with(|f| f.set(false));
+    FRESH_CLEAN.with_borrow_mut(|m| m.insert(root, sig));
 }
 
 /// Run geometry passes for the window `win` of size `size` until values settle.

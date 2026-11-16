@@ -470,6 +470,32 @@ Code: the `Connections` on `GlobalStates` in `SidebarRightContent.qml`,
 Tests: `crates/shell/tests/sidebar_right_reset.rs`, with the original's own blocks and with the widgets of
 a layout's sidebar.
 
+## A window is whole at its first opening
+
+Qt arranges a `Layout` and a positioner when their window is shown, so at the first opening of
+a window the original starts with the children of every `Layout` where they were made and
+moves them to their places: in the right sidebar the quick toggles grow to their sizes over
+the first frames, once per run of the shell. From the second opening on nothing moves, the
+window was arranged before. Here a window that waits hidden is arranged while it waits, and
+the first opening looks like every later one.
+
+| | the original | Here |
+|---|---|---|
+| The first opening of the right sidebar after the shell starts | The sidebar slides in while its quick toggles grow from small to their sizes. | The sidebar slides in with everything at its size. |
+| The second opening and later | The sidebar slides in with everything at its size. | The same. |
+| The sidebar once it is open | Everything at its size. | The same picture. |
+
+Why: asked for by the owner. The arranging was one layout of the whole window in the first
+frame of the opening, 87 to 104 ms for the sidebar's 1296 items on his PC.
+
+Code: `prelayout_hidden` and `relayout_stale_hidden` in `crates/shell/src/main.rs` lay a
+hidden window out with `scene::layout_window`, the pass a shown window gets.
+
+Tests: `crates/shell/tests/behavior_first_layout.rs` (a `Layout` is arranged by the hidden
+pass, and a `Behavior` on a size that follows it does not play at the first show);
+`a_growing_hidden_window_is_laid_out_in_pieces` in `crates/shell/tests/idle_wakeups.rs` (the
+first show of a window that grew while hidden lays nothing out in full).
+
 ## The quick toggles move to their places in edit mode
 
 In edit mode (the pencil of the right sidebar) the original shows each change at once. The unused

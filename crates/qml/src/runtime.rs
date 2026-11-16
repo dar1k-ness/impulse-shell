@@ -3383,9 +3383,6 @@ pub struct World {
     /// Items not yet through a layout pass: their implicit sizes are still settling, which Qt
     /// computes synchronously at creation, so Behaviors must not animate them yet.
     pub fresh: HashSet<usize>,
-    /// Items laid out only by a hidden pass under a Layout or positioner it left unarranged:
-    /// their geometry settles at the window's first shown pass, so geometry Behaviors wait.
-    pub settling: HashSet<usize>,
     /// Last text-cursor move or edit: the caret blink restarts visible from here.
     pub caret_reset: Option<std::time::Instant>,
     /// `text_emit` is storing an editor's text: keep its cursor and selection.
@@ -5429,6 +5426,20 @@ pub fn prof_counts() -> (u64, u64) {
     (PROF_COUNTS[0].load(Relaxed), PROF_COUNTS[1].load(Relaxed))
 }
 
+thread_local! {
+    /// While `ri::prof` is on: the bindings and handlers being evaluated inside one another,
+    /// the seconds spent in the outermost ones and how many of any depth ended.
+    static PROF_JS: std::cell::Cell<(u32, f64, u64)> = const { std::cell::Cell::new((0, 0.0, 0)) };
+}
+
+/// The start of a binding's or handler's evaluation, ended by [`prof_report`].
+fn prof_enter() -> Option<std::time::Instant> {
+    prof_on().then(|| {
+        PROF_JS.with(|p| p.set((p.get().0 + 1, p.get().1, p.get().2)));
+        std::time::Instant::now()
+    })
+}
+
 fn prof_report(
     world: &Rc<RefCell<World>>,
     kind: &str,
@@ -5438,6 +5449,11 @@ fn prof_report(
 ) {
     PROF_COUNTS[(kind != "bind") as usize].fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let ms = t.elapsed().as_secs_f64() * 1000.0;
+    PROF_JS.with(|p| {
+        let (depth, secs, n) = p.get();
+        let own = if depth == 1 { ms / 1000.0 } else { 0.0 };
+        p.set((depth.saturating_sub(1), secs + own, n + 1));
+    });
     if prof_ms().is_some_and(|lim| ms >= lim) {
         let w = world.borrow();
         let types = w
@@ -7147,11 +7163,6 @@ impl World {
             || self.fresh.contains(&item)
                 && (self.items[item].prop_info("width").is_some()
                     || self.items[item].prop_info("font").is_some())
-            || self.settling.contains(&item)
-                && matches!(
-                    name,
-                    "x" | "y" | "width" | "height" | "implicitWidth" | "implicitHeight"
-                )
         {
             return None;
         }
@@ -11019,7 +11030,6 @@ impl World {
             deferred_runs: _,
             deferred_trans,
             fresh,
-            settling,
             // Keyed by (id, name): retained against `dead` in bulk by `sweep_dead`/`purge_dead`.
             dependents: _,
             fresh_bind: _,
@@ -11584,7 +11594,6 @@ impl World {
         deferred_begun.remove(&i);
         deferred_trans.remove(&i);
         fresh.remove(&i);
-        settling.remove(&i);
         model_items.remove(&i);
         if let Some(o) = row_item_at.remove(&i)
             && let Some(items) = row_items.get_mut(&o)
@@ -28469,6 +28478,7 @@ impl Eng<'_> {
                 INST_D.with(|d| d.borrow_mut()[k] += t.elapsed().as_secs_f64());
             }
         };
+        let js0 = PROF_JS.with(|p| p.get());
         let (done, notified, images): (Vec<usize>, bool, usize) = {
             let mut w = self.world.borrow_mut();
             let (notified, images) = w.complete_from(n0);
@@ -28479,11 +28489,20 @@ impl Eng<'_> {
                 images,
             )
         };
+        part(7);
         // Bindings follow what componentComplete() changed before Component.onCompleted runs.
         if notified | self.binds_complete(n0) {
             self.settle();
         }
         part(0);
+        if stats && js0.0 == 0 {
+            let js = PROF_JS.with(|p| p.get());
+            INST_D.with(|d| {
+                let mut d = d.borrow_mut();
+                d[8] += js.1 - js0.1;
+                d[9] += (js.2 - js0.2) as f64;
+            });
+        }
         self.images_complete(images, Self::settle);
         part(1);
         // QQuickRepeater/QQuickLoader::componentComplete build their delegates/items before any
@@ -31244,7 +31263,7 @@ impl Eng<'_> {
     }
 
     fn eval_binding_in(world: &Rc<RefCell<World>>, it: &mut Interp, item: usize, name: &str) {
-        let t = prof_on().then(std::time::Instant::now);
+        let t = prof_enter();
         let outer = world.borrow_mut().sched.enter((item, Sym::new(name)));
         Self::eval_binding_inner(world, it, item, name);
         let steps = std::mem::take(&mut world.borrow_mut().list_steps);
@@ -31636,7 +31655,7 @@ impl Eng<'_> {
         own: bool,
         conns: bool,
     ) {
-        let t = prof_on().then(std::time::Instant::now);
+        let t = prof_enter();
         let flushing = {
             let mut w = self.world.borrow_mut();
             w.handler_depth += 1;
@@ -34963,7 +34982,7 @@ impl Eng<'_> {
             let t_del = crate::log_on!("ri::stats").then(std::time::Instant::now);
             if t_del.is_some() {
                 INST_T.with(|t| *t.borrow_mut() = [0.0; 4]);
-                INST_D.with(|d| *d.borrow_mut() = [0.0; 7]);
+                INST_D.with(|d| *d.borrow_mut() = [0.0; 10]);
             }
             let mut made = Vec::new();
             let is_view = matches!(kind.as_str(), "ListView" | "GridView");
@@ -35238,14 +35257,17 @@ impl Eng<'_> {
                     .unwrap_or_default();
                 tracing::debug!(
                     target: "ri::stats",
-                    "deleg {id} {kind} made {} {what} in {}ms (create {:.0} settle {:.0} autostart {:.0} completed {:.0}: complete {:.0} images {:.0} nested {:.0} deferred {:.0} layers {:.0} measure {:.0} handlers {:.0})",
+                    "deleg {id} {kind} made {} {what} in {}ms (create {:.0} settle {:.0} autostart {:.0} completed {:.0}: componentComplete {:.0} complete {:.0}, of it {:.0} in {} bindings and handlers, images {:.0} nested {:.0} deferred {:.0} layers {:.0} measure {:.0} handlers {:.0})",
                     made.len(),
                     t_del.elapsed().as_millis(),
                     t[0] * 1e3,
                     t[1] * 1e3,
                     t[2] * 1e3,
                     t[3] * 1e3,
+                    d[7] * 1e3,
                     d[0] * 1e3,
+                    d[8] * 1e3,
+                    d[9],
                     d[1] * 1e3,
                     d[2] * 1e3,
                     d[3] * 1e3,
@@ -36178,10 +36200,7 @@ impl Eng<'_> {
     fn lay_out_loaded(&mut self, id: usize) {
         let ready = {
             let w = self.world.borrow();
-            w.behaviors_live
-                && !w.dead_or_doomed(id)
-                && !w.fresh.contains(&id)
-                && !w.settling.contains(&id)
+            w.behaviors_live && !w.dead_or_doomed(id) && !w.fresh.contains(&id)
         };
         if !ready {
             return;
@@ -49564,8 +49583,10 @@ thread_local! {
     /// The parts of `completed` in [`INST_T`], in seconds: what componentComplete changed,
     /// the Images, the delegates of the Repeaters and Loaders inside, the deferred bindings,
     /// the layers and containers, the first measure, and Component.onCompleted. A part
-    /// that makes objects has their parts in it too.
-    static INST_D: std::cell::RefCell<[f64; 7]> = const { std::cell::RefCell::new([0.0; 7]) };
+    /// that makes objects has their parts in it too. Then componentComplete itself, and of
+    /// what it changed the seconds in bindings and handlers and their count (with `ri::prof`,
+    /// outside any other binding or handler; 0 otherwise).
+    static INST_D: std::cell::RefCell<[f64; 10]> = const { std::cell::RefCell::new([0.0; 10]) };
 }
 
 #[cfg(test)]

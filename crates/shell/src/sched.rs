@@ -115,18 +115,28 @@ pub fn frame_deadline(
     Some((at, Due::Frame))
 }
 
-/// A hidden window whose layout went stale is laid out again once it was left alone this long.
+/// A hidden window whose layout went stale is laid out again this long after it did.
 ///
-/// A clock by design: a debounce, not a poll. The events are the change that made the layout
-/// stale and the loop going idle; laying out at every idle turn would cost one pass per
-/// change of a burst (a model filling row by row) for a window nobody sees. Each change
-/// restarts the wait, and nothing is scheduled while no hidden window is stale.
+/// A clock by design: a throttle, not a poll. The events are the change that made the layout
+/// stale and a turn that leaves the shown windows alone; laying out at every such turn would
+/// cost one pass per change of a burst (a model filling row by row) for a window nobody sees.
+/// The wait runs from the first change, so a window that is being made for seconds (the
+/// cheatsheet) is laid out in pieces as it grows, not in one long pass at the end, and
+/// nothing is scheduled while no hidden window is stale.
 pub const STALE_RELAYOUT_MS: f64 = 300.0;
 
-/// Whether a hidden window whose layout last went stale at `stale` is laid out again at `now`
+/// Whether a hidden window whose layout went stale at `stale` is laid out again at `now`
 /// (loop milliseconds).
 pub fn stale_relayout_due(stale: f64, now: f64) -> bool {
     now - stale >= STALE_RELAYOUT_MS
+}
+
+/// When the loop wakes to lay out a hidden window stale since `stale`, set after a turn at
+/// `now`. A turn that changed a shown window (`busy`) lays nothing out and may be the last
+/// one before the loop blocks: the wait restarts from it instead of ending at the next event.
+pub fn stale_relayout_at(stale: f64, now: f64, busy: bool) -> f64 {
+    let from = if busy { stale.max(now) } else { stale };
+    from + STALE_RELAYOUT_MS
 }
 
 /// Table purges and heap trims run at most this often.
@@ -156,15 +166,30 @@ mod tests {
     use super::*;
 
     #[test]
-    fn a_stale_hidden_window_waits_until_it_is_left_alone() {
+    fn a_stale_hidden_window_waits_from_its_first_change() {
         assert!(!stale_relayout_due(1000.0, 1000.0));
         assert!(!stale_relayout_due(
             1000.0,
             1000.0 + STALE_RELAYOUT_MS - 1.0
         ));
         assert!(stale_relayout_due(1000.0, 1000.0 + STALE_RELAYOUT_MS));
-        // A change during the wait restarts it.
-        assert!(!stale_relayout_due(1200.0, 1000.0 + STALE_RELAYOUT_MS));
+    }
+
+    #[test]
+    fn stale_relayout_wakes_the_loop_after_a_busy_turn_too() {
+        assert_eq!(
+            stale_relayout_at(1000.0, 1010.0, false),
+            1000.0 + STALE_RELAYOUT_MS
+        );
+        // The busy turn's own deadline: without one the loop slept until the next event.
+        assert_eq!(
+            stale_relayout_at(1000.0, 1010.0, true),
+            1010.0 + STALE_RELAYOUT_MS
+        );
+        assert!(stale_relayout_due(
+            1000.0,
+            stale_relayout_at(1000.0, 1010.0, true)
+        ));
     }
 
     #[test]

@@ -52,8 +52,10 @@ fn run(hidden_first: bool) {
     let mut now = 1000.0;
     rt.tick(now);
     if hidden_first {
-        scene::layout_hidden_window(&mut rt, &mut fonts, win, [400.0, 1000.0]);
-        // Shown after the prelayout: a show animation still plays, only geometry waits.
+        // The hidden pass arranges the Layout: the first shown pass has nothing to move.
+        scene::layout_window(&mut rt, &mut fonts, win, [400.0, 1000.0]);
+        assert_eq!(rt.get(p, "implicitHeight").to_number(), FULL);
+        // Shown after the prelayout: a show animation still plays.
         rt.set(win, "shown", Value::Bool(true));
     }
     let mut frame = |rt: &mut Runtime| {

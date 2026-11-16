@@ -748,6 +748,67 @@ fn hidden_windows_are_laid_out_when_idle() {
     }
 }
 
+/// A hidden window that is being made over seconds (rows added by a timer, as the cheatsheet
+/// is) is laid out again in pieces while it grows, each piece 300 ms after the first change it
+/// answers, not in one pass once the changes end; the changes are found in turns that leave
+/// the shown panel alone. Showing it then lays nothing out in full.
+#[test]
+fn a_growing_hidden_window_is_laid_out_in_pieces() {
+    let Some(sway) = compositor() else {
+        return;
+    };
+    let dir = tempfile::tempdir().unwrap();
+    let sh = Shell::spawn_with(
+        &sway,
+        dir.path(),
+        &format!(
+            "import QtQuick\nimport Quickshell\nimport Rustshell.Io\n{}",
+            panel(
+                "  Text { text: \"shown\"; color: \"white\" }\n  \
+                 IpcHandler { target: \"fx\"\n   \
+                 function go(): void { console.log(\"TXT go\"); grow.running = true }\n   \
+                 function show(): void { console.log(\"TXT show\"); late.visible = true } }\n \
+                 }\n PanelWindow {\n  id: late\n  visible: false\n  anchors.top: true\n  \
+                 implicitWidth: 300\n  implicitHeight: 400\n  property int rows: 1\n  \
+                 Timer { id: grow; interval: 100; repeat: true\n   \
+                 onTriggered: {{ if (++late.rows == 16) {{ running = false; console.log(\"TXT made\") }} }} }\n  \
+                 Column {\n   Repeater { model: late.rows\n    \
+                 Text { text: \"row \" + index; color: \"white\" } } }",
+            )
+            .replace("{{", "{")
+            .replace("}}", "}")
+            .trim_start_matches("import QtQuick\nimport Quickshell\n")
+        ),
+        &[("RI_LOG", "ri::sched=debug,ri::stats=debug,ri::frames=debug")],
+    );
+    sh.wait_log("the hidden window was never laid out", |log| {
+        log.lines().any(|l| l.contains("prelayout "))
+    });
+    sh.ipc("go");
+    sh.wait("the hidden window never finished growing", |t| t == "made");
+    let log = sh.log.text();
+    let growing = &log[log.find("TXT go").unwrap()..log.find("TXT made").unwrap()];
+    let pieces = count(growing, &["relayout hidden "]);
+    assert!(
+        (2..=6).contains(&pieces),
+        "{pieces} layouts of the hidden window in the 1.5 s it grew:\n{growing}"
+    );
+    sh.wait_log("the grown hidden window was never laid out", |log| {
+        log.rfind("relayout hidden ") > log.find("TXT made")
+    });
+    sh.ipc("show");
+    sh.wait_log("the grown window was never drawn", |log| {
+        log.find("TXT show")
+            .is_some_and(|at| log[at..].contains("draw win1"))
+    });
+    let log = sh.log.text();
+    let shown = &log[log.find("TXT show").unwrap()..];
+    assert!(
+        !shown.contains("full layout win"),
+        "the first show laid the window out in full:\n{shown}"
+    );
+}
+
 /// Before the first frame the loop runs until a native poll finds nothing to do and nothing
 /// changed: nine FileViews, each loaded once the one before it set its path from `onLoaded`
 /// (one poll each), all load before the panel is first drawn.

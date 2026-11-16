@@ -1046,8 +1046,8 @@ struct App {
     clean: std::collections::HashMap<usize, (u32, u32)>,
     /// Local resizes inside a hidden prelaid window, by that window: re-examined when it draws.
     parked: rustc_hash::FxHashMap<usize, (Vec<usize>, rustc_hash::FxHashSet<usize>)>,
-    /// Hidden windows whose layout went stale: size and when; laid out again while idle so
-    /// showing them needs no full pass.
+    /// Hidden windows whose layout went stale: size and when it first did; laid out again
+    /// while the shown windows are left alone, so showing them needs no full pass.
     stale_hidden: std::collections::HashMap<usize, ((u32, u32), f64)>,
     /// Replaced panels that reserve space, kept mapped until their successor maps
     /// ([`App::release_retiring`]).
@@ -1590,7 +1590,7 @@ impl App {
                             );
                         }
                         let t = self.start.elapsed().as_secs_f64() * 1000.0;
-                        self.stale_hidden.insert(x, (sz, t));
+                        self.stale_hidden.entry(x).or_insert((sz, t)).0 = sz;
                     }
                 }
                 Some(_) => {}
@@ -1614,7 +1614,7 @@ impl App {
                     let t = self.start.elapsed().as_secs_f64() * 1000.0;
                     for (x, sz) in std::mem::take(&mut self.clean) {
                         if !self.wins.iter().any(|w| w.item == x) {
-                            self.stale_hidden.insert(x, (sz, t));
+                            self.stale_hidden.entry(x).or_insert((sz, t)).0 = sz;
                         }
                     }
                 }
@@ -1677,7 +1677,7 @@ impl App {
                                 );
                             }
                             let t = self.start.elapsed().as_secs_f64() * 1000.0;
-                            self.stale_hidden.insert(h, (sz, t));
+                            self.stale_hidden.entry(h).or_insert((sz, t)).0 = sz;
                         }
                     }
                 }
@@ -2302,8 +2302,8 @@ impl App {
             q.push(due, Due::KeyRepeat);
         }
         q.push(self.screencopy_due(), Due::Screencopy);
-        if !busy && let Some(t) = self.stale_hidden.values().map(|&(_, t)| t).reduce(f64::min) {
-            q.push(t + shell::sched::STALE_RELAYOUT_MS, Due::Layout);
+        if let Some(t) = self.stale_hidden.values().map(|&(_, t)| t).reduce(f64::min) {
+            q.push(shell::sched::stale_relayout_at(t, now, busy), Due::Layout);
         }
         if ((self.clock.frame_due || self.clock.ahead > 0) && self.clock.running)
             || !self.ptr_frames.is_empty()
@@ -5468,7 +5468,8 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         }
         if !busy && std::mem::take(&mut app.prelayout_idle) && app.prelayout_pending() {
             app.prelayout_hidden();
-        } else if !busy {
+        } else if !busy || app.only_hidden_changed() {
+            app.note_hidden_changes();
             app.relayout_stale_hidden();
         }
         ipc_forward(&app.rt, &mut ipc_listeners);
@@ -5879,6 +5880,25 @@ impl App {
         out
     }
 
+    /// What the draw of a shown window does for the hidden ones, in a turn without a draw:
+    /// the queued resizes and layout changes inside a laid out hidden window make it stale.
+    /// Without this a window that grows while hidden (the cheatsheet) went stale only when
+    /// some shown window happened to draw.
+    fn note_hidden_changes(&mut self) {
+        if self.clean.is_empty() {
+            return;
+        }
+        self.take_resized(usize::MAX);
+        self.drain_lrev(None);
+    }
+
+    /// A turn that changed something left every shown window as it was: what changed is in
+    /// a hidden one (the cheatsheet making its rows a few per frame). Its layout then follows
+    /// in pieces during the making, not in one pass after it.
+    fn only_hidden_changed(&self) -> bool {
+        !self.wins.iter().any(|w| w.anim || w.dirty)
+    }
+
     /// Qt lays out a hidden window's items too, so content a binding creates from geometry
     /// (ListView delegates, size-gated Loaders) exists before the first show, and a Behavior
     /// animates a change made while the window is still hidden or as it is shown. Lay out one
@@ -5910,6 +5930,8 @@ impl App {
         self.drain_lrev(Some(i));
         self.clean.insert(i, size);
         self.roots.insert(i);
+        // The pass settled the local resizes kept for the window's first draw too.
+        self.parked.remove(&i);
         if qml::log_on!("ri::stats") {
             tracing::debug!(target: "ri::stats", "relayout hidden {i} {size:?} {}ms", t.elapsed().as_millis());
         }
@@ -6011,9 +6033,9 @@ impl App {
             ]
         };
         let t = Instant::now();
-        // Not marked clean: its Layouts are arranged by the full pass when it is first shown.
-        scene::layout_hidden_window(&mut self.rt, &mut self.fonts.borrow_mut(), i, size);
+        scene::layout_window(&mut self.rt, &mut self.fonts.borrow_mut(), i, size);
         self.drain_lrev(Some(i));
+        self.clean.insert(i, (size[0] as u32, size[1] as u32));
         self.roots.insert(i);
         if qml::log_on!("ri::stats") {
             tracing::debug!(
@@ -6162,7 +6184,7 @@ impl App {
         let now = self.start.elapsed().as_secs_f64() * 1000.0;
         for (i, sz) in hidden {
             if !dead(i) && sz.0 > 0 && sz.1 > 0 && !self.clean.contains_key(&i) {
-                self.stale_hidden.insert(i, (sz, now));
+                self.stale_hidden.entry(i).or_insert((sz, now)).0 = sz;
             }
         }
         for (item, key) in want {
