@@ -528,6 +528,10 @@ name = "text_press"
 required-features = ["interp"]
 
 [[test]]
+name = "text_newline_no_fallback"
+required-features = ["interp"]
+
+[[test]]
 name = "text_native_large_qt"
 required-features = ["interp"]
 
