@@ -28462,6 +28462,13 @@ impl Eng<'_> {
         }
         let t_a = lap(t_a);
         let t_d = stats.then(std::time::Instant::now);
+        // Where the time of `completed` goes: [`INST_D`].
+        let mut t_part = t_d;
+        let mut part = |k: usize| {
+            if let Some(t) = t_part.replace(std::time::Instant::now()) {
+                INST_D.with(|d| d.borrow_mut()[k] += t.elapsed().as_secs_f64());
+            }
+        };
         let (done, notified, images): (Vec<usize>, bool, usize) = {
             let mut w = self.world.borrow_mut();
             let (notified, images) = w.complete_from(n0);
@@ -28476,7 +28483,9 @@ impl Eng<'_> {
         if notified | self.binds_complete(n0) {
             self.settle();
         }
+        part(0);
         self.images_complete(images, Self::settle);
+        part(1);
         // QQuickRepeater/QQuickLoader::componentComplete build their delegates/items before any
         // Component.onCompleted runs, also inside another view's delegate or a LazyLoader, and
         // before the Loader loading this tree sets `item`: with or without handlers here.
@@ -28505,9 +28514,12 @@ impl Eng<'_> {
                 w.delegating = true;
             }
         }
+        part(2);
         // The Images created before a Repeater or a Loader that has made its objects now.
         self.images_complete(n0, Self::settle);
+        part(1);
         self.execute_deferred(n0);
+        part(3);
         self.stacks_init(n0);
         self.combos_init(n0);
         self.views_init(n0);
@@ -28516,6 +28528,7 @@ impl Eng<'_> {
         self.drain_layers();
         self.containers_complete(n0);
         self.progress_bars_init(n0);
+        part(4);
         // Twice: geometry from the first pass feeds bindings that size layout children.
         for _ in 0..2 {
             if done.is_empty() || !pre_complete(&self.world, n0) {
@@ -28523,6 +28536,7 @@ impl Eng<'_> {
             }
             self.settle();
         }
+        part(5);
         self.world.borrow_mut().timers_complete(n0);
         if self.connect_synchronizers(n0) {
             self.settle();
@@ -28533,6 +28547,7 @@ impl Eng<'_> {
             self.run_handler(i, Sym::new("Component.onCompleted"));
             self.settle();
         }
+        part(6);
         if stats {
             INST_T.with(|t| {
                 let mut t = t.borrow_mut();
@@ -34948,6 +34963,7 @@ impl Eng<'_> {
             let t_del = crate::log_on!("ri::stats").then(std::time::Instant::now);
             if t_del.is_some() {
                 INST_T.with(|t| *t.borrow_mut() = [0.0; 4]);
+                INST_D.with(|d| *d.borrow_mut() = [0.0; 7]);
             }
             let mut made = Vec::new();
             let is_view = matches!(kind.as_str(), "ListView" | "GridView");
@@ -35215,19 +35231,27 @@ impl Eng<'_> {
                 && t_del.elapsed().as_millis() >= 5
             {
                 let t = INST_T.with(|t| std::mem::take(&mut *t.borrow_mut()));
+                let d = INST_D.with(|d| std::mem::take(&mut *d.borrow_mut()));
                 let what = made
                     .first()
                     .and_then(|&m| self.world.borrow().items[m].types.first().cloned())
                     .unwrap_or_default();
                 tracing::debug!(
                     target: "ri::stats",
-                    "deleg {id} {kind} made {} {what} in {}ms (create {:.0} settle {:.0} autostart {:.0} completed {:.0})",
+                    "deleg {id} {kind} made {} {what} in {}ms (create {:.0} settle {:.0} autostart {:.0} completed {:.0}: complete {:.0} images {:.0} nested {:.0} deferred {:.0} layers {:.0} measure {:.0} handlers {:.0})",
                     made.len(),
                     t_del.elapsed().as_millis(),
                     t[0] * 1e3,
                     t[1] * 1e3,
                     t[2] * 1e3,
-                    t[3] * 1e3
+                    t[3] * 1e3,
+                    d[0] * 1e3,
+                    d[1] * 1e3,
+                    d[2] * 1e3,
+                    d[3] * 1e3,
+                    d[4] * 1e3,
+                    d[5] * 1e3,
+                    d[6] * 1e3
                 );
             }
             if adding && (!gone.is_empty() || !added.is_empty()) {
@@ -49537,6 +49561,11 @@ fn lrev_all() -> bool {
 thread_local! {
     /// Debug (ri::stats): time spent in instantiate phases since the last delegation report.
     static INST_T: std::cell::RefCell<[f64; 4]> = const { std::cell::RefCell::new([0.0; 4]) };
+    /// The parts of `completed` in [`INST_T`], in seconds: what componentComplete changed,
+    /// the Images, the delegates of the Repeaters and Loaders inside, the deferred bindings,
+    /// the layers and containers, the first measure, and Component.onCompleted. A part
+    /// that makes objects has their parts in it too.
+    static INST_D: std::cell::RefCell<[f64; 7]> = const { std::cell::RefCell::new([0.0; 7]) };
 }
 
 #[cfg(test)]

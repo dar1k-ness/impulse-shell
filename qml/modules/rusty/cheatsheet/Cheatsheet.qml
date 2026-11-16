@@ -24,13 +24,29 @@ Scope { // Scope
         },
     ]
 
+    // Whether the cheatsheet is on screen.
+    property bool open: false
+    // The window is made a moment after the shell starts, or by an opening before that, and is
+    // kept: its few thousand items take longer to make than an opening may wait, so opening
+    // shows a window that is there.
+    property bool made: false
+    onOpenChanged: {
+        if (open)
+            made = true;
+    }
+    Timer {
+        interval: 3000
+        running: true
+        onTriggered: root.made = true
+    }
+
     Loader {
         id: cheatsheetLoader
-        active: false
+        active: root.made
 
         sourceComponent: PanelWindow { // Window
             id: cheatsheetRoot
-            visible: cheatsheetLoader.active
+            visible: root.open
 
             anchors {
                 top: true
@@ -40,7 +56,22 @@ Scope { // Scope
             }
 
             function hide() {
-                cheatsheetLoader.active = false;
+                root.open = false;
+            }
+            // Shown as a window made anew is: all of its content, the keybinds at their start, the
+            // keys going to its close button.
+            function shown() {
+                GlobalFocusGrab.addDismissable(cheatsheetRoot);
+                keybinds.fill();
+                periodicTable.fill();
+                keybinds.toStart();
+                closeButton.forceActiveFocus();
+            }
+            onVisibleChanged: {
+                if (visible)
+                    shown();
+                else
+                    GlobalFocusGrab.removeDismissable(cheatsheetRoot);
             }
             exclusiveZone: 0
             implicitWidth: cheatsheetBackground.width + Appearance.sizes.elevationMargin * 2
@@ -55,7 +86,8 @@ Scope { // Scope
             }
 
             Component.onCompleted: {
-                GlobalFocusGrab.addDismissable(cheatsheetRoot);
+                if (visible)
+                    shown();
             }
             Component.onDestruction: {
                 GlobalFocusGrab.removeDismissable(cheatsheetRoot);
@@ -170,8 +202,12 @@ Scope { // Scope
                             }
                         }
 
-                        CheatsheetKeybinds {}
-                        CheatsheetPeriodicTable {}
+                        CheatsheetKeybinds {
+                            id: keybinds
+                        }
+                        CheatsheetPeriodicTable {
+                            id: periodicTable
+                        }
                     }
                 }
             }
@@ -182,15 +218,15 @@ Scope { // Scope
         target: "cheatsheet"
 
         function toggle(): void {
-            cheatsheetLoader.active = !cheatsheetLoader.active;
+            root.open = !root.open;
         }
 
         function close(): void {
-            cheatsheetLoader.active = false;
+            root.open = false;
         }
 
         function open(): void {
-            cheatsheetLoader.active = true;
+            root.open = true;
         }
     }
 
@@ -199,7 +235,7 @@ Scope { // Scope
         description: "Toggles cheatsheet on press"
 
         onPressed: {
-            cheatsheetLoader.active = !cheatsheetLoader.active;
+            root.open = !root.open;
         }
     }
 
@@ -208,7 +244,7 @@ Scope { // Scope
         description: "Opens cheatsheet on press"
 
         onPressed: {
-            cheatsheetLoader.active = true;
+            root.open = true;
         }
     }
 
@@ -217,7 +253,7 @@ Scope { // Scope
         description: "Closes cheatsheet on press"
 
         onPressed: {
-            cheatsheetLoader.active = false;
+            root.open = false;
         }
     }
 }
