@@ -519,6 +519,14 @@ Module {
             notify: "panelLengthsChanged"
             index: 22
         }
+        Property {
+            name: "centerShift"
+            type: "double"
+            read: "centerShift"
+            notify: "centerShiftChanged"
+            index: 23
+            isReadonly: true
+        }
         Signal { name: "connectorChanged" }
         Signal { name: "containerIdChanged" }
         Signal { name: "presentChanged" }
@@ -542,6 +550,7 @@ Module {
         Signal { name: "endRoomChanged" }
         Signal { name: "probesChanged" }
         Signal { name: "panelLengthsChanged" }
+        Signal { name: "centerShiftChanged" }
     }
     Component {
         file: "edit_mode.rs"
@@ -735,6 +744,10 @@ Module {
             type: "bool"
             Parameter { name: "x"; type: "double" }
             Parameter { name: "y"; type: "double" }
+        }
+        Method {
+            name: "rest"
+            type: "bool"
         }
         Method {
             name: "release"

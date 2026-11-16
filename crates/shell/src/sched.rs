@@ -80,6 +80,19 @@ impl Deadlines {
 /// without saying so, and an animation that ends must end without it.
 pub const FRAME_CALLBACK_TIMEOUT_MS: f64 = 100.0;
 
+/// A window that draws again this soon after its last frame is drawing a run of frames (the
+/// pointer drags or resizes something, or moves over things that answer it): such a frame
+/// requests a frame callback, like an animation's, and the next one is drawn when it comes. Three
+/// frames of a 60 Hz screen: a frame that follows a callback or the refresh interval's wait is
+/// inside it, two changes a tenth of a second apart are not a run.
+pub const FRAME_RUN_MS: f64 = 50.0;
+
+/// Whether a frame drawn `since` ms after the window's last one (`None`: it has drawn none) is
+/// one of a run.
+pub fn in_frame_run(since: Option<f64>) -> bool {
+    since.is_some_and(|ms| ms < FRAME_RUN_MS)
+}
+
 /// When the next animation frame needs the loop, at `now`. While every window showing an
 /// animation awaits its frame callback (`awaiting`) the first callback back wakes the loop
 /// and is the step; the only deadline is `give_up`, when the first of them has waited
@@ -280,6 +293,19 @@ mod tests {
             frame_deadline(60_000.0, true, true, None, Some(16.6), Some(16.0), 16.6),
             None
         );
+    }
+
+    #[test]
+    fn a_frame_soon_after_the_last_is_one_of_a_run() {
+        // The frame after a callback or after the refresh interval's wait, at 60 Hz and with a
+        // frame missed between.
+        assert!(in_frame_run(Some(0.0)));
+        assert!(in_frame_run(Some(50.0 / 3.0)));
+        assert!(in_frame_run(Some(2.0 * 50.0 / 3.0 + 5.0)));
+        // Two changes a tenth of a second apart, and a window's first frame.
+        assert!(!in_frame_run(Some(FRAME_RUN_MS)));
+        assert!(!in_frame_run(Some(100.0)));
+        assert!(!in_frame_run(None));
     }
 
     #[test]

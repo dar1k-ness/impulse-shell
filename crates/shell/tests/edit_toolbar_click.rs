@@ -497,13 +497,14 @@ impl Drop for Edit {
 #[test]
 fn a_toolbar_press_released_outside_its_button_is_canceled() {
     let mut e = Edit::new("cancel", 100, 100);
-    // Two moves and an undo: both undo and redo have something to do.
+    // Two moves and an undo: both undo and redo have something to do. A move starts where
+    // the pointer has gone its 5 px, so 40 px of pointer carry the clock 35.
     e.drag((200.0, 150.0), (240.0, 150.0));
     e.drag((240.0, 150.0), (280.0, 150.0));
     let undo = e.button("undo");
     let at = e.center(undo);
     e.click(at);
-    assert_eq!(e.clock_xy(), (140, 100));
+    assert_eq!(e.clock_xy(), (135, 100));
     e.click((240.0, 150.0));
     assert_eq!(e.read("selectedId").to_js_string(), "clock");
     assert!(e.read("canUndo").truthy() && e.read("canRedo").truthy());
@@ -521,7 +522,7 @@ fn a_toolbar_press_released_outside_its_button_is_canceled() {
             "{icon} changed the selection"
         );
         assert!(e.read("active").truthy(), "{icon} left edit mode");
-        assert_eq!(e.clock_xy(), (140, 100), "{icon} moved the clock");
+        assert_eq!(e.clock_xy(), (135, 100), "{icon} moved the clock");
         assert!(
             e.read("canUndo").truthy() && e.read("canRedo").truthy(),
             "{icon} changed the history"
@@ -701,8 +702,14 @@ fn a_catalog_tile_dragged_out_puts_the_widget_where_it_is_let_go() {
     e.frames(30);
     assert_eq!(e.ids(0), ["clock", "clock-1"]);
     assert_eq!(e.read("selectedId").to_js_string(), "clock-1");
-    // A new clock is 200 by 100 here and is held by its middle.
-    assert_eq!(e.second_xy(), (800, 550), "{:?}", e.rt.errors());
+    // A new clock is 200 by 100 here and is held by its middle, give or take the 5 px a
+    // pointer goes before it is a drag.
+    let (x, y) = e.second_xy();
+    assert!(
+        (x - 800).abs() <= 5 && (y - 550).abs() <= 5,
+        "{x}, {y}: {:?}",
+        e.rt.errors()
+    );
     assert!(!e.palette_open(), "the catalog stayed open");
     assert!(e.rt.errors().is_empty(), "{:?}", e.rt.errors());
 }
@@ -857,14 +864,15 @@ fn a_handle_resizes_the_widget_from_its_side_and_stops_at_the_types_limits() {
         .expect("the bar's clock is not outlined");
     assert_eq!((y, h), (3.0, 34.0));
     // The left side pulled 40 px out, and the pointer 30 px down with it: only the width
-    // grows, to the left.
+    // grows, to the left, less what the pointer went before it was a pull (2 px, 1.6 of
+    // them across).
     let before = e.saved().1;
     e.drag((500.0, 350.0), (460.0, 380.0));
-    assert_eq!(e.clock_place(), (460, 300, Some((240, 100))));
+    assert_eq!(e.clock_place(), (462, 300, Some((238, 100))));
     assert_ne!(e.saved().1, before, "the resize was not saved");
     assert_eq!(
         e.nums("selectedFrame", RECT),
-        Some([460.0, 300.0, 240.0, 100.0])
+        Some([462.0, 300.0, 238.0, 100.0])
     );
     // The bottom-right corner pulled past the clock's 800x400: mid-pull the outline is the
     // size it would get and the overlay says it is the largest; dropped, it is that size.
@@ -879,7 +887,7 @@ fn a_handle_resizes_the_widget_from_its_side_and_stops_at_the_types_limits() {
     assert_eq!(e.read("handle").to_js_string(), "bottom-right");
     assert_eq!(
         e.nums("selectedFrame", RECT),
-        Some([460.0, 300.0, 800.0, 400.0])
+        Some([462.0, 300.0, 800.0, 400.0])
     );
     let hint = e.read("sizeHint");
     let Value::Obj(hint) = hint else {
@@ -893,7 +901,7 @@ fn a_handle_resizes_the_widget_from_its_side_and_stops_at_the_types_limits() {
     assert!(of("largest").truthy() && !of("smallest").truthy());
     e.ptr.release(&mut e.rt, BTN_LEFT);
     e.frames(3);
-    assert_eq!(e.clock_place(), (460, 300, Some((800, 400))));
+    assert_eq!(e.clock_place(), (462, 300, Some((800, 400))));
     assert!(matches!(e.read("sizeHint"), Value::Null));
     // The settings panel's size rows go through the same limits.
     assert_eq!(
@@ -906,6 +914,158 @@ fn a_handle_resizes_the_widget_from_its_side_and_stops_at_the_types_limits() {
             .unwrap();
     assert!(sized.truthy());
     e.frames(2);
-    assert_eq!(e.clock_place(), (460, 300, Some((300, 20))));
+    assert_eq!(e.clock_place(), (462, 300, Some((300, 20))));
     assert!(e.rt.errors().is_empty(), "{:?}", e.rt.errors());
+}
+
+/// Let go after a carry, the widget has one outline, at once: the selection's, whole, around
+/// the place it landed on, with no hover outline and no landing box beside it, in the frame of
+/// the release and in every one after. (It came back in over 220 ms once, declared to; the
+/// frames of a carry on a panel had it whole at once beside the carried widget's own.)
+#[test]
+fn a_widget_let_go_after_a_carry_has_one_outline_at_once() {
+    let mut e = Edit::new("carry-outline", 400, 300);
+    let find = |e: &Edit, k: &str| {
+        let mut w = e.rt.world.borrow_mut();
+        (0..w.items.len())
+            .find(|&i| {
+                !w.dead.contains(&i)
+                    && w.read(i, k).is_some_and(|v| !matches!(v, Value::Undefined))
+                    && w.read(i, "rect").is_some()
+            })
+            .unwrap_or_else(|| panic!("no item with {k}"))
+    };
+    let sel = find(&e, "handleSet");
+    let ghost = find(&e, "eased");
+    let hover = {
+        let mut w = e.rt.world.borrow_mut();
+        (0..w.items.len())
+            .find(|&i| {
+                !w.dead.contains(&i)
+                    && i != sel
+                    && i != ghost
+                    && w.items[i].types.iter().any(|t| t == "Rectangle")
+                    && w.read(i, "now")
+                        .is_some_and(|v| !matches!(v, Value::Undefined))
+            })
+            .unwrap()
+    };
+    let opacity = |e: &Edit, i: usize| e.read_of(i, "opacity").to_number();
+    let win = e.overlay;
+    let from = (500.0, 350.0);
+    e.ptr.enter(&mut e.rt, win, from.0, from.1);
+    e.ptr.motion(&mut e.rt, win, from.0, from.1);
+    e.frames(20);
+    assert_eq!(opacity(&e, hover), 1.0, "the widget under the pointer");
+    e.ptr.press(&mut e.rt, BTN_LEFT);
+    e.frames(1);
+    for k in 1..=30 {
+        let t = k as f64 / 30.0;
+        e.ptr
+            .motion(&mut e.rt, win, from.0 + 203.0 * t, from.1 + 97.0 * t);
+        e.frames(1);
+    }
+    assert!(e.read("dragging").truthy());
+    assert_eq!(opacity(&e, sel), 0.0, "no outline while it is carried");
+    e.ptr.release(&mut e.rt, BTN_LEFT);
+    let landed = e.clock_xy();
+    assert_ne!(landed, (400, 300), "the clock moved");
+    for k in 0..24 {
+        let (x, y, w, h) = e.rect(sel);
+        assert_eq!(
+            (opacity(&e, sel), opacity(&e, hover), opacity(&e, ghost)),
+            (1.0, 0.0, 0.0),
+            "frame {k} after the release: the selection, the hover outline, the landing box"
+        );
+        assert_eq!(
+            (x.round(), y.round(), w.round(), h.round()),
+            (
+                f64::from(landed.0) - 6.0,
+                f64::from(landed.1) - 6.0,
+                212.0,
+                112.0
+            ),
+            "frame {k} after the release: around the place it landed on"
+        );
+        e.frames(1);
+    }
+    assert!(e.rt.errors().is_empty(), "{:?}", e.rt.errors());
+}
+
+/// An end of the bar's clock pulled through the overlay's own input (EditOverlay.qml): while
+/// the pointer goes on, a step each frame, the panel is not given the pull, only the outline
+/// goes with the pointer; 50 ms after the pointer's last step the panel is given the length
+/// the outline has. The pointer going on again leaves the panel at that, and the end let go
+/// while it moves is written as the outline had it.
+#[test]
+fn the_panel_is_given_a_pull_once_the_pointer_has_rested() {
+    let mut e = Edit::new("rest", 500, 300);
+    e.click((660.0, 20.0));
+    assert_eq!(e.read("selectedId").to_js_string(), "pclock");
+    let [x0, len0] = e.nums("selectedFrame", ["x", "width"]).unwrap();
+    // The length the panel shows the pulled clock at, once it is given one.
+    let given = |e: &Edit| -> Option<u32> {
+        let w = e.rt.world.borrow();
+        let (_, c) = w.edit.pulled_panel()?;
+        match c.widgets.iter().find(|w| w.id == "pclock")?.place {
+            qml::layout_model::Place::Panel {
+                width: qml::layout_model::Width::Px(n),
+                ..
+            } => Some(n),
+            _ => None,
+        }
+    };
+    let win = e.overlay;
+    let end = x0 + len0 - 2.0;
+    e.ptr.motion(&mut e.rt, win, end, 20.0);
+    e.ptr.press(&mut e.rt, BTN_LEFT);
+    e.frames(1);
+    assert_eq!(e.read("handle").to_js_string(), "right");
+    let step = |e: &mut Edit, x: f64| -> f64 {
+        e.ptr.motion(&mut e.rt, win, x, 20.0);
+        e.frames(1);
+        let [x, len] = e.nums("selectedFrame", ["x", "width"]).unwrap();
+        assert_eq!(x, x0, "the other end");
+        len
+    };
+    let mut len = len0;
+    for k in 1..=8 {
+        let was = len;
+        len = step(&mut e, end + f64::from(k) * 4.0);
+        assert!(len > was, "step {k}: the outline goes with the pointer");
+        assert_eq!(given(&e), None, "step {k}: the pointer goes on");
+    }
+    assert_eq!(len, len0 + 30.0);
+    // 16 ms a frame: one has gone since the last step, and 48 ms are not yet a rest.
+    e.frames(2);
+    assert_eq!(given(&e), None, "48 ms after the last step");
+    e.frames(1);
+    assert_eq!(given(&e), Some(len as u32), "64 ms after the last step");
+    assert_eq!(
+        e.nums("selectedFrame", ["x", "width"]),
+        Some([x0, len]),
+        "the outline as the pointer rests"
+    );
+
+    let rested = len;
+    for k in 9..=10 {
+        len = step(&mut e, end + f64::from(k) * 4.0);
+        assert_eq!(given(&e), Some(rested as u32), "step {k}: on again");
+    }
+    assert_eq!(len, rested + 8.0);
+    let before = e.saved().1;
+    e.ptr.release(&mut e.rt, BTN_LEFT);
+    e.frames(1);
+    assert_eq!(given(&e), None, "let go");
+    let written = e.saved().1;
+    assert_ne!(written, before, "written");
+    assert!(
+        e.saved().0.contains(&format!("width = {len}\n")),
+        "{len} px written:\n{}",
+        e.saved().0
+    );
+    // The rest the last step asked for comes to nothing once the end is let go.
+    e.frames(5);
+    assert_eq!(given(&e), None);
+    assert_eq!(e.saved().1, written, "written once");
 }

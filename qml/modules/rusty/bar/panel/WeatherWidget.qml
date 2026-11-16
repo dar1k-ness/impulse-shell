@@ -10,6 +10,8 @@ Loader {
     property real fixedLength: parent?.fixedLength ?? -1
     width: parent?.width ?? implicitWidth
     height: parent?.height ?? implicitHeight
+    // Stretching or pulled by an end, it gives way no further than what it shows takes.
+    readonly property real leastLength: vertical ? implicitHeight : implicitWidth
     active: !vertical && Config.options.bar.weather.enable
     readonly property bool shown: active
     visible: shown

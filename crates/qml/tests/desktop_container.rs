@@ -620,6 +620,71 @@ DesktopContainer {
     std::fs::remove_dir_all(&d).unwrap();
 }
 
+/// `shown` is what the views place themselves by, not something painted: a new one marks the
+/// widget it moved as drawn again, and neither the container nor the widgets that stayed.
+#[test]
+fn a_new_shown_marks_only_what_it_moved_as_drawn_again() {
+    let layout = format!(
+        "{NATURAL}\n[[monitor.container.widget]]\nid = \"weather\"\ntype = \"clock\"\nx = 100\ny = 500\nw = 200\nh = 100\n"
+    );
+    let d = root("handed", Some(&layout));
+    std::fs::write(
+        d.join("main.qml"),
+        r#"import QtQuick
+import Impulse
+DesktopContainer {
+    id: root
+    width: 1920
+    height: 1080
+    connector: "DP-1"
+    property var views: ({})
+    function natural(id: string, w: real, h: real) { setNaturalSize(id, w, h) }
+    Repeater {
+        model: root.widgets
+        delegate: Rectangle {
+            required property var modelData
+            readonly property var box: root.shown[modelData.id] ?? modelData
+            x: box.x
+            y: box.y
+            width: box.width
+            height: box.height
+            Component.onCompleted: root.views[modelData.id] = this
+        }
+    }
+}
+"#,
+    )
+    .unwrap();
+    let (mut rt, id) = start(&d);
+    let view = |rt: &Runtime, wid: &str| {
+        let Some(Value::Obj(views)) = rt.world.borrow_mut().read(id, "views") else {
+            panic!("views")
+        };
+        match views.borrow().props.get(wid) {
+            Some(&Value::Item(i)) => i,
+            v => panic!("{wid}: {v:?}"),
+        }
+    };
+    let (clock, other) = (view(&rt, "clock"), view(&rt, "weather"));
+    {
+        let mut w = rt.world.borrow_mut();
+        w.touched.clear();
+        w.moved.clear();
+    }
+    // Its view measured the clock: only `shown` says so.
+    let before = shown(&rt, id, "clock");
+    call(&mut rt, id, "natural", vec![s("clock"), n(230.0), n(254.6)]);
+    assert_ne!(shown(&rt, id, "clock"), before);
+    let w = rt.world.borrow();
+    let drawn_again = |i: usize| w.touched.contains(&i) || w.moved.contains(&i);
+    assert!(drawn_again(clock), "the clock moved");
+    assert!(!drawn_again(other), "the other widget stayed");
+    assert!(!drawn_again(id), "the container paints nothing by it");
+    drop(w);
+    assert!(rt.errors().is_empty(), "{:?}", rt.errors());
+    std::fs::remove_dir_all(&d).unwrap();
+}
+
 /// The clock fits by what it paints: with its status row empty it is 15 px shorter, so on
 /// 1280x720 a clock whose painted part ends at the bottom edge stays exactly where it is.
 #[test]

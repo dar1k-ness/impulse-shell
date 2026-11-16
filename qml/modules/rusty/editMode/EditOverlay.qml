@@ -134,8 +134,20 @@ PanelWindow {
             // carried the widget anywhere.
             property bool doubled: false
             onDoubleClicked: input.doubled = true
-            onPositionChanged: mouse => controller.move(mouse.x, mouse.y)
+            // An end of a panel's widget is pulled: only the outline goes with the pointer, and
+            // the panel shows the widget at its new length once the pointer has rested this long.
+            Timer {
+                id: rest
+                interval: 50
+                onTriggered: controller.rest()
+            }
+            onPositionChanged: mouse => {
+                controller.move(mouse.x, mouse.y);
+                if (controller.dragging)
+                    rest.restart();
+            }
             onReleased: mouse => {
+                rest.stop();
                 const carried = controller.dragging;
                 if (controller.release(mouse.x, mouse.y))
                     root.placedByHand();
@@ -144,6 +156,7 @@ PanelWindow {
                 input.doubled = false;
             }
             onCanceled: {
+                rest.stop();
                 input.doubled = false;
                 controller.cancel();
             }
@@ -170,7 +183,8 @@ PanelWindow {
 
         // The container a drag would drop into; none is outlined where the widget cannot go.
         Rectangle {
-            visible: controller.target !== null && (controller.ghost?.valid ?? false)
+            // Not while a panel's widget is carried along its own panel: it goes nowhere else.
+            visible: controller.target !== null && (controller.ghost?.valid ?? false) && !((controller.ghost?.carried ?? false) && !selection.onDesktop)
             x: controller.target?.x ?? 0
             y: controller.target?.y ?? 0
             width: controller.target?.width ?? 0
@@ -202,7 +216,9 @@ PanelWindow {
             border.color: ColorUtils.transparentize(Appearance.colors.colOnSurface, 0.45)
             opacity: hoverOutline.now !== null ? 1 : 0
             visible: hoverOutline.opacity > 0
+            // It is there the moment the pointer is over the widget; only its leaving is soft.
             Behavior on opacity {
+                enabled: hoverOutline.now === null
                 NumberAnimation {
                     duration: 120
                     easing.type: Easing.OutCubic
@@ -234,15 +250,12 @@ PanelWindow {
             y: (selection.rect?.y ?? 0) - selection.outset
             width: (selection.rect?.width ?? 0) + selection.outset * 2
             height: (selection.rect?.height ?? 0) + selection.outset * 2
-            opacity: selection.now === null ? 0 : !selection.carried ? 1 : selection.onDesktop ? 0 : 0.4
+            // A widget that is carried itself (a desktop widget, a panel's along its panel) has
+            // left the place the outline is around.
+            readonly property bool away: selection.onDesktop || (controller.ghost?.carried ?? false)
+            opacity: selection.now === null ? 0 : !selection.carried ? 1 : selection.away ? 0 : 0.4
             visible: selection.opacity > 0
-            Behavior on opacity {
-                NumberAnimation {
-                    // It comes back once the widget has slid to its place.
-                    duration: selection.carried ? 80 : 220
-                    easing.type: selection.carried ? Easing.OutCubic : Easing.InCubic
-                }
-            }
+            // Let go, the widget has its outline at once, where it lands: the one outline there is.
 
             Rectangle {
                 anchors.fill: parent
@@ -289,13 +302,16 @@ PanelWindow {
                     border.width: 2
                     border.color: Appearance.colors.colPrimary
                     scale: grip.active ? 1.35 : 1
+                    // Under the pointer it answers at once and lets go softly.
                     Behavior on scale {
+                        enabled: !grip.active
                         NumberAnimation {
                             duration: 100
                             easing.type: Easing.OutCubic
                         }
                     }
                     Behavior on color {
+                        enabled: !grip.active
                         ColorAnimation {
                             duration: 100
                         }
@@ -335,12 +351,12 @@ PanelWindow {
         Rectangle {
             id: ghost
             readonly property bool valid: ghost.rect?.valid ?? false
-            // A desktop widget that is carried is itself where the pointer has it: its landing
-            // place shows only where it is somewhere else (snapped to a neighbour, fitted off one),
-            // and moves there softly instead of jumping from place to place.
+            // A desktop widget that is carried over its own desktop is itself where it would land
+            // (snapped to a neighbour, fitted off one), so no landing place is drawn around it;
+            // one shows only where the widget is somewhere else, and moves there softly.
             readonly property bool carried: controller.ghost?.carried ?? false
             readonly property bool lands: controller.ghost?.valid ?? false
-            readonly property bool wanted: controller.ghost !== null && !(selection.resizing && ghost.lands) && (!ghost.carried || !ghost.lands || (controller.ghost.apart ?? true))
+            readonly property bool wanted: controller.ghost !== null && !(selection.resizing && ghost.lands) && (!ghost.carried || (controller.ghost.apart ?? true))
             property var rect: null
             readonly property var now: ghost.wanted ? controller.ghost : null
             onNowChanged: {

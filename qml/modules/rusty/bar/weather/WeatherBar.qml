@@ -31,6 +31,12 @@ MouseArea {
         }
     }
 
+    TextMetrics {
+        id: tempLength
+        font: temp.font
+        text: temp.text
+    }
+
     RowLayout {
         id: rowLayout
         anchors.centerIn: parent
@@ -46,7 +52,8 @@ MouseArea {
 
         StyledText {
             id: temp
-            visible: root.room < 0 || root.room >= icon.implicitWidth + temp.implicitWidth + rowLayout.spacing
+            // Measured apart from the text itself, which shows or hides by it.
+            visible: root.room < 0 || root.room >= icon.implicitWidth + tempLength.width + rowLayout.spacing
             font.pixelSize: Appearance.font.pixelSize.small
             color: Appearance.colors.colOnLayer1
             text: Weather.data?.temp ?? "--°"

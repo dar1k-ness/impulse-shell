@@ -94,6 +94,7 @@ Item {
 
     FocusedScrollMouseArea { // Start zone | scroll to change brightness
         id: startArea
+        z: startZone.lifted ? 1 : 0
         anchors {
             left: parent.left
             top: parent.top
@@ -141,10 +142,26 @@ Item {
 
     PanelZone {
         id: centerZone
+        z: centerZone.lifted ? 1 : 0
         anchors.centerIn: parent
+        // Off the bar's middle where the layout has it grown to one side alone (a widget of it
+        // pulled out by an end in edit mode, panel.centerShift): its other end, and the
+        // widgets there, stay where they were, on the whole pixel the zone without that
+        // length had them at.
+        readonly property real held: {
+            const grown = panel.centerShift;
+            if (grown === 0)
+                return 0;
+            const length = root.vertical ? height : width;
+            const middle = l => Math.floor(l) % 2 ? (l + 1) / 2 : l / 2;
+            return middle(length) - middle(length - Math.abs(grown)) - Math.max(-grown, 0);
+        }
+        anchors.horizontalCenterOffset: root.vertical ? 0 : held
+        anchors.verticalCenterOffset: root.vertical ? held : 0
         // Sized to its runs, within the bar's length between its rounded ends, leaving either
         // side zone its widget at the bar's edge: when the bar is short, the center gives way.
-        available: (root.vertical ? root.height : root.width) - 2 * Math.max(root.edgePadding, (root.vertical ? Appearance.sizes.hyprlandGapsOut : root.edgePadding) + startZone.edgeLength, root.edgePadding + endZone.edgeLength)
+        // Held off the middle, it is that much nearer one of them.
+        available: (root.vertical ? root.height : root.width) - 2 * Math.max(root.edgePadding + Math.abs(panel.centerShift / 2), (root.vertical ? Appearance.sizes.hyprlandGapsOut : root.edgePadding) + startZone.edgeLength - panel.centerShift / 2, root.edgePadding + endZone.edgeLength + panel.centerShift / 2)
         width: root.vertical ? implicitWidth : Math.min(implicitWidth, available)
         height: root.vertical ? Math.min(implicitHeight, available) : implicitHeight
         spacing: 4
@@ -158,6 +175,7 @@ Item {
 
     FocusedScrollMouseArea { // End zone | scroll to change volume
         id: endArea
+        z: endZone.lifted ? 1 : 0
         anchors {
             right: parent.right
             bottom: parent.bottom

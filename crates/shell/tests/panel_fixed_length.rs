@@ -126,8 +126,8 @@ fn shows(rt: &mut Runtime, root: usize, id: &str) -> Shows {
     }
 }
 
-#[test]
-fn a_panel_widget_fixed_shorter_than_its_text_shows_no_text() {
+/// The bar of `layout`, 1920 wide, laid out.
+fn bar(layout: &str) -> (tempfile::TempDir, Runtime, usize) {
     let dir = tempfile::tempdir().unwrap();
     let qml = PathBuf::from(ricompiled::ROOT);
     let mut rt = Runtime::new(Some(qml.clone()));
@@ -139,7 +139,7 @@ fn a_panel_widget_fixed_shorter_than_its_text_shows_no_text() {
         qml.join("modules/common/functions"),
         qml.join("services"),
     ]);
-    std::fs::write(dir.path().join("layout.toml"), LAYOUT).unwrap();
+    std::fs::write(dir.path().join("layout.toml"), layout).unwrap();
     rt.world
         .borrow_mut()
         .open_layout(dir.path().join("layout.toml"));
@@ -157,7 +157,12 @@ fn a_panel_widget_fixed_shorter_than_its_text_shows_no_text() {
         scene::layout_window(&mut rt, &mut fonts, root, size);
         rt.settle();
     }
+    (dir, rt, root)
+}
 
+#[test]
+fn a_panel_widget_fixed_shorter_than_its_text_shows_no_text() {
+    let (_dir, mut rt, root) = bar(LAYOUT);
     let media = shows(&mut rt, root, "media");
     assert_eq!(
         media.words.len(),
@@ -200,4 +205,239 @@ fn a_panel_widget_fixed_shorter_than_its_text_shows_no_text() {
     assert_eq!(fixed.width, 24.0);
     assert_eq!(fixed.words, [], "24 wide: no time");
     assert_eq!(fixed.icons, ["schedule"]);
+}
+
+/// The centre of a bar as its owner left it: the workspaces pulled to 300 px and the clock set
+/// to stretch beside them, in the group that keeps a fixed length.
+const CROWDED: &str = r#"version = 5
+
+[[monitor]]
+connector = "DP-1"
+primary = true
+
+[[monitor.container]]
+id = "panel"
+kind = "panel"
+edge = "rusty"
+length = "fill"
+align = "center"
+floating = false
+
+[[monitor.container.widget]]
+id = "resources"
+type = "resources"
+zone = "center"
+
+[[monitor.container.widget]]
+id = "media"
+type = "media"
+zone = "center"
+width = "stretch"
+
+[[monitor.container.widget]]
+id = "separator-1"
+type = "separator"
+zone = "center"
+
+[[monitor.container.widget]]
+id = "separator-2"
+type = "separator"
+zone = "center"
+
+[[monitor.container.widget]]
+id = "workspaces"
+type = "workspaces"
+zone = "center"
+width = 300
+
+[[monitor.container.widget]]
+id = "clock"
+type = "clock"
+zone = "center"
+width = "stretch"
+
+[[monitor.container.widget]]
+id = "util-buttons"
+type = "util-buttons"
+zone = "center"
+"#;
+
+/// A clock set to stretch is a widget of one size: with no room to stretch into it keeps the
+/// length its time and date take. It was cut down to the registry's 24 px, a strip with a
+/// piece of the date sticking out.
+#[test]
+fn a_stretching_clock_with_no_room_keeps_its_time_and_date() {
+    let (_dir, mut rt, root) = bar(CROWDED);
+    let clock = shows(&mut rt, root, "clock");
+    assert_eq!(
+        clock.words.len(),
+        3,
+        "the time, a dot, the date: {:?}",
+        clock.words
+    );
+    assert!(
+        clock.words.iter().all(|w| w.1),
+        "all of it inside its {} px: {:?}",
+        clock.width,
+        clock.words
+    );
+    let spaces = shows(&mut rt, root, "workspaces");
+    assert_eq!(spaces.width, 300.0);
+    assert!(clock.x >= spaces.x + spaces.width, "after the workspaces");
+}
+
+/// A centre group as the first run's is after its clock was carried in beside the player: both
+/// stretch in one group of a fixed length, most of which another widget has (there the
+/// resources, here a widget of a known length).
+const BESIDE_THE_PLAYER: &str = r#"version = 5
+
+[[monitor]]
+connector = "DP-1"
+primary = true
+
+[[monitor.container]]
+id = "panel"
+kind = "panel"
+edge = "rusty"
+length = "fill"
+align = "center"
+floating = false
+
+[[monitor.container.widget]]
+id = "clock-fixed"
+type = "clock"
+zone = "center"
+width = 200
+
+[[monitor.container.widget]]
+id = "clock"
+type = "clock"
+zone = "center"
+width = "stretch"
+
+[[monitor.container.widget]]
+id = "media"
+type = "media"
+zone = "center"
+width = "stretch"
+
+[[monitor.container.widget]]
+id = "separator-2"
+type = "separator"
+zone = "center"
+
+[[monitor.container.widget]]
+id = "workspaces"
+type = "workspaces"
+zone = "center"
+
+[[monitor.container.widget]]
+id = "util-buttons"
+type = "util-buttons"
+zone = "center"
+"#;
+
+/// A stretching clock carried in beside the stretching player keeps its time and date whole;
+/// the player, which cuts its title, is the one that gives way. The clock was left a strip of
+/// some 60 px with its text cut on both sides.
+#[test]
+fn a_stretching_clock_beside_a_stretching_player_keeps_its_time_and_date() {
+    let (_dir, mut rt, root) = bar(BESIDE_THE_PLAYER);
+    let clock = shows(&mut rt, root, "clock");
+    assert_eq!(
+        clock.words.len(),
+        3,
+        "the time, a dot, the date: {:?}",
+        clock.words
+    );
+    assert!(
+        clock.words.iter().all(|w| w.1),
+        "all of it inside its {} px: {:?}",
+        clock.width,
+        clock.words
+    );
+    let media = shows(&mut rt, root, "media");
+    assert!(media.x >= clock.x + clock.width, "the player after it");
+    assert!(
+        media.words.iter().all(|w| w.1),
+        "the player's title inside its {} px: {:?}",
+        media.width,
+        media.words
+    );
+}
+
+/// A widget carried along its panel in edit mode is on a chip with an outline; let go away from
+/// its place it slides there on the chip with no outline, so the only outline on the screen is
+/// the one edit mode has around that place at once. Before, the chip kept its outline for the
+/// 150 ms of the slide: two outlines a few px apart.
+#[test]
+fn a_panel_widget_let_go_slides_to_its_place_with_no_outline_of_its_own() {
+    let (_dir, mut rt, _root) = bar(LAYOUT);
+    let (host, chip) = {
+        let mut w = rt.world.borrow_mut();
+        let host = w
+            .of_type("PanelWidget")
+            .into_iter()
+            .find(|&h| {
+                w.read(h, "layoutId")
+                    .is_some_and(|v| v.to_js_string() == "clock")
+            })
+            .unwrap();
+        let chip = w.items[host]
+            .children
+            .clone()
+            .into_iter()
+            .find(|&c| {
+                is(&w, c, "Rectangle") && w.read(c, "z").is_some_and(|z| z.to_number() == -1.0)
+            })
+            .expect("the chip");
+        (host, chip)
+    };
+    let chip_is = |rt: &mut Runtime| {
+        let mut w = rt.world.borrow_mut();
+        let visible = w.read(chip, "visible").is_some_and(|v| v.truthy());
+        let outline = match w.read(chip, "border.width").map(|v| v.to_number()) {
+            Some(n) if visible && n > 0.0 => w
+                .read(chip, "border.color")
+                .is_some_and(|c| c.to_js_string() != "#00000000"),
+            _ => false,
+        };
+        (
+            visible,
+            outline,
+            w.read(host, "shiftX").map_or(f64::NAN, |v| v.to_number()),
+        )
+    };
+    assert_eq!(chip_is(&mut rt), (false, false, 0.0), "at rest");
+    rt.set(host, "carried", Value::Bool(true));
+    rt.set(host, "carryX", Value::Num(-40.0));
+    rt.settle();
+    let mut now = 1000.0;
+    rt.tick(now);
+    rt.settle();
+    assert_eq!(chip_is(&mut rt), (true, true, -40.0), "carried");
+    // Let go: the controller takes both back at once.
+    rt.set(host, "carried", Value::Bool(false));
+    rt.set(host, "carryX", Value::Num(0.0));
+    rt.settle();
+    let mut slid = 0;
+    loop {
+        let (visible, outline, shift) = chip_is(&mut rt);
+        assert!(
+            !outline,
+            "no outline once let go, {shift} px from its place"
+        );
+        if shift == 0.0 {
+            assert!(!visible, "no chip at its place");
+            break;
+        }
+        assert!(visible, "on its chip {shift} px from its place");
+        slid += 1;
+        assert!(slid < 40, "still {shift} px from its place");
+        now += 10.0;
+        rt.tick(now);
+        rt.settle();
+    }
+    assert!(slid >= 5, "it slides to its place: {slid} frames");
+    assert!(rt.errors().is_empty(), "{:?}", rt.errors());
 }

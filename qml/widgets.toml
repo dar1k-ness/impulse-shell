@@ -51,7 +51,7 @@ icon = "music_note"
 
 [widget.panel]
 component = "modules/rusty/bar/panel/MediaWidget.qml"
-size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+size = { min = [24, 24], default = [24, 24] }
 pill = true
 
 [widget.desktop]
@@ -78,7 +78,7 @@ icon = "schedule"
 
 [widget.panel]
 component = "modules/rusty/bar/panel/ClockWidget.qml"
-size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+size = { min = [24, 24], default = [24, 24] }
 pill = true
 
 [widget.desktop]
@@ -138,7 +138,7 @@ icon = "partly_cloudy_day"
 
 [widget.panel]
 component = "modules/rusty/bar/panel/WeatherWidget.qml"
-size = { min = [24, 24], max = [24, 24], default = [24, 24] }
+size = { min = [24, 24], default = [24, 24] }
 
 [widget.desktop]
 component = "modules/rusty/background/widgets/weather/DesktopWeather.qml"

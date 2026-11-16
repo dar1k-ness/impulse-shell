@@ -802,6 +802,190 @@ fn widgets_are_ordered_within_their_zone() {
     );
 }
 
+fn gap(id: &str, zone: Zone, len: u32) -> Widget {
+    Widget {
+        id: id.into(),
+        r#type: "spacer".into(),
+        place: Place::Panel {
+            zone,
+            width: Width::Px(len),
+        },
+        settings: Default::default(),
+    }
+}
+
+/// The start zone as `b, gap-after, c, gap-before, workspaces`: the room an end of `c` pulled
+/// in on either side leaves.
+fn gapped() -> Editor {
+    let mut e = Editor::new(sample());
+    // Counted without the gaps: `c` before the workspaces, the room after it before those
+    // too, the room before it where it stands.
+    for (w, index) in [
+        (panel_widget("b", Zone::Start), Some(0)),
+        (panel_widget("c", Zone::Start), Some(1)),
+        (gap("gap-before", Zone::Start, 20), Some(2)),
+        (gap("gap-after", Zone::Start, 30), Some(1)),
+    ] {
+        e.apply(Edit::AddWidget {
+            monitor: 0,
+            container: "bar".into(),
+            widget: w,
+            index,
+        })
+        .unwrap();
+    }
+    assert_eq!(
+        zone_ids(e.layout(), Zone::Start),
+        ["b", "gap-after", "c", "gap-before", "workspaces"]
+    );
+    e
+}
+
+fn gap_len(l: &Layout, id: &str) -> Option<u32> {
+    match l.monitors[0].widget(id)?.1.place {
+        Place::Panel {
+            width: Width::Px(n),
+            ..
+        } => Some(n),
+        _ => None,
+    }
+}
+
+#[test]
+fn gaps_side_by_side_become_one() {
+    let mut e = gapped();
+    // One more put beside another is that one, longer.
+    e.apply(Edit::AddWidget {
+        monitor: 0,
+        container: "bar".into(),
+        widget: gap("gap-after-2", Zone::Start, 12),
+        index: Some(1),
+    })
+    .unwrap();
+    assert_eq!(
+        zone_ids(e.layout(), Zone::Start),
+        ["b", "gap-after", "c", "gap-before", "workspaces"]
+    );
+    assert_eq!(gap_len(e.layout(), "gap-after"), Some(42));
+    // The widget between two taken out: its two gaps go with it.
+    e.apply(Edit::RemoveWidget {
+        monitor: 0,
+        id: "c".into(),
+    })
+    .unwrap();
+    assert_eq!(zone_ids(e.layout(), Zone::Start), ["b", "workspaces"]);
+    // A gap in another zone is none of this one's.
+    let mut e = gapped();
+    e.apply(Edit::AddWidget {
+        monitor: 0,
+        container: "bar".into(),
+        widget: gap("gap-after-2", Zone::Center, 12),
+        index: Some(0),
+    })
+    .unwrap();
+    assert_eq!(gap_len(e.layout(), "gap-after"), Some(30));
+    assert_eq!(gap_len(e.layout(), "gap-after-2"), Some(12));
+    // A spacer the user put there is no gap, whatever stands beside it.
+    let mut e = gapped();
+    e.apply(Edit::AddWidget {
+        monitor: 0,
+        container: "bar".into(),
+        widget: gap("spacer-1", Zone::Start, 12),
+        index: Some(1),
+    })
+    .unwrap();
+    assert_eq!(
+        zone_ids(e.layout(), Zone::Start),
+        [
+            "b",
+            "gap-after",
+            "spacer-1",
+            "c",
+            "gap-before",
+            "workspaces"
+        ]
+    );
+    assert_eq!(gap_len(e.layout(), "gap-after"), Some(30));
+}
+
+#[test]
+fn a_widget_carried_away_neither_takes_its_gaps_nor_leaves_them() {
+    let carry = |zone, index| Edit::MoveWidget {
+        monitor: 0,
+        id: "c".into(),
+        container: "bar".into(),
+        place: Place::Panel {
+            zone,
+            width: Width::Auto,
+        },
+        index,
+    };
+    // To another zone.
+    let mut e = gapped();
+    e.apply(carry(Zone::Center, Some(0))).unwrap();
+    assert_eq!(zone_ids(e.layout(), Zone::Start), ["b", "workspaces"]);
+    assert_eq!(zone_ids(e.layout(), Zone::Center), ["c", "clock"]);
+    // One undo step brings all of it back.
+    assert!(e.undo());
+    assert_eq!(
+        zone_ids(e.layout(), Zone::Start),
+        ["b", "gap-after", "c", "gap-before", "workspaces"]
+    );
+    // Past a neighbour in its own zone.
+    e.apply(carry(Zone::Start, Some(0))).unwrap();
+    assert_eq!(zone_ids(e.layout(), Zone::Start), ["c", "b", "workspaces"]);
+    // To another container.
+    let mut e = gapped();
+    e.apply(Edit::MoveWidget {
+        monitor: 0,
+        id: "c".into(),
+        container: "desk".into(),
+        place: Place::Desktop {
+            x: 10,
+            y: 10,
+            size: Some((200, 80)),
+        },
+        index: None,
+    })
+    .unwrap();
+    assert_eq!(zone_ids(e.layout(), Zone::Start), ["b", "workspaces"]);
+    // Another widget carried past: only the gaps beside where it stood go.
+    let mut e = gapped();
+    e.apply(Edit::MoveWidget {
+        monitor: 0,
+        id: "b".into(),
+        container: "bar".into(),
+        place: Place::Panel {
+            zone: Zone::Start,
+            width: Width::Auto,
+        },
+        index: Some(99),
+    })
+    .unwrap();
+    assert_eq!(
+        zone_ids(e.layout(), Zone::Start),
+        ["c", "gap-before", "workspaces", "b"]
+    );
+    // Sized or dropped where it stood, it keeps them.
+    let mut e = gapped();
+    e.apply(Edit::MoveWidget {
+        monitor: 0,
+        id: "c".into(),
+        container: "bar".into(),
+        place: Place::Panel {
+            zone: Zone::Start,
+            width: Width::Px(64),
+        },
+        index: None,
+    })
+    .unwrap();
+    e.apply(carry(Zone::Start, Some(1))).unwrap();
+    assert_eq!(
+        zone_ids(e.layout(), Zone::Start),
+        ["b", "gap-after", "c", "gap-before", "workspaces"]
+    );
+}
+
 #[test]
 fn widget_moves_between_containers() {
     let mut e = Editor::new(sample());

@@ -19,13 +19,21 @@ GridLayout {
     readonly property bool stretches: {
         for (let i = 0; i < children.length; i++) {
             const run = children[i];
-            if (run.modelData?.stretch && run.visible)
+            if (run.modelData !== undefined && run.stretch && run.visible)
                 return true;
         }
         return false;
     }
     property bool center: false
     property real spacing: 4
+    // One of its widgets is carried in edit mode (PanelWidget): the zone is above the others.
+    readonly property bool lifted: {
+        for (let i = 0; i < children.length; i++) {
+            if (children[i].lifted)
+                return true;
+        }
+        return false;
+    }
     // The zone, for its log line ("DP-1 end").
     property string label: ""
     // The length the zone's widgets may take along the panel.
@@ -48,7 +56,7 @@ GridLayout {
             for (let j = 0; j < runs[k].count; j++) {
                 const host = runs[k].host(j);
                 if (host?.item)
-                    lengths[host.entry.id] = (host.item.shown ?? true) ? host.minimumLength + (vertical ? host.leadingSpace : 0) : 0;
+                    lengths[host.entry.id] = (host.item.shown ?? true) ? host.minimumLength + host.besideLength : 0;
             }
         }
         // Not laid out yet: nothing to judge.
@@ -68,10 +76,10 @@ GridLayout {
                     continue;
                 if (cut < 0) {
                     // the original's center side groups keep their fixed length, whatever they hold.
-                    const fixed = center && !vertical && run.modelData.stretch;
+                    const fixed = center && !vertical && run.stretch;
                     const cost = fixed
                         ? (shown > 0 ? 0 : run.centerSideLength + (shownRuns > 0 ? spacing : 0))
-                        : host.minimumLength + (vertical ? host.leadingSpace : 0) + (shown > 0 ? run.spacing : run.padding * 2 + (shownRuns > 0 ? spacing : 0));
+                        : host.minimumLength + host.besideLength + (shown > 0 ? run.spacing : run.padding * 2 + (shownRuns > 0 ? spacing : 0));
                     // The widget at the bar's edge (the original's sidebar buttons) always shows: the
                     // center zone keeps its length free (edgeLength).
                     if (used + cost <= available || (shownRuns === 0 && shown === 0)) {
@@ -102,7 +110,7 @@ GridLayout {
             for (let j = 0; j < run.count; j++) {
                 const host = run.host(fillBefore ? run.count - 1 - j : j);
                 if (host?.item && (host.item.shown ?? true) && host.minimumLength > 0)
-                    return (fillBefore || fillAfter ? spacing : 0) + host.minimumLength + (vertical ? host.leadingSpace : 0) + run.padding * 2;
+                    return (fillBefore || fillAfter ? spacing : 0) + host.minimumLength + host.besideLength + run.padding * 2;
             }
         }
         return 0;

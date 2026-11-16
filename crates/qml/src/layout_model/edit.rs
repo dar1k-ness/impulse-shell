@@ -227,6 +227,17 @@ impl Editor {
     }
 }
 
+/// `l` with `edits` made, as [`Editor::apply_all`] would leave it: what a gesture under way
+/// would give, to show before it is dropped.
+pub fn applied(l: &Layout, edits: &[Edit]) -> Result<Layout, EditError> {
+    let mut next = l.clone();
+    for e in edits {
+        apply(&mut next, e.clone())?;
+    }
+    next.validate().map_err(EditError::Invalid)?;
+    Ok(next)
+}
+
 fn monitor(l: &mut Layout, i: usize) -> Result<&mut MonitorLayout, EditError> {
     l.monitors.get_mut(i).ok_or(EditError::NoMonitor(i))
 }
@@ -246,21 +257,156 @@ fn widget_index(m: &MonitorLayout, id: &str) -> Result<(usize, usize), EditError
         .ok_or_else(|| EditError::NoWidget(id.to_string()))
 }
 
-/// The zone ordering is per zone in a panel: `index` counts only the widgets of `w`'s zone.
-fn insert(c: &mut Container, w: Widget, index: Option<usize>) {
-    let zone = |p: &Place| match p {
-        Place::Panel { zone, .. } => Some(*zone),
+/// A gap: the room edit mode leaves beside a panel widget pulled in by an end, so the widget's
+/// other end and the widgets around it stay where they were. In the file it is a spacer of a
+/// set length whose id begins with `gap`, which every release reads; a panel shows it as room
+/// beside its neighbour, not as a widget.
+pub fn is_gap(w: &Widget) -> bool {
+    w.r#type == "spacer"
+        && w.id.starts_with("gap")
+        && matches!(
+            w.place,
+            Place::Panel {
+                width: Width::Px(_),
+                ..
+            }
+        )
+}
+
+/// A gap that is no room beside a widget but how far a zone that stands in the middle of its
+/// panel stands off it (`gap-shift…`): first or last in the zone, it moves the zone's widgets
+/// half its length away from that end, as a spacer there does in every release. Edit mode
+/// leaves one where a widget of the zone was pulled out by an end, so that only that end went.
+pub fn shifts(w: &Widget) -> bool {
+    is_gap(w) && w.id.starts_with("gap-shift")
+}
+
+fn zone_of(w: &Widget) -> Option<Zone> {
+    match w.place {
+        Place::Panel { zone, .. } => Some(zone),
         _ => None,
+    }
+}
+
+/// The widgets of `zone` in `c`, in layout order: their positions among all of its widgets.
+fn zone_peers(c: &Container, zone: Zone) -> Vec<usize> {
+    (0..c.widgets.len())
+        .filter(|&i| zone_of(&c.widgets[i]) == Some(zone))
+        .collect()
+}
+
+/// The gaps beside widget `id` in its zone, on either side.
+pub fn gaps_beside<'a>(c: &'a Container, id: &str) -> (Option<&'a Widget>, Option<&'a Widget>) {
+    let Some(zone) = c.widgets.iter().find(|w| w.id == id).and_then(zone_of) else {
+        return (None, None);
     };
-    let z = zone(&w.place);
-    let peers: Vec<usize> = (0..c.widgets.len())
-        .filter(|&i| zone(&c.widgets[i].place) == z)
+    let peers = zone_peers(c, zone);
+    let Some(at) = peers.iter().position(|&i| c.widgets[i].id == id) else {
+        return (None, None);
+    };
+    let gap = |k: Option<usize>| {
+        k.and_then(|k| peers.get(k))
+            .map(|&i| &c.widgets[i])
+            .filter(|w| is_gap(w) && !shifts(w))
+    };
+    (gap(at.checked_sub(1)), gap(Some(at + 1)))
+}
+
+fn beside_ids(c: &Container, id: &str) -> Vec<String> {
+    let (a, b) = gaps_beside(c, id);
+    a.into_iter().chain(b).map(|w| w.id.clone()).collect()
+}
+
+/// Gaps never pile up: two that stand side by side in a zone become one of both lengths. How
+/// far the zone stands off the middle ([`shifts`]) is no room beside a widget and joins none.
+fn merge_gaps(c: &mut Container) {
+    for zone in [Zone::Start, Zone::Center, Zone::End] {
+        let peers = zone_peers(c, zone);
+        let mut gone = vec![];
+        let mut into: Option<usize> = None;
+        for &i in &peers {
+            if !is_gap(&c.widgets[i]) || shifts(&c.widgets[i]) {
+                into = None;
+                continue;
+            }
+            let Some(first) = into else {
+                into = Some(i);
+                continue;
+            };
+            let len = |w: &Widget| match w.place {
+                Place::Panel {
+                    width: Width::Px(n),
+                    ..
+                } => n,
+                _ => 0,
+            };
+            let sum = len(&c.widgets[first]).saturating_add(len(&c.widgets[i]));
+            c.widgets[first].place = Place::Panel {
+                zone,
+                width: Width::Px(sum.min(super::MAX_PX)),
+            };
+            gone.push(i);
+        }
+        // A zone with no widget left stands nowhere.
+        if peers.iter().all(|&i| is_gap(&c.widgets[i])) {
+            gone.extend(peers.iter().filter(|&&i| shifts(&c.widgets[i])));
+        }
+        gone.sort_unstable();
+        gone.dedup();
+        for i in gone.into_iter().rev() {
+            c.widgets.remove(i);
+        }
+    }
+}
+
+/// The ids of `c`'s widgets that are no gaps, zone by zone in layout order.
+fn standing(c: &Container) -> Vec<(Option<Zone>, &str)> {
+    let mut v: Vec<_> = c
+        .widgets
+        .iter()
+        .filter(|w| !is_gap(w))
+        .map(|w| (zone_of(w), w.id.as_str()))
+        .collect();
+    v.sort_by_key(|(z, _)| z.map(|z| z as u8));
+    v
+}
+
+/// The zone ordering is per zone in a panel: `index` counts only the widgets of `w`'s zone,
+/// and of those only the ones a panel shows as widgets, not the gaps ([`is_gap`]). A gap
+/// stays with the widget it is the room of: what is put before a widget goes before the gap
+/// before it too.
+fn insert(c: &mut Container, w: Widget, index: Option<usize>) {
+    let z = zone_of(&w);
+    let all: Vec<usize> = (0..c.widgets.len())
+        .filter(|&i| zone_of(&c.widgets[i]) == z)
+        .collect();
+    let peers: Vec<usize> = all
+        .iter()
+        .copied()
+        .filter(|&i| !is_gap(&c.widgets[i]))
         .collect();
     let at = match index {
-        Some(i) if i < peers.len() => peers[i],
-        _ => peers.last().map_or(c.widgets.len(), |&p| p + 1),
+        Some(i) if i < peers.len() => {
+            let mut k = all.iter().position(|&p| p == peers[i]).unwrap_or(0);
+            while k > 0 && leads(&c.widgets[all[k - 1]]) {
+                k -= 1;
+            }
+            all[k]
+        }
+        // The last of its zone, before what holds the zone off the middle from that end.
+        _ => match all.last() {
+            Some(&p) if shifts(&c.widgets[p]) && !shifts(&w) && !peers.is_empty() => p,
+            Some(&p) => p + 1,
+            None => c.widgets.len(),
+        },
     };
     c.widgets.insert(at, w);
+}
+
+/// Whether a gap is the room before the widget after it (`gap-before…`), not after the one
+/// before it.
+pub fn leads(w: &Widget) -> bool {
+    is_gap(w) && w.id.starts_with("gap-before")
 }
 
 fn apply(l: &mut Layout, e: Edit) -> Result<(), EditError> {
@@ -274,11 +420,19 @@ fn apply(l: &mut Layout, e: Edit) -> Result<(), EditError> {
             let m = monitor(l, mi)?;
             let ci = container_index(m, &container)?;
             insert(&mut m.containers[ci], widget, index);
+            merge_gaps(&mut m.containers[ci]);
         }
         Edit::RemoveWidget { monitor: mi, id } => {
             let m = monitor(l, mi)?;
             let (ci, wi) = widget_index(m, &id)?;
-            m.containers[ci].widgets.remove(wi);
+            let c = &mut m.containers[ci];
+            // The room it was pulled in from goes with it.
+            let beside = match is_gap(&c.widgets[wi]) {
+                true => vec![],
+                false => beside_ids(c, &id),
+            };
+            c.widgets.retain(|w| w.id != id && !beside.contains(&w.id));
+            merge_gaps(c);
         }
         Edit::MoveWidget {
             monitor: mi,
@@ -290,12 +444,42 @@ fn apply(l: &mut Layout, e: Edit) -> Result<(), EditError> {
             let m = monitor(l, mi)?;
             let to = container_index(m, &container)?;
             let (ci, wi) = widget_index(m, &id)?;
+            let beside = match is_gap(&m.containers[ci].widgets[wi]) {
+                true => vec![],
+                false => beside_ids(&m.containers[ci], &id),
+            };
+            let stood: Vec<(Option<Zone>, String)> = standing(&m.containers[ci])
+                .into_iter()
+                .map(|(z, id)| (z, id.to_string()))
+                .collect();
+            let was = m.containers[ci].widgets.clone();
             let mut w = m.containers[ci].widgets.remove(wi);
             w.place = place;
+            let placed = w.place.clone();
             if ci == to && index.is_none() {
                 m.containers[ci].widgets.insert(wi, w);
             } else {
                 insert(&mut m.containers[to], w, index);
+            }
+            // Carried to another place, it neither takes the room beside it along nor leaves
+            // it behind; sized or dropped where it stood, the room stays.
+            let stands = standing(&m.containers[ci]);
+            let same = ci == to
+                && stands.len() == stood.len()
+                && stands
+                    .iter()
+                    .zip(&stood)
+                    .all(|(a, b)| a.0 == b.0 && a.1 == b.1);
+            if same {
+                // Where it stood among the gaps too.
+                m.containers[ci].widgets = was;
+                m.containers[ci].widgets[wi].place = placed;
+            } else {
+                m.containers[ci].widgets.retain(|w| !beside.contains(&w.id));
+            }
+            merge_gaps(&mut m.containers[ci]);
+            if ci != to {
+                merge_gaps(&mut m.containers[to]);
             }
         }
         Edit::SetSettings {

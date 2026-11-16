@@ -22,6 +22,7 @@ type Content = (Option<Container>, Vec<(String, Container)>);
 pub fn sync(w: &mut World) -> bool {
     let mut wrote = false;
     let generation = w.layout.as_ref().map(|l| l.generation());
+    let pulled = w.edit.pulled_panel().cloned();
     for id in w.of_type("PanelContainer") {
         let inputs = (
             str_prop(w, id, "connector"),
@@ -29,7 +30,10 @@ pub fn sync(w: &mut World) -> bool {
             w.widgets_revision,
             str_prop(w, id, "rustyBarEdge"),
         );
-        if Shown::fresh(w.panel_synced.get(&id), generation, &inputs) {
+        if Shown::fresh(w.panel_synced.get(&id), generation, &inputs)
+            && pulled.is_none()
+            && !w.panel_pulled
+        {
             continue;
         }
         let found = match inputs.1.as_str() {
@@ -40,6 +44,14 @@ pub fn sync(w: &mut World) -> bool {
                 .and_then(|l| l.container_by_id(&inputs.0, "panel", cid)),
         }
         .cloned();
+        // What an edit mode pull under way would make of it is what it shows meanwhile: let
+        // go, the layout has just that, and nothing is left to lay out again.
+        let found = match (found, &pulled) {
+            (Some(c), Some((connector, to))) if *connector == inputs.0 && to.id == c.id => {
+                Some(to.clone())
+            }
+            (found, _) => found,
+        };
         // A panel named by id is that one alone.
         let guests = match (&w.layout, inputs.1.as_str()) {
             (Some(l), "") => l
@@ -60,11 +72,14 @@ pub fn sync(w: &mut World) -> bool {
             for (name, v) in outputs(found.0.as_ref(), &found.1, &reg, edge) {
                 let zone = zone_named(name);
                 if zone.is_some_and(|z| {
-                    kept.as_ref()
-                        .is_some_and(|k| zone_widgets(k, z) == zone_widgets(&found, z))
+                    kept.as_ref().is_some_and(|k| {
+                        zone_widgets(k, z) == zone_widgets(&found, z)
+                            || resized(w, &inputs.0, k, &found, z, &reg)
+                    })
                 }) {
                     continue;
                 }
+                // Widgets made from the new array take their lengths from it.
                 w.write(id, name, v);
                 // A zone's settings errors are logged when it is published, not on every pass.
                 for (wd, _) in zone.map_or(vec![], |z| zone_widgets(&found, z)) {
@@ -83,6 +98,7 @@ pub fn sync(w: &mut World) -> bool {
             },
         );
     }
+    w.panel_pulled = pulled.is_some();
     for id in w.of_type("PanelContainer") {
         let panel = w
             .panel_synced
@@ -116,6 +132,90 @@ pub fn sync(w: &mut World) -> bool {
         w.panel_probes.insert(id, (key, list));
     }
     wrote
+}
+
+/// Zone `z` went from `was` to `now` by lengths alone: the same widgets in the same groups,
+/// each as long as the layout now says and with the room it now keeps beside it. Then the
+/// widgets the zone has made are told their lengths ([`PanelWidget`]'s `set…`) and stay; the
+/// zone lays them out again, where a new array would have it make each of them anew. False,
+/// with nothing written, when more than lengths changed or a widget is not there to tell.
+fn resized(
+    w: &mut World,
+    connector: &str,
+    was: &Content,
+    now: &Content,
+    z: Zone,
+    reg: &Registry,
+) -> bool {
+    let (was, now) = (zone_widgets(was, z), zone_widgets(now, z));
+    let (was, now) = (placed(&was, z), placed(&now, z));
+    let pill = |p: &Placed| {
+        reg.get(&p.widget.r#type)
+            .and_then(|t| t.variant(crate::widgets::Placement::Panel))
+            .is_some_and(|v| v.pill)
+    };
+    let same = was.len() == now.len()
+        && was.iter().zip(&now).all(|(a, b)| {
+            a.from == b.from
+                && a.widget.id == b.widget.id
+                && a.widget.r#type == b.widget.r#type
+                && a.widget.settings == b.widget.settings
+                && pill(a) == pill(b)
+        });
+    if !same {
+        return false;
+    }
+    // A guest's widgets are not found by id here: any change of theirs is a new array.
+    if was
+        .iter()
+        .zip(&now)
+        .any(|(a, b)| a != b && !a.from.is_empty())
+    {
+        return false;
+    }
+    let mut hosts = vec![];
+    for h in w.of_type("WidgetHost") {
+        if !w.items[h].props.contains_key("setWidth") {
+            continue;
+        }
+        let id = str_read(w, h, "layoutId");
+        if id.is_empty() || !now.iter().any(|p| p.from.is_empty() && p.widget.id == id) {
+            continue;
+        }
+        if crate::edit_mode::host_connector(w, h).as_deref() == Some(connector) {
+            hosts.push((id, h));
+        }
+    }
+    let own = || now.iter().filter(|p| p.from.is_empty());
+    if own().any(|p| hosts.iter().filter(|(id, _)| *id == p.widget.id).count() != 1) {
+        return false;
+    }
+    for p in own() {
+        let Some(&(_, h)) = hosts.iter().find(|(id, _)| *id == p.widget.id) else {
+            continue;
+        };
+        let (mode, px) = match p.width {
+            Width::Auto => ("auto", 0.0),
+            Width::Stretch => ("stretch", 0.0),
+            Width::Px(n) => ("px", f64::from(n)),
+        };
+        if str_read(w, h, "setWidth") != mode {
+            w.write(h, "setWidth", Value::str(mode));
+        }
+        for (k, v) in [
+            ("setPx", px),
+            ("setLead", f64::from(p.lead)),
+            ("setTrail", f64::from(p.trail)),
+        ] {
+            if w.read(h, k).map(|v| v.to_number()) != Some(v) {
+                w.write(h, k, Value::Num(v));
+            }
+        }
+        if !w.read(h, "set").is_some_and(|v| v.truthy()) {
+            w.write(h, "set", Value::Bool(true));
+        }
+    }
+    true
 }
 
 fn zone_named(output: &str) -> Option<Zone> {
@@ -158,6 +258,13 @@ fn flow<'a>(
     Some((base, widgets))
 }
 
+fn str_read(w: &mut World, id: usize, name: &str) -> String {
+    match w.read(id, name) {
+        Some(Value::Str(s)) => s.to_string(),
+        _ => String::new(),
+    }
+}
+
 fn str_prop(w: &World, id: usize, name: &str) -> String {
     match w.items[id].props.get(name).map(|p| &p.value) {
         Some(Value::Str(s)) => s.to_string(),
@@ -198,6 +305,7 @@ pub fn outputs(
             ("startStretch", Value::Bool(false)),
             ("centerStretch", Value::Bool(false)),
             ("endStretch", Value::Bool(false)),
+            ("centerShift", Value::Num(0.0)),
         ];
     };
     let (mode, len) = match p.length {
@@ -228,6 +336,7 @@ pub fn outputs(
         ("startStretch", Value::Bool(start_stretch)),
         ("centerStretch", Value::Bool(center_stretch)),
         ("endStretch", Value::Bool(end_stretch)),
+        ("centerShift", Value::Num(center_shift(&widgets))),
     ]
 }
 
@@ -302,7 +411,15 @@ fn entry(wd: &Widget, width: &Width, from: &str, reg: &Registry) -> (Value, bool
     let variant = reg
         .get(&wd.r#type)
         .and_then(|t| t.variant(crate::widgets::Placement::Panel));
-    let min = variant.map_or((0.0, 0.0), |v| (v.size.min.w, v.size.min.h));
+    // A type with one size on a panel (a toggle) has no least length to give way to:
+    // stretching, it keeps the length its contents take, so none of them is cut.
+    let least = |min: f64, max: f64| if min < max { min } else { f64::INFINITY };
+    let min = variant.map_or((0.0, 0.0), |v| {
+        (
+            least(v.size.min.w, v.size.max.w),
+            least(v.size.min.h, v.size.max.h),
+        )
+    });
     let e = new_obj();
     set_own(&e, "id", Value::str(&wd.id));
     set_own(&e, "type", Value::str(&wd.r#type));
@@ -313,7 +430,8 @@ fn entry(wd: &Widget, width: &Width, from: &str, reg: &Registry) -> (Value, bool
     };
     set_own(&e, "width", Value::str(mode));
     set_own(&e, "px", Value::Num(px));
-    // The registry's least size for the widget on a panel: what a stretching one keeps.
+    // The registry's least size for the widget on a panel: what a stretching one keeps, unless
+    // the widget names its own (`leastLength`).
     set_own(&e, "minWidth", Value::Num(min.0));
     set_own(&e, "minHeight", Value::Num(min.1));
     // The settings as the widget gets them: schema defaults applied, invalid overrides
@@ -349,8 +467,16 @@ fn probes(w: &World, connector: &str, panel: &str) -> Vec<Widget> {
 /// connector and panel, whether edit mode was on, and the widgets.
 pub type Probes = ((Option<u64>, String, String, bool), Vec<Widget>);
 
-fn zone(widgets: &[(&Widget, &str)], z: Zone, reg: &Registry) -> (Value, bool) {
-    let mut runs: Vec<(bool, Vec<Value>, bool, &str)> = vec![];
+/// A zone's widgets as it lays them out: each one that is no gap with its monitor and the
+/// room the layout's gaps leave before and after it along the panel
+/// ([`crate::layout_model::is_gap`]). A gap named `gap-before…` is room before the widget that
+/// follows it, any other after the one before it; with no widget on that side, it goes to the
+/// one on the other. What holds the zone off the middle of the panel ([`center_shift`]) is no
+/// room beside a widget.
+fn placed<'a>(widgets: &[(&'a Widget, &'a str)], z: Zone) -> Vec<Placed<'a>> {
+    let mut out: Vec<Placed> = vec![];
+    // Room waiting for the next widget of its monitor, and whether it would rather go back.
+    let mut waiting: Vec<(&str, u32)> = vec![];
     for &(wd, from) in widgets {
         let Place::Panel { zone, width } = &wd.place else {
             continue;
@@ -358,8 +484,88 @@ fn zone(widgets: &[(&Widget, &str)], z: Zone, reg: &Registry) -> (Value, bool) {
         if *zone != z {
             continue;
         }
-        let (e, pill) = entry(wd, width, from, reg);
-        let stretch = matches!(width, Width::Stretch);
+        if crate::layout_model::shifts(wd) {
+            continue;
+        }
+        if crate::layout_model::is_gap(wd) {
+            let Width::Px(len) = *width else { continue };
+            let prev = out.iter_mut().rev().find(|p| p.from == from);
+            match prev {
+                Some(prev) if !crate::layout_model::leads(wd) => prev.trail += len,
+                _ => waiting.push((from, len)),
+            }
+            continue;
+        }
+        let lead = waiting
+            .iter()
+            .filter(|(f, _)| *f == from)
+            .map(|(_, len)| len)
+            .sum();
+        waiting.retain(|(f, _)| *f != from);
+        out.push(Placed {
+            widget: wd,
+            from,
+            width: *width,
+            lead,
+            trail: 0,
+        });
+    }
+    // Room before a widget that is not there goes after the last one before it.
+    for (from, len) in waiting {
+        if let Some(prev) = out.iter_mut().rev().find(|p| p.from == from) {
+            prev.trail += len;
+        }
+    }
+    out
+}
+
+/// By how much the panel's own center zone has grown to one side alone, along the panel: what
+/// the gaps that say so ([`crate::layout_model::shifts`]) have before its first widget less
+/// what they have after it. The zone stands off the middle of the panel by half of that,
+/// which is where a spacer of that length at that end of the zone puts its widgets; the zone
+/// itself takes no room for it.
+fn center_shift(widgets: &[(&Widget, &str)]) -> f64 {
+    let mut first = true;
+    let mut shift = 0.0;
+    for &(wd, from) in widgets {
+        let Place::Panel {
+            zone: Zone::Center,
+            width,
+        } = &wd.place
+        else {
+            continue;
+        };
+        if !from.is_empty() {
+            continue;
+        }
+        match (crate::layout_model::shifts(wd), width) {
+            (true, Width::Px(len)) if first => shift += f64::from(*len),
+            (true, Width::Px(len)) => shift -= f64::from(*len),
+            _ => first &= crate::layout_model::is_gap(wd),
+        }
+    }
+    shift
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct Placed<'a> {
+    widget: &'a Widget,
+    from: &'a str,
+    width: Width,
+    lead: u32,
+    trail: u32,
+}
+
+fn zone(widgets: &[(&Widget, &str)], z: Zone, reg: &Registry) -> (Value, bool) {
+    let mut runs: Vec<(bool, Vec<Value>, bool, &str)> = vec![];
+    for p in placed(widgets, z) {
+        let from = p.from;
+        let (e, pill) = entry(p.widget, &p.width, from, reg);
+        if let Value::Obj(o) = &e {
+            set_own(o, "lead", Value::Num(f64::from(p.lead)));
+            set_own(o, "trail", Value::Num(f64::from(p.trail)));
+        }
+        let stretch = matches!(p.width, Width::Stretch);
         match runs.last_mut() {
             Some((true, entries, s, f)) if pill && *f == from => {
                 entries.push(e);

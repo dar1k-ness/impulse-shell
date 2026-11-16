@@ -83,7 +83,7 @@ Item {
         savesPlace: false
         x: root.restX
         y: root.restY
-        scale: (clock.forceCenter || root.wallpaperPlaced ? 1 : Math.min(root.width / Math.max(1, clock.implicitWidth), root.height / Math.max(1, clock.implicitHeight))) * (clock.draggable && clock.containsPress ? 1.05 : 1)
+        scale: (clock.forceCenter || root.wallpaperPlaced ? 1 : Math.min(root.width / Math.max(1, clock.implicitWidth), root.height / Math.max(1, clock.implicitHeight))) * clock.lift
         onReleased: root.dropped()
         textHorizontalAlignment: {
             if (!Config.options.background.widgets.clock.digital.adaptiveAlignment || clock.forceCenter || Config.options.background.widgets.clock.digital.vertical)

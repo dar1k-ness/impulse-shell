@@ -29,10 +29,14 @@ AbstractWidget {
     Behavior on opacity {
         animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
     }
-    scale: (draggable && containsPress) ? 1.05 : 1
-    Behavior on scale {
+    // The widget grows a little under the press that drags it, softly. Only that is animated:
+    // a scale its container gives it besides (a desktop widget fitted to its box) is taken at
+    // once, so the widget stays in its box while the box is resized.
+    property real lift: (draggable && containsPress) ? 1.05 : 1
+    Behavior on lift {
         animation: Appearance.animation.elementResize.numberAnimation.createObject(this)
     }
+    scale: lift
 
     draggable: placementStrategy === "free"
     // Where a drag leaves the widget is saved in the original's options. A widget the desktop layout

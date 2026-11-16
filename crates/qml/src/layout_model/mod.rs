@@ -43,7 +43,7 @@ pub mod rusty;
 pub mod sidebar;
 mod store;
 
-pub use edit::{Edit, EditError, Editor};
+pub use edit::{Edit, EditError, Editor, applied, gaps_beside, is_gap, leads, shifts};
 pub use live::{Live, Shown};
 pub use monitors::{MonitorId, MonitorMatch};
 pub use store::{LoadSource, Loaded, Store};

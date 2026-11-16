@@ -21,7 +21,10 @@ use crate::widgets::{Placement, Registry};
 pub(crate) const TYPE: &str = "EditController";
 
 /// Pointer travel before a press becomes a drag (QStyleHints::startDragDistance).
-pub const DRAG_DISTANCE: f64 = 10.0;
+pub const DRAG_DISTANCE: f64 = 5.0;
+/// The same for a press on a resize handle, which is not a click on anything: enough for a
+/// hand that shakes on the button.
+pub const HANDLE_DRAG_DISTANCE: f64 = 2.0;
 /// Distance at which a dragged edge or centre line snaps to another one.
 pub const SNAP_DISTANCE: f64 = 8.0;
 /// Side of the square resize handle on a selected widget's bottom-right corner.
@@ -132,6 +135,43 @@ pub struct Frame {
     pub rect: Rect,
     /// Whether its variant on this surface can be resized there (it has a resize handle).
     pub resizable: bool,
+    /// The least length along its panel at which none of what it shows is cut, as its host
+    /// measured it (`contentLength`); 0 where its host names none.
+    pub least: f64,
+    /// The length along its panel that keeps what it shows at any length (a clock's text)
+    /// clear of the handles at its ends (`clearLength`); 0 where its host names none. Shorter
+    /// than that, the widget is as the layout has it and its outline is around this length.
+    pub clear: f64,
+}
+
+impl Frame {
+    /// How far past each end of the widget, `len` long along its panel, its outline and the
+    /// handles on it are ([`Frame::clear`]): the widget itself is no longer for them.
+    pub fn pad(&self, len: f64) -> f64 {
+        if self.kind == Kind::Panel && self.clear > len {
+            (self.clear - len) / 2.0
+        } else {
+            0.0
+        }
+    }
+
+    /// `rect`, the widget's or its ghost's, with that past its ends ([`Frame::pad`]).
+    pub fn padded(&self, rect: &Rect, vertical: bool) -> Rect {
+        let pad = self.pad(if vertical { rect.h } else { rect.w });
+        if vertical {
+            Rect {
+                y: rect.y - pad,
+                h: rect.h + pad * 2.0,
+                ..*rect
+            }
+        } else {
+            Rect {
+                x: rect.x - pad,
+                w: rect.w + pad * 2.0,
+                ..*rect
+            }
+        }
+    }
 }
 
 /// A container's area on the monitor, where widgets can be dropped.
@@ -274,6 +314,14 @@ pub struct Preview {
     /// Where the "not allowed" badge of a refused drop goes: beside the pointer, clear of it.
     pub refusal: Option<Rect>,
     pub drop: Option<Drop>,
+    /// What else the drop changes with it: the room a panel widget pulled in leaves beside it.
+    pub also: Vec<Edit>,
+    /// A panel widget pulled by an end, where it is known without its panel laying it out:
+    /// the ghost is where the widget will show, with its other end and every widget past
+    /// that one where they are. The panel shows such a step once the pointer rests
+    /// ([`State::pending`]); any other one at once, since the next is made from how its
+    /// zone answered ([`Scene::measure`]).
+    pub known: bool,
 }
 
 /// A press on a widget, until its release.
@@ -293,6 +341,10 @@ pub struct Gesture {
     /// Where the widget shows now, once the drag began: its frame stays where the drag
     /// started ([`gather`]), the widget itself may follow the drag.
     pub shown: Option<Rect>,
+    /// A panel widget's end under a resize: how far it went for each pixel its widget grew by
+    /// (1 where the other end stays, a half in a centred group, 0 for the end its zone holds),
+    /// and the frame that was measured from. None until its length changed.
+    pub gain: Option<(Rect, f64)>,
 }
 
 /// Edit mode state, shared by every monitor's overlay.
@@ -304,8 +356,32 @@ pub struct State {
     pub gesture: Option<Gesture>,
     /// Where the pointer last was while no button held a widget: connector, x, y.
     pub hover: Option<(String, f64, f64)>,
+    /// A panel's widget is shown as a gesture has it: where the pointer carries it, or at the
+    /// length a resize would give it ([`live_hosts`]).
+    pub carrying: bool,
+    /// The panel a pull by an end would leave, with its monitor's connector, while the pull
+    /// lasts: what the panel shows meanwhile ([`State::pulled_panel`]).
+    pub pulled: Option<(String, crate::layout_model::Container)>,
+    /// The panel the step of a pull the pointer is at would leave, where the panel does not
+    /// show it yet ([`Preview::known`]): while the pointer moves only the outline goes with
+    /// it, and the panel takes this once the pointer rests ([`rest`]) and at the release.
+    pub pending: Option<(String, crate::layout_model::Container)>,
     /// Bumped by every change of the above.
     pub rev: u64,
+    /// What the overlays' outputs were last written from ([`sync_key`]).
+    synced: Option<u64>,
+}
+
+impl State {
+    /// The panel as the pull under way would leave it, with its monitor's connector: the
+    /// widget at the length the pointer has its end at, and the room that leaves beside it.
+    pub fn pulled_panel(&self) -> Option<&(String, crate::layout_model::Container)> {
+        let g = self.gesture.as_ref()?;
+        (g.dragging && g.mode == Mode::Resize && g.kind == Kind::Panel)
+            .then_some(self.pulled.as_ref())
+            .flatten()
+            .filter(|(connector, _)| *connector == g.connector)
+    }
 }
 
 /// The frame under (x, y): widgets on the panel and sidebar surfaces lie above the desktop,
@@ -325,8 +401,8 @@ pub fn hit(frames: &[Frame], x: f64, y: f64) -> Option<&Frame> {
 /// The resize handle of `r` at (x, y), on a surface of `kind`: a desktop widget has one on each
 /// corner and each side; a panel's widget on its two ends along the panel, a sidebar's on its
 /// left and right (the only axis a resize changes there). A handle reaches [`GRIP`] to either
-/// side of its edge, a corner [`HANDLE`] along both of its edges, and never past a third of a
-/// small widget, whose middle stays where a press moves it.
+/// side of its edge, a corner and a panel's or a sidebar's end [`HANDLE`] into the widget, and
+/// never past a third of a small widget, whose middle stays where a press moves it.
 pub fn handle_at(r: &Rect, kind: Kind, vertical: bool, x: f64, y: f64) -> Option<Edges> {
     if x < r.x - GRIP || x > r.right() + GRIP || y < r.y - GRIP || y > r.bottom() + GRIP {
         return None;
@@ -355,18 +431,35 @@ pub fn handle_at(r: &Rect, kind: Kind, vertical: bool, x: f64, y: f64) -> Option
             far(corner)
         }
         Kind::Desktop => far(near),
+        // An end of a panel's or a sidebar's widget is all there is to hold it by: it reaches as
+        // far into the widget as a corner does.
         Kind::Panel if vertical => Edges {
             left: false,
             right: false,
-            ..far(near)
+            ..far(corner)
         },
         Kind::Panel | Kind::Sidebar => Edges {
             top: false,
             bottom: false,
-            ..far(near)
+            ..far(corner)
         },
     };
     (e != Edges::default()).then_some(e)
+}
+
+/// The end of a panel widget at `r` that the handle `e` holds: where it is along the panel, the
+/// widget's length, and which way that end goes as the widget grows (-1 the leading end's).
+fn held_end(r: &Rect, e: Edges, vertical: bool) -> (f64, f64, f64) {
+    let (at, len, leading) = if vertical {
+        (r.y, r.h, e.top && !e.bottom)
+    } else {
+        (r.x, r.w, e.left && !e.right)
+    };
+    if leading {
+        (at, len, -1.0)
+    } else {
+        (at + len, len, 1.0)
+    }
 }
 
 /// Whether a widget of type `ty` can be resized on a surface of `kind`: its variant there has
@@ -573,7 +666,82 @@ impl Scene<'_> {
         if !f.resizable {
             return None;
         }
-        handle_at(&f.rect, f.kind, self.vertical(f), x, y)
+        let vertical = self.vertical(f);
+        handle_at(&f.padded(&f.rect, vertical), f.kind, vertical, x, y)
+    }
+
+    /// Notes how the held end of a panel widget under a resize answers its length, from where
+    /// its panel has laid it out by now (the widget takes the length of each step at once,
+    /// [`live_hosts`]): the next step asks for the length that puts that end under the pointer,
+    /// whichever way its zone grows.
+    pub fn measure(&self, g: &mut Gesture) {
+        if g.mode != Mode::Resize || g.kind != Kind::Panel {
+            return;
+        }
+        let Some(f) = self.frame(&g.id) else {
+            return;
+        };
+        let vertical = self.vertical(f);
+        let (from, _) = g.gain.unwrap_or((g.start, 1.0));
+        let (was, now) = (
+            held_end(&from, g.edges, vertical),
+            held_end(&f.rect, g.edges, vertical),
+        );
+        // Only what the widget grew by past the room beside the held end says how its zone
+        // answers: up to there that end goes as far as the widget grows, whatever the zone.
+        let floor = held_end(&g.start, g.edges, vertical).1 + self.room_beside(g, now.2 < 0.0);
+        let past = |(at, len, out): (f64, f64, f64)| {
+            (at + (floor - len).max(0.0) * out, len.max(floor), out)
+        };
+        let (was, now) = (past(was), past(now));
+        let grown = now.1 - was.1;
+        if grown.abs() >= 2.0 {
+            g.gain = Some((f.rect, (now.0 - was.0) * now.2 / grown));
+        }
+    }
+
+    /// The room the layout has beside the end of `g`'s panel widget that is held, the leading
+    /// one or the other ([`crate::layout_model::is_gap`]).
+    fn room_beside(&self, g: &Gesture, leading: bool) -> f64 {
+        let Some((c, w)) = self.widget(&g.id) else {
+            return 0.0;
+        };
+        let (before, after) = crate::layout_model::gaps_beside(c, &w.id);
+        (if leading { before } else { after }).map_or(0.0, |b| match b.place {
+            Place::Panel {
+                width: Width::Px(n),
+                ..
+            } => f64::from(n),
+            _ => 0.0,
+        })
+    }
+
+    /// The resize handle of the selected widget `f` that the pointer at (x, y) is on
+    /// ([`Scene::handle_of`]). A handle reaches out of its frame; where that is on another
+    /// widget (the next one in a panel's row, a panel's widget above a desktop one), the
+    /// pointer is on that widget: a press there takes it, not the selected one's handle.
+    pub fn grip(&self, f: &Frame, x: f64, y: f64) -> Option<Edges> {
+        let e = self.handle_of(f, x, y)?;
+        // Its outline is its own, where that is wider than the widget ([`Frame::padded`]).
+        let on_another = !f.padded(&f.rect, self.vertical(f)).contains(x, y)
+            && self
+                .frames
+                .iter()
+                .any(|o| o.id != f.id && o.rect.contains(x, y));
+        (!on_another).then_some(e)
+    }
+
+    /// What a press at (x, y) takes while the widget `selected` is the selected one: that
+    /// widget by a resize handle the pointer is on ([`Scene::grip`]), else the widget under
+    /// the pointer ([`hit`]), to move it. Never a widget the pointer is not on while it is on
+    /// another.
+    pub fn pick(&self, selected: Option<&str>, x: f64, y: f64) -> Option<(&Frame, Mode, Edges)> {
+        if let Some(f) = selected.and_then(|id| self.frame(id))
+            && let Some(e) = self.grip(f, x, y)
+        {
+            return Some((f, Mode::Resize, e));
+        }
+        hit(&self.frames, x, y).map(|f| (f, Mode::Move, Edges::default()))
     }
 
     /// Where the overlay draws the outline of `rect`, the frame of `f` or its ghost: on whole
@@ -583,6 +751,8 @@ impl Scene<'_> {
         let mut r = *rect;
         if f.kind == Kind::Panel {
             let vertical = self.vertical(f);
+            // And past the ends of a widget shorter than what it shows.
+            r = f.padded(rect, vertical);
             let (from, to) = self
                 .frames
                 .iter()
@@ -648,7 +818,15 @@ impl Scene<'_> {
                     (p.ghost.w, g.start.w, lim.min.0, lim.max.0)
                 };
                 let room = region.map_or(f64::INFINITY, |r| {
-                    (shown + r.room[*zone as usize].max(0.0)).floor()
+                    // The zone of the middle has its room on both sides, and grows to one.
+                    let room = r.room[*zone as usize].max(0.0);
+                    (shown
+                        + if *zone == Zone::Center {
+                            room / 2.0
+                        } else {
+                            room
+                        })
+                    .floor()
                 });
                 Some(SizeHint {
                     kind: Kind::Panel,
@@ -964,6 +1142,7 @@ impl Scene<'_> {
                         guides,
                         marker: None,
                         refusal: None,
+                        also: vec![],
                         drop: Some(Drop {
                             container: c.id.clone(),
                             place: Place::Desktop {
@@ -973,6 +1152,7 @@ impl Scene<'_> {
                             },
                             index: None,
                         }),
+                        known: false,
                     },
                     None => Preview {
                         ghost: want,
@@ -985,21 +1165,86 @@ impl Scene<'_> {
                 // The shown panel's resolved orientation (an ri-bar panel follows the original's bar settings).
                 let vertical = region.is_some_and(|r| r.vertical);
                 let lim = self.limits(&w.r#type, Placement::Panel);
-                let (len, min) = if vertical {
-                    (want.h, lim.min.1 as f64)
+                let (min, most) = if vertical {
+                    (lim.min.1 as f64, lim.max.1 as f64)
                 } else {
-                    (want.w, lim.min.0 as f64)
+                    (lim.min.0 as f64, lim.max.0 as f64)
+                };
+                // The widget shows a step's length ([`live_hosts`]), at once or once the pointer
+                // rests ([`Preview::known`]), and its zone places it: the next length is the one that puts the held end under the
+                // pointer, by how that end has answered so far ([`Scene::measure`]). The end
+                // its zone holds in place cannot follow: the widget grows by as far as the
+                // pointer went.
+                let frame = self.frame(&w.id);
+                let now = frame.map_or(g.start, |f| f.rect);
+                let (start_at, start_len, out) = held_end(&g.start, e, vertical);
+                let (now_at, now_len, _) = held_end(&now, e, vertical);
+                let gone = if vertical { dy } else { dx };
+                // The room already beside the held end ([`crate::layout_model::is_gap`]): pulled
+                // in, the widget leaves as much more there as it gives up, and pulled out it
+                // takes that first, so its other end and every widget around it stand still.
+                let (before, after) = crate::layout_model::gaps_beside(c, &w.id);
+                let leading = out < 0.0;
+                let beside = if leading { before } else { after };
+                let had = beside.map_or(0.0, |b| match b.place {
+                    Place::Panel {
+                        width: Width::Px(n),
+                        ..
+                    } => f64::from(n),
+                    _ => 0.0,
+                });
+                // The handle is on the outline, which is past the end of a widget shorter
+                // than what it shows by half of what it lacks ([`Frame::pad`]): the widget
+                // grows by twice what the pointer went until it has that length, so the
+                // handle stays under the pointer.
+                let clear = frame.map_or(0.0, |f| f.clear);
+                let to = start_len + frame.map_or(0.0, |f| f.pad(start_len)) + gone * out;
+                let wanted = if to < clear { to * 2.0 - clear } else { to };
+                let gain = g.gain.map_or(1.0, |(_, gain)| gain);
+                // A zone in the middle of its panel grows to both sides: it is held off the
+                // middle by as far as the widget grows past that room ([`Scene::shift_edits`]),
+                // so the held end alone goes, as far as the pointer.
+                let centred = *zone == Zone::Center;
+                // Where the length does not come from how the zone answered, or that end has
+                // gone as far as the widget grew, the step is known before the panel shows it.
+                let known =
+                    wanted <= start_len + had || centred || g.gain.is_some_and(|g| g.1 >= 0.75);
+                let len = if wanted <= start_len + had || centred {
+                    wanted
+                } else if gain < 0.25 {
+                    // The held end is against what its zone ends at: growing would move the
+                    // other one.
+                    start_len + had
+                } else {
+                    // Past that room the widget's zone places it: the next length is the one
+                    // that puts the held end under the pointer, by how it has answered so far.
+                    let off = (start_at + gone - now_at) * out;
+                    if off.abs() < 1.0 {
+                        now_len
+                    } else {
+                        now_len + off / if gain < 0.75 { 0.5 } else { 1.0 }
+                    }
                 };
                 // No longer than its type allows, nor than its zone has room for: the length it
-                // shows and what one more widget could take there.
-                let (shown, most) = if vertical {
-                    (g.start.h, lim.max.1 as f64)
-                } else {
-                    (g.start.w, lim.max.0 as f64)
-                };
-                let room =
-                    region.map_or(f64::INFINITY, |r| shown + r.room[*zone as usize].max(0.0));
-                let len = len.round().min(most.min(room.floor())).max(min).max(1.0);
+                // shows, the room beside the held end and what one more widget could take
+                // there. No shorter than its type allows, nor than shows its contents whole
+                // where there is room for that; one the layout already has shorter than that
+                // stays as short, and is as it was when the pull begins.
+                let room = region.map_or(f64::INFINITY, |r| {
+                    // The zone of the middle has its room on both sides, and grows to one.
+                    let room = r.room[*zone as usize].max(0.0);
+                    now_len.max(start_len + had) + if centred { room / 2.0 } else { room }
+                });
+                let most = most.min(room.floor());
+                let least = frame.map_or(0.0, |f| f.least.ceil()).min(most);
+                let min = min.max(least.min(start_len.round()));
+                let len = len.round().min(most).max(min).max(1.0);
+                let room_left = (start_len.round() + had - len).max(0.0) as u32;
+                let mut also = self.gap_edits(c, w, *zone, leading, beside, room_left);
+                if centred {
+                    let past = (len - start_len.round() - had).max(0.0) as u32;
+                    also.extend(self.shift_edits(c, leading, past));
+                }
                 // The end the handle is on moves; the widget's place along the panel is its
                 // zone's to give once dropped.
                 let ghost = if vertical {
@@ -1033,6 +1278,7 @@ impl Scene<'_> {
                     guides: vec![],
                     marker: None,
                     refusal: None,
+                    also,
                     drop: Some(Drop {
                         container: c.id.clone(),
                         place: Place::Panel {
@@ -1041,6 +1287,7 @@ impl Scene<'_> {
                         },
                         index: None,
                     }),
+                    known,
                 }
             }
             (Place::Sidebar { size }, ContainerKind::Sidebar(s)) => {
@@ -1080,11 +1327,13 @@ impl Scene<'_> {
                     guides: vec![],
                     marker: None,
                     refusal: None,
+                    also: vec![],
                     drop: Some(Drop {
                         container: c.id.clone(),
                         place: Place::Sidebar { size: n },
                         index: None,
                     }),
+                    known: false,
                 }
             }
             _ => Preview::default(),
@@ -1107,10 +1356,38 @@ impl Scene<'_> {
             y: g.start.y + dy,
             ..g.start
         };
+        // A desktop widget is carried itself, wherever the pointer takes it: also over a
+        // place it cannot land on, where letting go puts it back.
+        let carried = matches!(w.place, Place::Desktop { .. }).then_some(moved);
+        // A panel's widget is carried itself along its panel while the pointer is over it (the
+        // panel's window ends there): what the pointer is over is the widget it holds, not an
+        // empty box on top of the others.
+        let carried = carried.or_else(|| {
+            let r = self.region_at(x, y)?;
+            (r.kind == Kind::Panel && r.container == c.id && matches!(w.place, Place::Panel { .. }))
+                .then(|| {
+                    if r.vertical {
+                        let top = r.rect.y.min(g.start.y);
+                        let bottom = (r.rect.bottom() - g.start.h).max(g.start.y);
+                        Rect {
+                            y: moved.y.clamp(top, bottom),
+                            ..g.start
+                        }
+                    } else {
+                        let left = r.rect.x.min(g.start.x);
+                        let right = (r.rect.right() - g.start.w).max(g.start.x);
+                        Rect {
+                            x: moved.x.clamp(left, right),
+                            ..g.start
+                        }
+                    }
+                })
+        });
         let Some(region) = self.region_at(x, y) else {
             return Preview {
                 ghost: moved,
                 valid: false,
+                raw: carried,
                 ..Preview::default()
             };
         };
@@ -1119,6 +1396,7 @@ impl Scene<'_> {
                 ghost: moved,
                 valid: false,
                 target: Some(region.rect),
+                raw: carried,
                 ..Preview::default()
             };
         }
@@ -1176,12 +1454,13 @@ impl Scene<'_> {
                             .collect();
                         Preview {
                             ghost: land,
-                            raw: same.then_some(moved),
+                            raw: carried,
                             valid: true,
                             target: Some(region.rect),
                             guides,
                             marker: None,
                             refusal: None,
+                            also: vec![],
                             // A move keeps the widget's size, or its natural size if it has
                             // none; one from a panel or the sidebar takes its natural size.
                             drop: Some(Drop {
@@ -1196,18 +1475,38 @@ impl Scene<'_> {
                                 },
                                 index: None,
                             }),
+                            known: false,
                         }
                     }
                     None => Preview {
                         ghost: snapped,
                         valid: false,
                         target: Some(region.rect),
+                        raw: carried,
                         ..Preview::default()
                     },
                 }
             }
             Kind::Panel => {
-                let (zone, index, marker) = self.panel_slot(region, &w.id, x, y);
+                let own = (c.id == region.container).then_some(g.start);
+                // A widget carried along its own panel goes by its middle, not by the pointer:
+                // held near its end and carried a little, a long widget stays in its place
+                // until its body is over the next one. Near a panel end the point runs ahead
+                // to the end with the pointer, so the last place stays in reach.
+                let (sx, sy) = match carried {
+                    Some(_) if region.vertical => {
+                        let (lo, hi) = (region.rect.y, region.rect.bottom());
+                        let mid = moved.y + moved.h / 2.0;
+                        (x, mid.max(2.0 * y - hi).min(2.0 * y - lo))
+                    }
+                    Some(_) => {
+                        let (lo, hi) = (region.rect.x, region.rect.right());
+                        let mid = moved.x + moved.w / 2.0;
+                        (mid.max(2.0 * x - hi).min(2.0 * x - lo), y)
+                    }
+                    None => (x, y),
+                };
+                let (zone, index, marker) = self.panel_slot(region, &w.id, own, sx, sy);
                 let width = match w.place {
                     Place::Panel { width, .. } => width,
                     _ => Width::Auto,
@@ -1223,6 +1522,7 @@ impl Scene<'_> {
                         },
                         valid: false,
                         target: Some(region.rect),
+                        raw: carried,
                         ..Preview::default()
                     };
                 }
@@ -1243,17 +1543,19 @@ impl Scene<'_> {
                 };
                 Preview {
                     ghost,
-                    raw: None,
+                    raw: carried,
                     valid: true,
                     target: Some(region.rect),
                     guides: vec![],
                     marker: Some(marker),
                     refusal: None,
+                    also: vec![],
                     drop: Some(Drop {
                         container: region.container.clone(),
                         place: Place::Panel { zone, width },
                         index: Some(index),
                     }),
+                    known: false,
                 }
             }
             Kind::Sidebar => {
@@ -1281,22 +1583,25 @@ impl Scene<'_> {
                         ghost,
                         valid: false,
                         target: Some(region.rect),
+                        raw: carried,
                         ..Preview::default()
                     };
                 }
                 Preview {
                     ghost,
-                    raw: None,
+                    raw: carried,
                     valid: true,
                     target: Some(region.rect),
                     guides: vec![],
                     marker: Some(marker),
                     refusal: None,
+                    also: vec![],
                     drop: Some(Drop {
                         container: region.container.clone(),
                         place: Place::Sidebar { size },
                         index: Some(index),
                     }),
+                    known: false,
                 }
             }
         }
@@ -1307,7 +1612,18 @@ impl Scene<'_> {
     /// the start and end zones take the rest on either side. The index counts every widget the
     /// layout has in the zone, also one that draws nothing now (weather that is off, a battery
     /// on a desktop PC): the drop goes right before the drawn widget the marker stands before.
-    pub fn panel_slot(&self, region: &Region, id: &str, x: f64, y: f64) -> (Zone, usize, Rect) {
+    /// Where a separator lies between the two drawn widgets the pointer is between, they are in
+    /// two groups: the half of the gap the pointer is in says which one it joins. `own` is where
+    /// the carried widget stood on this panel: let go between the drawn widgets it stood
+    /// between, it stays where it is in the layout, also alone between two separators.
+    pub fn panel_slot(
+        &self,
+        region: &Region,
+        id: &str,
+        own: Option<Rect>,
+        x: f64,
+        y: f64,
+    ) -> (Zone, usize, Rect) {
         let v = region.vertical;
         let along = |r: &Rect| {
             if v {
@@ -1359,10 +1675,11 @@ impl Scene<'_> {
                 (a + b) / 2.0 < p
             })
             .count();
-        let pos = match (
+        let (prev, next) = (
             index.checked_sub(1).and_then(|i| peers.get(i)),
             peers.get(index),
-        ) {
+        );
+        let pos = match (prev, next) {
             (Some(prev), Some(next)) => (along(&prev.rect).1 + along(&next.rect).0) / 2.0,
             (Some(prev), None) => along(&prev.rect).1,
             (None, Some(next)) => along(&next.rect).0,
@@ -1372,7 +1689,7 @@ impl Scene<'_> {
                 Zone::End => hi,
             },
         };
-        let order: Vec<&str> = self
+        let zone_widgets: Vec<&crate::layout_model::Widget> = self
             .layout
             .monitors
             .get(self.monitor)
@@ -1380,15 +1697,44 @@ impl Scene<'_> {
             .map(|c| {
                 c.widgets
                     .iter()
-                    .filter(|w| w.id != id && zone_of(&w.id) == Some(zone))
-                    .map(|w| w.id.as_str())
+                    .filter(|w| zone_of(&w.id) == Some(zone))
                     .collect()
             })
             .unwrap_or_default();
-        let at = |f: &&Frame| order.iter().position(|w| *w == f.id);
-        let index = match peers.get(index) {
+        // Where it is in its zone now: as many of the others stand before it.
+        let stood = zone_widgets.iter().position(|w| w.id == id);
+        let order: Vec<&crate::layout_model::Widget> =
+            zone_widgets.into_iter().filter(|w| w.id != id).collect();
+        let at = |f: &&Frame| order.iter().position(|w| w.id == f.id);
+        // The places in the layout between the two drawn widgets: more than one where widgets
+        // that draw nothing stand between them.
+        let first = prev.and_then(at).map_or(0, |i| i + 1);
+        let last = match next {
             Some(next) => at(next).unwrap_or(index),
             None => peers.last().and_then(at).map_or(index, |i| i + 1),
+        };
+        let parted = order
+            .get(first..last)
+            .is_some_and(|between| between.iter().any(|w| w.r#type == "separator"));
+        // Its own place holds for the whole gap it stands in, up to the drawn widgets on either
+        // side: carried a little way, it does not leave its group for the one next to it.
+        let gap = (
+            prev.map_or(lo, |f| along(&f.rect).1),
+            next.map_or(hi, |f| along(&f.rect).0),
+        );
+        let kept = stood
+            .filter(|i| (first..=last).contains(i) && (gap.0..=gap.1).contains(&p))
+            .zip(own.map(|r| along(&r)));
+        let (index, pos) = match (kept, prev, next) {
+            (Some((i, (a, _))), ..) => (i, a),
+            (None, Some(prev), Some(next)) if parted => {
+                if p < pos {
+                    (first, along(&prev.rect).1)
+                } else {
+                    (last, along(&next.rect).0)
+                }
+            }
+            _ => (last, pos),
         };
         let t = 3.0;
         let marker = if v {
@@ -1484,18 +1830,148 @@ impl Scene<'_> {
     }
 
     /// The edit a finished gesture makes, if any.
-    pub fn commit(&self, g: &Gesture) -> Option<Edit> {
-        let d = g.preview.as_ref()?.drop.clone()?;
-        g.preview
-            .as_ref()
-            .is_some_and(|p| p.valid)
-            .then_some(Edit::MoveWidget {
+    pub fn commit(&self, g: &Gesture) -> Option<Vec<Edit>> {
+        let p = g.preview.as_ref().filter(|p| p.valid)?;
+        let d = p.drop.clone()?;
+        let mut edits = vec![Edit::MoveWidget {
+            monitor: self.monitor,
+            id: g.id.clone(),
+            container: d.container,
+            place: d.place,
+            index: d.index,
+        }];
+        edits.extend(p.also.iter().cloned());
+        Some(edits)
+    }
+
+    /// The edits that leave `len` px of room beside panel widget `w` at its leading or trailing
+    /// end, where `beside` is the gap the layout has there now: that one made as long or taken
+    /// out, or a new one put in.
+    fn gap_edits(
+        &self,
+        c: &crate::layout_model::Container,
+        w: &crate::layout_model::Widget,
+        zone: Zone,
+        leading: bool,
+        beside: Option<&crate::layout_model::Widget>,
+        len: u32,
+    ) -> Vec<Edit> {
+        let place = Place::Panel {
+            zone,
+            width: Width::Px(len),
+        };
+        match (beside, len) {
+            (None, 0) => vec![],
+            (Some(b), 0) => vec![Edit::RemoveWidget {
                 monitor: self.monitor,
-                id: g.id.clone(),
-                container: d.container,
-                place: d.place,
-                index: d.index,
-            })
+                id: b.id.clone(),
+            }],
+            (Some(b), _) if b.place == place => vec![],
+            (Some(b), _) => vec![Edit::MoveWidget {
+                monitor: self.monitor,
+                id: b.id.clone(),
+                container: c.id.clone(),
+                place,
+                index: None,
+            }],
+            (None, _) => {
+                // Among the zone's widgets, the gaps not counted.
+                let at = c
+                    .widgets
+                    .iter()
+                    .filter(|o| matches!(o.place, Place::Panel { zone: z, .. } if z == zone))
+                    .filter(|o| !crate::layout_model::is_gap(o))
+                    .position(|o| o.id == w.id);
+                let Some(m) = self.layout.monitors.get(self.monitor) else {
+                    return vec![];
+                };
+                vec![Edit::AddWidget {
+                    monitor: self.monitor,
+                    container: c.id.clone(),
+                    widget: crate::layout_model::Widget {
+                        id: m.fresh_id(if leading { "gap-before" } else { "gap-after" }),
+                        r#type: "spacer".into(),
+                        place,
+                        settings: Default::default(),
+                    },
+                    index: at.map(|at| if leading { at } else { at + 1 }),
+                }]
+            }
+        }
+    }
+
+    /// The edits that hold panel `c`'s center zone `past` px further off the middle of the
+    /// panel, away from the end a widget of it grew at (`leading`: its first), so that end
+    /// alone went: half of it is how far the zone goes, as a spacer of that length at the
+    /// zone's other end puts it ([`crate::layout_model::shifts`]). What holds it off the
+    /// other way is taken back first; the zone has such a gap at one end at most.
+    fn shift_edits(
+        &self,
+        c: &crate::layout_model::Container,
+        leading: bool,
+        past: u32,
+    ) -> Vec<Edit> {
+        let zone = Zone::Center;
+        let peers: Vec<_> = c
+            .widgets
+            .iter()
+            .filter(|o| matches!(o.place, Place::Panel { zone: z, .. } if z == zone))
+            .collect();
+        let first = peers
+            .iter()
+            .position(|o| !crate::layout_model::is_gap(o))
+            .unwrap_or(peers.len());
+        let len = |o: &crate::layout_model::Widget| match o.place {
+            Place::Panel {
+                width: Width::Px(n),
+                ..
+            } => i64::from(n),
+            _ => 0,
+        };
+        let shifts = |o: &&&crate::layout_model::Widget| crate::layout_model::shifts(o);
+        let before = peers[..first].iter().find(shifts).copied();
+        let after = peers[first..].iter().rev().find(shifts).copied();
+        let net = before.map_or(0, len) - after.map_or(0, len)
+            + if leading { -1 } else { 1 } * i64::from(past);
+        let mut edits = vec![];
+        for (gap, want, index) in [(before, net.max(0), Some(0)), (after, (-net).max(0), None)] {
+            let place = Place::Panel {
+                zone,
+                width: Width::Px(want.min(i64::from(crate::layout_model::MAX_PX)) as u32),
+            };
+            match (gap, want) {
+                (None, 0) => {}
+                (Some(g), 0) => edits.push(Edit::RemoveWidget {
+                    monitor: self.monitor,
+                    id: g.id.clone(),
+                }),
+                (Some(g), _) if g.place == place => {}
+                (Some(g), _) => edits.push(Edit::MoveWidget {
+                    monitor: self.monitor,
+                    id: g.id.clone(),
+                    container: c.id.clone(),
+                    place,
+                    index: None,
+                }),
+                (None, _) => {
+                    let Some(m) = self.layout.monitors.get(self.monitor) else {
+                        continue;
+                    };
+                    edits.push(Edit::AddWidget {
+                        monitor: self.monitor,
+                        container: c.id.clone(),
+                        widget: crate::layout_model::Widget {
+                            id: m.fresh_id("gap-shift"),
+                            r#type: "spacer".into(),
+                            place,
+                            settings: Default::default(),
+                        },
+                        index,
+                    });
+                }
+            }
+        }
+        edits
     }
 
     /// The edit for an arrow key on the selected widget: a desktop widget moves by `step`
@@ -2002,6 +2478,12 @@ fn gather(w: &mut World, connector: &str) -> (Vec<Frame>, Vec<Region>) {
             kind: Kind::of(&c.kind),
             rect,
             resizable: true,
+            least: Some(num(w, h, "contentLength"))
+                .filter(|l| w.items[h].props.contains_key("contentLength") && l.is_finite())
+                .map_or(0.0, |l| l.max(0.0)),
+            clear: Some(num(w, h, "clearLength"))
+                .filter(|l| w.items[h].props.contains_key("clearLength") && l.is_finite())
+                .map_or(0.0, |l| l.max(0.0)),
         });
     }
     for ty in [
@@ -2131,36 +2613,54 @@ fn gather(w: &mut World, connector: &str) -> (Vec<Frame>, Vec<Region>) {
     (frames, regions)
 }
 
-/// Where a desktop widget of `container` shows mid-drag, while the drag has a valid landing
-/// place within that container: a move where the pointer has it, a resize at the size it would
-/// get, so the widget itself follows the pointer (as in Plasma); nothing is written until the
-/// drop. A widget dragged out of its container stays put. The
+/// Where a desktop widget of `container` shows mid-drag: a move where the pointer has it,
+/// whether or not it could land there, a resize at the size it would get, so the widget itself
+/// follows the pointer (as in Plasma); nothing is written until the drop. The
 /// flag: a resize, which sizes even a widget that otherwise takes its natural size.
 pub(crate) fn live_desktop(
     w: &World,
     container: &crate::layout_model::Container,
 ) -> Option<(String, DRect, bool)> {
     let g = w.edit.gesture.as_ref().filter(|g| g.dragging)?;
-    let p = g.preview.as_ref().filter(|p| p.valid)?;
-    let d = p.drop.as_ref().filter(|d| d.container == container.id)?;
-    let Place::Desktop { x, y, .. } = d.place else {
+    let p = g.preview.as_ref()?;
+    if !container.widgets.iter().any(|wd| wd.id == g.id) {
         return None;
-    };
+    }
     let px = |v: f64| v.round().clamp(1.0, u32::MAX as f64) as u32;
-    container.widgets.iter().any(|wd| wd.id == g.id).then(|| {
-        // A move shows the widget where the pointer has it; it lands where the ghost is.
-        let (x, y) = match p.raw.filter(|_| g.mode == Mode::Move) {
-            Some(raw) => (raw.x.round() as i32, raw.y.round() as i32),
-            None => (x, y),
-        };
-        let r = DRect {
-            x,
-            y,
-            w: px(p.ghost.w),
-            h: px(p.ghost.h),
-        };
-        (g.id.clone(), r, g.mode == Mode::Resize)
-    })
+    let r = match g.mode {
+        // A move shows the widget where it would land on its desktop: it takes the snap and
+        // stops at the screen's edge itself, with no box of its landing place coming and going
+        // around it. Where it cannot land it is where the pointer has it.
+        Mode::Move => {
+            let raw = p.raw?;
+            let lands = p.drop.as_ref().is_some_and(|d| {
+                p.valid && d.container == container.id && matches!(d.place, Place::Desktop { .. })
+            });
+            let at = if lands { p.ghost } else { raw };
+            DRect {
+                x: at.x.round() as i32,
+                y: at.y.round() as i32,
+                w: px(raw.w),
+                h: px(raw.h),
+            }
+        }
+        Mode::Resize => {
+            let d = p
+                .drop
+                .as_ref()
+                .filter(|d| p.valid && d.container == container.id)?;
+            let Place::Desktop { x, y, .. } = d.place else {
+                return None;
+            };
+            DRect {
+                x,
+                y,
+                w: px(p.ghost.w),
+                h: px(p.ghost.h),
+            }
+        }
+    };
+    Some((g.id.clone(), r, g.mode == Mode::Resize))
 }
 
 /// The columns a widget of the sidebar `container` spans while a resize pulls it: what the
@@ -2209,9 +2709,21 @@ fn with_scene<R>(w: &mut World, item: usize, f: impl FnOnce(&Scene) -> R) -> Opt
     if connector.is_empty() || w.layout.is_none() {
         return None;
     }
-    let (frames, regions) = gather(w, &connector);
+    let gathered = gather(w, &connector);
+    with_gathered(w, item, &connector, gathered, f)
+}
+
+/// [`with_scene`] over frames and regions [`gather`] has just given for `connector`.
+fn with_gathered<R>(
+    w: &mut World,
+    item: usize,
+    connector: &str,
+    (frames, regions): (Vec<Frame>, Vec<Region>),
+    f: impl FnOnce(&Scene) -> R,
+) -> Option<R> {
+    w.layout.as_ref()?;
     let bounds = bounds(w, item, &regions);
-    let monitor = w.layout.as_mut()?.attach(&connector);
+    let monitor = w.layout.as_mut()?.attach(connector);
     let registry = w.widgets.clone();
     let measured: Vec<usize> = w.desktop_natural.keys().copied().collect();
     let (mut natural, mut placed) = (HashMap::new(), HashMap::new());
@@ -2237,10 +2749,15 @@ fn with_scene<R>(w: &mut World, item: usize, f: impl FnOnce(&Scene) -> R) -> Opt
 }
 
 fn apply(w: &mut World, edit: Edit) -> bool {
+    apply_all(w, &[edit])
+}
+
+/// Makes `edits` as one undo step.
+fn apply_all(w: &mut World, edits: &[Edit]) -> bool {
     let Some(live) = w.layout.as_mut() else {
         return false;
     };
-    match live.apply(&[edit]) {
+    match live.apply(edits) {
         Ok(Ok(changed)) => changed,
         Ok(Err(save)) => {
             w.errors.push(format!("EditController: {save}"));
@@ -2292,16 +2809,14 @@ fn press(w: &mut World, item: usize, x: f64, y: f64) -> bool {
     let connector = text(w, item, "connector");
     let selected = selected_on(w, &connector);
     let picked = with_scene(w, item, |s| {
-        // The selected widget's resize handle may stick out of its frame; it wins.
-        if let Some(f) = selected.as_deref().and_then(|id| s.frame(id))
-            && let Some(e) = s.handle_of(f, x, y)
-        {
-            return Some((f.clone(), Mode::Resize, e));
-        }
-        hit(&s.frames, x, y).map(|f| (f.clone(), Mode::Move, Edges::default()))
+        s.pick(selected.as_deref(), x, y)
+            .map(|(f, mode, edges)| (f.clone(), mode, edges))
     })
     .flatten();
     w.edit.hover = Some((connector.clone(), x, y));
+    // What the panel showed of the pull before is not of this one.
+    w.edit.pulled = None;
+    w.edit.pending = None;
     w.edit.rev += 1;
     match picked {
         Some((f, mode, edges)) => {
@@ -2317,6 +2832,7 @@ fn press(w: &mut World, item: usize, x: f64, y: f64) -> bool {
                 dragging: false,
                 preview: None,
                 shown: None,
+                gain: None,
             });
             true
         }
@@ -2339,14 +2855,99 @@ fn motion(w: &mut World, item: usize, x: f64, y: f64) -> bool {
         return false;
     };
     w.edit.hover = Some((connector.clone(), x, y));
-    if !g.dragging && (x - g.press.0).hypot(y - g.press.1) < DRAG_DISTANCE {
-        w.edit.gesture = Some(g);
-        return false;
+    if !g.dragging {
+        let far = match g.mode {
+            Mode::Move => DRAG_DISTANCE,
+            Mode::Resize => HANDLE_DRAG_DISTANCE,
+        };
+        let gone = (x - g.press.0).hypot(y - g.press.1);
+        if gone < far {
+            w.edit.gesture = Some(g);
+            return false;
+        }
+        // The drag starts where the pointer crossed that distance: the widget does not jump
+        // the way the pointer went before it counted as a drag.
+        let t = far / gone;
+        g.press = (
+            g.press.0 + (x - g.press.0) * t,
+            g.press.1 + (y - g.press.1) * t,
+        );
     }
     g.dragging = true;
-    g.preview = with_scene(w, item, |s| s.preview(&g, x, y));
+    g.preview = None;
+    let edits = with_scene(w, item, |s| {
+        s.measure(&mut g);
+        g.preview = Some(s.preview(&g, x, y));
+        s.commit(&g)
+    })
+    .flatten();
+    let next = edits
+        .filter(|_| g.mode == Mode::Resize && g.kind == Kind::Panel)
+        .and_then(|edits| pulled(w, &g, &edits));
+    if g.preview.as_ref().is_some_and(|p| p.known) {
+        w.edit.pending = next;
+    } else {
+        w.edit.pulled = next;
+        w.edit.pending = None;
+    }
     w.edit.gesture = Some(g);
     w.edit.rev += 1;
+    true
+}
+
+/// The panel of `g`'s widget with `edits` made, and its monitor's connector.
+fn pulled(
+    w: &World,
+    g: &Gesture,
+    edits: &[Edit],
+) -> Option<(String, crate::layout_model::Container)> {
+    let layout = w.layout.as_ref()?.editor().layout();
+    let (mi, container) = edits.iter().find_map(|e| match e {
+        Edit::MoveWidget {
+            monitor,
+            id,
+            container,
+            ..
+        } if *id == g.id => Some((*monitor, container)),
+        _ => None,
+    })?;
+    let next = crate::layout_model::applied(layout, edits).ok()?;
+    let c = next
+        .monitors
+        .get(mi)?
+        .containers
+        .iter()
+        .find(|c| c.id == *container)?;
+    Some((g.connector.clone(), c.clone()))
+}
+
+/// The connector of the monitor a widget host's window is on, shown or not.
+pub(crate) fn host_connector(w: &mut World, host: usize) -> Option<String> {
+    let mut cur = Some(host);
+    let mut top = host;
+    while let Some(i) = cur {
+        top = i;
+        if w.dead.contains(&i) {
+            return None;
+        }
+        if w.items[i]
+            .types
+            .iter()
+            .any(|t| WINDOW_TYPES.iter().any(|x| t == x))
+        {
+            break;
+        }
+        cur = w.items[i].parent;
+    }
+    Some(window_rect(w, top).connector)
+}
+
+/// The pointer rests during a pull by an end: the panel shows the step it is at.
+fn rest(w: &mut World) -> bool {
+    let Some(next) = w.edit.pending.take().filter(|_| w.edit.gesture.is_some()) else {
+        return false;
+    };
+    w.edit.pulled = Some(next);
     true
 }
 
@@ -2356,12 +2957,13 @@ fn release(w: &mut World, item: usize, x: f64, y: f64) -> bool {
     let Some(g) = w.edit.gesture.take().filter(|g| g.connector == connector) else {
         return false;
     };
+    w.edit.pending = None;
     w.edit.rev += 1;
     if !g.dragging {
         return false;
     }
     match with_scene(w, item, |s| s.commit(&g)).flatten() {
-        Some(e) => apply(w, e),
+        Some(edits) => apply_all(w, &edits),
         None => false,
     }
 }
@@ -2568,12 +3170,13 @@ pub(crate) fn call(
     name: &str,
     args: Option<&[Value]>,
 ) -> Option<Value> {
-    const NAMES: [&str; 16] = [
+    const NAMES: [&str; 17] = [
         "start",
         "finish",
         "toggle",
         "press",
         "move",
+        "rest",
         "release",
         "cancel",
         "key",
@@ -2611,7 +3214,9 @@ pub(crate) fn call(
         "press" => press(w, item, n(0), n(1)),
         "move" => motion(w, item, n(0), n(1)),
         "release" => release(w, item, n(0), n(1)),
+        "rest" => rest(w),
         "cancel" => {
+            w.edit.pending = None;
             let had = w.edit.gesture.take().is_some();
             w.edit.rev += 1;
             had
@@ -2660,10 +3265,120 @@ fn rect_value(r: &Rect) -> Value {
     ])
 }
 
+/// Shows a panel's widget as the gesture carrying it has it, where the pointer has it along
+/// its panel: how far to its host's `carryX` and `carryY`, and `carried` (PanelWidget.qml
+/// declares them and moves by them; a host without them stays). The layout is not touched
+/// until the drop. Nothing is written while no widget is carried and none was.
+fn live_hosts(w: &mut World) -> bool {
+    let held = w
+        .edit
+        .gesture
+        .as_ref()
+        .filter(|g| g.dragging && g.kind == Kind::Panel);
+    // A pull by an end is shown by the panel itself ([`State::pulled_panel`]).
+    let now = held.filter(|g| g.mode == Mode::Move).and_then(|g| {
+        let raw = g.preview.as_ref()?.raw?;
+        Some((
+            g.connector.clone(),
+            g.id.clone(),
+            raw.x - g.start.x,
+            raw.y - g.start.y,
+        ))
+    });
+    if now.is_none() && !w.edit.carrying {
+        return false;
+    }
+    w.edit.carrying = now.is_some();
+    let mut wrote = false;
+    for h in w.of_type("WidgetHost") {
+        if !["carried", "carryX", "carryY"]
+            .iter()
+            .any(|k| w.items[h].props.contains_key(k))
+        {
+            continue;
+        }
+        let at = now.as_ref().filter(|(connector, id, ..)| {
+            text(w, h, "layoutId") == *id
+                && shown_window(w, h).is_some_and(|win| window_rect(w, win).connector == *connector)
+        });
+        let (on, x, y) = at.map_or((false, 0.0, 0.0), |&(_, _, x, y)| (true, x, y));
+        if w.items[h].props.contains_key("carried")
+            && w.read(h, "carried").is_some_and(|v| v.truthy()) != on
+        {
+            w.write(h, "carried", Value::Bool(on));
+            wrote = true;
+        }
+        for (k, v) in [("carryX", x), ("carryY", y)] {
+            if w.items[h].props.contains_key(k) && num(w, h, k) != v {
+                w.write(h, k, Value::Num(v));
+                wrote = true;
+            }
+        }
+    }
+    wrote
+}
+
 /// Writes every EditController's outputs: on every pass while editing, since frames follow
 /// the surfaces' layout, but only the values that changed.
 pub(crate) fn sync(w: &mut World) -> bool {
-    let mut wrote = false;
+    // A settle ends with a pass that wrote nothing, and a frame has several settles: the
+    // outputs follow only what `sync_key` covers, so with that as it was they are current.
+    if w.edit.synced == Some(sync_key(w)) {
+        return false;
+    }
+    let wrote = sync_outputs(w);
+    w.edit.synced = Some(sync_key(w));
+    wrote
+}
+
+/// Everything the overlays' outputs are made from, as one number: the items (any write, any
+/// item made or gone), the layout, where the windows are and the editor's own state.
+fn sync_key(w: &World) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    (w.revision, w.tree_gen, w.geom_rev, w.layout_rev).hash(&mut h);
+    w.dead.len().hash(&mut h);
+    w.widgets.iter().count().hash(&mut h);
+    w.layout
+        .as_ref()
+        .map(|l| (l.generation(), l.editor().can_undo(), l.editor().can_redo()))
+        .hash(&mut h);
+    let mut rects: Vec<_> = w
+        .window_rects
+        .iter()
+        .map(|(win, r)| (*win, &r.connector, [r.x, r.y, r.w, r.h].map(f64::to_bits)))
+        .collect();
+    rects.sort_unstable();
+    rects.hash(&mut h);
+    let mut natural: Vec<_> = w
+        .desktop_natural
+        .iter()
+        .map(|(view, n)| (*view, n.revision, n.sizes.len()))
+        .collect();
+    natural.sort_unstable();
+    natural.hash(&mut h);
+    let mut moved: Vec<_> = w
+        .popup_dy
+        .iter()
+        .map(|(i, dy)| (*i, dy.to_bits()))
+        .collect();
+    moved.sort_unstable();
+    moved.hash(&mut h);
+    let e = &w.edit;
+    (e.rev, e.active, &e.selected, e.carrying).hash(&mut h);
+    e.hover
+        .as_ref()
+        .map(|(c, x, y)| (c, x.to_bits(), y.to_bits()))
+        .hash(&mut h);
+    e.gesture
+        .as_ref()
+        .map(|g| (&g.connector, &g.id, g.dragging))
+        .hash(&mut h);
+    h.finish()
+}
+
+fn sync_outputs(w: &mut World) -> bool {
+    let mut wrote = live_hosts(w);
     for id in w.of_type(TYPE) {
         let connector = text(w, id, "connector");
         let active = w.edit.active;
@@ -2689,47 +3404,50 @@ pub(crate) fn sync(w: &mut World) -> bool {
             .filter(|g| g.connector == connector)
             .cloned();
         let shown = held.as_ref().and_then(|g| g.shown);
-        let (selected_frame, hovered, handle, size_hint, selected_place) = if active
-            && !connector.is_empty()
-        {
-            with_scene(w, id, |s| {
-                let selected_place = selected
-                    .as_deref()
-                    .and_then(|id| s.placement(id).map(|p| (p, s.overflows(id))));
-                let sel = selected.as_deref().and_then(|id| s.frame(id));
-                let resizing = held
-                    .as_ref()
-                    .filter(|g| g.dragging && g.mode == Mode::Resize);
-                let selected_frame = sel.map(|f| {
-                    // A sidebar widget pulled to another size is laid out at it at once
-                    // ([`live_sidebar`]): the outline is around the widget as it shows.
-                    let rect = resizing
-                        .and_then(|g| g.preview.as_ref())
-                        .filter(|p| p.valid)
-                        .map_or(f.rect, |p| match shown {
-                            Some(r) if f.kind == Kind::Sidebar => r,
-                            _ => p.ghost,
-                        });
-                    (s.outline(f, &rect), f.resizable, f.kind, s.vertical(f))
-                });
-                let handle = match (&held, sel, pointer) {
-                    (Some(g), ..) if g.mode == Mode::Resize => g.edges.name(),
-                    (None, Some(f), Some((x, y))) => s.handle_of(f, x, y).map_or("", |e| e.name()),
-                    _ => "",
-                };
-                let hovered = match (&held, pointer) {
-                    (None, Some((x, y))) if handle.is_empty() => hit(&s.frames, x, y)
-                        .filter(|f| Some(f.id.as_str()) != selected.as_deref())
-                        .map(|f| s.outline(f, &f.rect)),
-                    _ => None,
-                };
-                let size_hint = resizing.and_then(|g| s.size_hint(g));
-                (selected_frame, hovered, handle, size_hint, selected_place)
-            })
-            .unwrap_or((None, None, "", None, None))
-        } else {
-            (None, None, "", None, None)
-        };
+        let (selected_frame, hovered, handle, size_hint, selected_place) =
+            if active && !connector.is_empty() {
+                let gathered = (frames.clone(), regions.clone());
+                with_gathered(w, id, &connector, gathered, |s| {
+                    let selected_place = selected
+                        .as_deref()
+                        .and_then(|id| s.placement(id).map(|p| (p, s.overflows(id))));
+                    let sel = selected.as_deref().and_then(|id| s.frame(id));
+                    let resizing = held
+                        .as_ref()
+                        .filter(|g| g.dragging && g.mode == Mode::Resize);
+                    let selected_frame = sel.map(|f| {
+                        // A sidebar's widget pulled to another size is laid out at it at once
+                        // ([`live_sidebar`]), and so is a panel's where its zone places it:
+                        // the outline is around the widget as it shows. A panel's widget whose
+                        // step is known has it where the panel will show it, at once or once
+                        // the pointer rests ([`Preview::known`]).
+                        let rect = resizing
+                            .and_then(|g| g.preview.as_ref())
+                            .filter(|p| p.valid)
+                            .map_or(f.rect, |p| match shown {
+                                Some(r) if f.kind != Kind::Desktop && !p.known => r,
+                                _ => p.ghost,
+                            });
+                        (s.outline(f, &rect), f.resizable, f.kind, s.vertical(f))
+                    });
+                    let handle = match (&held, sel, pointer) {
+                        (Some(g), ..) if g.mode == Mode::Resize => g.edges.name(),
+                        (None, Some(f), Some((x, y))) => s.grip(f, x, y).map_or("", |e| e.name()),
+                        _ => "",
+                    };
+                    let hovered = match (&held, pointer) {
+                        (None, Some((x, y))) if handle.is_empty() => hit(&s.frames, x, y)
+                            .filter(|f| Some(f.id.as_str()) != selected.as_deref())
+                            .map(|f| s.outline(f, &f.rect)),
+                        _ => None,
+                    };
+                    let size_hint = resizing.and_then(|g| s.size_hint(g));
+                    (selected_frame, hovered, handle, size_hint, selected_place)
+                })
+                .unwrap_or((None, None, "", None, None))
+            } else {
+                (None, None, "", None, None)
+            };
         let gesture = w
             .edit
             .gesture
@@ -2802,9 +3520,19 @@ pub(crate) fn sync(w: &mut World) -> bool {
             if let Value::Obj(o) = &v {
                 crate::eval::set_own(o, "valid", Value::Bool(p.valid));
                 // Whether the landing place is away from where the widget itself is shown: a
-                // desktop widget that is carried lands where it is unless it snaps or is fitted.
+                // desktop widget that is carried over its own desktop is shown where it lands
+                // ([`live_desktop`]).
+                let own = gesture
+                    .and_then(|g| frames.iter().find(|f| f.id == g.id))
+                    .map(|f| f.container.as_str());
                 let apart = p.raw.as_ref().is_none_or(|raw| {
-                    raw.x.round() != p.ghost.x.round() || raw.y.round() != p.ghost.y.round()
+                    p.valid
+                        && p.drop.as_ref().is_some_and(|d| {
+                            matches!(d.place, Place::Desktop { .. })
+                                && Some(d.container.as_str()) != own
+                        })
+                        && (raw.x.round() != p.ghost.x.round()
+                            || raw.y.round() != p.ghost.y.round())
                 });
                 crate::eval::set_own(o, "apart", Value::Bool(apart));
                 crate::eval::set_own(o, "carried", Value::Bool(p.raw.is_some()));

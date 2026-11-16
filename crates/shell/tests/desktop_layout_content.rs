@@ -944,8 +944,11 @@ fn a_widget_moved_in_edit_mode_follows_the_pointer_and_no_widget_is_made_anew() 
     let (px, py) = (x + cw / 2.0, y + ch / 2.0);
     let (dx, dy) = (405.0 - x, 300.0);
     assert!(call(&mut rt, "press", px, py).truthy());
-    // The landing place the overlay is told of: it is `apart` only where the widget, which is
-    // itself under the pointer, would land somewhere else.
+    // The drag begins where the pointer has gone its distance (DRAG_DISTANCE), 5 px on.
+    let px = px - 5.0;
+    call(&mut rt, "move", px, py);
+    // The landing place the overlay is told of: over its own desktop the widget is shown where
+    // it would land, so the place is never `apart` from it.
     let landing = |rt: &mut Runtime| match rt.call_method(main, "landing", vec![]).unwrap().unwrap()
     {
         Value::Str(s) => s.to_string(),
@@ -962,11 +965,11 @@ fn a_widget_moved_in_edit_mode_follows_the_pointer_and_no_widget_is_made_anew() 
             continue;
         }
         let here = format!("{} {} false true", at.0, at.1);
-        assert!(
-            told.ends_with(" true true") || told == here,
+        assert_eq!(
+            told, here,
             "step {k}: the widget is at {at:?}, the landing place told is {told:?}"
         );
-        together += usize::from(told == here);
+        together += 1;
     }
     assert!(
         together > 10,
@@ -974,13 +977,13 @@ fn a_widget_moved_in_edit_mode_follows_the_pointer_and_no_widget_is_made_anew() 
     );
     assert_eq!(
         landing(&mut rt),
-        "400 800 true true",
-        "by the weather's edge the landing place is apart from the widget"
+        "400 800 false true",
+        "by the weather's edge the widget is its own landing place: no box around it"
     );
     assert_eq!(
         on_monitor(&rt, "ClockWidget").0,
-        (405.0, 800.0),
-        "held, the clock is where the pointer has it"
+        (400.0, 800.0),
+        "held, the clock has snapped to the weather's edge"
     );
     assert_eq!(
         in_file(),
@@ -995,10 +998,10 @@ fn a_widget_moved_in_edit_mode_follows_the_pointer_and_no_widget_is_made_anew() 
         "it lands snapped to the weather's edge"
     );
     host.frame(&mut rt);
-    let (sliding, _) = on_monitor(&rt, "ClockWidget");
-    assert!(
-        sliding.0 > 400.0 && sliding.0 < 405.0,
-        "let go, it slides to its place: at {sliding:?} a frame later"
+    assert_eq!(
+        on_monitor(&rt, "ClockWidget").0,
+        landed,
+        "let go, it is where it was held: it does not move again"
     );
     host.frames(&mut rt, 60);
     assert_eq!(on_monitor(&rt, "ClockWidget").0, landed);

@@ -269,7 +269,8 @@ fn a_desktop_move_leaves_panel_and_sidebar_views_while_a_panel_edit_updates_the_
     }
     assert!(call(&mut rt, root, "release", &[650.0, 450.0]).truthy());
     let saved = std::fs::read_to_string(d.join("layout.toml")).unwrap();
-    assert!(saved.contains("x = 600"), "{saved}");
+    // 500 px across, less the share of the 5 px the pointer went before it was a drag.
+    assert!(saved.contains("x = 596"), "{saved}");
     assert!(rt.world.borrow().layout.as_ref().unwrap().generation() > generation);
     let after = outputs(&rt, panel, sidebar, state);
     assert_eq!(unchanged(&before, &after), Vec::<String>::new());

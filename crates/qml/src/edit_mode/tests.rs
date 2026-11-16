@@ -123,6 +123,8 @@ fn frame(id: &str, ty: &str, container: &str, kind: Kind, rect: Rect) -> Frame {
         kind,
         rect,
         resizable: true,
+        least: 0.0,
+        clear: 0.0,
     }
 }
 
@@ -231,6 +233,7 @@ fn gesture(s: &Scene, id: &str, mode: Mode, x: f64, y: f64) -> Gesture {
         dragging: true,
         preview: None,
         shown: None,
+        gain: None,
     }
 }
 
@@ -244,7 +247,7 @@ fn drag(
     let mut g = gesture(s, id, mode, from.0, from.1);
     let p = s.preview(&g, to.0, to.1);
     g.preview = Some(p.clone());
-    (p, s.commit(&g))
+    (p, s.commit(&g).and_then(|e| e.into_iter().next()))
 }
 
 #[test]
@@ -289,7 +292,7 @@ fn pull(
     let mut g = gesture(s, id, Mode::Resize, from.0, from.1);
     g.edges = edges;
     g.preview = Some(s.preview(&g, to.0, to.1));
-    let e = s.commit(&g);
+    let e = s.commit(&g).and_then(|e| e.into_iter().next());
     (g, e)
 }
 
@@ -352,6 +355,95 @@ fn panel_and_sidebar_widgets_have_handles_only_along_the_axis_a_resize_changes()
     assert_eq!(name(Kind::Panel, true, 1018.0, 20.0), None);
     assert_eq!(name(Kind::Sidebar, false, 902.0, 20.0), Some("left"));
     assert_eq!(name(Kind::Sidebar, false, 960.0, 1.0), None);
+    // An end is held from as far inside the widget as a desktop widget's corner is, and from
+    // no further outside than any edge.
+    assert_eq!(name(Kind::Panel, false, 1006.0, 20.0), Some("right"));
+    assert_eq!(name(Kind::Panel, false, 914.0, 20.0), Some("left"));
+    assert_eq!(name(Kind::Panel, false, 1000.0, 20.0), None);
+    assert_eq!(name(Kind::Panel, false, 1030.0, 20.0), None);
+    assert_eq!(name(Kind::Panel, true, 960.0, 28.0), Some("bottom"));
+    assert_eq!(name(Kind::Sidebar, false, 1006.0, 20.0), Some("right"));
+    // A small widget keeps its middle third for moving it.
+    let small = r(900.0, 0.0, 30.0, 40.0);
+    assert_eq!(handle_at(&small, Kind::Panel, false, 915.0, 20.0), None);
+}
+
+#[test]
+fn a_press_takes_the_widget_the_pointer_is_on_whichever_one_is_selected() {
+    let l = layout();
+    let reg = registry();
+    let mut s = scene(&l, &reg);
+    // A bar's row: `n` right after `b` with no gap, `m` 4 px after it. A desktop widget up
+    // against the bar, under the ends of `a` and `b`.
+    for (id, ty, container, kind, rect) in [
+        (
+            "n",
+            "bar-only",
+            "bar",
+            Kind::Panel,
+            r(80.0, 0.0, 30.0, 40.0),
+        ),
+        ("m", "clock", "bar", Kind::Panel, r(114.0, 0.0, 300.0, 40.0)),
+        (
+            "d0",
+            "clock",
+            "desk",
+            Kind::Desktop,
+            r(30.0, 40.0, 200.0, 100.0),
+        ),
+    ] {
+        s.frames.push(frame(id, ty, container, kind, rect));
+    }
+    let ids: Vec<String> = s.frames.iter().map(|f| f.id.clone()).collect();
+    let mut handles = 0;
+    for selected in std::iter::once(None).chain(ids.iter().map(|id| Some(id.as_str()))) {
+        for y in [0.0, 2.0, 20.0, 39.0, 40.0, 44.0, 47.0, 90.0, 139.0, 145.0] {
+            for x in 0..1300 {
+                let x = x as f64 * 0.5;
+                let on: Vec<&str> = s
+                    .frames
+                    .iter()
+                    .filter(|f| f.rect.contains(x, y))
+                    .map(|f| f.id.as_str())
+                    .collect();
+                let picked = s.pick(selected, x, y);
+                let at = format!("at ({x}, {y}) with {selected:?} selected, over {on:?}");
+                match picked {
+                    Some((f, mode, edges)) => {
+                        if on.is_empty() {
+                            // Beside every widget only the selected one's handle is taken.
+                            assert_eq!(
+                                (Some(f.id.as_str()), mode),
+                                (selected, Mode::Resize),
+                                "{at}"
+                            );
+                        } else {
+                            assert!(on.contains(&f.id.as_str()), "{} taken {at}", f.id);
+                        }
+                        if mode == Mode::Resize {
+                            assert_eq!(Some(f.id.as_str()), selected, "{at}");
+                            assert_ne!(edges, Edges::default(), "{at}");
+                            handles += 1;
+                        }
+                    }
+                    None => assert!(on.is_empty(), "nothing taken {at}"),
+                }
+            }
+        }
+    }
+    assert!(handles > 0);
+    // The selected widget's handle reaches 8 px out of its frame, but not onto the widget
+    // there: the next one in the row, or the desktop widget below the bar.
+    let taken = |selected, x, y| {
+        s.pick(Some(selected), x, y)
+            .map(|(f, mode, _)| (f.id.as_str(), mode))
+    };
+    assert_eq!(taken("b", 82.0, 20.0), Some(("n", Mode::Move)));
+    assert_eq!(taken("n", 78.0, 20.0), Some(("b", Mode::Move)));
+    assert_eq!(taken("n", 112.0, 20.0), Some(("n", Mode::Resize)));
+    assert_eq!(taken("b", 78.0, 44.0), Some(("d0", Mode::Move)));
+    assert_eq!(taken("d0", 60.0, 36.0), Some(("b", Mode::Move)));
+    assert_eq!(taken("d0", 45.0, 36.0), Some(("d0", Mode::Resize)));
 }
 
 #[test]
@@ -449,10 +541,11 @@ fn a_panel_widget_grows_no_longer_than_its_type_and_its_zone_allow() {
         })
     ));
     assert!(s.size_hint(&g).unwrap().largest);
-    // Its zone has room for 50 px more: it stops at 170.
+    // Its zone, the middle one, has room for 50 px more, half at each end, and the widget
+    // grows at the pulled end alone: it stops at 145.
     s.regions[0].room = [0.0, 50.0, 0.0];
     let (g, _) = pull(&s, "c", RIGHT, (1020.0, 20.0), (3020.0, 20.0));
-    assert_eq!(g.preview.as_ref().unwrap().ghost.w, 170.0);
+    assert_eq!(g.preview.as_ref().unwrap().ghost.w, 145.0);
     assert!(s.size_hint(&g).unwrap().largest);
     // By its left end: the right end stays at 1020 and the length grows the same.
     let (g, _) = pull(&s, "c", LEFT, (900.0, 20.0), (880.0, 20.0));
@@ -581,12 +674,12 @@ fn panel_drop_picks_zone_and_index_from_neighbours() {
     let s = scene(&l, &reg);
     let bar = &s.regions[0];
     // Between a and b: start zone, index 1.
-    let (z, i, _) = s.panel_slot(bar, "x", 45.0, 20.0);
+    let (z, i, _) = s.panel_slot(bar, "x", None, 45.0, 20.0);
     assert_eq!((z, i), (Zone::Start, 1));
     // Before c's middle: centre, index 0; past the centre widgets: end zone (empty), index 0.
-    let (z, i, _) = s.panel_slot(bar, "x", 950.0, 20.0);
+    let (z, i, _) = s.panel_slot(bar, "x", None, 950.0, 20.0);
     assert_eq!((z, i), (Zone::Center, 0));
-    let (z, i, m) = s.panel_slot(bar, "x", 1500.0, 20.0);
+    let (z, i, m) = s.panel_slot(bar, "x", None, 1500.0, 20.0);
     assert_eq!((z, i), (Zone::End, 0));
     assert_eq!(m.x, 1917.0);
     // Moving b before a.
@@ -607,6 +700,123 @@ fn panel_drop_picks_zone_and_index_from_neighbours() {
     );
 }
 
+/// A widget alone between two separators, picked up and let go over its own place, stays between
+/// them (it went on to right before the next drawn widget, past the second separator). Beside
+/// its place, the half of the gap the pointer is in says which group it joins.
+#[test]
+fn a_panel_drop_by_a_separator_joins_the_group_on_the_pointers_side() {
+    let l = Layout::parse(
+        &LAYOUT
+            .replacen(
+                "[[monitor.container.widget]]\nid = \"b\"",
+                "[[monitor.container.widget]]\nid = \"s1\"\ntype = \"separator\"\nzone = \"start\"\n\n\
+                 [[monitor.container.widget]]\nid = \"b\"",
+                1,
+            )
+            .replacen(
+                "[[monitor.container.widget]]\nid = \"c\"",
+                "[[monitor.container.widget]]\nid = \"s2\"\ntype = \"separator\"\nzone = \"start\"\n\n\
+                 [[monitor.container.widget]]\nid = \"e\"\ntype = \"bar-only\"\nzone = \"start\"\n\n\
+                 [[monitor.container.widget]]\nid = \"c\"",
+                1,
+            ),
+    )
+    .unwrap();
+    let reg = registry();
+    let mut s = scene(&l, &reg);
+    s.frames.push(frame(
+        "e",
+        "bar-only",
+        "bar",
+        Kind::Panel,
+        r(100.0, 0.0, 30.0, 40.0),
+    ));
+    let bar = &s.regions[0];
+    // The start zone is a, s1, b, s2, e: without b, its own place is the third.
+    let own = Some(r(50.0, 0.0, 30.0, 40.0));
+    assert_eq!(s.panel_slot(bar, "b", own, 72.0, 20.0).1, 2, "over itself");
+    assert_eq!(s.panel_slot(bar, "b", own, 44.0, 20.0).1, 2, "short of a");
+    assert_eq!(s.panel_slot(bar, "b", own, 96.0, 20.0).1, 2, "short of e");
+    assert_eq!(s.panel_slot(bar, "b", own, 38.0, 20.0).1, 1, "over a's end");
+    assert_eq!(s.panel_slot(bar, "b", own, 20.0, 20.0).1, 0, "before a");
+    assert_eq!(
+        s.panel_slot(bar, "b", own, 104.0, 20.0).1,
+        3,
+        "over e's start"
+    );
+    assert_eq!(s.panel_slot(bar, "b", own, 120.0, 20.0).1, 4, "after e");
+    let (p, e) = drag(&s, "b", Mode::Move, (65.0, 20.0), (72.0, 20.0));
+    assert!(p.valid);
+    assert!(
+        !matches!(e, Some(Edit::MoveWidget { index: Some(i), .. }) if i != 2),
+        "{e:?}"
+    );
+    // One from elsewhere, between a and b: a's group left of the middle of the gap, b's right
+    // of it. The marker stands at the end of the group it joins.
+    let (_, i, m) = s.panel_slot(bar, "x", None, 44.0, 20.0);
+    assert_eq!((i, m.x), (1, 40.0 - 1.5));
+    let (_, i, m) = s.panel_slot(bar, "x", None, 46.0, 20.0);
+    assert_eq!((i, m.x), (2, 50.0 - 1.5));
+    let (_, i, m) = s.panel_slot(bar, "x", None, 85.0, 20.0);
+    assert_eq!((i, m.x), (3, 80.0 - 1.5));
+    let (_, i, m) = s.panel_slot(bar, "x", None, 95.0, 20.0);
+    assert_eq!((i, m.x), (4, 100.0 - 1.5));
+}
+
+/// A long widget held near its end and carried a little stays in its place, with the pointer
+/// already over the separator after it (it joined the next group). It goes by its middle: past
+/// the separator once its middle is past the separator's. Near the panel's end the pointer
+/// takes it to the last place, which its middle cannot reach.
+#[test]
+fn a_long_panel_widget_held_near_its_end_goes_by_its_middle() {
+    let l = Layout::parse(
+        &LAYOUT
+            .replacen(
+                "[[monitor.container.widget]]\nid = \"c\"",
+                "[[monitor.container.widget]]\nid = \"s2\"\ntype = \"separator\"\nzone = \"start\"\n\n\
+                 [[monitor.container.widget]]\nid = \"e\"\ntype = \"bar-only\"\nzone = \"start\"\n\n\
+                 [[monitor.container.widget]]\nid = \"c\"",
+                1,
+            )
+            .replacen(
+                "[[monitor.container]]\nid = \"desk\"",
+                "[[monitor.container.widget]]\nid = \"z\"\ntype = \"bar-only\"\nzone = \"end\"\n\n\
+                 [[monitor.container]]\nid = \"desk\"",
+                1,
+            ),
+    )
+    .unwrap();
+    let reg = registry();
+    let mut s = scene(&l, &reg);
+    s.frames[1].rect = r(50.0, 0.0, 400.0, 40.0);
+    for (id, ty, rect) in [
+        ("s2", "separator", r(456.0, 0.0, 8.0, 40.0)),
+        ("e", "bar-only", r(470.0, 0.0, 30.0, 40.0)),
+        ("z", "bar-only", r(1880.0, 0.0, 30.0, 40.0)),
+    ] {
+        s.frames.push(frame(id, ty, "bar", Kind::Panel, rect));
+    }
+    let landed = |to: f64| {
+        let (p, e) = drag(&s, "b", Mode::Move, (425.0, 20.0), (to, 20.0));
+        assert!(p.valid);
+        match e {
+            Some(Edit::MoveWidget {
+                place: Place::Panel { zone, .. },
+                index: Some(i),
+                ..
+            }) => (zone, i),
+            None => (Zone::Start, 1),
+            e => panic!("{e:?}"),
+        }
+    };
+    // The start zone without b is a, s2, e.
+    assert_eq!(landed(465.0), (Zone::Start, 1), "carried 40 px");
+    assert_eq!(landed(630.0), (Zone::Start, 1), "its middle short of s2's");
+    assert_eq!(landed(640.0), (Zone::Start, 2), "its middle past s2's");
+    assert_eq!(landed(670.0), (Zone::Start, 3), "its middle past e's");
+    assert_eq!(landed(1915.0), (Zone::End, 1), "at the panel's end");
+}
+
 /// A widget that draws nothing (weather that is off) has no frame; a drop past it lands where
 /// the marker stands, not one place short.
 #[test]
@@ -622,9 +832,9 @@ fn a_panel_drop_counts_the_widgets_that_draw_nothing() {
     let s = scene(&l, &reg);
     let bar = &s.regions[0];
     // The layout's start zone is a, hidden, b; only a and b are drawn.
-    assert_eq!(s.panel_slot(bar, "x", 5.0, 20.0).1, 0);
-    assert_eq!(s.panel_slot(bar, "x", 45.0, 20.0).1, 2);
-    assert_eq!(s.panel_slot(bar, "x", 85.0, 20.0).1, 3);
+    assert_eq!(s.panel_slot(bar, "x", None, 5.0, 20.0).1, 0);
+    assert_eq!(s.panel_slot(bar, "x", None, 45.0, 20.0).1, 2);
+    assert_eq!(s.panel_slot(bar, "x", None, 85.0, 20.0).1, 3);
     let (_, e) = drag(&s, "c", Mode::Move, (950.0, 20.0), (85.0, 20.0));
     let mut ed = crate::layout_model::Editor::new(l.clone());
     assert!(ed.apply(e.unwrap()).unwrap());
@@ -1137,4 +1347,23 @@ fn the_catalog_leaves_out_the_surfaces_a_type_is_not_listed_for() {
     assert!(!offered("sidebar"));
     assert!(!offered("desktop"));
     assert!(reg.get("wifi").unwrap().allows(Placement::Sidebar));
+}
+
+/// Every shipped widget that shows more or less of itself by its length along a panel can be
+/// pulled by its ends there: a press on the end of a selected clock sizes it and never picks it
+/// up. A round toggle has one size.
+#[test]
+fn the_shipped_panel_widgets_of_many_lengths_have_handles() {
+    let mut reg = Registry::default();
+    let errors = reg.load_manifest(
+        include_str!("../../../../qml/widgets.toml"),
+        std::path::Path::new("/nonexistent"),
+    );
+    assert!(errors.is_empty(), "{errors:?}");
+    for ty in ["clock", "weather", "media", "workspaces"] {
+        for vertical in [false, true] {
+            assert!(resizable(&reg, ty, Kind::Panel, vertical), "{ty}");
+        }
+    }
+    assert!(!resizable(&reg, "nightLight", Kind::Panel, false));
 }

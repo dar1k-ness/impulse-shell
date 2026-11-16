@@ -3058,6 +3058,8 @@ pub struct World {
     pub desktop_natural: HashMap<usize, crate::desktop_container::NaturalSizes>,
     /// Per PanelContainer: what its outputs were last computed from (panel.rs).
     pub panel_synced: HashMap<usize, crate::panel::Synced>,
+    /// The last [`crate::panel::sync`] showed a panel as an edit mode pull would leave it.
+    pub panel_pulled: bool,
     /// Per PanelContainer: what its `probes` were last written from (panel.rs).
     pub panel_probes: HashMap<usize, crate::panel::Probes>,
     /// Per SidebarContainer: what its `probes` were last written from: the layout generation,
@@ -6212,6 +6214,18 @@ impl WriteFx {
         // of the properties whose setters polish the icon (Icon::setSource, setColor, setIsMask).
         let polish = is("Kirigami.Icon") && matches!(name, "source" | "color" | "isMask");
         let icon = polish || is("Kirigami.Icon") && name == ICON_MIX;
+        // What a container hands its views to place themselves by: the bindings that read it
+        // write the geometry it gives them. Counted as drawn, a widget carried over the desktop
+        // would have every widget of the desktop painted from scratch at each step.
+        let handed = name == "shown" && is(crate::desktop_container::TYPE)
+            || name == "placement" && is("WidgetHost");
+        // What measuring a Text leaves on it (QQuickTextPrivate::updateSize): the layout that
+        // measured it has already answered, and what follows comes by its implicit size.
+        let measured = is("Text")
+            && matches!(
+                name,
+                "contentWidth" | "contentHeight" | "paintedWidth" | "paintedHeight" | "lineCount"
+            );
         let mut f = 0;
         let mut set = |c: bool, b: u64| {
             if c {
@@ -6366,6 +6380,8 @@ impl WriteFx {
                 && !bar
                 && !image
                 && !anchor_offset(name)
+                && !handed
+                && !measured
                 && declared
                 // The corners of a Rectangle are painted too (QQuickRectangle::setRadius only
                 // updates the node).
@@ -6403,6 +6419,7 @@ impl WriteFx {
                     | "propagateComposedEvents"
                     | "objectName"
             ) && !(name == "activeFocus" && inst.prop_info("cursorPosition").is_none())
+                && !handed
                 && (declared || icon)
                 && drawn(inst)
                 // A window shown, hidden or given the keyboard is mapped, unmapped or focused;
@@ -11002,6 +11019,7 @@ impl World {
             layout_synced,
             desktop_natural,
             panel_synced,
+            panel_pulled: _,
             flicks,
             flicks_x,
             flicks_live,
@@ -50550,6 +50568,7 @@ PanelWindow {
                     "toggle",
                     "press",
                     "move",
+                    "rest",
                     "release",
                     "cancel",
                     "key",

@@ -950,15 +950,50 @@ fn refresh_us(log: &str) -> u64 {
     1_000_000_000 / if mhz >= 1000 { mhz } else { 60_000 }
 }
 
-/// A Rectangle recolored every millisecond is drawn at the output's refresh rate: a static
-/// frame without a callback holds the next draw for one refresh interval, and the next draw
-/// follows when the hold ends. Read from the shell's own commits and the times it made them
-/// at, which a busy machine only moves apart. Counting them against a second client's frame
-/// callbacks does not measure the shell: under load sway's frame timer and that client run
-/// late, a callback then stands for several intervals, and the shell, still one interval
-/// apart, makes more commits than callbacks came.
+/// One `wl_surface.commit` of `log`: when it was made, whether it requested a frame callback,
+/// and whether the callback the commit before it requested had come by then.
+struct Commit {
+    at: u64,
+    callback: bool,
+    answered: bool,
+}
+
+/// The commits in `log`, in order, with the frame callbacks they requested and were sent.
+fn commits(log: &str) -> Vec<Commit> {
+    let id = |l: &str| -> Option<u32> {
+        let (_, rest) = l.split_once("wl_callback#")?;
+        let digits = rest.find(|c: char| !c.is_ascii_digit())?;
+        rest[..digits].parse().ok()
+    };
+    let (mut requested, mut awaited) = (None, None);
+    let mut out = Vec::new();
+    for l in log.lines() {
+        if l.contains("-> wl_surface#") && l.contains(".frame(") {
+            requested = id(l);
+        } else if l.contains("-> wl_surface#") && l.contains(".commit()") {
+            out.push(Commit {
+                at: commit_stamps(l)[0],
+                callback: requested.is_some(),
+                answered: awaited.is_none(),
+            });
+            awaited = requested.take();
+        } else if l.contains(".done(") && awaited.is_some() && id(l) == awaited {
+            awaited = None;
+        }
+    }
+    out
+}
+
+/// A Rectangle recolored every millisecond is drawn once per frame of the compositor. Frames
+/// that follow each other this closely are a run: each requests a frame callback and the next
+/// is drawn when it comes, so the run goes at the output's rate whatever a frame takes to
+/// draw. A frame that requested none (the first of a run) holds the next draw for one refresh
+/// interval. Read from the shell's own requests and the times it made them at, which a busy
+/// machine only moves apart. Counting them against a second client's frame callbacks does not
+/// measure the shell: under load sway's frame timer and that client run late, a callback then
+/// stands for several intervals.
 #[test]
-fn static_redraws_stay_at_the_refresh_rate() {
+fn runs_of_redraws_go_one_per_compositor_frame() {
     let Some(sway) = compositor() else {
         return;
     };
@@ -974,31 +1009,45 @@ fn static_redraws_stay_at_the_refresh_rate() {
         &[("WAYLAND_DEBUG", "client")],
     );
     sh.wait("the timer never fired", |t| t == "go");
-    let recolored = |log: &str| -> Vec<u64> {
+    let recolored = |log: &str| -> Vec<Commit> {
         let from = log.rfind("TXT go").unwrap();
         let whole = log.rfind('\n').unwrap();
-        commit_stamps(&log[from..whole])
+        commits(&log[from..whole])
     };
     sh.wait_log("the recolored panel stopped drawing", |s| {
         recolored(s).len() > 60
     });
     let log = sh.since(0);
-    let (stamps, refresh) = (recolored(&log), refresh_us(&log));
+    let (drawn, refresh) = (recolored(&log), refresh_us(&log));
     const DAY: u64 = 86_400_000_000;
-    let mut gaps: Vec<u64> = stamps
-        .windows(2)
-        .map(|w| (w[1] + DAY - w[0]) % DAY)
-        .collect();
+    let gap = |w: &[Commit]| (w[1].at + DAY - w[0].at) % DAY;
+    let mut gaps: Vec<u64> = drawn.windows(2).map(gap).collect();
     gaps.sort_unstable();
-    let (least, median) = (gaps[0], gaps[gaps.len() / 2]);
+    let median = gaps[gaps.len() / 2];
+    let paced = drawn.iter().filter(|c| c.callback).count();
     eprintln!(
-        "1 ms recolors: {} commits, {least} µs apart at least, {median} µs at the median; \
-         a refresh takes {refresh} µs",
-        stamps.len()
+        "1 ms recolors: {} commits, {paced} with a frame callback, {median} µs apart at the \
+         median; a refresh takes {refresh} µs",
+        drawn.len()
+    );
+    let early = drawn.iter().skip(1).filter(|c| !c.answered).count();
+    assert_eq!(
+        early, 0,
+        "{early} commits were made before the frame callback of the commit before came"
+    );
+    let unheld = drawn
+        .windows(2)
+        .filter(|w| !w[0].callback && gap(w) < refresh)
+        .count();
+    assert_eq!(
+        unheld, 0,
+        "{unheld} commits came less than a refresh ({refresh} µs) after one without a frame \
+         callback"
     );
     assert!(
-        least >= refresh,
-        "two commits {least} µs apart, a refresh takes {refresh} µs"
+        paced * 10 >= drawn.len() * 9,
+        "{paced} of {} commits of the run requested a frame callback",
+        drawn.len()
     );
     assert!(
         median < 2 * refresh,
@@ -1209,7 +1258,8 @@ fn released_content_draws_until_it_rests_then_the_loop_sleeps() {
             "the released {name} moved in {steps} steps and {frames} frames:\n{log}"
         );
         // At rest and shown: the loop blocks with nothing due, and the last frame it
-        // committed asked for no frame callback, so no draw is still to come.
+        // committed asked for no frame callback or has had it (the last frames of a run ask
+        // for one), so no draw is still to come.
         sh.wait_log(
             &format!("the loop never went idle once the {name} rested"),
             |log| {
@@ -1227,8 +1277,16 @@ fn released_content_draws_until_it_rests_then_the_loop_sleeps() {
                 let before = lines[..c].iter().rposition(commit).unwrap_or(0);
                 let callback = lines[before..c]
                     .iter()
-                    .any(|l| l.contains(" -> wl_surface#") && l.contains(".frame("));
-                m < t && c < t && lines[t].contains(" next None") && !callback
+                    .rfind(|l| l.contains(" -> wl_surface#") && l.contains(".frame("))
+                    .and_then(|l| l.split_once("wl_callback#"))
+                    .map(|(_, id)| id.trim_end_matches(')'));
+                m < t
+                    && c < t
+                    && lines[t].contains(" next None")
+                    && callback.is_none_or(|id| {
+                        let done = format!("wl_callback#{id}.done(");
+                        lines[c..t].iter().any(|l| l.contains(&done))
+                    })
             },
         );
         let (n, log) = over_refreshes(&sh, &m, 120);

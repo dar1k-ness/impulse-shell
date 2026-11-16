@@ -1697,6 +1697,11 @@ impl Pointer {
         rt.settle();
     }
 
+    /// A mouse button is down.
+    pub fn held(&self) -> bool {
+        self.buttons != 0
+    }
+
     pub fn press(&mut self, rt: &mut Runtime, code: u32) {
         let b = qt_button(code);
         let Some(win) = self.win else { return };

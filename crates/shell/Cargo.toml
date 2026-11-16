@@ -596,6 +596,10 @@ name = "pointer_focus"
 required-features = ["interp"]
 
 [[test]]
+name = "drag_motion_per_frame"
+required-features = ["interp"]
+
+[[test]]
 name = "anim_first_step"
 required-features = ["interp"]
 

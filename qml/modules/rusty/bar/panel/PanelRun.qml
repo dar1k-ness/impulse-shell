@@ -20,6 +20,37 @@ Item {
     // the original's BarGroup padding, unless the run's first widget asks for its own (vertical workspaces).
     readonly property real padding: pill ? ((widgets.count > 0 ? widgets.itemAt(0)?.item?.groupPadding : undefined) ?? (vertical ? 8 : 5)) : 0
 
+    // Whether one of its widgets stretches: as the layout has the run, until its widgets are
+    // made; then by the lengths they have now (PanelWidget.lengthKind).
+    readonly property bool stretch: {
+        let any = false;
+        for (let i = 0; i < widgets.count; i++) {
+            const host = widgets.itemAt(i);
+            if (!host)
+                return modelData.stretch;
+            if (host.lengthKind === "stretch")
+                any = true;
+        }
+        return widgets.count > 0 ? any : modelData.stretch;
+    }
+    // The room its first and last shown widgets keep beside them (PanelWidget.leadGap): the
+    // group background ends where they do.
+    readonly property real leadGap: {
+        for (let i = 0; i < widgets.count; i++) {
+            const host = widgets.itemAt(i);
+            if (host?.visible)
+                return host.leadGap;
+        }
+        return 0;
+    }
+    readonly property real trailGap: {
+        for (let i = widgets.count - 1; i >= 0; i--) {
+            const host = widgets.itemAt(i);
+            if (host?.visible)
+                return host.trailGap;
+        }
+        return 0;
+    }
     // A run whose widgets are all hidden lays out nothing, and takes no space or spacing.
     // A stretching run outside the center zone (a spacer) is free space even when empty.
     readonly property bool anyShown: {
@@ -30,6 +61,15 @@ Item {
         }
         return false;
     }
+    // One of its widgets is carried in edit mode (PanelWidget): the run is above the others.
+    readonly property bool lifted: {
+        for (let i = 0; i < widgets.count; i++) {
+            if (widgets.itemAt(i)?.lifted)
+                return true;
+        }
+        return false;
+    }
+    z: lifted ? 1 : 0
     // The zone-wide position before which (`keepAfter`: after which) its widgets have room.
     property int cut: -1
     property bool keepAfter: false
@@ -46,29 +86,29 @@ Item {
         for (let i = 0; i < widgets.count; i++) {
             const host = widgets.itemAt(i);
             if (host?.item && (host.item.shown ?? true) && host.kept) {
-                length += host.minimumLength + (vertical ? host.leadingSpace : 0);
+                length += host.minimumLength + host.besideLength;
                 shown++;
             }
         }
         return shown > 0 ? length + (shown - 1) * spacing + padding * 2 : 0;
     }
-    visible: (vertical ? grid.implicitHeight > 0 : grid.implicitWidth > 0) || (!center && modelData.stretch && anyShown)
-    implicitWidth: vertical ? Appearance.sizes.baseVerticalBarWidth : center && modelData.stretch ? centerSideLength : grid.implicitWidth + padding * 2
+    visible: (vertical ? grid.implicitHeight > 0 : grid.implicitWidth > 0) || (!center && stretch && anyShown)
+    implicitWidth: vertical ? Appearance.sizes.baseVerticalBarWidth : center && stretch ? centerSideLength : grid.implicitWidth + padding * 2
     implicitHeight: vertical ? (grid.implicitHeight + padding * 2) : Appearance.sizes.baseBarHeight
     Layout.minimumWidth: vertical ? -1 : minimumLength
     Layout.minimumHeight: vertical ? minimumLength : -1
-    Layout.fillWidth: !vertical && !center && modelData.stretch
-    Layout.fillHeight: vertical && !center && modelData.stretch
+    Layout.fillWidth: !vertical && !center && stretch
+    Layout.fillHeight: vertical && !center && stretch
     Layout.alignment: vertical ? Qt.AlignHCenter : Qt.AlignVCenter
 
     Rectangle {
         visible: root.pill
         anchors {
             fill: parent
-            topMargin: root.vertical ? 0 : 4
-            bottomMargin: root.vertical ? 0 : 4
-            leftMargin: root.vertical ? 4 : 0
-            rightMargin: root.vertical ? 4 : 0
+            topMargin: root.vertical ? root.leadGap : 4
+            bottomMargin: root.vertical ? root.trailGap : 4
+            leftMargin: root.vertical ? 4 : root.leadGap
+            rightMargin: root.vertical ? 4 : root.trailGap
         }
         color: Config.options?.bar.borderless ? "transparent" : Appearance.colors.colLayer1
         radius: Appearance.rounding.small
@@ -117,6 +157,9 @@ Item {
                 dividerGap: grid.rowSpacing
                 dividerInset: Appearance.sizes.baseBarHeight / 3
                 dividerColor: Appearance.colors.colOutlineVariant
+                chipColor: Appearance.m3colors.m3surfaceContainerHigh
+                chipBorderColor: Appearance.colors.colPrimary
+                chipRadius: Appearance.rounding.small
                 kept: root.cut < 0 || (root.keepAfter ? root.modelData.first + index > root.cut : root.modelData.first + index < root.cut)
             }
         }

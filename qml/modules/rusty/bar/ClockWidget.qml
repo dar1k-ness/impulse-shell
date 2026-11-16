@@ -11,10 +11,27 @@ Item {
     // The length the bar fixes it at, -1 when it takes its own: the date goes when it has no
     // room there, then the time gives way to a clock icon.
     property real room: -1
-    readonly property bool fitsTime: room < 0 || room >= time.implicitWidth
-    readonly property bool fitsDate: room < 0 || room >= time.implicitWidth + dot.implicitWidth + date.implicitWidth + rowLayout.spacing * 2
+    // Measured apart from the texts themselves: those show or hide by these two.
+    readonly property bool fitsTime: room < 0 || room >= timeLength.width
+    readonly property bool fitsDate: room < 0 || room >= timeLength.width + dotLength.width + dateLength.width + rowLayout.spacing * 2
     implicitWidth: rowLayout.implicitWidth
     implicitHeight: Appearance.sizes.barHeight
+
+    TextMetrics {
+        id: timeLength
+        font: time.font
+        text: time.text
+    }
+    TextMetrics {
+        id: dotLength
+        font: dot.font
+        text: dot.text
+    }
+    TextMetrics {
+        id: dateLength
+        font: date.font
+        text: date.text
+    }
 
     RowLayout {
         id: rowLayout

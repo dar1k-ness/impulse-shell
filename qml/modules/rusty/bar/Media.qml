@@ -16,6 +16,18 @@ Item {
     // Off where the bar gives it no room for the title: the progress ring alone.
     property bool showTitle: true
     readonly property string cleanedTitle: StringUtils.cleanMusicTitle(activePlayer?.trackTitle) || Translation.tr("No media")
+    // The least length its title still reads at: the progress ring and the title, a long one
+    // cut with an ellipsis. 0 where it shows no title. Measured apart from the title itself,
+    // which is hidden where it has no room.
+    readonly property real titledLength: Config.options.bar.verbose ? mediaCircProg.implicitSize + Math.min(Math.ceil(titleLength.width), 120) + rowLayout.spacing * 4 : 0
+    // Room kept clear at each end, where edit mode's handles are on a player of a set length.
+    property real endRoom: 0
+
+    TextMetrics {
+        id: titleLength
+        font: title.font
+        text: title.text
+    }
 
     Layout.fillHeight: true
     implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 2
@@ -49,6 +61,8 @@ Item {
 
         spacing: 4
         anchors.fill: parent
+        anchors.leftMargin: root.endRoom
+        anchors.rightMargin: root.endRoom
 
         ClippedFilledCircularProgress {
             id: mediaCircProg
@@ -75,6 +89,7 @@ Item {
         }
 
         StyledText {
+            id: title
             visible: Config.options.bar.verbose && root.showTitle
             width: rowLayout.width - (CircularProgress.size + rowLayout.spacing * 2)
             Layout.alignment: Qt.AlignVCenter

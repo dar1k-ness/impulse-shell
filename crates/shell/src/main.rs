@@ -247,9 +247,12 @@ struct Win {
     pending: bool,
     /// When that callback was requested.
     asked: Option<std::time::Instant>,
-    /// The last frame was committed without a frame callback (nothing on it animates): the next
-    /// draw waits one refresh interval from it, so redraws stay at the display's rate.
+    /// The last frame was committed without a frame callback (nothing on it animates and it is
+    /// not one of a run, see `in_frame_run`): the next draw waits one refresh interval from
+    /// it, so redraws stay at the display's rate.
     shown: Option<std::time::Instant>,
+    /// When the last frame was committed, with a frame callback or without one.
+    committed: Option<std::time::Instant>,
     /// World layout revision and size of the last layout: unchanged means geometry is current.
     laid: (u64, (u32, u32)),
     /// Consecutive frames whose full layout ended unsettled.
@@ -1019,6 +1022,10 @@ type AnimAttr = (Vec<bool>, bool, bool);
 /// A copied dmabuf frame: item, toplevel, size, y-invert, the view's size.
 type DmaReady = (usize, u32, (usize, usize), bool, (usize, usize));
 
+/// How long before the callback an editor's drag is to have its motion handled, in ms, over
+/// what handling one takes: the callback comes when the compositor sends it, not on the dot.
+const MOTION_AHEAD_MARGIN: f64 = 1.0;
+
 struct App {
     /// `QT_SCALE_FACTOR` and `QT_SCREEN_SCALE_FACTORS`, read after the config's pragmas.
     factors: shell::hidpi::Factors,
@@ -1078,8 +1085,23 @@ struct App {
     axis_merge: AxisCompression,
     /// Which motions wait, and the one that does: (window item, position, time).
     motion_merge: MotionCompression<(usize, (f64, f64), u32)>,
+    /// The time of the last frame callback (`wl_callback.done`).
+    frame_time: Option<u32>,
     /// A motion reached the scene and no frame has answered it yet.
     motion_unanswered: bool,
+    /// A motion reached the scene since the last refresh began (`frame_time` changed).
+    motion_this_frame: bool,
+    /// When the refresh began: its first frame callback.
+    frame_at: Instant,
+    /// The editor's drag has had the next refresh's motion already, ahead of its callback
+    /// (`motion_ahead`).
+    motion_early: bool,
+    /// The frame callback being answered found its motion handled ahead of it.
+    frame_has_motion: bool,
+    /// How long the editor's drag takes to handle a motion, in ms: the last few, averaged.
+    motion_cost: f64,
+    /// What handling the motion not answered yet has taken so far, in ms.
+    motion_took: f64,
     /// Pointer frames read from the socket and not handled yet, each with when it was read.
     ptr_frames: std::collections::VecDeque<(Instant, Vec<PointerEvent>)>,
     /// `animating_windows` as of the `AnimKey` it was computed for.
@@ -1971,6 +1993,7 @@ impl App {
             anim: false,
             pending: false,
             shown: None,
+            committed: None,
             asked: None,
             laid: (u64::MAX, (0, 0)),
             unsettled: 0,
@@ -2316,12 +2339,21 @@ impl App {
         }
         if ((self.clock.frame_due || self.clock.ahead > 0) && self.clock.running)
             || !self.ptr_frames.is_empty()
-            || self.motion_merge.waits()
+            || (self.motion_merge.waits() && !self.drag_awaits_frame())
             || self.motion_unanswered
             // Service calls queued by this turn run on the next turn.
             || !self.rt.world.borrow().effects.is_empty()
         {
             q.push(now, Due::Now);
+        }
+        // A drag's motion held for a frame callback that the compositor withholds is delivered
+        // once the window counts as not shown (`unexposed`).
+        if self.motion_merge.waits() && self.drag_awaits_frame() {
+            q.push(give_up.unwrap_or(now), Due::Pointer);
+            // Or ahead of that callback, in time to be drawn with it (`motion_ahead_at`).
+            if !self.motion_early {
+                q.push(self.motion_ahead_at().max(now), Due::Pointer);
+            }
         }
         // Idle (nothing due now, every window's first frame shown): one hidden window is laid
         // out ahead of its first show per idle turn, as QQmlIncubationController::incubateFor
@@ -2643,6 +2675,19 @@ impl App {
         animations_running(self) || self.ptr.swipe_animating()
     }
 
+    /// Window `k` drew its last frame a moment ago: the one drawn now is one of a run (a drag,
+    /// a resize, a pointer moving over things that answer it), so it requests a frame callback
+    /// too and the run goes at the display's rate. Without one the next frame waits a refresh
+    /// interval from the end of this one's drawing, and every frame of the run comes later by
+    /// the time it took to draw.
+    fn in_frame_run(&self, k: usize) -> bool {
+        shell::sched::in_frame_run(
+            self.wins[k]
+                .committed
+                .map(|t| t.elapsed().as_secs_f64() * 1000.0),
+        )
+    }
+
     /// Shows the window's last frame again with the screencopy textures swapped into it.
     fn swap_draw(&mut self, k: usize) {
         self.swap_frame(k);
@@ -2747,7 +2792,7 @@ impl App {
     fn swap_frame(&mut self, k: usize) {
         let t0 = std::time::Instant::now();
         let wls = self.wins[k].surf.wl_surface().clone();
-        let callback = self.frame_driven() || self.wins[k].anim;
+        let callback = self.frame_driven() || self.wins[k].anim || self.in_frame_run(k);
         let win = &mut self.wins[k];
         let (Some(gpu), Some(gs), Some(fr)) =
             (self.gpu.as_mut(), win.gl.as_mut(), win.last.as_mut())
@@ -3132,7 +3177,7 @@ impl App {
             self.apply_scale(k, dpr);
         }
         let prev_frame = self.wins[k].last.take();
-        let driven = self.frame_driven();
+        let driven = self.frame_driven() || self.in_frame_run(k);
         let mut veils = std::mem::take(&mut self.wins[k].veils);
         let mut spare = std::mem::take(&mut self.wins[k].spare);
         let veil_scale = (self.wins[k].scale.buf, self.wins[k].scale.dest);
@@ -3348,7 +3393,7 @@ impl App {
                 t1.elapsed().as_millis()
             );
         }
-        let callback = self.frame_driven() || self.wins[k].anim;
+        let callback = self.frame_driven() || self.wins[k].anim || self.in_frame_run(k);
         let damage = match &self.wins[k].shm_prev {
             Some(p) if (p.w, p.h) == (cv.w, cv.h) => {
                 shell::region::diff_pixels(&p.px, &cv.px, cv.w, cv.h)
@@ -4705,7 +4750,14 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         ptr: Pointer::default(),
         axis_merge: AxisCompression::default(),
         motion_merge: Default::default(),
+        frame_time: None,
         motion_unanswered: false,
+        motion_this_frame: false,
+        frame_at: Instant::now(),
+        motion_early: false,
+        frame_has_motion: false,
+        motion_cost: 2.0,
+        motion_took: 0.0,
         ptr_frames: Default::default(),
         anim_attr: Default::default(),
         wheel_deltas: shell::input::WheelDeltas::default(),
@@ -5434,7 +5486,7 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
             app.flush_grab_cleared();
             app.sync_popups();
         }
-        app.flush_pointer();
+        app.flush_pointer_read();
         app.fire_key_repeat();
         // Animations started by the events handled below begin now, not at the last frame
         // before an idle sleep (QUnifiedTimer restarts its clock when it wakes).
@@ -5605,7 +5657,13 @@ impl CompositorHandler for App {
         _: wl_output::Transform,
     ) {
     }
-    fn frame(&mut self, _: &Connection, _: &QueueHandle<Self>, s: &wl_surface::WlSurface, _: u32) {
+    fn frame(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        s: &wl_surface::WlSurface,
+        time: u32,
+    ) {
         let Some(k) = self.wins.iter().position(|w| w.surf.wl_surface() == s) else {
             return;
         };
@@ -5614,6 +5672,32 @@ impl CompositorHandler for App {
         if animations_running(self) {
             self.clock.callback(k);
         }
+        // The pointer frames read with this callback came before it: the frame it starts shows
+        // where they left the pointer. Asked only after them, a drag would find nothing to draw
+        // here and draw past the callback, a refresh late. (A cleared grab goes first, in `run`.)
+        // The windows of one refresh (callbacks with one time) show one step of a drag: the
+        // motion read while the first of them drew waits for the next refresh.
+        if self.grab_cleared.is_empty() {
+            if self.frame_time.replace(time) == Some(time) {
+                self.flush_pointer_read();
+            } else {
+                self.frame_at = Instant::now();
+                if std::mem::take(&mut self.motion_early) {
+                    // The drag's step for this refresh is in the scene already: what was
+                    // read with the callback is the next one's.
+                    self.frame_has_motion = true;
+                    self.flush_pointer_read();
+                    self.frame_has_motion = false;
+                } else {
+                    self.motion_this_frame = false;
+                    self.flush_pointer();
+                }
+            }
+        }
+        // A click delivered above may have closed windows, this one among them.
+        let Some(k) = self.wins.iter().position(|w| w.surf.wl_surface() == s) else {
+            return;
+        };
         self.mark_dirty();
         if qml::log_on!("ri::frames") {
             tracing::debug!(target: "ri::frames", "cb win{k} dirty={}", self.wins[k].dirty);
@@ -6338,6 +6422,7 @@ impl App {
                 anim: false,
                 pending: false,
                 shown: None,
+                committed: None,
                 asked: None,
                 laid: (u64::MAX, (0, 0)),
                 unsettled: 0,
@@ -7414,6 +7499,7 @@ impl App {
                 anim: false,
                 pending: false,
                 shown: None,
+                committed: None,
                 asked: None,
                 laid: (u64::MAX, (0, 0)),
                 unsettled: 0,
@@ -8045,6 +8131,7 @@ impl App {
                 anim: false,
                 pending: false,
                 shown: None,
+                committed: None,
                 asked: None,
                 laid: (u64::MAX, (0, 0)),
                 unsettled: 0,
@@ -10723,16 +10810,82 @@ impl App {
     /// turn (a 1000 Hz mouse while a frame draws) would each pay a hit test, hover update and
     /// binding pass for positions nobody sees.
     fn flush_motion(&mut self) {
-        if let Some((item, (x, y), time)) = self.motion_merge.take()
+        self.answer_motion(true);
+    }
+
+    /// The editor holds a widget (a button is down on it), this refresh has had its motion and
+    /// a window's frame is with the compositor: the widget is drawn again only once that
+    /// frame's callback comes, so the motions read until then are one step of the drag, its
+    /// last position. Each handled as it is read (a hit test, the editor's frames and a
+    /// binding pass a motion) would hold the callback's frame back past the refresh it is
+    /// for. The first motion of a refresh is not one of them: a slow drag's lone step, read
+    /// while another window's frame is out (the editor's outline over the desktop), would
+    /// wait a whole refresh for a callback that has nothing to add. What QML itself drags (a
+    /// Flickable, a DragHandler) gets its motions as Qt delivers them, as they are read.
+    fn drag_awaits_frame(&self) -> bool {
+        self.drag_holds_motions() && !self.motion_ahead()
+    }
+
+    fn drag_holds_motions(&self) -> bool {
+        self.ptr.held()
+            && self.motion_this_frame
+            && (self.frame_has_motion
+                || (0..self.wins.len()).any(|k| self.wins[k].pending && !self.unexposed(k)))
+            && self
+                .rt
+                .world
+                .try_borrow()
+                .is_ok_and(|w| w.edit.gesture.is_some())
+    }
+
+    /// When the motion the editor's drag holds is handled ahead of the callback it waits
+    /// for, in the loop's ms: early enough to be in the scene when the callback comes. The
+    /// callback's frame is then drawn at once, and every window the drag changes (the
+    /// desktop under the widget, the editor's outline over it) is with the compositor
+    /// before the refresh; handled after the callback, the motion took that much of the
+    /// refresh from them and the last drawn missed it, shown every second refresh.
+    fn motion_ahead_at(&self) -> f64 {
+        self.loop_ms(self.frame_at) + self.clock.vsync - self.motion_cost - MOTION_AHEAD_MARGIN
+    }
+
+    /// It is time for that (`motion_ahead_at`), and this refresh has not had it.
+    fn motion_ahead(&self) -> bool {
+        !self.motion_early && self.loop_ms(Instant::now()) >= self.motion_ahead_at()
+    }
+
+    /// A motion is handled, `early` for the editor's drag (`motion_ahead`) or not, since `at`.
+    fn motion_handled(&mut self, early: bool, at: Instant) {
+        self.motion_unanswered = true;
+        self.motion_this_frame = true;
+        self.motion_early |= early;
+        self.motion_took += at.elapsed().as_secs_f64() * 1000.0;
+    }
+
+    /// `flush_motion`, with the motion that waits delivered only if `held`.
+    fn answer_motion(&mut self, held: bool) {
+        let early = self.drag_holds_motions() && self.motion_ahead();
+        if held
+            && let Some((item, (x, y), time)) = self.motion_merge.take()
             && self.wins.iter().any(|w| w.item == item)
         {
+            let at = Instant::now();
             self.ptr.time = time as f64;
             self.ptr.motion(&mut self.rt, item, x, y);
-            self.motion_unanswered = true;
+            self.motion_handled(early, at);
+            if early && qml::log_on!("ri::frames") {
+                tracing::debug!(
+                    target: "ri::frames",
+                    "motion ahead of the callback, handling one takes {:.1}ms",
+                    self.motion_cost
+                );
+            }
         }
         if std::mem::take(&mut self.motion_unanswered) {
+            let at = Instant::now();
             self.update_cursor_shape();
             self.respond_to_input();
+            let took = std::mem::take(&mut self.motion_took) + at.elapsed().as_secs_f64() * 1000.0;
+            self.motion_cost = ((self.motion_cost + took) / 2.0).min(self.clock.vsync / 2.0);
         }
     }
 
@@ -10743,6 +10896,16 @@ impl App {
         }
         self.flush_axis();
         self.flush_motion();
+    }
+
+    /// `flush_pointer` at the end of a dispatch: a drag's motion stays held while a frame is
+    /// with the compositor (`drag_awaits_frame`), for that frame's callback to deliver.
+    fn flush_pointer_read(&mut self) {
+        while let Some((at, events)) = self.ptr_frames.pop_front() {
+            self.handle_pointer_frame(at, &events);
+        }
+        self.flush_axis();
+        self.answer_motion(!self.drag_awaits_frame());
     }
 
     /// Show the cursor of the item under the pointer. `wl_pointer.enter` leaves the image
@@ -10888,12 +11051,14 @@ impl App {
                 // A held-back motion replaces the one that waits (Qt's setFrameEvent), with a
                 // button down or not. The first motion of a burst reaches the scene at once:
                 // a drag starts from it, not from the burst's last position.
-                if hold {
+                if hold || self.drag_awaits_frame() {
                     self.motion_merge.hold((item, (x, y), time));
                 } else {
+                    let early = self.drag_holds_motions();
+                    let at = Instant::now();
                     self.ptr.time = time as f64;
                     self.ptr.motion(&mut self.rt, item, x, y);
-                    self.motion_unanswered = true;
+                    self.motion_handled(early, at);
                 }
                 continue;
             }
@@ -11526,9 +11691,11 @@ struct MapSync(wl_surface::WlSurface);
 /// `w` just committed a buffer: the first one after its configure maps it.
 /// Records a commit of `w`'s new frame, with a frame callback requested or without one.
 fn mark_shown(w: &mut Win, callback: bool) {
+    let now = std::time::Instant::now();
     w.pending = callback;
-    w.asked = callback.then(std::time::Instant::now);
-    w.shown = (!callback).then(std::time::Instant::now);
+    w.asked = callback.then_some(now);
+    w.shown = (!callback).then_some(now);
+    w.committed = Some(now);
 }
 
 fn committed(display: &wl_display::WlDisplay, qh: &QueueHandle<App>, w: &mut Win) {

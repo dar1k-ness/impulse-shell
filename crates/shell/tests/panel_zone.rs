@@ -16,6 +16,8 @@ Item {
     property bool zoneHovered
     property int shortened
     property bool center
+    // Whether a widget of it stretches now, as PanelRun has it.
+    readonly property bool stretch: modelData.stretch
     objectName: modelData.name
     visible: modelData.shown
     implicitWidth: 30

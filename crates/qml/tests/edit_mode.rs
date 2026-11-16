@@ -298,6 +298,46 @@ fn frames_show_every_widget_while_editing() {
     assert!(t.frame_ids().is_empty());
 }
 
+/// The overlay's outputs are made again when what they are made from changed and by nothing
+/// QML wrote: the shell placing a window elsewhere moves the frames of the widgets in it.
+#[test]
+fn frames_follow_a_window_the_shell_moved() {
+    let mut t = start("moved-window");
+    t.call("start", &[]);
+    let x_of = |t: &T, id: &str| {
+        let Value::Obj(a) = t.read("frames") else {
+            panic!("no frames");
+        };
+        let a = a.borrow();
+        a.array
+            .iter()
+            .flatten()
+            .find_map(|f| match f {
+                Value::Obj(o) => {
+                    let o = o.borrow();
+                    (o.props.get("id")?.to_js_string() == id).then(|| o.props["x"].to_number())
+                }
+                _ => None,
+            })
+            .unwrap()
+    };
+    let (in_sidebar, on_bar) = (x_of(&t, "t1"), x_of(&t, "a"));
+    // Settled, with nothing changed: a pass more leaves them.
+    t.rt.settle();
+    assert_eq!((x_of(&t, "t1"), x_of(&t, "a")), (in_sidebar, on_bar));
+    {
+        let mut w = t.rt.world.borrow_mut();
+        let rects = &mut w.window_rects;
+        let sidebar = rects.values_mut().find(|r| r.x == 1480.0).unwrap();
+        sidebar.x -= 100.0;
+    }
+    t.rt.settle();
+    assert_eq!(
+        (x_of(&t, "t1"), x_of(&t, "a")),
+        (in_sidebar - 100.0, on_bar)
+    );
+}
+
 #[test]
 fn click_selects_and_empty_click_deselects() {
     let mut t = start("select");
@@ -319,8 +359,9 @@ fn drag_on_the_desktop_moves_and_undo_redo_restore() {
     t.call("start", &[]);
     let before = t.file();
     assert!(t.drag((150.0, 150.0), (650.0, 450.0)).truthy());
+    // The pointer went 500 by 300; the widget went that less the 5 px that made it a drag.
     assert!(
-        t.file().contains("x = 600") && t.file().contains("y = 400"),
+        t.file().contains("x = 596") && t.file().contains("y = 397"),
         "{}",
         t.file()
     );
@@ -328,7 +369,7 @@ fn drag_on_the_desktop_moves_and_undo_redo_restore() {
     assert!(t.call("key", &[KEY_Z, CTRL]).truthy());
     assert_eq!(Layout::parse(&t.file()), Layout::parse(&before));
     assert!(t.call("key", &[KEY_Z, CTRL + SHIFT]).truthy());
-    assert!(t.file().contains("x = 600"));
+    assert!(t.file().contains("x = 596"));
 }
 
 #[test]
@@ -386,6 +427,121 @@ fn widgets_move_between_panel_desktop_and_sidebar() {
         (t.container_of("c"), t.container_of("d1")),
         ("bar".into(), "desk".into())
     );
+}
+
+/// What the host of the widget `id` has in `k`.
+fn host_value(t: &T, id: &str, k: &str) -> Value {
+    let mut w = t.rt.world.borrow_mut();
+    let host = w
+        .of_type("WidgetHost")
+        .into_iter()
+        .find(|&h| matches!(w.read(h, "layoutId"), Some(Value::Str(s)) if s.as_ref() == id))
+        .unwrap();
+    w.read(host, k).unwrap_or(Value::Undefined)
+}
+
+#[test]
+fn a_panel_widget_is_carried_along_its_panel_itself() {
+    // The bar's clock declares what PanelWidget.qml does: the controller writes it there.
+    let main = MAIN.replace(
+        r#"WidgetHost { layoutId: "c";"#,
+        r#"WidgetHost { property bool carried: false; property real carryX: 0; property real carryY: 0; layoutId: "c";"#,
+    );
+    assert_ne!(main, MAIN);
+    let mut t = start_with("carry-panel", MANIFEST, LAYOUT, &main);
+    t.call("start", &[]);
+    let before = t.file();
+    let carried = |t: &T| host_value(t, "c", "carried").truthy();
+    let by = |t: &T| {
+        (
+            host_value(t, "c", "carryX").to_number(),
+            host_value(t, "c", "carryY").to_number(),
+        )
+    };
+    let ghost = |t: &T, k: &str| match t.read("ghost") {
+        Value::Obj(o) => o.borrow().props.get(k).is_some_and(|v| v.truthy()),
+        v => panic!("ghost {v:?}"),
+    };
+    t.call("press", &[960.0, 20.0]);
+    assert!(!carried(&t));
+    // Along the bar the widget itself goes with the pointer, less the 5 px that made it a
+    // drag, and not across the bar; the overlay draws no box over what the pointer passes.
+    t.call("move", &[700.0, 26.0]);
+    assert!(carried(&t));
+    let (x, y) = by(&t);
+    assert!((x + 255.0).abs() < 0.5 && y == 0.0, "carried by {x}, {y}");
+    assert!(ghost(&t, "carried") && !ghost(&t, "apart"));
+    // Not past the bar's end.
+    t.call("move", &[5.0, 20.0]);
+    assert_eq!(by(&t), (-900.0, 0.0));
+    // Off the bar its window ends: the widget is back in its place and the box shows where
+    // the pointer has it.
+    t.call("move", &[700.0, 400.0]);
+    assert!(!carried(&t) && by(&t) == (0.0, 0.0));
+    assert!(!ghost(&t, "carried"));
+    // Over the bar again it is carried again; Esc puts it back and writes nothing.
+    t.call("move", &[600.0, 20.0]);
+    assert!(carried(&t) && by(&t).0 < -300.0);
+    assert!(t.call("key", &[ESC, 0.0]).truthy());
+    assert!(!carried(&t) && by(&t) == (0.0, 0.0));
+    assert_eq!(t.file(), before);
+    // A drop moves it in the layout; the host that was carried is let go.
+    assert!(t.drag((960.0, 20.0), (20.0, 20.0)).truthy());
+    assert!(!carried(&t) && by(&t) == (0.0, 0.0));
+    assert_ne!(t.file(), before);
+}
+
+#[test]
+fn a_press_on_the_widget_beside_the_selected_one_takes_that_widget() {
+    // `b` 4 px after `a`, as widgets of a bar are: `a`'s handle reaches 8 px out of its frame.
+    let main = MAIN.replace(
+        r#"layoutId: "b"; widgetType: "bar-only"; x: 50;"#,
+        r#"layoutId: "b"; widgetType: "bar-only"; x: 44;"#,
+    );
+    assert_ne!(main, MAIN);
+    let mut t = start_with("beside", MANIFEST, LAYOUT, &main);
+    t.call("start", &[]);
+    t.call("press", &[25.0, 20.0]);
+    t.call("release", &[25.0, 20.0]);
+    assert_eq!(t.read("selectedId").to_js_string(), "a");
+    // Between the two the pointer is on `a`'s handle.
+    t.call("move", &[42.0, 20.0]);
+    assert_eq!(t.read("handle").to_js_string(), "right");
+    // On `b` it is on `b`: no handle shows, and a press there takes `b`.
+    t.call("move", &[46.0, 20.0]);
+    assert_eq!(t.read("handle").to_js_string(), "");
+    t.call("press", &[46.0, 20.0]);
+    assert_eq!(t.read("selectedId").to_js_string(), "b");
+    assert_eq!(t.read("handle").to_js_string(), "");
+    t.call("release", &[46.0, 20.0]);
+}
+
+#[test]
+fn a_widget_carried_over_the_others_stays_the_one_held() {
+    let mut t = start_with("held", MANIFEST, LAYOUT, MAIN);
+    t.call("start", &[]);
+    // `a` is the selected one when `b`, 10 px after it, is pressed in its middle.
+    t.call("press", &[25.0, 20.0]);
+    t.call("release", &[25.0, 20.0]);
+    assert_eq!(t.read("selectedId").to_js_string(), "a");
+    t.call("press", &[65.0, 20.0]);
+    assert_eq!(t.read("selectedId").to_js_string(), "b");
+    // Over `a`, over the clock, over a desktop widget and back over the bar it is still `b`.
+    for (x, y) in [
+        (40.0, 20.0),
+        (25.0, 20.0),
+        (5.0, 20.0),
+        (500.0, 20.0),
+        (960.0, 20.0),
+        (200.0, 150.0),
+        (30.0, 20.0),
+    ] {
+        t.call("move", &[x, y]);
+        assert_eq!(t.read("selectedId").to_js_string(), "b", "at ({x}, {y})");
+        assert_eq!(t.read("handle").to_js_string(), "", "at ({x}, {y})");
+    }
+    t.call("release", &[30.0, 20.0]);
+    assert_eq!(t.read("selectedId").to_js_string(), "b");
 }
 
 // The original's own widget types (qml/widgets.toml) on a bar, the desktop and the right sidebar.
@@ -558,8 +714,9 @@ fn resize_from_the_handle_and_remove_with_delete() {
     t.call("press", &[150.0, 150.0]);
     t.call("release", &[150.0, 150.0]);
     assert!(t.drag((298.0, 198.0), (398.0, 248.0)).truthy());
+    // The pointer went 100 by 50; the corner went that less the 2 px that made it a drag.
     assert!(
-        t.file().contains("w = 300") && t.file().contains("h = 150"),
+        t.file().contains("w = 298") && t.file().contains("h = 149"),
         "{}",
         t.file()
     );
