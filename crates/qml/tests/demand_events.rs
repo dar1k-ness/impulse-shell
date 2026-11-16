@@ -75,6 +75,15 @@ fn shell_of(services: &[&str], pinned: bool) -> Shell {
 
 /// [`shell_of`], with the singletons of the directories `more` of the original as well.
 fn shell_in(more: &[&str], services: &[&str], pinned: bool) -> Shell {
+    let mut s = shell_starting(more, services, pinned);
+    s.rt.settle();
+    s.drain();
+    s
+}
+
+/// [`shell_in`] in the turn its singletons are made, with what they started still under
+/// way: the shell's start, where the windows are made in that turn.
+fn shell_starting(more: &[&str], services: &[&str], pinned: bool) -> Shell {
     if pinned {
         qml::builtins::set_clock(Some(EPOCH));
     }
@@ -98,16 +107,13 @@ fn shell_in(more: &[&str], services: &[&str], pinned: bool) -> Shell {
     ];
     dirs.extend(more.iter().map(|d| ri().join(d)));
     rt.load_singletons_where(&dirs, &|n| !other.iter().any(|s| s == n));
-    rt.settle();
-    let mut s = Shell {
+    Shell {
         rt,
         wake,
         ep,
         now: 0.0,
         pinned,
-    };
-    s.drain();
-    s
+    }
 }
 
 impl Shell {
@@ -671,6 +677,41 @@ fn resources_tick_only_while_shown() {
         "ticks with its view destroyed"
     );
     assert_eq!(samples(&mut s), 4);
+    let errs = s.rt.errors();
+    assert!(errs.is_empty(), "{errs:?}");
+}
+
+/// The bar's first frame has the memory in use: ResourceUsage's first poll comes in the turn
+/// the bar is made, at the shell's start before `/proc/meminfo` has been read, and with no
+/// text it took the memory and the swap for full until the next poll.
+#[test]
+fn resources_first_poll_has_read_the_files() {
+    const TEST: &str = concat!(module_path!(), "::resources_first_poll_has_read_the_files");
+    if !own_process(TEST) {
+        return;
+    }
+    let mut s = shell_starting(&[], &["ResourceUsage", "UpdateClock", "SystemInfo"], false);
+    let ui = home().join("ui");
+    std::fs::create_dir_all(&ui).unwrap();
+    let bar = ui.join("Bar.qml");
+    std::fs::write(
+        &bar,
+        "import QtQuick\nimport ri.modules.rusty.bar\nItem { Item { Resources {} } }\n",
+    )
+    .unwrap();
+    s.rt.load_file(&bar).unwrap();
+    s.advance(10.0);
+    let root = s.singleton("ResourceUsage");
+    assert_eq!(
+        s.read(root, "memoryUsageHistory")
+            .to_js_string()
+            .split(',')
+            .count(),
+        1,
+        "one poll"
+    );
+    assert!(s.num(root, "memoryTotal") > 1.0, "polled with no text");
+    assert!(s.num(root, "memoryUsedPercentage") < 1.0, "memory full");
     let errs = s.rt.errors();
     assert!(errs.is_empty(), "{errs:?}");
 }

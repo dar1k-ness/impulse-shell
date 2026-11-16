@@ -137,6 +137,18 @@ pub fn predecessor_leaves(drawn: bool, waited: std::time::Duration) -> bool {
     drawn || waited > PREDECESSOR_STAYS
 }
 
+/// Whether a panel of this image goes before the `exec` of a reload instead of staying on
+/// the screen for the next image: a window opened since this image's first frames (a
+/// sidebar, a menu, a notification: `at_start` is whether a window of its namespace was
+/// there then) is not one the next image starts with, so nothing would take its place and
+/// it would stay, frozen, until the old windows leave together. A panel that reserves
+/// space (`zone`) or lies under the windows (`layer` 0 or 1: background, bottom) stays
+/// whenever it was opened: without it the windows on the screen would be resized, or the
+/// bare screen would show, until the next image draws.
+pub fn leaves_before_exec(at_start: bool, zone: i32, layer: u32) -> bool {
+    !at_start && zone <= 0 && layer >= 2
+}
+
 /// The descriptors this process has open, without the standard three.
 pub fn open_descriptors() -> Vec<i32> {
     let Ok(dir) = std::fs::read_dir("/proc/self/fd") else {
@@ -292,5 +304,35 @@ mod tests {
             "at the limit"
         );
         assert!(predecessor_leaves(false, past), "never drawn");
+    }
+
+    /// Before a reload's `exec` the windows the next image does not start with go: a sidebar
+    /// or a menu opened since the first frames. The bar, the wallpaper and what was there at
+    /// the first frames stay for the next image to draw over.
+    #[test]
+    fn windows_opened_since_the_start_leave_before_the_exec() {
+        use super::leaves_before_exec;
+        assert!(
+            leaves_before_exec(false, 0, 2),
+            "a sidebar on the top layer"
+        );
+        assert!(
+            leaves_before_exec(false, -1, 3),
+            "a menu on the overlay layer"
+        );
+        assert!(
+            !leaves_before_exec(true, 0, 3),
+            "the screen corners of the start"
+        );
+        assert!(!leaves_before_exec(true, 40, 2), "the bar of the start");
+        assert!(
+            !leaves_before_exec(false, 40, 2),
+            "a bar moved to another edge"
+        );
+        assert!(
+            !leaves_before_exec(false, 0, 0),
+            "a wallpaper of a new screen"
+        );
+        assert!(!leaves_before_exec(false, 0, 1), "a bottom-layer window");
     }
 }

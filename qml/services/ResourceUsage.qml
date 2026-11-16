@@ -99,6 +99,8 @@ Singleton {
         }
 	}
 
-	FileView { id: fileMeminfo; path: "/proc/meminfo" }
-    FileView { id: fileStat; path: "/proc/stat" }
+    // The first poll reads the files before it answers: without that it had no text yet and
+    // the bar showed memory and swap as full until the second poll.
+	FileView { id: fileMeminfo; path: "/proc/meminfo"; blockLoading: true }
+    FileView { id: fileStat; path: "/proc/stat"; blockLoading: true }
 }

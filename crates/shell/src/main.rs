@@ -1179,6 +1179,15 @@ struct App {
     /// draw (set at the first [`App::release_predecessor`], so loading does not count): its
     /// windows stay on the screen until this image has drawn its own.
     predecessor: Option<(std::os::fd::OwnedFd, Option<std::time::Instant>)>,
+    /// The panels this image starts with, made while the previous image's windows are on the
+    /// screen, each with the wp_alpha_modifier that keeps it unseen: they draw and load under
+    /// the old windows' places and are shown together when those leave
+    /// ([`App::release_predecessor`]), so the screen changes once. Empty without
+    /// wp_alpha_modifier_v1: they show as they draw.
+    cloaks: Vec<(wl_surface::WlSurface, WpAlphaModifierSurfaceV1)>,
+    /// The namespaces of the panels this image had at its first frames: what the next
+    /// image of a reload starts with too (`shell::reload::leaves_before_exec`).
+    start_panels: Option<std::collections::HashSet<String>>,
     shortcut_mgr: Option<HyprlandGlobalShortcutsManagerV1>,
     shortcuts_rev: Option<u64>,
     /// The live GlobalShortcut items and their latest property change at the last sync.
@@ -2348,17 +2357,32 @@ impl App {
         if !shell::reload::predecessor_leaves(drawn, since.elapsed()) {
             return;
         }
+        tracing::debug!(
+            target: "ri::frames",
+            "predecessor leaves after {}ms, drawn {drawn}",
+            since.elapsed().as_millis()
+        );
         let old = self.predecessor.take();
-        for win in &self.wins {
-            if let Surf::Panel { layer, key, .. } = &win.surf
-                && key.geom.zone > 0
-            {
-                layer.set_geometry(&key.geom);
-                layer.commit();
-            }
-        }
+        take_predecessors_place(&mut self.cloaks, &self.wins);
+        // Written right before the old connection closes, with no wait for an answer: the
+        // compositor reads both in one turn. Between two turns it would draw a frame with
+        // both bars reserving space, this image's bar under the old one.
         let _ = self.conn.flush();
         drop(old);
+    }
+
+    /// Remembers the panels of this image's first frames, once.
+    fn note_start_panels(&mut self) {
+        if self.start_panels.is_some() || !self.started || !self.first_frames_committed() {
+            return;
+        }
+        let names = (self.wins.iter())
+            .filter_map(|w| match &w.surf {
+                Surf::Panel { key, .. } => Some(key.namespace.clone()),
+                _ => None,
+            })
+            .collect();
+        self.start_panels = Some(names);
     }
 
     /// Every window has its size from the compositor and has committed its first frame.
@@ -3150,10 +3174,12 @@ impl App {
                     let part = fr
                         .changed_part(old)
                         .filter(|_| !gs.fading() && veils.is_empty());
-                    let mgr = self
-                        .veil_mgr
-                        .as_ref()
-                        .filter(|_| part.is_none() && !gs.fading() && veils.len() < MAX_VEILS);
+                    // A veil over a window kept unseen until the previous image's windows
+                    // leave would show alone: the alpha is the window's, not its subsurfaces'.
+                    let cloaked = self.cloaks.iter().any(|(s, _)| *s == wls);
+                    let mgr = self.veil_mgr.as_ref().filter(|_| {
+                        part.is_none() && !gs.fading() && veils.len() < MAX_VEILS && !cloaked
+                    });
                     let mut veiled = false;
                     if let Some(m) = mgr {
                         // A spare veil has its EGL surface and buffers from an earlier fade;
@@ -4018,6 +4044,10 @@ fn reload_shell(
         shortcuts,
         shortcuts_rev,
         shortcuts_seen,
+        wins,
+        start_panels,
+        cloaks,
+        predecessor,
         ..
     } = app;
     // Quit (Qt.quit() or a termination signal read this turn) wins over a reload in the same
@@ -4039,6 +4069,25 @@ fn reload_shell(
         // that registers one another client still has, and the next image registers these.
         for (sc, _) in shortcuts.values() {
             sc.destroy();
+        }
+        // So do the windows the next image does not start with (the sidebar the reload was
+        // asked from, a menu, a popup): nothing of the next image takes their place, and
+        // they would stay, frozen, until it has drawn. Should the `exec` fail, the next
+        // sync makes them again.
+        // A popup goes before the window it is on.
+        wins.retain(|w| !matches!(w.surf, Surf::Popup { .. }));
+        wins.retain(|w| match &w.surf {
+            Surf::Panel { key, .. } => {
+                let at_start = (start_panels.as_ref()).is_none_or(|s| s.contains(&key.namespace));
+                !shell::reload::leaves_before_exec(at_start, key.geom.zone, key.layer)
+            }
+            Surf::Popup { .. } | Surf::Lock(_) | Surf::Toplevel(_) => true,
+        });
+        // A reload asked while the image before this one still has its windows on the
+        // screen: those end at the `exec`, and this image's, kept unseen so far, are what
+        // stays under the next one.
+        if predecessor.is_some() {
+            take_predecessors_place(cloaks, wins);
         }
         let _ = conn.flush();
         let surfaces = shell::reload::keep_surfaces(conn.backend().poll_fd());
@@ -4711,6 +4760,8 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         im_key: None,
         inhibitors: Default::default(),
         predecessor: predecessor_surfaces,
+        cloaks: Vec::new(),
+        start_panels: None,
         shortcuts_rev: None,
         shortcuts_seen: Default::default(),
         shortcut_mgr: globals
@@ -5438,6 +5489,7 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         if app.started && qml::native::app_windows_held() && app.exclusive_zones_mapped() {
             qml::native::release_app_windows();
         }
+        app.note_start_panels();
         app.release_predecessor();
         if qml::native::take_reload() {
             reload_wanted = true;
@@ -6250,6 +6302,16 @@ impl App {
                 out.as_ref(),
             );
             ls.set_geometry(&sent_geometry(&key.geom, over_predecessor));
+            // A window opened once this image has its first frames (a menu asked for while
+            // the previous image's windows are still there) shows as it draws.
+            if over_predecessor
+                && self.start_panels.is_none()
+                && let Some(m) = &self.veil_mgr
+            {
+                let cloak = m.alpha.get_surface(ls.wl_surface(), &self.qh, ());
+                cloak.set_multiplier(0);
+                self.cloaks.push((ls.wl_surface().clone(), cloak));
+            }
             // zwlr_layer_surface_v1: double-buffered state belongs in the initial commit, so the
             // compositor never maps the surface with the wrong keyboard interactivity.
             let kb_mode = self.kb_mode(item);
@@ -11208,6 +11270,37 @@ fn pair_successors(
         }
     }
     succ
+}
+
+/// Shows the panels kept unseen while the previous image's windows were on the screen and
+/// reserves their exclusive zones, in commits the caller writes together.
+fn take_predecessors_place(
+    cloaks: &mut Vec<(wl_surface::WlSurface, WpAlphaModifierSurfaceV1)>,
+    wins: &[Win],
+) {
+    // The alpha goes back with the commit below (wp_alpha_modifier_surface_v1.destroy is
+    // double-buffered), on the buffer the window holds: nothing is drawn again.
+    let cloaked: Vec<_> = (cloaks.drain(..))
+        .map(|(surf, cloak)| {
+            cloak.destroy();
+            surf
+        })
+        .collect();
+    for win in wins {
+        let Surf::Panel { layer, key, .. } = &win.surf else {
+            continue;
+        };
+        let shown = cloaked.contains(layer.wl_surface());
+        if shown {
+            layer.wl_surface().damage_buffer(0, 0, i32::MAX, i32::MAX);
+        }
+        if key.geom.zone > 0 {
+            layer.set_geometry(&key.geom);
+        }
+        if shown || key.geom.zone > 0 {
+            layer.commit();
+        }
+    }
 }
 
 /// The geometry a panel sends for `geom`. While the previous image's windows are still on
