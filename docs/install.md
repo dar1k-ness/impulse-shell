@@ -98,6 +98,12 @@ tools/install.sh --uninstall
   links to the new directories and puts the old names back into those files; the next install
   moves everything again. While the build from before the rename is installed, its tree in
   `~/.config/rustshell` and those two links stay: it reads them.
+- A build with the one name that is run where no install has moved them (a build started by
+  hand, a candidate that is being tried) reads and writes the state and the cache of that older
+  release where they are, `~/.local/state/rustshell` and `~/.cache/rustshell`: it does not take
+  the home for a new one, greet, and set the default wallpaper and its colours. It does so
+  until `~/.local/state/impulse-shell/user` (of the cache: `~/.cache/impulse-shell`) is there,
+  as after an install.
 - With the config in place, an install or a rollback asks the binary the way Hyprland starts
   it, `impulse-shell -c impulse-shell --check-tree`. `impulse-shell` finds its tree in
   `~/.local/share/impulse-shell` (then in `impulse-shell` of `$XDG_DATA_DIRS`). Where there is

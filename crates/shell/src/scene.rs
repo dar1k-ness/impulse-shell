@@ -16016,8 +16016,8 @@ fn remote_cache_file(src: &str) -> std::path::PathBuf {
     use std::hash::{Hash, Hasher};
     let mut h = rustc_hash::FxHasher::default();
     src.hash(&mut h);
-    qml::xdg::cache_home()
-        .join("impulse-shell/net")
+    qml::xdg::cache_dir()
+        .join("net")
         .join(format!("{:016x}", h.finish()))
 }
 

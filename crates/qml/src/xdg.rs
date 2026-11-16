@@ -95,6 +95,25 @@ pub fn state_home_in(env: &Env) -> PathBuf {
 /// tools/install.sh puts the tree there and moves an older install's directories over.
 pub const APP: &str = "impulse-shell";
 
+/// The shell's state, `$XDG_STATE_HOME/impulse-shell`, and its cache,
+/// `$XDG_CACHE_HOME/impulse-shell`: an older release's, under the name it had, where no install
+/// has moved them over (`colorgen::fsutil::state_dir`).
+pub fn state_dir() -> PathBuf {
+    state_dir_in(&var)
+}
+
+pub fn state_dir_in(env: &Env) -> PathBuf {
+    colorgen::fsutil::state_dir(&state_home_in(env))
+}
+
+pub fn cache_dir() -> PathBuf {
+    cache_dir_in(&var)
+}
+
+pub fn cache_dir_in(env: &Env) -> PathBuf {
+    colorgen::fsutil::cache_dir(&cache_home_in(env))
+}
+
 /// The installed tree, what `impulse-shell -c impulse-shell` runs: `$XDG_DATA_HOME/impulse-shell`.
 pub fn shell_tree() -> PathBuf {
     shell_tree_in(&var)

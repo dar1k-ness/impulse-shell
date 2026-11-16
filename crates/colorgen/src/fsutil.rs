@@ -1,5 +1,5 @@
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Write through a unique temporary file in the same directory + rename, so readers never
 /// see a half-written file: concurrent writers never share a temporary, the data and the
@@ -64,9 +64,33 @@ pub fn first_line(path: &Path) -> Option<String> {
     Some(t.split('\n').next().unwrap_or("").to_string())
 }
 
+/// The shell's state in `$XDG_STATE_HOME` (`base`): what it keeps is under `user` there.
+pub fn state_dir(base: &Path) -> PathBuf {
+    named_dir(base, "user")
+}
+
+/// The shell's cache in `$XDG_CACHE_HOME` (`base`).
+pub fn cache_dir(base: &Path) -> PathBuf {
+    named_dir(base, "")
+}
+
+/// The shell's directory in a base directory: `impulse-shell`. An older release has it as
+/// `rustshell`, and tools/install.sh moves that over. A build that is run without that
+/// install reads and writes the older release's directory, while the one name holds none of
+/// the shell's own (`holds`, a path every such directory has in it): the shell is not new to
+/// that home.
+fn named_dir(base: &Path, holds: &str) -> PathBuf {
+    let (new, old) = (base.join("impulse-shell"), base.join("rustshell"));
+    if !new.join(holds).exists() && old.join(holds).is_dir() {
+        old
+    } else {
+        new
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::write_atomic;
+    use super::{cache_dir, state_dir, write_atomic};
     use std::os::unix::fs::PermissionsExt;
 
     fn dir(tag: &str) -> std::path::PathBuf {
@@ -127,6 +151,29 @@ mod tests {
         assert!(bodies.contains(&got), "torn file of {} bytes", got.len());
         let n = std::fs::read_dir(&d).unwrap().count();
         assert_eq!(n, 1, "temporary files left behind");
+        let _ = std::fs::remove_dir_all(&d);
+    }
+
+    /// A build run without an install finds an older release's state and cache under the
+    /// name they had, and the one name's as soon as that holds the shell's own. It took an
+    /// older release's home for a new one: the shell greeted, and wrote its colours over.
+    #[test]
+    fn an_older_releases_directories_are_read_until_an_install_moves_them() {
+        let d = dir("named");
+        let (state, cache) = (d.join("state"), d.join("cache"));
+        assert_eq!(state_dir(&state), state.join("impulse-shell"));
+        assert_eq!(cache_dir(&cache), cache.join("impulse-shell"));
+        // What an older release's install keeps under the one name: the configs it replaced.
+        std::fs::create_dir_all(state.join("impulse-shell/replaced-1")).unwrap();
+        std::fs::create_dir_all(state.join("rustshell/user")).unwrap();
+        std::fs::create_dir_all(cache.join("rustshell")).unwrap();
+        assert_eq!(state_dir(&state), state.join("rustshell"));
+        assert_eq!(cache_dir(&cache), cache.join("rustshell"));
+        // An install moved them, and a shell from before, still running, wrote its own again.
+        std::fs::create_dir_all(state.join("impulse-shell/user")).unwrap();
+        std::fs::create_dir_all(cache.join("impulse-shell")).unwrap();
+        assert_eq!(state_dir(&state), state.join("impulse-shell"));
+        assert_eq!(cache_dir(&cache), cache.join("impulse-shell"));
         let _ = std::fs::remove_dir_all(&d);
     }
 }

@@ -37,11 +37,17 @@ impl Drop for Shell {
 /// next turn), the engine's clock pinned, and the original's singletons on demand. `None` in the process
 /// that ran it there.
 fn shell(test: &str, config: &str) -> Option<Shell> {
+    shell_in(test, config, |_| {})
+}
+
+/// [`shell`] in a home that `furnish` has put more in.
+fn shell_in(test: &str, config: &str, furnish: impl Fn(&std::path::Path)) -> Option<Shell> {
     if !testenv::in_own_process(test) {
         let home = tempfile::tempdir().unwrap();
         let cfg = home.path().join(".config/impulse-shell");
         std::fs::create_dir_all(&cfg).unwrap();
         std::fs::write(cfg.join("config.json"), config).unwrap();
+        furnish(home.path());
         testenv::run_in_own_process(test, testenv::home_vars(home.path()));
         return None;
     }
@@ -380,6 +386,45 @@ fn first_run_default_wallpaper() {
     let wall = wall.to_js_string();
     let w = switch("", &wall);
     sh.check(go(o, None), [w, w, w]);
+}
+
+/// A build run in the home of an older release, with no install: that release's state is
+/// under the name it had, `rustshell`, and the one name holds the configs its installs
+/// replaced. The shell has greeted there: it sets no default wallpaper and opens no welcome
+/// window. It took the home for a new one, and wrote the default wallpaper's colours over
+/// the user's.
+#[test]
+fn an_older_releases_home_is_not_greeted() {
+    let state = ".local/state";
+    let Some(mut sh) = shell_in(
+        concat!(module_path!(), "::an_older_releases_home_is_not_greeted"),
+        "{}\n",
+        |home| {
+            let old = home.join(state).join("rustshell/user");
+            std::fs::create_dir_all(&old).unwrap();
+            std::fs::write(old.join("first_run.txt"), "greeted\n").unwrap();
+            std::fs::create_dir_all(home.join(state).join("impulse-shell/replaced-1")).unwrap();
+        },
+    ) else {
+        return;
+    };
+    let o = sh.fixture(
+        "QtObject { function go() { FirstRunExperience.load() } function file() { return FirstRunExperience.firstRunFilePath } }",
+    );
+    sh.rt.call_method(o, "go", vec![]).unwrap().unwrap();
+    for _ in 0..8 {
+        sh.turn();
+    }
+    assert_eq!(*sh.runs.borrow(), Vec::<Vec<String>>::new());
+    let file = sh.rt.call_method(o, "file", vec![]).unwrap().unwrap();
+    let home = std::path::PathBuf::from(std::env::var("HOME").unwrap());
+    let old = home.join(state).join("rustshell/user/first_run.txt");
+    assert_eq!(
+        file.to_js_string().trim_start_matches("file://"),
+        old.to_string_lossy()
+    );
+    assert_eq!(std::fs::read_to_string(old).unwrap(), "greeted\n");
+    assert!(!home.join(state).join("impulse-shell/user").exists());
 }
 
 #[test]

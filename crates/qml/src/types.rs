@@ -1036,7 +1036,7 @@ pub fn standard_location_in(loc: i64, env: &crate::xdg::Env) -> Vec<String> {
         9 | 17 => std::iter::once(format!("{data}/{app}"))
             .chain(sys_data.iter().map(|d| format!("{d}/{app}")))
             .collect(),
-        10 => vec![format!("{}/{app}", s(xdg::cache_home_in(env)))],
+        10 => vec![s(xdg::cache_dir_in(env))],
         11 => std::iter::once(data)
             .chain(sys_data.iter().map(|d| d.to_string()))
             .collect(),
@@ -1047,7 +1047,7 @@ pub fn standard_location_in(loc: i64, env: &crate::xdg::Env) -> Vec<String> {
         18 => vec![format!("{config}/{app}"), format!("/etc/xdg/{app}")],
         19 => vec![user_dir("PUBLICSHARE", "Public")],
         20 => vec![user_dir("TEMPLATES", "Templates")],
-        21 => vec![format!("{}/{app}", s(xdg::state_home_in(env)))],
+        21 => vec![s(xdg::state_dir_in(env))],
         22 => vec![s(xdg::state_home_in(env))],
         _ => Vec::new(),
     }

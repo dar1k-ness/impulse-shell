@@ -56,8 +56,8 @@ impl Ctx {
 
     fn dirs(&self) -> wallpick::Dirs {
         wallpick::Dirs {
-            state: self.state_home.join("impulse-shell/user/wallpick"),
-            cache: self.cache_home.join("impulse-shell/wallpick"),
+            state: colorgen::fsutil::state_dir(&self.state_home).join("user/wallpick"),
+            cache: colorgen::fsutil::cache_dir(&self.cache_home).join("wallpick"),
             downloads: self.pictures.join("Wallpapers"),
         }
     }

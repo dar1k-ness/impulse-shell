@@ -63,7 +63,7 @@ impl Paths {
         }
     }
     pub fn state_dir(&self) -> PathBuf {
-        self.state_home.join("impulse-shell")
+        crate::fsutil::state_dir(&self.state_home)
     }
     pub fn generated(&self) -> PathBuf {
         self.state_dir().join("user/generated")
@@ -1073,7 +1073,7 @@ fn switch(r: &Run, s: State) -> i32 {
         }
         _ => {}
     }
-    let _ = std::fs::create_dir_all(p.cache_home.join("impulse-shell/user/generated"));
+    let _ = std::fs::create_dir_all(crate::fsutil::cache_dir(&p.cache_home).join("user/generated"));
     if p.shell_config().is_file()
         && r.cfg(&["appearance", "wallpaperTheming", "enableAppsAndShell"])
             .as_deref()
