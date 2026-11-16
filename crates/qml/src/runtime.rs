@@ -6169,6 +6169,16 @@ impl WriteFx {
 }
 }
 
+/// The window types: QQuickWindow and Quickshell's.
+const WINDOW_TYPES: [&str; 6] = [
+    "Window",
+    "ProxyWindowBase",
+    "PanelWindow",
+    "FloatingWindow",
+    "PopupWindow",
+    "WlSessionLockSurface",
+];
+
 impl WriteFx {
     fn has(self, f: u64) -> bool {
         self.0 & f != 0
@@ -6394,7 +6404,13 @@ impl WriteFx {
                     | "objectName"
             ) && !(name == "activeFocus" && inst.prop_info("cursorPosition").is_none())
                 && (declared || icon)
-                && drawn(inst),
+                && drawn(inst)
+                // A window shown, hidden or given the keyboard is mapped, unmapped or focused;
+                // what it holds is drawn as before. (A window shown gets a frame by its surface
+                // being configured.) Counted as drawn, each opening of the sidebar painted all
+                // of it again, the draws recorded at the last one stale.
+                && !(matches!(name, "visible" | "focusable" | "WlrLayershell.keyboardFocus")
+                    && WINDOW_TYPES.iter().any(|t| inst.inherits(t))),
             Self::DRAWN,
         );
         set(matches!(name, "x" | "y"), Self::MOVE);
@@ -15101,18 +15117,9 @@ impl World {
 
     /// Whether `item` is a window: a QQuickWindow or one of Quickshell's.
     fn is_window(&self, item: usize) -> bool {
-        self.items.get(item).is_some_and(|i| {
-            [
-                "Window",
-                "ProxyWindowBase",
-                "PanelWindow",
-                "FloatingWindow",
-                "PopupWindow",
-                "WlSessionLockSurface",
-            ]
-            .iter()
-            .any(|t| i.inherits(t))
-        })
+        self.items
+            .get(item)
+            .is_some_and(|i| WINDOW_TYPES.iter().any(|t| i.inherits(t)))
     }
 
     /// QQuickWindow::contentItem of the window `win`: the `parent` of the items declared in
@@ -50784,6 +50791,30 @@ Item {
             !fx(t, "running").has(WriteFx::DRAWN | WriteFx::LAYOUT),
             "a Timer is not drawn"
         );
+        assert!(
+            fx(r, "visible").has(WriteFx::DRAWN),
+            "an item shown is drawn"
+        );
+    }
+
+    /// Showing a window, hiding it or giving it the keyboard draws nothing of it anew.
+    #[test]
+    fn showing_a_window_is_not_drawing_it() {
+        for ty in ["PanelWindow", "FloatingWindow", "PopupWindow"] {
+            let mut rt = Runtime::new(None);
+            let src = format!(
+                "import QtQuick\nimport Rustshell\nimport Rustshell.Wayland\n\
+                 {ty} {{ color: \"red\"; Rectangle {{ width: 5; height: 5 }} }}"
+            );
+            let win = rt.load_str(&src).unwrap();
+            let w = rt.world.borrow();
+            let fx = |n: &str| WriteFx::of(&w.items[win], Sym::new(n));
+            for name in ["visible", "focusable", "WlrLayershell.keyboardFocus"] {
+                assert!(!fx(name).has(WriteFx::DRAWN), "{ty}.{name}");
+            }
+            assert!(fx("color").has(WriteFx::DRAWN), "{ty}.color is drawn");
+            assert!(fx("width").has(WriteFx::DRAWN), "{ty}.width is drawn");
+        }
     }
 
     /// A theme switch animates every colour for a few hundred ms: colour writes, like

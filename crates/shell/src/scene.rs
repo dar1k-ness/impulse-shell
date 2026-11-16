@@ -19220,6 +19220,87 @@ FloatingWindow {
         forget_draws();
     }
 
+    /// A window hidden and shown again is painted from the draws recorded when it was last
+    /// shown: writing `visible` (and, for a panel, the keyboard focus) stamped the whole window
+    /// as drawn anew, so each opening of the sidebar painted every item of it again. What
+    /// changed while it was hidden is still painted.
+    #[test]
+    #[cfg_attr(
+        not(feature = "interp"),
+        ignore = "inline QML; the AOT-only build runs only the compiled QML tree"
+    )]
+    fn a_window_shown_again_replays_its_draws() {
+        let (mut g, _) = crate::gpu::Gpu::headless("surfaceless").expect("surfaceless EGL (Mesa)");
+        let mut s = g.pbuffer(120, 60).expect("pbuffer");
+        let mut rt = qml::runtime::Runtime::new(None);
+        let win = rt
+            .load_str(
+                r##"import QtQuick
+import Rustshell
+import Rustshell.Wayland
+PanelWindow {
+    id: win
+    width: 120; height: 60
+    color: "transparent"
+    property color dot: "#c04040"
+    Rectangle {
+        width: 120; height: 60; color: "#202020"
+        Rectangle { x: 4; y: 4; width: 30; height: 30; radius: 6; color: win.dot }
+        Text { x: 40; y: 4; text: "Bench Song"; color: "#ffffff" }
+    }
+}"##,
+            )
+            .unwrap();
+        let mut fonts = Fonts::default();
+        layout_window(&mut rt, &mut fonts, win, [120.0, 60.0]);
+        // Building it touched every item; its first frame is where those are taken.
+        rt.world.borrow_mut().touched.clear();
+        forget_draws();
+        let mut shot = |rt: &mut qml::runtime::Runtime| {
+            take_dl_stats();
+            let mut fr = crate::gpu::Frame::new(120, 60);
+            paint_window(rt, &mut fonts, win, &mut Target::Gpu(&mut fr));
+            s.reswap();
+            g.render(&mut s, &mut fr, || {});
+            let (replayed, recorded, ..) = take_dl_stats();
+            (g.read_surface(&s).px, replayed, recorded)
+        };
+        let (first, _, recorded) = shot(&mut rt);
+        assert_eq!(recorded, 1, "the card is recorded");
+        let hide_and_show = |rt: &mut qml::runtime::Runtime| {
+            for (k, v) in [
+                ("visible", Value::Bool(false)),
+                ("focusable", Value::Bool(false)),
+                ("WlrLayershell.keyboardFocus", Value::Num(0.0)),
+                ("visible", Value::Bool(true)),
+                ("focusable", Value::Bool(true)),
+                ("WlrLayershell.keyboardFocus", Value::Num(1.0)),
+            ] {
+                write_and_invalidate(rt, win, k, v);
+            }
+        };
+        hide_and_show(&mut rt);
+        let (again, replayed, recorded) = shot(&mut rt);
+        assert_eq!(
+            (replayed, recorded),
+            (1, 0),
+            "shown again, the card is replayed"
+        );
+        assert!(again == first, "and is the same picture");
+        // Changed while hidden, it is painted anew.
+        write_and_invalidate(&mut rt, win, "visible", Value::Bool(false));
+        write_and_invalidate(&mut rt, win, "dot", Value::Str("#40c040".into()));
+        write_and_invalidate(&mut rt, win, "visible", Value::Bool(true));
+        let (changed, replayed, recorded) = shot(&mut rt);
+        assert_eq!(
+            (replayed, recorded),
+            (0, 1),
+            "the card changed while hidden"
+        );
+        assert!(changed != first, "the dot is painted in its new colour");
+        forget_draws();
+    }
+
     /// Item `k` of `root`, and `rt.settle()` + main.rs's layer invalidation after writes.
     fn item_of(rt: &qml::runtime::Runtime, root: usize, k: &str) -> usize {
         let Value::Item(i) = rt.get(root, k) else {
