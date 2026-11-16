@@ -137,6 +137,48 @@ pub fn predecessor_leaves(drawn: bool, waited: std::time::Duration) -> bool {
     drawn || waited > PREDECESSOR_STAYS
 }
 
+/// How long the windows above the wallpaper take to go unseen before the `exec` of a
+/// reload: the reload is seen as one, the shell goes and comes back as at a start, and
+/// nothing is cut off.
+pub const FADE_OUT: std::time::Duration = std::time::Duration::from_millis(400);
+
+/// How long the next image waits for Hyprland's answer to the rule that stills the layers
+/// before it ends the previous image's windows: Hyprland answers within a frame.
+pub const STILL_WAIT: std::time::Duration = std::time::Duration::from_millis(300);
+
+/// How often an alpha of that fade is sent: more often than a 120 Hz screen draws.
+pub const FADE_STEP: std::time::Duration = std::time::Duration::from_millis(8);
+
+/// Whether a panel on `layer` (zwlr_layer_shell_v1's) fades at a reload: what is above the
+/// windows, top and overlay. What is under them, the wallpaper (background, or bottom as
+/// the shipped tree has it), stays until the next image's replaces it in one frame: a
+/// screen with nothing on it for the seconds a reload takes reads as a crash.
+pub fn fades(layer: u32) -> bool {
+    layer >= 2
+}
+
+/// The alpha of a window `waited` into a fade from `from` to `to` that takes `took`: slow at
+/// both ends (Qt's `Easing.InOutQuad`).
+pub fn fade_alpha(
+    from: f64,
+    to: f64,
+    waited: std::time::Duration,
+    took: std::time::Duration,
+) -> f64 {
+    let t = (waited.as_secs_f64() / took.as_secs_f64()).clamp(0.0, 1.0);
+    let eased = if t < 0.5 {
+        2.0 * t * t
+    } else {
+        1.0 - 2.0 * (1.0 - t) * (1.0 - t)
+    };
+    from + (to - from) * eased
+}
+
+/// `alpha` (0..=1) as wp_alpha_modifier_surface_v1 takes it.
+pub fn alpha_multiplier(alpha: f64) -> u32 {
+    (alpha.clamp(0.0, 1.0) * f64::from(u32::MAX)).round() as u32
+}
+
 /// Whether a panel of this image goes before the `exec` of a reload instead of staying on
 /// the screen for the next image: a window opened since this image's first frames (a
 /// sidebar, a menu, a notification: `at_start` is whether a window of its namespace was
@@ -304,6 +346,33 @@ mod tests {
             "at the limit"
         );
         assert!(predecessor_leaves(false, past), "never drawn");
+    }
+
+    /// The fade of a reload starts and ends where it is told, goes one way in between, and
+    /// the wallpaper is no part of it.
+    #[test]
+    fn a_reloads_fade_goes_from_one_alpha_to_the_other() {
+        use super::{FADE_OUT, alpha_multiplier, fade_alpha, fades};
+        let ms = std::time::Duration::from_millis;
+        assert_eq!(fade_alpha(1.0, 0.0, ms(0), FADE_OUT), 1.0);
+        assert_eq!(fade_alpha(1.0, 0.0, FADE_OUT, FADE_OUT), 0.0);
+        assert_eq!(
+            fade_alpha(1.0, 0.0, FADE_OUT * 3, FADE_OUT),
+            0.0,
+            "past its end"
+        );
+        assert_eq!(fade_alpha(0.25, 1.0, ms(0), FADE_OUT), 0.25, "begun midway");
+        let alphas: Vec<f64> = (0..=30)
+            .map(|i| fade_alpha(1.0, 0.0, ms(i * 10), FADE_OUT))
+            .collect();
+        assert!(alphas.windows(2).all(|w| w[1] < w[0]), "{alphas:?}");
+        // No step of a 75 Hz screen is a jump.
+        assert!(alphas.windows(2).all(|w| w[0] - w[1] < 0.08), "{alphas:?}");
+        assert_eq!(alpha_multiplier(0.0), 0);
+        assert_eq!(alpha_multiplier(1.0), u32::MAX);
+        assert_eq!(alpha_multiplier(0.5), 1 << 31);
+        assert!(!fades(0) && !fades(1), "the wallpaper");
+        assert!(fades(2) && fades(3), "the bar, the corners");
     }
 
     /// Before a reload's `exec` the windows the next image does not start with go: a sidebar

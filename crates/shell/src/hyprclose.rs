@@ -50,6 +50,60 @@ pub fn close_ms(animations: &str, enabled: &str) -> Result<f64, String> {
     Ok(if on { moved.max(faded) } else { 0.0 })
 }
 
+/// The namespaces of the shell's layers, as a Hyprland rule matches them (the whole name).
+const LAYERS: &str = "rustshell(:.*)?";
+
+/// The request that has Hyprland animate none of the shell's layers (`on`) or animate them
+/// again. A reload takes the previous image's windows off the screen in the frame the next
+/// image's show; Hyprland would animate each closed one away on a snapshot (the bar, the
+/// corners and the wallpaper shrinking and fading over the new ones), and the new ones in.
+/// A named layer rule (`hl.layer_rule`, Hyprland 0.57 `hlLayerRule`) is made once and then
+/// enabled and disabled (`CLuaLayerRule::set_enabled`, which applies the rules at once); a
+/// reload of Hyprland's configuration drops it with the Lua state.
+pub fn still_request(on: bool) -> String {
+    if on {
+        format!(
+            "eval __ri_still = __ri_still or hl.layer_rule({{ name = \"impulse-shell-reload\", \
+             match = {{ namespace = \"{LAYERS}\" }}, no_anim = true }}); \
+             __ri_still:set_enabled(true)"
+        )
+    } else {
+        "eval if __ri_still then __ri_still:set_enabled(false) end".to_string()
+    }
+}
+
+/// Sends [`still_request`] to the Hyprland instance at `dir`, in the order asked, off the
+/// loop ([`qml::hypr::submit`]). An image asks for `on` when it starts over the previous
+/// image's windows and takes it back when Hyprland closed those; one that starts with none
+/// takes back what an image that ended in between left on.
+pub fn still(dir: &Path, on: bool) {
+    still_then(dir, on, || {});
+}
+
+/// [`still`], waiting up to `patience` for Hyprland's answer: what the caller sends Hyprland
+/// next (the end of windows) is read with the rule there.
+pub fn still_wait(dir: &Path, on: bool, patience: std::time::Duration) {
+    let (tx, rx) = std::sync::mpsc::channel();
+    still_then(dir, on, move || {
+        let _ = tx.send(());
+    });
+    let _ = rx.recv_timeout(patience);
+}
+
+fn still_then(dir: &Path, on: bool, then: impl FnOnce() + Send + 'static) {
+    let sock = dir.join(".socket.sock");
+    qml::hypr::submit(move || {
+        match qml::hypr::exchange(&sock, &still_request(on), None) {
+            Ok(reply) if reply.trim() == "ok" => {
+                tracing::debug!(target: "ri::frames", "hyprland keeps the layers still: {on}");
+            }
+            Ok(reply) => elog::eprintln!("reload: Hyprland refused the layer rule ({reply})"),
+            Err(e) => elog::eprintln!("reload: cannot ask Hyprland for the layer rule ({e:?})"),
+        }
+        then();
+    });
+}
+
 /// What Hyprland answered a read of its animation settings, with the read's number.
 pub type Reading = (u64, Result<f64, String>);
 
@@ -275,5 +329,42 @@ mod tests {
         assert!(close_ms(&animations(&[]), ON).is_err());
         let a = animations(&[("global", true, true, 8.0, "default")]);
         assert!(close_ms(&a, "no such option").is_err());
+    }
+
+    /// The rule's request is waited for until Hyprland answers it, however long the caller
+    /// would wait; a Hyprland that takes the request and says nothing holds the caller for
+    /// [`crate::reload::STILL_WAIT`] and no longer.
+    #[test]
+    fn the_rule_is_waited_for_until_hyprland_answers_or_stays_silent() {
+        use std::io::{Read, Write};
+        let dir = tempfile::tempdir().unwrap();
+        let l = std::os::unix::net::UnixListener::bind(dir.path().join(".socket.sock")).unwrap();
+        let (done, until) = std::sync::mpsc::channel::<()>();
+        let server = std::thread::spawn(move || {
+            let read = |c: &mut std::os::unix::net::UnixStream| {
+                let mut buf = [0u8; 1024];
+                let n = c.read(&mut buf).unwrap();
+                String::from_utf8_lossy(&buf[..n]).into_owned()
+            };
+            // The first request is answered; the second is read and held open, unanswered,
+            // until the test is done with it.
+            let (mut answered, _) = l.accept().unwrap();
+            let first = read(&mut answered);
+            answered.write_all(b"ok").unwrap();
+            drop(answered);
+            let (mut held, _) = l.accept().unwrap();
+            let second = read(&mut held);
+            let _ = until.recv();
+            drop(held);
+            (first, second)
+        });
+        // With an hour of patience, the return is the answer.
+        super::still_wait(dir.path(), true, std::time::Duration::from_secs(3600));
+        // The return is the end of the patience: the request is still held.
+        super::still_wait(dir.path(), false, crate::reload::STILL_WAIT);
+        done.send(()).unwrap();
+        let (first, second) = server.join().unwrap();
+        assert_eq!(first, super::still_request(true));
+        assert_eq!(second, super::still_request(false));
     }
 }

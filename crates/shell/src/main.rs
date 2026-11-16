@@ -66,6 +66,10 @@ use wayland_protocols_wlr::output_power_management::v1::client::{
     zwlr_output_power_v1::{self, ZwlrOutputPowerV1},
 };
 
+use wayland_protocols::ext::background_effect::v1::client::{
+    ext_background_effect_manager_v1::ExtBackgroundEffectManagerV1,
+    ext_background_effect_surface_v1::ExtBackgroundEffectSurfaceV1,
+};
 use wayland_protocols::wp::alpha_modifier::v1::client::{
     wp_alpha_modifier_surface_v1::WpAlphaModifierSurfaceV1, wp_alpha_modifier_v1::WpAlphaModifierV1,
 };
@@ -271,6 +275,72 @@ struct Win {
 
 /// Crossfades of one window running at once on their own veils; the next restarts in-window.
 const MAX_VEILS: usize = 3;
+
+/// A panel kept unseen while the previous image's window is on the screen in its place.
+struct Cloak {
+    surf: wl_surface::WlSurface,
+    /// Multiplies the window's alpha by 0.
+    alpha: WpAlphaModifierSurfaceV1,
+    /// An ext-background-effect object with no blur region: the compositor blurs nothing
+    /// behind the window. Hyprland blurs behind a layer its rules name whatever the layer's
+    /// alpha (`decoration:blur:ignore_opacity`), so the unseen bar would show as a blurred
+    /// strip over the old one. None where the compositor has no such protocol.
+    unblurred: Option<ExtBackgroundEffectSurfaceV1>,
+}
+
+/// Env marker telling the re-executed shell that the previous image's windows above the
+/// wallpaper went unseen before the `exec` ([`reload_fade`]): its own come where they were
+/// as at a start, seen from their first frame.
+const RELOAD_FADED_ENV: &str = "RI_RELOAD_FADED";
+
+/// A reload shows: the windows above the wallpaper fade out before the `exec`
+/// ([`shell::reload::FADE_OUT`]), and the next image's come as at a start. The compositor
+/// does the blending (wp_alpha_modifier_v1 on the buffers the windows hold), and blurs
+/// nothing behind them meanwhile ([`Cloak::unblurred`]).
+///
+/// Returns when `wins` are unseen: nothing else of the shell runs meanwhile. A turn of the
+/// loop around a reload takes tens of milliseconds (its handlers run), and steps that far
+/// apart show as a few jumps.
+fn reload_fade(conn: &Connection, wins: &[Cloak]) {
+    if wins.is_empty() {
+        return;
+    }
+    let took = shell::reload::FADE_OUT;
+    let since = Instant::now();
+    loop {
+        let waited = since.elapsed();
+        let alpha = shell::reload::fade_alpha(1.0, 0.0, waited, took);
+        // A window closed since has no surface to set an alpha on.
+        for c in wins.iter().filter(|c| c.surf.is_alive()) {
+            // No damage: the buffer is the same, and the compositor draws the window again
+            // for its new alpha.
+            c.alpha
+                .set_multiplier(shell::reload::alpha_multiplier(alpha));
+            c.surf.commit();
+        }
+        let _ = conn.flush();
+        if waited >= took {
+            return;
+        }
+        std::thread::sleep(shell::reload::FADE_STEP);
+    }
+}
+
+/// The windows show as they are and are blurred as the compositor's rules say, with a
+/// commit of each (the `destroy` of wp_alpha_modifier_surface_v1 and of
+/// ext_background_effect_surface_v1 is double-buffered).
+fn uncloak(wins: Vec<Cloak>) {
+    for c in wins {
+        c.alpha.destroy();
+        if let Some(b) = c.unblurred {
+            b.destroy();
+        }
+        if c.surf.is_alive() {
+            c.surf.damage_buffer(0, 0, i32::MAX, i32::MAX);
+            c.surf.commit();
+        }
+    }
+}
 
 /// wl_subcompositor and wp_alpha_modifier_v1: a crossfade shows its start frame on a
 /// subsurface that the compositor fades out (`Veil`).
@@ -1202,11 +1272,23 @@ struct App {
     /// windows stay on the screen until this image has drawn its own.
     predecessor: Option<(std::os::fd::OwnedFd, Option<std::time::Instant>)>,
     /// The panels this image starts with, made while the previous image's windows are on the
-    /// screen, each with the wp_alpha_modifier that keeps it unseen: they draw and load under
-    /// the old windows' places and are shown together when those leave
-    /// ([`App::release_predecessor`]), so the screen changes once. Empty without
-    /// wp_alpha_modifier_v1: they show as they draw.
-    cloaks: Vec<(wl_surface::WlSurface, WpAlphaModifierSurfaceV1)>,
+    /// screen, each kept unseen ([`Cloak`]): they draw and load under the old windows' places
+    /// and are shown together when those leave ([`App::release_predecessor`]), so the screen
+    /// changes once. Empty without wp_alpha_modifier_v1: they show as they draw.
+    cloaks: Vec<Cloak>,
+    /// The previous image's windows above the wallpaper went unseen before its `exec`.
+    predecessor_faded: bool,
+    /// ext_background_effect_manager_v1, for [`Cloak::unblurred`].
+    blur_mgr: Option<ExtBackgroundEffectManagerV1>,
+    /// Hyprland was asked not to animate the shell's layers while the previous image's
+    /// windows are on the screen ([`shell::hyprclose::still`]).
+    layers_still: bool,
+    /// The previous image's windows were just closed with the layers still: Hyprland
+    /// animates the shell's layers again once it says it closed them (`closelayer`).
+    old_layers_leaving: bool,
+    /// The tree was not told `reloadCompleted` yet: the previous image's windows are on the
+    /// screen.
+    reload_untold: bool,
     /// The namespaces of the panels this image had at its first frames: what the next
     /// image of a reload starts with too (`shell::reload::leaves_before_exec`).
     start_panels: Option<std::collections::HashSet<String>>,
@@ -2378,16 +2460,17 @@ impl App {
     /// has passed), and reserves this image's exclusive zones in their place. The first frame
     /// of the wallpaper's window is empty: its Image loads on a worker and then fades in, and
     /// until it has the old wallpaper shows through it.
-    fn release_predecessor(&mut self) {
+    /// Whether it took them off in this call.
+    fn release_predecessor(&mut self) -> bool {
         let drawn = self.started
             && self.first_frames_committed()
             && !self.rt.world.borrow().pictures_arriving();
         let Some((_, since)) = &mut self.predecessor else {
-            return;
+            return false;
         };
         let since = since.get_or_insert_with(std::time::Instant::now);
         if !shell::reload::predecessor_leaves(drawn, since.elapsed()) {
-            return;
+            return false;
         }
         tracing::debug!(
             target: "ri::frames",
@@ -2395,12 +2478,77 @@ impl App {
             since.elapsed().as_millis()
         );
         let old = self.predecessor.take();
+        if std::mem::take(&mut self.predecessor_faded) {
+            self.layers_still = still_before_the_old_leave();
+        }
         take_predecessors_place(&mut self.cloaks, &self.wins);
         // Written right before the old connection closes, with no wait for an answer: the
         // compositor reads both in one turn. Between two turns it would draw a frame with
         // both bars reserving space, this image's bar under the old one.
         let _ = self.conn.flush();
         drop(old);
+        if self.layers_still {
+            // What Hyprland closed before is not the old windows.
+            self.hypr_closed();
+            self.old_layers_leaving = true;
+        }
+        // With no event socket to hear of the old layers' closing on, they are taken to
+        // have closed by now.
+        self.old_layers_left(!self.hypr_close.alive());
+        true
+    }
+
+    /// Fades out the windows above the wallpaper for a reload and returns them, unseen.
+    /// None where nothing fades: no wp_alpha_modifier_v1, or the previous image's windows
+    /// are still on the screen and this image's are unseen (those that came seen over the
+    /// previous image's unseen ones do fade).
+    fn reload_fades_out(&mut self) -> Vec<Cloak> {
+        let Some(m) = &self.veil_mgr else {
+            return Vec::new();
+        };
+        if self.predecessor.is_some() && !self.predecessor_faded {
+            return Vec::new();
+        }
+        let mut unseen = Vec::new();
+        for win in &self.wins {
+            let above = match &win.surf {
+                Surf::Panel { key, .. } => shell::reload::fades(key.layer),
+                Surf::Popup { .. } => true,
+                Surf::Lock(_) | Surf::Toplevel(_) => false,
+            };
+            if !above || win.mapped != Some(true) {
+                continue;
+            }
+            let surf = win.surf.wl_surface();
+            let blur = self.blur_mgr.as_ref();
+            unseen.push(Cloak {
+                surf: surf.clone(),
+                alpha: m.alpha.get_surface(surf, &self.qh, ()),
+                unblurred: blur.map(|b| b.get_background_effect(surf, &self.qh, ())),
+            });
+        }
+        reload_fade(&self.conn, &unseen);
+        unseen
+    }
+
+    /// `Rustshell.reloadCompleted`: this image is what a reload started.
+    fn tell_reloaded(&mut self) {
+        let qs = self.rt.world.borrow().singletons.get("Rustshell").copied();
+        if let Some(qs) = qs {
+            self.rt.emit(qs, "reloadCompleted", &[], vec![]);
+        }
+    }
+
+    /// Hyprland closed the previous image's windows (`closed`; with no event socket to hear
+    /// it on, it is taken to have): it animates the shell's layers again.
+    fn old_layers_left(&mut self, closed: bool) {
+        if !closed || !std::mem::take(&mut self.old_layers_leaving) {
+            return;
+        }
+        self.layers_still = false;
+        if let Some(dir) = qml::hypr::socket_dir() {
+            shell::hyprclose::still(&dir, false);
+        }
     }
 
     /// Remembers the panels of this image's first frames, once.
@@ -3221,7 +3369,7 @@ impl App {
                         .filter(|_| !gs.fading() && veils.is_empty());
                     // A veil over a window kept unseen until the previous image's windows
                     // leave would show alone: the alpha is the window's, not its subsurfaces'.
-                    let cloaked = self.cloaks.iter().any(|(s, _)| *s == wls);
+                    let cloaked = self.cloaks.iter().any(|c| c.surf == wls);
                     let mgr = self.veil_mgr.as_ref().filter(|_| {
                         part.is_none() && !gs.fading() && veils.len() < MAX_VEILS && !cloaked
                     });
@@ -4084,6 +4232,22 @@ fn reload_shell(
     ipc: Option<&shell::ipc::Server>,
 ) {
     use std::os::unix::process::CommandExt;
+    // Quit (Qt.quit() or a termination signal read this turn) wins over a reload in the same
+    // turn: the re-executed shell would not know it was asked to end.
+    if app.rt.world.borrow().quit.is_some() {
+        return;
+    }
+    // The path the shell was started as ($PREFIX/bin/impulse-shell), not /proc/self/exe: the reload
+    // runs the release installed since and keeps the comm (`impulse-shell`) pidof/killall look for.
+    let exe = qml::native::launch_path();
+    let newer = std::fs::canonicalize(&exe).ok() != std::env::current_exe().ok();
+    if let Some(why) = reload_refused(root, app_file, &exe, newer) {
+        reload_failed(&mut app.rt, &why);
+        return;
+    }
+    // The reload shows: what is above the wallpaper goes first, and the next image's comes
+    // in where it was.
+    let unseen = app.reload_fades_out();
     let App {
         rt,
         conn,
@@ -4094,21 +4258,9 @@ fn reload_shell(
         start_panels,
         cloaks,
         predecessor,
+        predecessor_faded,
         ..
     } = app;
-    // Quit (Qt.quit() or a termination signal read this turn) wins over a reload in the same
-    // turn: the re-executed shell would not know it was asked to end.
-    if rt.world.borrow().quit.is_some() {
-        return;
-    }
-    // The path the shell was started as ($PREFIX/bin/impulse-shell), not /proc/self/exe: the reload
-    // runs the release installed since and keeps the comm (`impulse-shell`) pidof/killall look for.
-    let exe = qml::native::launch_path();
-    let newer = std::fs::canonicalize(&exe).ok() != std::env::current_exe().ok();
-    if let Some(why) = reload_refused(root, app_file, &exe, newer) {
-        reload_failed(rt, &why);
-        return;
-    }
     let exec = |env: &[(&str, String)]| {
         // The windows stay on the screen until the next image has drawn its own
         // (`shell::reload::keep_surfaces`). The shortcuts go now: Hyprland ends a client
@@ -4131,10 +4283,14 @@ fn reload_shell(
         });
         // A reload asked while the image before this one still has its windows on the
         // screen: those end at the `exec`, and this image's, kept unseen so far, are what
-        // stays under the next one.
+        // stays under the next one, unseen above the wallpaper if those were.
         if predecessor.is_some() {
+            if *predecessor_faded {
+                still_before_the_old_leave();
+            }
             take_predecessors_place(cloaks, wins);
         }
+        let faded = !unseen.is_empty();
         let _ = conn.flush();
         let surfaces = shell::reload::keep_surfaces(conn.backend().poll_fd());
         let kept = surfaces.as_ref().map(|fd| {
@@ -4159,6 +4315,7 @@ fn reload_shell(
             .arg0(arg0)
             .args(args)
             .env(RELOADED_ENV, shell::ipc::reload_marker())
+            .envs(faded.then_some((RELOAD_FADED_ENV, "1")))
             .envs(env.iter().map(|(k, v)| (k, v)))
             .envs(kept)
             .envs(calls)
@@ -4192,6 +4349,8 @@ fn reload_shell(
             reload_failed(rt, &format!("Cannot run {}: {err}", exe.display()));
         }
     }
+    // It came back: the windows show again.
+    uncloak(unseen);
 }
 
 /// Why a reload would leave no shell, found before anything of the running one goes: the
@@ -4563,6 +4722,7 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
     unsafe {
         std::env::remove_var(RELOADED_ENV)
     };
+    let predecessor_faded = std::env::var_os(RELOAD_FADED_ENV).is_some();
     // A reload's exec left SIGTERM/SIGINT/SIGHUP blocked (see `shell::shutdown`): one the
     // previous image caught and did not read, or one sent since, ends this image below.
     let terminated_at_exec = reloaded.then(shell::shutdown::pending_after_exec).flatten();
@@ -4580,6 +4740,7 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         shell::shutdown::INHERITED_ENV,
         shell::rilog::INHERITED_ENV,
         shell::ipc::INHERITED_ENV,
+        RELOAD_FADED_ENV,
     ] {
         #[expect(
             clippy::disallowed_methods,
@@ -4827,6 +4988,13 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         inhibitors: Default::default(),
         predecessor: predecessor_surfaces,
         cloaks: Vec::new(),
+        predecessor_faded,
+        blur_mgr: globals
+            .bind::<ExtBackgroundEffectManagerV1, _, _>(&qh, 1..=1, ())
+            .ok(),
+        layers_still: false,
+        old_layers_leaving: false,
+        reload_untold: false,
         start_panels: None,
         shortcuts_rev: None,
         shortcuts_seen: Default::default(),
@@ -4976,12 +5144,13 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
     } else {
         shell::rilog::log(shell::rilog::Level::Info, "default", "Configuration Loaded");
     }
-    if reloaded {
-        let qs = app.rt.world.borrow().singletons.get("Rustshell").copied();
-        if let Some(qs) = qs {
-            app.rt.emit(qs, "reloadCompleted", &[], vec![]);
-        }
+    // With the previous image's windows on the screen the tree hears of the reload when
+    // this image's take their place: the popup that says so would otherwise spend most of
+    // its second unseen.
+    if reloaded && app.predecessor.is_none() {
+        app.tell_reloaded();
     }
+    app.reload_untold = reloaded && app.predecessor.is_some();
     let mut ipc_listeners: Vec<IpcListener> = Vec::new();
     quantize_colors(&mut app);
     // An app's windows exist (and are laid out) before the first Process output is read.
@@ -5080,6 +5249,14 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
             })
             .map_err(|e| fatal("cannot watch Hyprland's settings")(e.error))?;
         let dir = qml::hypr::socket_dir();
+        // Asked before this image maps a layer, and long before the previous image's leave.
+        // With no previous image: one that ended before it took the rule back left it on.
+        // Where this image's windows above the wallpaper come as at a start
+        // (`predecessor_faded`), Hyprland animates them in: asked as the old ones leave.
+        if let Some(dir) = dir.as_deref() {
+            app.layers_still = app.predecessor.is_some() && !app.predecessor_faded;
+            shell::hyprclose::still(dir, app.layers_still);
+        }
         app.hypr_close = shell::hyprclose::Watch::start(dir.as_deref(), move |reading| {
             let _ = tx.send(reading);
         });
@@ -5558,7 +5735,10 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
             qml::native::release_app_windows();
         }
         app.note_start_panels();
-        app.release_predecessor();
+        if app.release_predecessor() && std::mem::take(&mut app.reload_untold) {
+            app.tell_reloaded();
+            busy |= frame(&mut app);
+        }
         let asked = qml::native::take_reload();
         reload_wanted |= asked;
         // Said when the lock begins to hold a reload (asked for under the lock, or the lock
@@ -6417,13 +6597,25 @@ impl App {
             ls.set_geometry(&sent_geometry(&key.geom, over_predecessor));
             // A window opened once this image has its first frames (a menu asked for while
             // the previous image's windows are still there) shows as it draws.
+            // So does one above the wallpaper where the previous image's went unseen before
+            // the `exec`: it comes as at a start, with the compositor's animation of a new
+            // layer and its own.
+            let comes_seen = self.predecessor_faded && shell::reload::fades(key.layer);
             if over_predecessor
                 && self.start_panels.is_none()
+                && !comes_seen
                 && let Some(m) = &self.veil_mgr
             {
-                let cloak = m.alpha.get_surface(ls.wl_surface(), &self.qh, ());
-                cloak.set_multiplier(0);
-                self.cloaks.push((ls.wl_surface().clone(), cloak));
+                let alpha = m.alpha.get_surface(ls.wl_surface(), &self.qh, ());
+                alpha.set_multiplier(0);
+                let blur = self.blur_mgr.as_ref();
+                let unblurred =
+                    blur.map(|b| b.get_background_effect(ls.wl_surface(), &self.qh, ()));
+                self.cloaks.push(Cloak {
+                    surf: ls.wl_surface().clone(),
+                    alpha,
+                    unblurred,
+                });
             }
             // zwlr_layer_surface_v1: double-buffered state belongs in the initial commit, so the
             // compositor never maps the surface with the wrong keyboard interactivity.
@@ -7702,6 +7894,17 @@ impl App {
     /// length later. A window has one layer, whatever work waits on it.
     fn hypr_closed(&mut self) {
         let closed = self.hypr_close.closed();
+        // The old connection's end closes all its layers in one turn of Hyprland, and this
+        // image has a window of the same name for each.
+        let own = |n: &String| {
+            let named = |w: &Win| matches!(&w.surf, Surf::Panel { key, .. } if key.namespace == *n);
+            self.wins.iter().any(named)
+        };
+        let old_left = match &closed {
+            Ok(namespaces) => namespaces.iter().any(own),
+            Err(shell::hyprclose::Lost) => true,
+        };
+        self.old_layers_left(old_left);
         let now = Instant::now();
         let began = |c: &mut Close| c.due = Some(now + Duration::from_secs_f64(c.ms / 1000.0));
         match closed {
@@ -9504,6 +9707,8 @@ wayland_client::delegate_noop!(App: ignore wl_subcompositor::WlSubcompositor);
 wayland_client::delegate_noop!(App: ignore wl_subsurface::WlSubsurface);
 wayland_client::delegate_noop!(App: ignore WpAlphaModifierV1);
 wayland_client::delegate_noop!(App: ignore WpAlphaModifierSurfaceV1);
+wayland_client::delegate_noop!(App: ignore ExtBackgroundEffectManagerV1);
+wayland_client::delegate_noop!(App: ignore ExtBackgroundEffectSurfaceV1);
 // A veil's wl_surface: it takes no input, and its scale follows its window's.
 wayland_client::delegate_noop!(App: ignore wl_surface::WlSurface);
 
@@ -11468,16 +11673,17 @@ fn pair_successors(
 
 /// Shows the panels kept unseen while the previous image's windows were on the screen and
 /// reserves their exclusive zones, in commits the caller writes together.
-fn take_predecessors_place(
-    cloaks: &mut Vec<(wl_surface::WlSurface, WpAlphaModifierSurfaceV1)>,
-    wins: &[Win],
-) {
-    // The alpha goes back with the commit below (wp_alpha_modifier_surface_v1.destroy is
+fn take_predecessors_place(cloaks: &mut Vec<Cloak>, wins: &[Win]) {
+    // The alpha and the blur go back with the commit below (the `destroy` of
+    // wp_alpha_modifier_surface_v1 and of ext_background_effect_surface_v1 is
     // double-buffered), on the buffer the window holds: nothing is drawn again.
     let cloaked: Vec<_> = (cloaks.drain(..))
-        .map(|(surf, cloak)| {
-            cloak.destroy();
-            surf
+        .map(|c| {
+            c.alpha.destroy();
+            if let Some(b) = c.unblurred {
+                b.destroy();
+            }
+            c.surf
         })
         .collect();
     for win in wins {
@@ -11495,6 +11701,18 @@ fn take_predecessors_place(
             layer.commit();
         }
     }
+}
+
+/// Has Hyprland animate none of the shell's layers before the previous image's windows
+/// leave, where it was not asked at this image's start (its windows above the wallpaper came
+/// animated). Waits for the answer: the rule is there when Hyprland reads the windows'
+/// end. Whether it was asked (on Hyprland).
+fn still_before_the_old_leave() -> bool {
+    let Some(dir) = qml::hypr::socket_dir() else {
+        return false;
+    };
+    shell::hyprclose::still_wait(&dir, true, shell::reload::STILL_WAIT);
+    true
 }
 
 /// The geometry a panel sends for `geom`. While the previous image's windows are still on

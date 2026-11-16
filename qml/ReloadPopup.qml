@@ -44,12 +44,48 @@ Scope {
 
 			WlrLayershell.namespace: "rustshell:reloadPopup"
 
+			// The popup fades in as it comes and out before it goes: 0 unseen, 1 shown.
+			// The fade and the countdown start once the window has drawn a few frames (as
+			// EditOverlay.qml's does): its first frame takes longer than a frame, and a fade
+			// started with the component would be most of the way before it is seen.
+			property real shown: 0
+			property int framesShown: 0
+			FrameAnimation {
+				running: popup.framesShown < 12
+				onTriggered: {
+					popup.framesShown++
+					if (popup.framesShown === 12) {
+						anim.start()
+						fadeIn.start()
+					}
+				}
+			}
+			NumberAnimation {
+				id: fadeIn
+				target: popup
+				property: "shown"
+				from: 0
+				to: 1
+				duration: 500
+				easing.type: Easing.InOutQuad
+			}
+			NumberAnimation {
+				id: fadeOut
+				target: popup
+				property: "shown"
+				to: 0
+				duration: 700
+				easing.type: Easing.InOutQuad
+				onFinished: popupLoader.active = false
+			}
+
 			// color blending is a bit odd as detailed in the type reference.
 			color: "transparent"
 
 			Rectangle {
 				id: rect
 				anchors.centerIn: parent
+				opacity: popup.shown
 				color: failed ?  "#ffe99195" : "#ffD1E8D5"
 
 				implicitHeight: layout.implicitHeight + 30
@@ -116,8 +152,8 @@ Scope {
 						property: "width"
 						from: rect.width - bar.anchors.margins * 2
 						to: 0
-						duration: failed ? 10000 : 1000
-						onFinished: popupLoader.active = false
+						duration: failed ? 10000 : 2500
+						onFinished: fadeOut.start()
 
 						// Pause the animation when the mouse is hovering over the popup,
 						// so it stays onscreen while reading. This updates reactively
@@ -138,16 +174,14 @@ Scope {
 					width: rect.width - bar.anchors.margins * 2
 				}
 
-				// We could set `running: true` inside the animation, but the width of the
-				// rectangle might not be calculated yet, due to the layout.
-				// In the `Component.onCompleted` event handler, all of the component's
-				// properties and children have been initialized.
-				Component.onCompleted: anim.start()
+				// The width the countdown starts from is laid out by the time the frames above
+				// have been drawn.
 			}
 
 			DropShadow {
 				id: shadow
                 anchors.fill: rect
+                opacity: popup.shown
                 horizontalOffset: 0
                 verticalOffset: 2
                 radius: 6

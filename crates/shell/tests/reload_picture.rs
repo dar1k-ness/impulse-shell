@@ -1,8 +1,9 @@
-//! A reload keeps the previous image's windows on the screen until the new image shows what
-//! they did. The first frame of a window whose picture loads on a worker and then fades in (a
-//! wallpaper) is empty, so at that frame the old window still has to be there: taken away
-//! then, the screen behind shows through for the length of the fade, a dark flash of the
-//! wallpaper on every reload.
+//! A reload keeps the previous image's wallpaper on the screen until the new image shows its
+//! own (the windows above it fade out before the `exec` and come as at a start,
+//! `reload_handover.rs`). The first frame of a window whose picture loads on a worker and
+//! then fades in (a wallpaper) is empty, so at that frame the old window still has to be
+//! there: taken away then, the screen behind shows through for the length of the fade, a
+//! dark flash of the wallpaper on every reload.
 //!
 //! The test runs its own sway: the panels of tests running meanwhile would sit at the same
 //! spot of the shared one's screen the screenshots read.
@@ -22,6 +23,8 @@ ShellRoot {
         anchors { top: true; left: true }
         implicitWidth: 64; implicitHeight: 32
         exclusionMode: ExclusionMode.Ignore
+        // Where the shipped tree's wallpaper is: under the windows.
+        WlrLayershell.layer: WlrLayer.Bottom
         color: "transparent"
         Image {
             anchors.fill: parent
