@@ -68,6 +68,10 @@ struct State {
     sessions: Vec<String>,
     /// `SearchItems` leaves a locked collection's items out, instead of listing them as locked.
     hides_locked: bool,
+    /// The `default` alias is unset, as on a system that never had a keyring.
+    no_default: bool,
+    /// `CreateCollection` calls: each is a "Choose password for new keyring" window.
+    creates: usize,
 }
 
 type Shared = Arc<Mutex<State>>;
@@ -164,7 +168,26 @@ impl Service {
     }
 
     fn read_alias(&self, name: &str) -> OwnedObjectPath {
-        path(if name == "default" { COLLECTION } else { "/" }.into())
+        path(
+            if name == "default" && !st(&self.0).no_default {
+                COLLECTION
+            } else {
+                "/"
+            }
+            .into(),
+        )
+    }
+
+    /// The collection is made without a prompt (the user's answer to it is not what is tested).
+    fn create_collection(
+        &self,
+        _properties: HashMap<String, OwnedValue>,
+        _alias: &str,
+    ) -> (OwnedObjectPath, OwnedObjectPath) {
+        let mut s = st(&self.0);
+        s.creates += 1;
+        s.no_default = false;
+        (path(COLLECTION.into()), path("/".into()))
     }
 
     #[zbus(property)]
@@ -457,6 +480,8 @@ fn fake(test: &str, locked: bool, answer: Answer) -> Option<Fake> {
         encrypted: Encrypted::NotSupported,
         sessions: vec![],
         hides_locked: false,
+        no_default: false,
+        creates: 0,
     }));
     // Name requested last: clients see the service only once every object is exported.
     let conn = zbus::blocking::connection::Builder::address(addr.trim())
@@ -908,6 +933,33 @@ fn first_write_unlocks_an_empty_locked_keyring() {
     host.settle(&mut rt);
     assert!(rt.get(r, "loaded").truthy());
     assert_eq!(f.calls(), (1, 1));
+    assert_eq!(f.secrets(), [r#"{"apiKeys":{"mistral":"k3"}}"#]);
+}
+
+/// A system that never had a keyring (the `default` alias is unset): the read at startup
+/// stores nothing, so no keyring is made and nobody is asked to choose its password; the first
+/// key the user sets has it made and is stored.
+#[test]
+fn no_keyring_is_made_until_a_key_is_set() {
+    let Some(f) = fake(
+        concat!(module_path!(), "::no_keyring_is_made_until_a_key_is_set"),
+        false,
+        Answer::Unlock,
+    ) else {
+        return;
+    };
+    st(&f.state).no_default = true;
+    assert_eq!(keyring::try_lookup(&[keyring::APP_ATTR]), Lookup::Locked);
+    let (mut rt, r, host) = load();
+    rt.call_method(r, "fetch", vec![]).unwrap().unwrap();
+    host.settle(&mut rt);
+    assert!(!rt.get(r, "loaded").truthy());
+    assert_eq!(st(&f.state).creates, 0);
+    assert!(f.secrets().is_empty());
+    set(&mut rt, r, "mistral", "k3");
+    host.settle(&mut rt);
+    assert!(rt.get(r, "loaded").truthy());
+    assert_eq!(st(&f.state).creates, 1);
     assert_eq!(f.secrets(), [r#"{"apiKeys":{"mistral":"k3"}}"#]);
 }
 

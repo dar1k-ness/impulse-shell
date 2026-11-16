@@ -5,8 +5,12 @@
 On Arch Linux with end-4's dots-hyprland in place:
 
 ```sh
-git clone https://github.com/dar1k-ness/impulse-shell.git && impulse-shell/install.sh
+git clone -b impulse-next https://github.com/dar1k-ness/rusty-impulse.git impulse-shell && impulse-shell/install.sh
 ```
+
+The repository is private: the clone needs a GitHub account that has access to it, and asks
+for its login where git has none. (It keeps the name the project had before, and this shell is
+on its branch `impulse-next`.)
 
 `install.sh` goes through the steps below by itself and says each one before it makes it:
 
@@ -18,7 +22,9 @@ git clone https://github.com/dar1k-ness/impulse-shell.git && impulse-shell/insta
 3. `tools/carry-over.sh`, then `tools/carry-over.sh --dots new`: the settings come over from
    the original and the Hyprland files call and start `impulse-shell` (the header of `tools/carry-over.sh` says what exactly).
 4. Inside a Hyprland session: Hyprland reloads its config, the shell that runs is stopped and
-   `impulse-shell -c impulse-shell` is started. If its panels are not on screen in 30 seconds
+   `impulse-shell -c impulse-shell` is started. A session that is locked by then (the build
+   is long enough for `hypridle` to lock it) is switched once it is unlocked, and `hypridle`
+   is started again so that its lock is this shell's. If its panels are not on screen in 30 seconds
    (`RI_START_WAIT`), the files of step 3 are put back and the shell that ran is started
    again; the script then ends with status 2. Outside a session nothing is started: the next
    login starts the shell.
@@ -26,8 +32,8 @@ git clone https://github.com/dar1k-ness/impulse-shell.git && impulse-shell/insta
 - `install.sh --no-start` leaves the running shell alone; `install.sh --no-packages` installs
   no packages.
 - The file alone, run from outside a checkout (`bash install.sh`), clones the repository to
-  `~/.local/src/impulse-shell` (`RI_SRC`; `RI_REPO` names another repository) or updates the
-  clone that is there, and installs that.
+  `~/.local/src/impulse-shell` (`RI_SRC`; `RI_REPO` names another repository, `RI_BRANCH`
+  another branch) or updates the clone that is there, and installs that.
 - Running it again updates: it builds what the checkout has now and installs it as a new
   release. A shell that already runs the installed build is left running.
 - Over a home that runs this shell under the name it had before (its tree is

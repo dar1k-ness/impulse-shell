@@ -3,8 +3,9 @@
 # place. It ends with impulse-shell running in the Hyprland session it was started from.
 #
 #   ./install.sh              from a checkout: install that checkout
-#   bash install.sh           from anywhere else (the file alone): clone the repository to
-#                             $RI_SRC, or update the clone that is there, and install that
+#   bash install.sh           from anywhere else (the file alone): clone the repository
+#                             (its branch $RI_BRANCH) to $RI_SRC, or update the clone that is
+#                             there, and install that
 #   ./install.sh --no-start   everything but the last step: the shell that runs keeps running
 #   ./install.sh --no-packages   install no packages (they are there, or this is not Arch)
 #
@@ -22,10 +23,13 @@
 #      settings, state and caches are copied to the new names, and the Hyprland files call and
 #      start impulse-shell where they called and started Quickshell. Nothing old is removed.
 #   5. the switch, when this runs inside a Hyprland session: Hyprland reloads its config, the
-#      shell that runs is stopped and impulse-shell is started. If it does not show its panels
-#      in $RI_START_WAIT seconds, the files of step 4 are put back and the shell that ran is
-#      started again: the session is not left without a shell. Outside a session nothing is
-#      started: the next login starts it.
+#      shell that runs is stopped and impulse-shell is started. A session that is locked by then
+#      (the build is long enough for hypridle) is switched once it is unlocked: the shell that
+#      runs holds the lock screen. hypridle is started again, for the lock command of its
+#      rewritten file. If the new shell does not show its panels in $RI_START_WAIT seconds,
+#      the files of step 4 are put back and the shell that ran is started again: the session
+#      is not left without a shell. Outside a session nothing is started: the next login
+#      starts it.
 #
 # A home that runs this shell under its previous name (its tree is ~/.config/rustshell/<that
 # name>) is switched from that build: step 4 carries its settings over and makes the files that
@@ -40,7 +44,9 @@
 # tools/install.sh --uninstall removes the build.
 #
 # Environment:
-#   RI_REPO        the repository to clone (default https://github.com/dar1k-ness/impulse-shell.git)
+#   RI_REPO        the repository to clone (default https://github.com/dar1k-ness/rusty-impulse.git:
+#                  the repository on GitHub keeps the name the project had before)
+#   RI_BRANCH      its branch (default impulse-next; empty: the one the repository gives)
 #   RI_SRC         where the clone goes (default ~/.local/src/impulse-shell)
 #   RI_START_WAIT  seconds to wait for the panels in step 5 (default 30)
 #
@@ -174,16 +180,16 @@ sources() {
         src=$here
         return 0
     fi
-    local repo=${RI_REPO:-https://github.com/dar1k-ness/impulse-shell.git}
+    local repo=${RI_REPO:-https://github.com/dar1k-ness/rusty-impulse.git} branch=${RI_BRANCH-impulse-next}
     src=${RI_SRC:-$HOME/.local/src/impulse-shell}
     command -v git >/dev/null || die "git is needed to get the sources"
     if [ -d "$src/.git" ]; then
         step "updating $src"
         git -C "$src" pull --ff-only || die "cannot update $src (changes of its own?); nothing was installed"
     else
-        step "cloning $repo to $src"
+        step "cloning $repo${branch:+ (branch $branch)} to $src"
         mkdir -p -- "$(dirname "$src")"
-        git clone -- "$repo" "$src" || die "cannot clone $repo; nothing was installed"
+        git clone ${branch:+--branch "$branch"} -- "$repo" "$src" || die "cannot clone $repo; nothing was installed"
     fi
     [ -f "$src/install.sh" ] || die "$src has no install.sh; nothing was installed"
     exec bash "$src/install.sh" --no-packages "$@"
@@ -204,6 +210,18 @@ hypr_exec() {
         out=$(hc dispatch exec "$1")
     fi
     [ "$out" = ok ] || { echo "install.sh: hyprctl dispatch answered: $out" >&2; return 1; }
+}
+# Whether the session is locked. A shell that is stopped while it holds the lock screen leaves
+# Hyprland on "the lockscreen app died", which only another tty gets out of.
+locked() { [ "$(hc -j locked | jq -r .locked 2>/dev/null)" = true ]; }
+# The switch waits for the unlock: a build is long enough for hypridle to lock the session.
+wait_unlocked() {
+    locked || return 0
+    step "the session is locked: the switch is made once it is unlocked"
+    echo "(stopping the shell now would take its lock screen away. Interrupted here, nothing is lost: the build is installed and the next login starts it)"
+    while locked; do sleep 1; done
+    # What the shell does at the unlock (its lock screen leaving) is not cut short.
+    sleep 1
 }
 stop() {
     local n p
@@ -294,16 +312,36 @@ restart_watchers() {
         done
 }
 
+# hypridle read its config when Hyprland started it, and the lock command in it calls the shell
+# that ran then: a lock would now be hyprlock's, or none at all where there is no hyprlock.
+# Where its file was written after it started, it is started again. Not while it has a screen
+# off: started again, it would not turn that screen on.
+restart_idle() {
+    local p f=$config/hypr/hypridle.conf up
+    p=$(pids hypridle | head -n 1)
+    [ -n "$p" ] && [ -f "$f" ] || return 0
+    up=$(ps -o etimes= -p "$p" 2>/dev/null | tr -d ' ')
+    [[ $up =~ ^[0-9]+$ ]] && [ "$(($(date +%s) - up))" -lt "$(stat -c %Y -- "$f")" ] || return 0
+    if [ "$(hc monitors -j | jq '[.[] | select(.dpmsStatus == false)] | length' 2>/dev/null)" != 0 ]; then
+        echo "note: hypridle keeps the lock command it read at login until the next login (a screen is off, so it was not started again)"
+        return 0
+    fi
+    stop hypridle
+    hypr_exec hypridle || true
+}
+
 switch() {
     local wait=${RI_START_WAIT:-30} was='' p i log=${XDG_RUNTIME_DIR:-/tmp}/$name.log
     # The build that runs is the one just installed (this was run a second time): it stays.
     for p in $(pids "$name"); do
         if [ "$(readlink -f "/proc/$p/exe")" = "$(readlink -f -- "$bin")" ] && [ "$(nlayers "$word")" -gt 0 ]; then
             restart_watchers
+            restart_idle
             echo "installed and running already: $bin (pid $p)"
             return 0
         fi
     done
+    wait_unlocked
     # What runs now, to start it again if the new shell does not come up: its command line.
     for p in $(pids qs) $(pids quickshell) $(pids "$prev") $(pids "$name"); do
         was=$(tr '\0' ' ' <"/proc/$p/cmdline" 2>/dev/null) && [ -n "$was" ] && break
@@ -321,6 +359,7 @@ switch() {
     for ((i = 0; i < wait * 2; i++)); do
         if [ -n "$(pids "$name")" ] && [ "$(nlayers "$word")" -gt 0 ]; then
             restart_watchers
+            restart_idle
             echo "installed and running: $bin (pid $(pids "$name" | head -n 1)), its log: $log"
             if [ ${#watch_back[@]} != 0 ]; then
                 echo "the rollback watch of $prev is off, and this installs none"

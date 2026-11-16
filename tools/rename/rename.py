@@ -1236,8 +1236,9 @@ def rules4():
         (r"\$NEW_BIN-shell\b", "$NEW_BIN-start", r"^tools/carry-over\.sh$"),
         # the article before the name
         (r"\b([Aa]) (`?)" + old + r"\b", r"\1n \2" + NEW),
-        # the name itself, as a program, a directory, a variable, a type, a function
-        (old, NEW),
+        # the name itself, as a program, a directory, a variable, a type, a function; not in
+        # the repository's address on GitHub, which keeps it (REPO_ADDRESS)
+        (r"(?<!github\.com/dar1k-ness/)" + old, NEW),
         (r"RUSTY_IMPULSE", NEW.upper().replace("-", "_")),
         (r"RustyImpulse", "".join(w.capitalize() for w in NEW.split("-"))),
         (r"rustyImpulse", NEW.split("-")[0] + "".join(w.capitalize() for w in NEW.split("-")[1:])),
@@ -1492,6 +1493,10 @@ def after_pass_1():
     # cargo puts the renamed packages where their new names sort
     subprocess.run(["cargo", "metadata", "--format-version", "1"], cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
     subprocess.run(["cargo", "fmt", "--all"], cwd=ROOT, check=True)
+
+# The repository on GitHub keeps the name pass 4 replaced: the address install.sh clones and
+# docs/install.md gives is not an old name left behind.
+REPO_ADDRESS = re.compile(r"github\.com/dar1k-ness/rusty-impulse(?![\w-])")
 
 # What `--stale` looks for once the passes have run: the old names, as a tracked file or one of
 # its lines has them.
@@ -1856,6 +1861,7 @@ def stale():
             continue
         for n, line in enumerate(lines, 1):
             kept = CREDIT.search(line) or any(l and l.search(line) for l in here)
+            line = REPO_ADDRESS.sub("", line)
             for k, rx in old:
                 if k != "rusty-impulse" and (first or kept):
                     continue

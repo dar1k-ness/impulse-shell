@@ -157,7 +157,10 @@ if [ "$OLD_WORD" = "$NEW_WORD" ]; then
             one_name
     }
 fi
-names_old() { ! rewrite <"$1" | cmp -s - "$1"; }
+# cmp stops at the first difference; what rewrite still has to say is read to its end. Written
+# to a closed pipe, its sed is ended by SIGPIPE or, where that is ignored (Hyprland ignores it,
+# and so does everything it starts, a terminal's shell too), says "couldn't write ... Broken pipe".
+names_old() { ! rewrite <"$1" | { cmp -s - "$1" && exit; cat >/dev/null; exit 1; }; }
 # A file something reads: by its suffix, or a script without one. Copies kept beside the files
 # (execs.lua.pre-native-default, hypridle.conf.new, *.bak) are not rewritten.
 is_read() {
@@ -391,7 +394,7 @@ keyring_items() {
         kr_done "application=$NEW_APP is there with content of its own and cannot be compared with application=$OLD_APP (not JSON objects, or no jq): left as it is"
         return 0
     fi
-    label=$(sed -n 's/^label = //p' <<<"$found" | head -n1)
+    label=$(sed -n '/^label = /{s///p;q}' <<<"$found")
     label=${label//$OLD_APP/$NEW_APP}
     while IFS= read -r v; do
         k=${v%% = *} k=${k#attribute.} v=${v#* = }

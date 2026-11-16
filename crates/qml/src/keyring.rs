@@ -222,20 +222,28 @@ fn login_locked(conn: &zbus::blocking::Connection) -> Option<bool> {
 /// `try_lookup.sh`'s outcome, decided by what the Secret Service answered rather than by the
 /// login collection's lock: an item that lives in another collection (the `default` alias) is
 /// not "missing" because `login` happens to be unlocked. A failed or dismissed unlock is
-/// `Locked`, so `apply_lookup` never resets (and overwrites) data it could not read.
+/// `Locked`, so `apply_lookup` never resets (and overwrites) data it could not read. Where
+/// there is no `default` collection at all (a system that never had a keyring) the answer is
+/// `Locked` as well, as `try_lookup.sh`'s without a `login` collection: `NotFound` would have
+/// KeyringStorage store its empty object, and that store has the collection made, which puts
+/// "Choose password for new keyring" on the screen of someone who stored nothing.
 pub fn try_lookup(attrs: &[(&str, &str)]) -> Lookup {
-    lookup_outcome(secret_lookup(attrs))
+    lookup_outcome(secret_lookup(attrs), false)
 }
 
 /// [`try_lookup`] for a caller that is about to write: when nothing matches while the `default`
 /// collection is locked, unlocks it (following its Prompt) and searches again, so that the
 /// answer is `Found` or `NotFound` and the write goes on top of what is stored. A failed or
-/// dismissed unlock is `Locked`.
+/// dismissed unlock is `Locked`. No `default` collection is `NotFound` here: the write makes
+/// it, for a secret the user gave.
 pub fn try_lookup_unlocking(attrs: &[(&str, &str)]) -> Lookup {
-    lookup_outcome(secret_lookup(attrs).and_then(|found| match found {
-        None if unlock_default()? => secret_lookup(attrs),
-        found => Ok(found),
-    }))
+    lookup_outcome(
+        secret_lookup(attrs).and_then(|found| match found {
+            None if unlock_default()? => secret_lookup(attrs),
+            found => Ok(found),
+        }),
+        true,
+    )
 }
 
 /// Unlocks the `default` collection when it is locked: whether it was.
@@ -251,14 +259,15 @@ fn unlock_default() -> Result<bool, Error> {
     Ok(true)
 }
 
-fn lookup_outcome(found: Result<Option<Vec<u8>>, Error>) -> Lookup {
+/// `writing`: the caller stores next, so a missing `default` collection is not in its way.
+fn lookup_outcome(found: Result<Option<Vec<u8>>, Error>, writing: bool) -> Lookup {
     match found {
         Ok(Some(v)) => Lookup::Found(
             String::from_utf8_lossy(&v)
                 .trim_end_matches('\n')
                 .to_string(),
         ),
-        Ok(None) if default_locked() => Lookup::Locked,
+        Ok(None) if default_locked(writing) => Lookup::Locked,
         Ok(None) => Lookup::NotFound,
         Err(e) => {
             elog::eprintln!("Keyring: lookup failed: {e}");
@@ -268,14 +277,15 @@ fn lookup_outcome(found: Result<Option<Vec<u8>>, Error>) -> Lookup {
 }
 
 /// Whether the `default` alias, where `secret_store` writes, is locked: a service that hides a
-/// locked collection's items cannot tell missing from locked. Unknown counts as locked.
-fn default_locked() -> bool {
+/// locked collection's items cannot tell missing from locked. Unknown counts as locked, and
+/// so does an alias that is unset unless the caller is `writing`.
+fn default_locked(writing: bool) -> bool {
     let Some(conn) = crate::dbus::session() else {
         return true;
     };
     match default_collection(&conn) {
         Ok(Some(c)) => locked(&conn, c.as_str()).unwrap_or(true),
-        Ok(None) => false,
+        Ok(None) => !writing,
         Err(_) => true,
     }
 }
