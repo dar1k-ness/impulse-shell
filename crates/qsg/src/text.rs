@@ -2791,6 +2791,12 @@ impl LineMap {
     }
 }
 
+/// QFontEngine::isIgnorableChar of Qt 6.12: the line and paragraph separators, the variation
+/// selectors and the control characters (QChar::Other_Control).
+fn ignorable(c: char) -> bool {
+    matches!(c, '\u{2028}' | '\u{2029}' | '\u{FE00}'..='\u{FE0F}') || c.is_control()
+}
+
 /// Characters QTextEngine::shapeTextWithHarfbuzzNG leaves unprinted, and the tab, which is an
 /// item of its own that is not shaped: none has an advance, and none is looked up in a
 /// fallback font.
@@ -3175,7 +3181,10 @@ impl FontStack {
         if let Some((slot, sub)) = self.script_stack(script) {
             return SUB0 + slot * SUB_STRIDE + sub.font_for(c, script);
         }
-        if self.primary.has_char(c) {
+        // QFontEngineMulti::stringToCMap: no fallback font is looked up for a character the
+        // first engine lacks when it is one of QFontEngine::isIgnorableChar. No font has a
+        // line feed, so looking one up opened every fallback font there is.
+        if self.primary.has_char(c) || ignorable(c) {
             return 0;
         }
         let has = |&i: &usize| self.font(i).is_some_and(|f| f.has_char(c));
@@ -3627,6 +3636,11 @@ impl FontStack {
                 format!("{}{ellipsis}{}", &text[..left], &text[right..])
             }
         }
+    }
+
+    /// ri::wstat: the fallback fonts this stack has opened so far.
+    pub fn fallbacks_open(&self) -> usize {
+        self.fallbacks.iter().filter(|f| f.get().is_some()).count()
     }
 
     /// ri::wstat: (shaped lines, glyph bitmaps, distance fields + tiles) cached by this stack.

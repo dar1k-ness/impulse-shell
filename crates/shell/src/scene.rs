@@ -33,17 +33,18 @@ const FONTS_IDLE: u64 = 4096;
 impl Fonts {
     /// ri::wstat: font stacks and their summed caches.
     pub fn stats(&self) -> String {
-        let mut t = (0, 0, 0);
+        let mut t = (0, 0, 0, 0);
         for f in self.cache.values().filter_map(|e| e.0.as_ref()) {
             let s = f.cache_stats();
-            t = (t.0 + s.0, t.1 + s.1, t.2 + s.2);
+            t = (t.0 + s.0, t.1 + s.1, t.2 + s.2, t.3 + f.fallbacks_open());
         }
         format!(
-            "stacks={} shaped={} glyphs={} df={}",
+            "stacks={} shaped={} glyphs={} df={} fallbacks={}",
             self.cache.len(),
             t.0,
             t.1,
-            t.2
+            t.2,
+            t.3
         )
     }
 
