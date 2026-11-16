@@ -6849,13 +6849,11 @@ fn loader_size_valid(w: &mut World, i: usize) -> (bool, bool) {
     )
 }
 
-/// `p` is a Loader with a set size on both axes and `i` its loaded item.
-fn loader_sizes_item(w: &mut World, p: usize, i: usize) -> bool {
-    if !is_loader(w, p) || !matches!(w.read(p, "item"), Some(Value::Item(c)) if c == i) {
-        return false;
-    }
-    let (mw, mh) = size_managed(w, p);
-    (mw || explicit(w, p, "width")) && (mh || explicit(w, p, "height"))
+/// `p` is a Loader and `i` its loaded item: with a set size the Loader sizes the item, without
+/// one it takes the item's (QQuickLoaderPrivate::_q_updateSize), so either way a resize of
+/// the item is the Loader's to place.
+fn loader_places_item(w: &mut World, p: usize, i: usize) -> bool {
+    is_loader(w, p) && matches!(w.read(p, "item"), Some(Value::Item(c)) if c == i)
 }
 
 fn size_managed(w: &mut World, i: usize) -> (bool, bool) {
@@ -8980,11 +8978,9 @@ pub fn geom_snapshot(w: &mut World, root: usize) -> HashMap<usize, [f64; 4]> {
 
 /// `p` is a layout/positioner, so a resize of its child `i` is handled by re-placing `p`.
 fn defers_to_parent(w: &mut World, i: usize, p: usize) -> bool {
-    // QQuickLoaderPrivate::_q_updateSize: a sized Loader imposes its size on the item and only
-    // its implicit size follows the item's, so the item is placed with the Loader.
     linear_axis(w, p).is_some()
         || is_positioner(w, p)
-        || loader_sizes_item(w, p, i)
+        || loader_places_item(w, p, i)
         || control_slot(w, p, i)
         || view_delegate(w, p)
         // QQuickScrollView takes its content size from what is in its Flickable.

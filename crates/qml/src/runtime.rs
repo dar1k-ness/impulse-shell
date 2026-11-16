@@ -6341,6 +6341,9 @@ impl WriteFx {
                 && !image
                 && !anchor_offset(name)
                 && declared
+                // The corners of a Rectangle are painted too (QQuickRectangle::setRadius only
+                // updates the node).
+                && !((name == "radius" || RECT_SHADOW_CORNERS.contains(&name)) && is("Rectangle"))
                 // Colours are painted, never measured (QQuickText re-lays out only for linkColor).
                 && (name == "linkColor"
                     || !inst
@@ -50720,6 +50723,12 @@ Item {
             "geometry is placed, not laid out again"
         );
         assert!(fx(r, "color").has(WriteFx::DRAWN) && !fx(r, "color").has(WriteFx::LAYOUT));
+        for corner in ["radius", "topLeftRadius", "bottomRightRadius"] {
+            assert!(
+                fx(r, corner).has(WriteFx::DRAWN) && !fx(r, corner).has(WriteFx::LAYOUT),
+                "{corner} of a Rectangle is painted, not laid out"
+            );
+        }
         assert!(fx(r, "anchors.leftMargin").has(WriteFx::RESIZE));
         assert!(
             !fx(t, "running").has(WriteFx::DRAWN | WriteFx::LAYOUT),
@@ -50774,6 +50783,41 @@ Item {
             rt.world.borrow().layout_rev > rev,
             "markup text lays out its link colour"
         );
+    }
+
+    /// A button group animates the corners of its buttons as one is pressed: the writes are
+    /// painted and no window is laid out again for them.
+    #[test]
+    fn corner_writes_do_not_relayout() {
+        let mut rt = Runtime::new(None);
+        let root = rt
+            .load_str(
+                r#"import QtQuick
+Item {
+    property alias r: r
+    width: 100; height: 100
+    Rectangle { id: r; width: 40; height: 40; radius: 4 }
+}"#,
+            )
+            .unwrap();
+        rt.settle();
+        let Value::Item(r) = rt.get(root, "r") else {
+            panic!("r")
+        };
+        rt.world.borrow_mut().touched.clear();
+        let rev = rt.world.borrow().layout_rev;
+        for (corner, v) in [
+            ("radius", 8.0),
+            ("topLeftRadius", 2.0),
+            ("bottomRightRadius", 6.0),
+        ] {
+            rt.set(r, corner, Value::Num(v));
+            rt.settle();
+            assert_eq!(rt.get(r, corner).to_number(), v);
+        }
+        let w = rt.world.borrow();
+        assert_eq!(w.layout_rev, rev, "corner writes bumped layout_rev");
+        assert!(w.touched.contains(&r), "the Rectangle is painted again");
     }
 }
 
