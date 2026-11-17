@@ -1321,6 +1321,12 @@ struct App {
     dma_wait: Vec<DmaReady>,
     /// A helper thread pinged the loop since the last service poll.
     pinged: bool,
+    /// Windows (by item) laid out in a turn that left their painting to a later one
+    /// (`paints_after_run`): the next draw of each paints whatever its layout takes.
+    laid_ahead: Vec<usize>,
+    /// A changed window at rest left its draw to the next turn: another one drew in this one
+    /// beside a run of frames.
+    run_waits: bool,
     /// `unlock_and_destroy` requests the compositor has not answered a wl_display.sync for.
     unlocks_in_flight: u32,
     /// Screencopy conversion thread, started with the first captured frame. It reads the
@@ -2377,6 +2383,14 @@ impl App {
         {
             q.push(t, Due::Throttle);
         }
+        // A changed window waiting for a run's frame callback draws without it at the latest.
+        if let Some(t) = self.run_hold_ends(now) {
+            q.push(t, Due::Throttle);
+        } else if std::mem::take(&mut self.run_waits) {
+            // No callback to wait for (the run drew nothing this turn): the next turn.
+            q.push(now, Due::Throttle);
+        }
+        self.run_waits = false;
         if let Some(d) = self.rt.reap_in_ms() {
             q.push(now + d, Due::Reap);
         }
@@ -2836,6 +2850,40 @@ impl App {
         )
     }
 
+    /// The windows other than `k` that are in a run of frames (`in_frame_run`).
+    fn runs_beside(&self, k: usize) -> impl Iterator<Item = usize> + '_ {
+        (0..self.wins.len()).filter(move |&j| j != k && self.in_frame_run(j))
+    }
+
+    /// Window `k`, changed while at rest, waits this turn out for the frame callback of a
+    /// window in a run (`sched::holds_for_run`). A window's first frame never waits.
+    fn held_for_run(&self, k: usize) -> bool {
+        !qml::debug::on(qml::debug::Switch::NORUNHOLD)
+            && self.wins[k].committed.is_some()
+            && !self.in_frame_run(k)
+            && shell::sched::holds_for_run(
+                self.runs_beside(k)
+                    .filter(|&j| self.wins[j].pending)
+                    .filter_map(|j| self.wins[j].asked)
+                    .map(|t| t.elapsed().as_secs_f64() * 1000.0),
+                self.clock.vsync,
+            )
+    }
+
+    /// When the first window held for a run (`held_for_run`) is held no longer whether the
+    /// run's frame callback has come or not, in loop milliseconds after `now`.
+    fn run_hold_ends(&self, now: f64) -> Option<f64> {
+        (0..self.wins.len())
+            .filter(|&k| self.wins[k].dirty && self.held_for_run(k))
+            .flat_map(|k| self.runs_beside(k))
+            .filter(|&j| self.wins[j].pending)
+            .filter_map(|j| self.wins[j].asked)
+            .map(|t| self.loop_ms(t) + shell::sched::RUN_HOLD_TIMEOUT * self.clock.vsync)
+            // A callback asked for longer ago holds nothing.
+            .filter(|&t| t > now)
+            .reduce(f64::min)
+    }
+
     /// Shows the window's last frame again with the screencopy textures swapped into it.
     fn swap_draw(&mut self, k: usize) {
         self.swap_frame(k);
@@ -3138,14 +3186,20 @@ impl App {
                 let rev = wd.layout_rev;
                 // In the full pass's order: measure, let the bindings on the measured implicit
                 // sizes answer, place.
+                let t = std::time::Instant::now();
                 scene::measure_targets(&mut wd, &mut self.fonts.borrow_mut(), &rs);
                 // The local pass is this frame's layout; its own writes need no full pass.
                 wd.layout_rev = rev;
                 drop(wd);
-                let t = std::time::Instant::now();
+                let measured = t.elapsed();
                 self.rt.settle();
-                if qml::log_on!("ri::stats") && t.elapsed().as_micros() > 300 {
-                    tracing::debug!(target: "ri::stats", "  local settle {}us", t.elapsed().as_micros());
+                if stats && t.elapsed().as_micros() > 300 {
+                    tracing::debug!(
+                        target: "ri::stats",
+                        "  local pass {pass}: measure {}us, settle {}us",
+                        measured.as_micros(),
+                        (t.elapsed() - measured).as_micros()
+                    );
                 }
                 let answered = self.take_resized(item);
                 if stats {
@@ -3163,8 +3217,12 @@ impl App {
                     drop(wd);
                     let t = std::time::Instant::now();
                     self.rt.settle();
-                    if qml::log_on!("ri::stats") && t.elapsed().as_micros() > 300 {
-                        tracing::debug!(target: "ri::stats", "  local settle {}us", t.elapsed().as_micros());
+                    if stats && t.elapsed().as_micros() > 300 {
+                        tracing::debug!(
+                            target: "ri::stats",
+                            "  local pass {pass}: settle after placing {}us",
+                            t.elapsed().as_micros()
+                        );
                     }
                     rs = self.take_resized(item);
                     if stats {
@@ -3204,10 +3262,41 @@ impl App {
                     "layout work win{k}: changed {} measured {measured} placed {placed} full {lay_full} moving {moving}",
                     changed.len()
                 );
+                if changed.len() > 4 {
+                    let wd = self.rt.world.borrow();
+                    let named: Vec<String> = changed
+                        .iter()
+                        .filter_map(|&i| Some(format!("{i} {}", wd.items.get(i)?.types.first()?)))
+                        .collect();
+                    tracing::debug!(target: "ri::stats", "  resized: {}", named.join(", "));
+                }
             }
         }
         // Writes the layout passes above made inside this window leave it clean.
         self.drain_lrev(Some(item));
+        slow_down(t0);
+        // A long layout beside a window in a run of frames: the painting waits for that
+        // window's next frame, and the layout is done by then.
+        let laid_ahead = self.laid_ahead.contains(&item);
+        self.laid_ahead.retain(|&i| i != item);
+        if !laid_ahead
+            && !qml::debug::on(qml::debug::Switch::NORUNHOLD)
+            && self.wins[k].committed.is_some()
+            && shell::sched::paints_after_run(t0.elapsed().as_secs_f64() * 1000.0, self.clock.vsync)
+            && self.runs_beside(k).next().is_some()
+        {
+            if qml::log_on!("ri::frames") {
+                tracing::debug!(
+                    target: "ri::frames",
+                    "laid win{k} in {}ms, painted after a run's frame",
+                    t0.elapsed().as_millis()
+                );
+            }
+            self.laid_ahead.push(item);
+            self.wins[k].dirty = true;
+            self.clock.sent(false, leads);
+            return;
+        }
         // updatePolish: new canvases paint after the layouts placed them.
         if self.rt.canvases_available() {
             self.rt.settle();
@@ -3344,6 +3433,7 @@ impl App {
                     &mut scene::Target::Gpu(&mut fr),
                 );
                 let anim_now = scene::take_animating();
+                slow_down(t1);
                 let t2 = std::time::Instant::now();
                 gpu.may_skip = !anim_now;
                 gpu.clock = Some(anim_instant(self.start, &self.rt));
@@ -5021,6 +5111,8 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         dma_ready: Vec::new(),
         dma_wait: Vec::new(),
         pinged: true,
+        laid_ahead: Vec::new(),
+        run_waits: false,
         unlocks_in_flight: 0,
         sc: None,
         due_at: 0.0,
@@ -5517,9 +5609,26 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
         // Decided once for the turn: the frames held back are drawn in a later one, after the
         // lock surfaces' own have gone to the compositor.
         let lock_first = app.lock_surfaces_draw_first();
-        for k in 0..app.wins.len() {
+        // Decided before any window draws: a window is in a run once it has drawn, and the
+        // frame a run's window draws this turn asks for the callback the windows at rest
+        // would wait for.
+        let in_run: Vec<bool> = (0..app.wins.len())
+            .map(|k| app.in_frame_run(k) && !qml::debug::on(qml::debug::Switch::NORUNHOLD))
+            .collect();
+        let held: Vec<bool> = (0..app.wins.len()).map(|k| app.held_for_run(k)).collect();
+        let beside_run = in_run.contains(&true);
+        // Beside a run one window at rest draws a turn: the others' draws would add up to
+        // more than the run's frame can wait, and go after its next frames, one each.
+        let mut rest_drew = false;
+        for k in shell::sched::draw_order(in_run.iter().copied()) {
             if app.wins[k].dirty && !app.can_draw(k) && qml::log_on!("ri::frames") {
                 tracing::debug!(target: "ri::frames", "skip win{k} pending");
+            }
+            if app.wins[k].dirty && held[k] {
+                if app.can_draw(k) && qml::log_on!("ri::frames") {
+                    tracing::debug!(target: "ri::frames", "skip win{k} for a run's frame");
+                }
+                continue;
             }
             if app.holds_for_screen_cap(app.wins[k].item)
                 || (lock_first && !matches!(app.wins[k].surf, Surf::Lock(_)))
@@ -5527,7 +5636,16 @@ fn run() -> Result<std::convert::Infallible, Fatal> {
                 continue;
             }
             if app.wins[k].dirty && app.can_draw(k) {
+                let at_rest = beside_run && !in_run[k] && app.wins[k].committed.is_some();
+                if at_rest && rest_drew {
+                    if qml::log_on!("ri::frames") {
+                        tracing::debug!(target: "ri::frames", "skip win{k} for a run's frame");
+                    }
+                    app.run_waits = true;
+                    continue;
+                }
                 app.draw(k);
+                rest_drew |= at_rest;
             } else if app.wins[k].swapped && !app.wins[k].dirty && app.can_draw(k) {
                 app.swap_draw(k);
             }
@@ -11713,6 +11831,19 @@ fn still_before_the_old_leave() -> bool {
     };
     shell::hyprclose::still_wait(&dir, true, shell::reload::STILL_WAIT);
     true
+}
+
+/// `RI_DEBUG=slow=<n>`: waits out the rest of n times the time gone since `since`, so the work
+/// done since then took as long as on a machine n times slower.
+fn slow_down(since: Instant) {
+    thread_local!(static SLOW: f64 = qml::debug::opts().slow.unwrap_or(1.0));
+    let n = SLOW.with(|s| *s);
+    if n > 1.0 {
+        let until = since + since.elapsed().mul_f64(n);
+        while Instant::now() < until {
+            std::hint::spin_loop();
+        }
+    }
 }
 
 /// The geometry a panel sends for `geom`. While the previous image's windows are still on

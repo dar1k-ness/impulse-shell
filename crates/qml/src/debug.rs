@@ -43,6 +43,7 @@ bits::bit_flags! {
         const NODELEGFAST = 1 << 25;
         const LREVALL = 1 << 26;
         const NODELEGLOCAL = 1 << 27;
+        const NORUNHOLD = 1 << 28;
         const NODMABUF = 1 << 29;
         const MEMOCHECK = 1 << 30;
         const LAYCHECK = 1 << 31;
@@ -78,6 +79,9 @@ pub struct Opts {
     /// `gpuloss=<n>`: the first GPU context of the process is lost (EGL_CONTEXT_LOST) at its
     /// n-th frame, as after a driver reset.
     pub gpuloss: Option<u64>,
+    /// `slow=<n>`: a window's layout and its painting take n times as long, as on a machine
+    /// n times slower.
+    pub slow: Option<f64>,
     /// Names that are neither a switch nor a parameter.
     pub unknown: Vec<String>,
 }
@@ -90,6 +94,7 @@ impl Opts {
             match e.split_once('=') {
                 Some(("prof", v)) => o.prof_ms = v.parse().ok(),
                 Some(("pprof_us", v)) => o.pprof_us = v.parse().ok(),
+                Some(("slow", v)) => o.slow = v.parse().ok(),
                 Some(("deptrace", v)) => o.deptrace = Some(v.to_owned()),
                 Some(("val", v)) => o.val = Some(list(v)),
                 Some(("val_items", v)) => {
@@ -403,6 +408,7 @@ mod tests {
         assert_eq!(o.geom.as_deref(), Some("Item"));
         assert_eq!(o.unknown, ["x"]);
         assert_eq!(Opts::parse(""), Opts::default());
+        assert_eq!(Opts::parse("slow=4").slow, Some(4.0));
         let o = Opts::parse("pprof_us=500,deptrace=implicitWidth,gpuloss=3");
         assert_eq!(
             (o.pprof_us, o.deptrace.as_deref(), o.gpuloss),
@@ -423,7 +429,11 @@ mod tests {
             }
         }
         // These came after the II_* variables and have no legacy name.
-        let later = Switch::DUMP | Switch::NOGLCACHE | Switch::NOMOVINGLOCAL | Switch::NODELEGLOCAL;
+        let later = Switch::DUMP
+            | Switch::NOGLCACHE
+            | Switch::NOMOVINGLOCAL
+            | Switch::NODELEGLOCAL
+            | Switch::NORUNHOLD;
         assert_eq!(
             Switch::all().difference(later).iter().count(),
             LEGACY

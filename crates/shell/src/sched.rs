@@ -93,6 +93,43 @@ pub fn in_frame_run(since: Option<f64>) -> bool {
     since.is_some_and(|ms| ms < FRAME_RUN_MS)
 }
 
+/// The order one turn draws its windows in, from whether each is in a run of frames
+/// ([`in_frame_run`]): the ones in a run first, each group in the windows' own order. A window
+/// in a run has one refresh interval for each frame; a window woken from rest (a bar whose
+/// clock turned a minute) can take longer than that to lay out and draw, and drawn first it
+/// makes the run's frame miss its refresh. Drawn after, it only delays the run's next frame,
+/// which still has the rest of that interval.
+pub fn draw_order(in_run: impl Iterator<Item = bool>) -> Vec<usize> {
+    let (mut first, mut rest) = (Vec::new(), Vec::new());
+    for (k, run) in in_run.enumerate() {
+        if run { &mut first } else { &mut rest }.push(k);
+    }
+    first.extend(rest);
+    first
+}
+
+/// A changed window at rest waits for the frame callback of a window in a run this long at
+/// most, in refresh intervals from when that callback was asked for. It comes within one; one
+/// that does not come (the compositor stopped showing that window) keeps nothing back.
+pub const RUN_HOLD_TIMEOUT: f64 = 2.0;
+
+/// Whether a changed window that is not in a run of frames ([`in_frame_run`]) waits this turn
+/// out, with a refresh interval of `vsync` ms. `asked`: for each other window that is in a run
+/// and waits for a frame callback, the ms since it asked for it. The window draws in the turn
+/// of that callback, after the run's frame ([`draw_order`]): drawn now, a draw longer than
+/// what is left of the interval would keep that frame from its refresh.
+pub fn holds_for_run(asked: impl IntoIterator<Item = f64>, vsync: f64) -> bool {
+    asked.into_iter().any(|ms| ms < RUN_HOLD_TIMEOUT * vsync)
+}
+
+/// Whether a window whose layout took `layout` ms paints in a later turn, while another
+/// window is in a run of frames: a layout of a third of the refresh interval (`vsync` ms) and
+/// more leaves too little of it for the painting, which then goes after the run's next frame
+/// ([`holds_for_run`]).
+pub fn paints_after_run(layout: f64, vsync: f64) -> bool {
+    layout * 3.0 >= vsync
+}
+
 /// When the next animation frame needs the loop, at `now`. While every window showing an
 /// animation awaits its frame callback (`awaiting`) the first callback back wakes the loop
 /// and is the step; the only deadline is `give_up`, when the first of them has waited
@@ -306,6 +343,47 @@ mod tests {
         assert!(!in_frame_run(Some(FRAME_RUN_MS)));
         assert!(!in_frame_run(Some(100.0)));
         assert!(!in_frame_run(None));
+    }
+
+    #[test]
+    fn windows_in_a_run_of_frames_are_drawn_before_the_ones_woken_from_rest() {
+        // The bar (0) wakes for its clock while the popup (3) animates: the popup goes first.
+        assert_eq!(
+            draw_order([false, false, false, true].into_iter()),
+            [3, 0, 1, 2]
+        );
+        // Nothing in a run, or everything: the windows' own order.
+        assert_eq!(draw_order([false, false, false].into_iter()), [0, 1, 2]);
+        assert_eq!(draw_order([true, true, true].into_iter()), [0, 1, 2]);
+        assert_eq!(
+            draw_order([true, false, true, false, true].into_iter()),
+            [0, 2, 4, 1, 3]
+        );
+        assert!(draw_order(std::iter::empty()).is_empty());
+    }
+
+    #[test]
+    fn a_window_at_rest_waits_for_the_frame_callback_of_a_run() {
+        // 100 Hz: the popup asked for its callback 4 ms ago, the bar's clock turns a minute.
+        assert!(holds_for_run([4.0], 10.0));
+        // No window in a run waits for a callback: nothing to wait for.
+        assert!(!holds_for_run([], 10.0));
+        // The callback is two refresh intervals late: that window is not shown.
+        assert!(holds_for_run([19.9], 10.0));
+        assert!(!holds_for_run([20.0], 10.0));
+        assert!(holds_for_run([30.0, 5.0], 10.0));
+        assert!(holds_for_run([30.0], 1000.0 / 60.0));
+    }
+
+    #[test]
+    fn a_long_layout_beside_a_run_paints_in_a_later_turn() {
+        // The owner's bar at 100 Hz: 7 ms of layout when the clock's text changes its width,
+        // 1 ms when it does not.
+        assert!(paints_after_run(7.5, 10.0));
+        assert!(!paints_after_run(1.0, 10.0));
+        assert!(paints_after_run(10.0 / 3.0, 10.0));
+        assert!(!paints_after_run(3.0, 10.0));
+        assert!(!paints_after_run(5.0, 1000.0 / 60.0));
     }
 
     #[test]

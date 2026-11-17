@@ -78,6 +78,7 @@ Switches that turn one optimization off (A/B measurements, bisecting a bug):
 | `noctrllocal` | Treating a resize of a Control's contentItem/background as local to the control. |
 | `nofresh` | Tracking of items that have not been through a layout pass yet. |
 | `nopolish` | Frame pacing of views: a ListView/GridView applies a model change at once, not at its window's next frame. |
+| `norunhold` | Keeping a window's draw out of the way of another window's run of frames: a window changed while at rest draws at once, and paints in the turn of its layout however long that took. |
 | `nofreeze` | Holding back delegate updates of views in hidden windows. |
 | `novirt` | Creating a ListView's delegates in chunks as it is scrolled: every row gets a delegate at once. |
 | `nodelegfast` | The quick "model and settings unchanged" check of views, Repeaters and Loaders. |
@@ -113,6 +114,7 @@ Parameters for logs:
 | --- | --- |
 | `prof=<ms>` | `ri::prof` prints only entries at or above this inclusive time. |
 | `pprof_us=<us>` | `ri::pprof` threshold in microseconds (default 3000). |
+| `slow=<n>` | A window's layout and its painting take n times as long (the shell waits the rest out), as on a machine n times slower. |
 | `deptrace=<prop>` | `ri::deptrace` logs what dirties bindings of this property. |
 | `val=<prop>+<prop>` | `ri::val` logs only writes of these properties. |
 | `val_items=<id>+<id>` | `ri::val` logs every write to these items. |

@@ -10502,6 +10502,7 @@ fn raster_cpu(cv: &mut Target, b: (f64, f64), f: impl FnOnce(&mut Canvas)) {
 }
 
 pub fn paint_window(rt: &mut Runtime, fonts: &mut Fonts, win: usize, cv: &mut Target) {
+    let stats = qml::log_on!("ri::stats").then(std::time::Instant::now);
     follow_theme();
     let dpr = match cv {
         Target::Gpu(fr) => fr.dpr,
@@ -10576,12 +10577,14 @@ pub fn paint_window(rt: &mut Runtime, fonts: &mut Fonts, win: usize, cv: &mut Ta
     // A node that left the tree is another node when it comes back.
     DF_MOVED.with(|m| m.borrow_mut().retain(|_, n| n.win != win || n.pass == pass));
     df_batches(&texts);
+    let prepared = stats.map(|t| t.elapsed());
     let on = DL_ON.with(|d| d.replace(matches!(cv, Target::Gpu(_))));
     DL_FRAME.with(|f| f.set(f.get() + 1));
     for c in kids(&mut w, win) {
         paint(&mut w, fonts, c, cv, 0.0, 0.0, 1.0, false);
     }
     DL_ON.with(|d| d.set(on));
+    let painted = stats.map(|t| t.elapsed());
     // QQuickOverlay: popups and tooltips are reparented to the window overlay, above every item and
     // outside ancestor clips, layers and opacity.
     // Popup items join the overlay when created: stacked by z, then creation order.
@@ -10610,6 +10613,17 @@ pub fn paint_window(rt: &mut Runtime, fonts: &mut Fonts, win: usize, cv: &mut Ta
             paint(&mut w, fonts, c, cv, px, py, 1.0, false);
             IN_OVERLAY.with(|f| f.set(false));
         }
+    }
+    if let (Some(t), Some(prepared), Some(painted)) = (stats, prepared, painted)
+        && t.elapsed().as_micros() >= 2000
+    {
+        tracing::debug!(
+            target: "ri::stats",
+            "  paint parts: texts and icons {}us, items {}us, popups {}us",
+            prepared.as_micros(),
+            (painted - prepared).as_micros(),
+            (t.elapsed() - painted).as_micros()
+        );
     }
 }
 
