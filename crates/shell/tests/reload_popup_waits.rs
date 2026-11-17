@@ -123,3 +123,38 @@ fn it_starts_after_a_second_and_a_half_of_late_frames() {
     }
     assert!(ms >= 1450.0, "started after {ms} ms");
 }
+
+/// While it waits the popup is painted already, too faintly to change a pixel of an 8 bit
+/// colour: what its first painting costs (the glyphs, the shadow's layer) falls into the frames
+/// the wait counts, not into the fade's first ones. Shown, it is opaque.
+#[test]
+fn it_is_painted_unseen_while_it_waits() {
+    let mut p = Popup::reloaded("unseen");
+    p.frame(10.0);
+    assert!(!p.started());
+    let opacities = |p: &Popup| -> Vec<f64> {
+        let mut w = p.rt.world.borrow_mut();
+        let wins = w.of_type("PanelWindow");
+        let mut parts = w.of_type("DropShadow");
+        parts.extend(
+            w.of_type("Rectangle")
+                .into_iter()
+                .filter(|&r| w.items[r].parent.is_some_and(|x| wins.contains(&x))),
+        );
+        drop(w);
+        parts
+            .iter()
+            .map(|&i| p.rt.get(i, "opacity").to_number())
+            .collect()
+    };
+    let waiting = opacities(&p);
+    assert_eq!(waiting.len(), 2, "the popup's card and its shadow");
+    for o in waiting {
+        assert!(o > 0.0 && o * 255.0 < 0.5, "opacity {o} while waiting");
+    }
+    p.frames_until_started(10.0);
+    for _ in 0..60 {
+        p.frame(10.0);
+    }
+    assert_eq!(opacities(&p), [1.0, 1.0]);
+}

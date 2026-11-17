@@ -55,6 +55,10 @@ Scope {
 			// with would be a step in the fade; the window's own first frame takes longer than a
 			// frame too (as EditOverlay.qml's). After a second and a half they start anyway.
 			property real shown: 0
+			// What the popup is painted with while unseen, too faint to change a pixel: its first
+			// painting (the text's glyphs, the shadow's layer) takes most of a frame on a slow
+			// GPU, and is done in the frames counted below, not in the fade's first ones.
+			readonly property real unseen: 0.001
 			property int framesShown: 0
 			property bool started: false
 			FrameAnimation {
@@ -96,7 +100,7 @@ Scope {
 			Rectangle {
 				id: rect
 				anchors.centerIn: parent
-				opacity: popup.shown
+				opacity: Math.max(popup.shown, popup.unseen)
 				color: failed ?  "#ffe99195" : "#ffD1E8D5"
 
 				implicitHeight: layout.implicitHeight + 30
@@ -192,7 +196,7 @@ Scope {
 			DropShadow {
 				id: shadow
                 anchors.fill: rect
-                opacity: popup.shown
+                opacity: Math.max(popup.shown, popup.unseen)
                 horizontalOffset: 0
                 verticalOffset: 2
                 radius: 6
