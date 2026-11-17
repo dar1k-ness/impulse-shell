@@ -11188,6 +11188,76 @@ fn dl_stat(k: usize) {
 }
 
 thread_local! {
+    /// The image sources (hashed) the recorded draws being made looked up, innermost last.
+    static DL_SRC_OPEN: std::cell::RefCell<Vec<Vec<u64>>> = const { std::cell::RefCell::new(Vec::new()) };
+    /// The image sources (hashed) a recorded draw looked up, the ones of the draws replayed
+    /// into it included: what such a lookup answers changes when a decode of the source lands.
+    static DL_SRCS: std::cell::RefCell<rustc_hash::FxHashMap<usize, Vec<u64>>> = Default::default();
+}
+
+fn src_hash(src: &str) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut h = rustc_hash::FxHasher::default();
+    src.hash(&mut h);
+    h.finish()
+}
+
+/// The paint under way looked up the image `src`: the draw being recorded depends on it.
+fn dl_reads(src: &str) {
+    DL_SRC_OPEN.with_borrow_mut(|o| {
+        if let Some(top) = o.last_mut() {
+            let h = src_hash(src);
+            if !top.contains(&h) {
+                top.push(h);
+            }
+        }
+    });
+}
+
+fn dl_reads_all(srcs: &[u64]) {
+    DL_SRC_OPEN.with_borrow_mut(|o| {
+        if let Some(top) = o.last_mut() {
+            for h in srcs {
+                if !top.contains(h) {
+                    top.push(*h);
+                }
+            }
+        }
+    });
+}
+
+/// Decodes of `srcs` landed: drops the recorded draws that looked one of them up. The other
+/// draws stay: a landed picture in one window no longer has every window recorded again.
+fn forget_draws_reading<'a>(srcs: impl Iterator<Item = &'a str>) {
+    let srcs: Vec<u64> = srcs.map(src_hash).collect();
+    let gone: Vec<usize> = DL_SRCS.with_borrow_mut(|m| {
+        let gone: Vec<usize> = m
+            .iter()
+            .filter(|(_, read)| read.iter().any(|h| srcs.contains(h)))
+            .map(|(&i, _)| i)
+            .collect();
+        for i in &gone {
+            m.remove(i);
+        }
+        gone
+    });
+    if qml::log_on!("ri::dldbg") {
+        tracing::debug!(
+            target: "ri::dldbg",
+            "landed {} sources: drops {} of {} recorded draws",
+            srcs.len(),
+            gone.len(),
+            DL.with(|d| d.borrow().len())
+        );
+    }
+    for i in gone {
+        if DL.with(|d| d.borrow_mut().remove(&i)).is_some() {
+            dl_dropped(i);
+        }
+    }
+}
+
+thread_local! {
     /// Effect sources: item -> effects whose recorded draw samples it (outside their subtree).
     static DL_DEPS: std::cell::RefCell<HashMap<usize, Vec<usize>>> = Default::default();
 }
@@ -11346,12 +11416,22 @@ fn no_cache() {
 }
 
 /// Drop every recorded subtree draw (state outside the item tree changed).
+#[track_caller]
 pub fn forget_draws() {
+    if qml::log_on!("ri::dldbg") {
+        tracing::debug!(
+            target: "ri::dldbg",
+            "every recorded draw is dropped ({}), asked at line {}",
+            DL.with(|d| d.borrow().len()),
+            std::panic::Location::caller().line()
+        );
+    }
     DL.with(|d| d.borrow_mut().clear());
     DL_MOVED.with(|d| d.borrow_mut().clear());
     DL_DEPS.with(|d| d.borrow_mut().clear());
     DL_USED.with_borrow_mut(|u| u.clear());
     DL_HOT.with_borrow_mut(|h| h.clear());
+    DL_SRCS.with_borrow_mut(|m| m.clear());
 }
 
 /// Effects whose sources may live outside their own subtree.
@@ -11539,12 +11619,21 @@ fn paint_recorded(
             }
         }
         DL_USED.with_borrow_mut(|u| u.insert(i));
+        DL_SRCS.with_borrow(|m| {
+            if let Some(read) = m.get(&i) {
+                dl_reads_all(read);
+            }
+        });
         dl_stat(0);
         return;
     }
     let anim = ANIMATING.with(|a| a.replace(false));
     let nc = NOCACHE.with(|n| n.replace(false));
+    DL_SRC_OPEN.with_borrow_mut(|o| o.push(Vec::new()));
     paint_timed(w, fonts, i, cv, ox, oy, opacity, force);
+    let read = DL_SRC_OPEN.with_borrow_mut(|o| o.pop()).unwrap_or_default();
+    dl_reads_all(&read);
+    DL_SRCS.with_borrow_mut(|m| m.remove(&i));
     let anim2 = ANIMATING.with(|a| a.get());
     let nc2 = NOCACHE.with(|n| n.get()) || anim2;
     ANIMATING.with(|a| a.set(anim || anim2));
@@ -11621,9 +11710,13 @@ fn paint_recorded(
             let mut d = d.borrow_mut();
             if d.len() > 20000 {
                 d.clear();
+                DL_SRCS.with_borrow_mut(|m| m.clear());
             }
             d.insert(i, (key, Rc::new(seg), DL_EPOCH.with(|c| c.get())));
         });
+        if !read.is_empty() {
+            DL_SRCS.with_borrow_mut(|m| m.insert(i, read));
+        }
     }
 }
 
@@ -14742,6 +14835,7 @@ fn retained_texture(loads: &ImageLoads, i: usize, cpu: bool) -> Option<Rc<Canvas
         let c = current.get(&i)?;
         (c.key.clone(), c.held.clone()?)
     };
+    dl_reads(&key.0);
     if !cpu || held.px.len() >= held.w * held.h {
         return Some(held);
     }
@@ -15076,6 +15170,7 @@ fn animated_texture(
     ss: (i32, i32),
     asynchronous: bool,
 ) -> Option<Option<Rc<Canvas>>> {
+    dl_reads(src);
     if !is(w, i, "AnimatedImage") {
         return None;
     }
@@ -15207,6 +15302,7 @@ fn decode_async(loads: &ImageLoads, key: ImageKey, file: String) {
 }
 
 fn decode_pending(loads: &ImageLoads, src: &str) -> bool {
+    dl_reads(src);
     loads.decoding.borrow().contains(src)
 }
 
@@ -15257,7 +15353,8 @@ fn take_landed(w: &World) -> Vec<(ImageKey, Option<Rc<Canvas>>)> {
     let done = std::mem::take(&mut *loads.decoded.borrow_mut());
     let opened = std::mem::take(&mut *loads.opened.borrow_mut());
     if !done.is_empty() || !opened.is_empty() {
-        forget_draws();
+        let done = done.iter().map(|(key, ..)| key.0.as_str());
+        forget_draws_reading(done.chain(opened.iter().map(|(_, key, _)| key.0.as_str())));
     }
     let mut out = Vec::new();
     loads.movies.borrow_mut().retain(|i, _| !w.dead.contains(i));
@@ -16131,6 +16228,7 @@ fn picture_texture(
     fill: i32,
     ask: Ask,
 ) -> Option<std::rc::Rc<Canvas>> {
+    dl_reads(src);
     let key = (src.to_string(), ss, fill);
     let stored = IMAGES.with_borrow(|c| c.peek(&key).is_some_and(|t| t.is_some()));
     let unshared = UNSHARED.with_borrow(|u| u.contains(&key));
@@ -16188,6 +16286,7 @@ fn image_texture(
     fill: i32,
     asynchronous: bool,
 ) -> Option<std::rc::Rc<Canvas>> {
+    dl_reads(src);
     let key = (src.to_string(), ss, fill);
     if still_pending(loads, &key, asynchronous) {
         return None;
@@ -16572,6 +16671,7 @@ pub fn forget_items(ids: &[usize]) {
         forget_draws();
     } else if !gone.is_empty() {
         DL.with(|d| d.borrow_mut().retain(|k, _| !gone.contains(k)));
+        DL_SRCS.with_borrow_mut(|m| m.retain(|k, _| !gone.contains(k)));
         DL_MOVED.with(|d| d.borrow_mut().retain(|k, _| !gone.contains(k)));
         DL_DEPS.with(|d| {
             let mut d = d.borrow_mut();
@@ -19307,6 +19407,117 @@ PanelWindow {
             panic!("{k}");
         };
         i
+    }
+
+    /// A picture whose decode lands leaves the draws recorded for the rest as they are: every
+    /// landing dropped every recorded draw of every window, so the next small change of the
+    /// bar (the minute of its clock) recorded all of the bar again, 12 ms on a real machine,
+    /// and an animation running in another window missed a frame. The draws that looked the
+    /// landed picture up are still dropped.
+    #[cfg(feature = "interp")]
+    #[test]
+    fn a_landed_picture_keeps_the_draws_that_do_not_show_it() {
+        let dir = tempfile::tempdir().unwrap();
+        image::RgbaImage::from_pixel(8, 8, image::Rgba([255, 0, 0, 255]))
+            .save(dir.path().join("red.png"))
+            .unwrap();
+        std::fs::write(
+            dir.path().join("shell.qml"),
+            r##"import QtQuick
+import Rustshell
+import Rustshell.Wayland
+PanelWindow {
+    width: 120; height: 60
+    color: "transparent"
+    property alias img: it
+    Rectangle {
+        width: 60; height: 60; color: "#202020"
+        Rectangle { x: 4; y: 4; width: 30; height: 30; radius: 6; color: "#c04040" }
+        Text { x: 4; y: 40; text: "Clock"; color: "#ffffff" }
+    }
+    Rectangle {
+        x: 60; width: 60; height: 60; color: "#303030"
+        Rectangle { x: 4; y: 4; width: 30; height: 30; radius: 6; color: "#40c040" }
+        Image { id: it; x: 40; y: 4; width: 8; height: 8; asynchronous: true; source: "red.png" }
+    }
+}"##,
+        )
+        .unwrap();
+        let (mut g, _) = crate::gpu::Gpu::headless("surfaceless").expect("surfaceless EGL (Mesa)");
+        let mut s = g.pbuffer(120, 60).expect("pbuffer");
+        let mut rt = qml::runtime::Runtime::new(Some(dir.path().to_path_buf()));
+        let wake = host_wakeups(&rt);
+        let win = rt.load_file(&dir.path().join("shell.qml")).unwrap();
+        rt.settle();
+        let Value::Item(img) = rt.get(win, "img") else {
+            panic!("img");
+        };
+        let mut fonts = Fonts::default();
+        layout_window(&mut rt, &mut fonts, win, [120.0, 60.0]);
+        rt.settle();
+        rt.world.borrow_mut().touched.clear();
+        forget_draws();
+        let mut shot = |rt: &mut qml::runtime::Runtime, fonts: &mut Fonts| {
+            take_dl_stats();
+            let mut fr = crate::gpu::Frame::new(120, 60);
+            paint_window(rt, fonts, win, &mut Target::Gpu(&mut fr));
+            s.reswap();
+            g.render(&mut s, &mut fr, || {});
+            let (replayed, recorded, ..) = take_dl_stats();
+            (g.read_surface(&s).px, replayed, recorded)
+        };
+        let (before, _, recorded) = shot(&mut rt, &mut fonts);
+        assert_eq!(
+            recorded, 1,
+            "the card without the picture; the other one waits for it"
+        );
+        let mut landed = false;
+        while !landed {
+            rt.world.borrow().waker.take();
+            let (hit, _) = take_finished_images(&mut rt.world.borrow_mut());
+            if !hit.is_empty() {
+                landed = true;
+                relayout_targets(&mut rt.world.borrow_mut(), &mut fonts, &hit, 0);
+                rt.settle();
+                let w = &mut rt.world.borrow_mut();
+                let touched = std::mem::take(&mut w.touched);
+                invalidate_layers(w, &touched);
+            } else {
+                wake.wait(None, None);
+            }
+        }
+        assert_eq!(rt.get(img, "status").to_number(), 1.0);
+        let (with_picture, replayed, recorded) = shot(&mut rt, &mut fonts);
+        assert_eq!(
+            (replayed, recorded),
+            (1, 1),
+            "the first card is replayed, the one with the picture is recorded now"
+        );
+        let red = |px: &[[u8; 4]]| px.iter().filter(|p| **p == [255, 0, 0, 255]).count();
+        assert_eq!(
+            (red(&before), red(&with_picture)),
+            (0, 64),
+            "the picture is drawn"
+        );
+        let (same, replayed, recorded) = shot(&mut rt, &mut fonts);
+        assert_eq!(
+            (replayed, recorded),
+            (2, 0),
+            "nothing changed: both are replayed"
+        );
+        assert!(same == with_picture);
+        // The file is decoded again (for another size, after a change of it): what a lookup
+        // of it answers may differ, so the draws made with the old answer go.
+        let src = rt.world.borrow().resolved_url(img, "red.png");
+        forget_draws_reading([src.as_str()].into_iter());
+        let (again, replayed, recorded) = shot(&mut rt, &mut fonts);
+        assert_eq!(
+            (replayed, recorded),
+            (1, 1),
+            "only the card that shows the picture is recorded again"
+        );
+        assert!(again == with_picture);
+        forget_draws();
     }
 
     fn write_and_invalidate(rt: &mut qml::runtime::Runtime, root: usize, k: &str, v: Value) {
