@@ -1297,8 +1297,8 @@ fn vkbd_types_with_the_real_keyboards_current_keymap() {
 }
 
 /// The port's keyboard reads `j/devices` once and again only after Hyprland's event socket
-/// reports a layout change, not for every batch of keys (nor for the lock state of keys that
-/// send no modifiers event).
+/// reports a layout change, not for every batch of keys; for the lock state it reads once
+/// more only with keys that send a modifiers event.
 #[test]
 fn vkbd_reads_devices_again_only_after_a_layout_event() {
     use std::io::Write;
@@ -1325,16 +1325,27 @@ fn vkbd_reads_devices_again_only_after_a_layout_event() {
     let mut ev = h
         .events()
         .expect("the keyboard follows Hyprland's event socket");
-    h.set("us,ru", 1, "Russian");
-    ev.write_all(b"activelayout>>usb-keyboard,Russian\n")
-        .unwrap();
     // `send_wait` waited for the port's connection only. The window has the three batches
     // (with the first one's keymap and modifiers, still on layout 0) once it has the third
-    // release; the modifiers events after it are those of the paste.
+    // release.
     let released = |k: &[(u32, bool)]| k.iter().filter(|&&k| k == (30, false)).count();
     window::wait_for(|| released(&keys.lock().unwrap()) == 3);
     keys.lock().unwrap().clear();
     window::GROUPS.lock().unwrap().clear();
+    h.set("us,ru", 1, "Russian");
+    ev.write_all(b"activelayout>>usb-keyboard,Russian\n")
+        .unwrap();
+    // The port's reading thread or its next batch takes the event, whichever is first, and
+    // the reads differ: a batch that takes it reads once for the layout and the lock state
+    // both, while keys after the port followed the event on its own read again for their
+    // lock state. No keys are on their way here, so the port follows on its own: the window
+    // gets the layout from it (nothing else sends this window one from here on).
+    window::wait_for(|| window::GROUPS.lock().unwrap().last() == Some(&1));
+    assert_eq!(h.reads(), 2, "one read of j/devices for the event");
+    // No event and no modifiers event: no read.
+    assert!(qml::ports::vkbd::send_wait(&[(30, true), (30, false)]));
+    assert_eq!(h.reads(), 2, "j/devices was read again with no event");
+    // Ctrl sends a modifiers event: one read for the batch, for the lock state.
     assert!(qml::ports::vkbd::send_wait(&[
         (29, true),
         (47, true),
@@ -1342,7 +1353,7 @@ fn vkbd_reads_devices_again_only_after_a_layout_event() {
         (29, false)
     ]));
     window::wait_for(|| keys.lock().unwrap().contains(&(29, false)));
-    assert_eq!(h.reads(), 2);
+    assert_eq!(h.reads(), 3, "one read of j/devices for the lock state");
     let groups = window::GROUPS.lock().unwrap().clone();
     assert!(
         !groups.is_empty() && groups.iter().all(|&g| g == 1),
