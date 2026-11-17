@@ -57,10 +57,8 @@ fn clocks_read_the_zone_of_the_database_under_tzdir() {
     // The next local second: the clock of seconds is the first one due.
     assert_eq!(rt.next_deadline(0.0), 1001.0);
     // A file's stamp is the local date and time.
-    let stamps = [0, 1].map(|later| {
-        let now = chrono::Utc::now().naive_utc() + chrono::TimeDelta::seconds(19020 + later);
-        now.format("%Y-%m-%d_%H.%M.%S").to_string()
-    });
+    let stamps =
+        [0, 1].map(|later| qml::ports::date_stamp_at(qml::civil::now_utc_secs() + 19020 + later));
     let stamp = qml::ports::date_stamp();
     assert!(stamps.contains(&stamp), "{stamp} is none of {stamps:?}");
 }
@@ -148,10 +146,8 @@ fn a_change_of_the_zone_shows_at_once_in_date_and_at_a_clocks_next_tick() {
     };
     // Qt 6.12 reads the zone anew for every Date.
     assert_eq!(date(&mut rt), "14:0:30");
-    let stamps = [0, 1].map(|later| {
-        let now = chrono::Utc::now().naive_utc() + chrono::TimeDelta::seconds(7200 + later);
-        now.format("%Y-%m-%d_%H.%M.%S").to_string()
-    });
+    let stamps =
+        [0, 1].map(|later| qml::ports::date_stamp_at(qml::civil::now_utc_secs() + 7200 + later));
     let stamp = qml::ports::date_stamp();
     assert!(stamps.contains(&stamp), "{stamp} is none of {stamps:?}");
     // Quickshell 0.3.2's SystemClock reads the time when its timer fires, and the timer is

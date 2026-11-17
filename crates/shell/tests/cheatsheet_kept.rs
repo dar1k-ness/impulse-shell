@@ -26,6 +26,7 @@ import ri.modules.rusty.cheatsheet
 Item {
     property int grabbed: GlobalFocusGrab.dismissable.length
     function dismiss() { GlobalFocusGrab.dismiss() }
+    function popup(on) { GlobalStates.reloadPopupShown = on }
     Cheatsheet {}
 }
 "#;
@@ -215,6 +216,29 @@ fn the_window_is_made_after_the_start_a_tile_a_frame() {
 
 /// An opening shows the window that is there: not one of its tiles is made again. Open, it is
 /// in the focus grab; closed, it is out of it and kept.
+#[test]
+fn the_window_is_not_made_while_the_reload_popup_shows() {
+    let mut s = Sheet::new("popup");
+    let popup = |s: &mut Sheet, on: bool| {
+        (s.rt.call_method(s.root, "popup", vec![Value::Bool(on)]))
+            .unwrap()
+            .unwrap();
+        s.rt.settle();
+    };
+    // The popup comes a second after the start and stays for four.
+    s.frames(60);
+    popup(&mut s, true);
+    s.frames(250);
+    assert_eq!(s.window(), None, "made under the popup");
+    // Gone, the window is made after the same while as after a start.
+    popup(&mut s, false);
+    s.frames(150);
+    assert_eq!(s.window(), None, "made as the popup left");
+    s.frames(50);
+    assert!(s.window().is_some(), "not made after the popup");
+    assert!(!s.shown());
+}
+
 #[test]
 fn an_opening_shows_the_window_that_is_there() {
     let mut s = Sheet::new("open");

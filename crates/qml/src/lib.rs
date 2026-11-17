@@ -19,6 +19,7 @@ pub mod bytelru;
 pub mod cava;
 pub mod child;
 pub mod childguard;
+pub mod civil;
 pub mod classname;
 pub mod color;
 pub mod colorscheme;

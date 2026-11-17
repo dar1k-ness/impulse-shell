@@ -31,7 +31,6 @@ icu_collator = "~2.3"
 icu_locale_core = "~2.3"
 icu_normalizer = "~2.3"
 icu_properties = "~2.3"
-chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 oxc_parser = { version = "0.157", optional = true }
 oxc_span = { version = "0.157", optional = true }
 pipewire = { version = "0.10.1", optional = true }

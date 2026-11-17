@@ -185,7 +185,8 @@ to be logged, and lengths of time and moments that are only kept, converted or d
 | File | Line has | What it is |
 | --- | --- | --- |
 | `crates/qml/src/builtins.rs` | `const MS_PER_DAY` | JavaScript `Date` arithmetic. |
-| `crates/qml/src/builtins.rs` | `const CHRONO_MS` | The range of times chrono can represent. |
+| `crates/qml/src/civil.rs` | `const SECS_PER_DAY` | Calendar arithmetic: the seconds of a day. |
+| `crates/qml/src/builtins.rs` | `const CIVIL_MS` | The range of times the dates of `crates/qml/src/civil.rs` hold. |
 | `crates/qml/src/builtins.rs` | `const CYCLE_MS` | The 400 years after which the Gregorian calendar repeats, in `Date` arithmetic. |
 | `crates/shell/src/ricli.rs` | `const DAY_MS` | Julian-day arithmetic. |
 | `crates/shell/src/gpu.rs` | `const LAYER_IDLE:` | Counted in frames drawn, not time. |

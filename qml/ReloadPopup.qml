@@ -3,11 +3,16 @@ import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Rustshell
 import Rustshell.Wayland
+import ri
 
 Scope {
 	id: root
 	property bool failed;
 	property string errorString;
+
+	// From the reload's signal until the popup is gone.
+	readonly property bool shown: popupLoader.loading || popupLoader.active
+	onShownChanged: GlobalStates.reloadPopupShown = shown
 
 	// Connect to the Quickshell global to listen for the reload signals.
 	Connections {
@@ -45,16 +50,22 @@ Scope {
 			WlrLayershell.namespace: "rustshell:reloadPopup"
 
 			// The popup fades in as it comes and out before it goes: 0 unseen, 1 shown.
-			// The fade and the countdown start once the window has drawn a few frames (as
-			// EditOverlay.qml's does): its first frame takes longer than a frame, and a fade
-			// started with the component would be most of the way before it is seen.
+			// The fade and the countdown start once twelve frames in a row have each come on
+			// time. A shell that has just started is still making things, and a frame it is late
+			// with would be a step in the fade; the window's own first frame takes longer than a
+			// frame too (as EditOverlay.qml's). After a second and a half they start anyway.
 			property real shown: 0
 			property int framesShown: 0
+			property bool started: false
 			FrameAnimation {
-				running: popup.framesShown < 12
+				running: !popup.started
 				onTriggered: {
-					popup.framesShown++
-					if (popup.framesShown === 12) {
+					// Late is well over what the frames have taken lately. The first ten are, the
+					// smoothed time starting from nothing.
+					const late = frameTime > smoothFrameTime * 1.6
+					popup.framesShown = late ? 0 : popup.framesShown + 1
+					if (popup.framesShown >= 12 || elapsedTime >= 1.5) {
+						popup.started = true
 						anim.start()
 						fadeIn.start()
 					}

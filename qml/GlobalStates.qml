@@ -10,6 +10,9 @@ pragma ComponentBehavior: Bound
 Singleton {
     id: root
     property bool barOpen: true
+    // The "Shell reloaded" popup is on the screen (ReloadPopup.qml): what the shell makes ahead
+    // of its use (the cheatsheet's window) waits for it to go, so the popup's frames do not.
+    property bool reloadPopupShown: false
     property bool crosshairOpen: false
     property bool sidebarLeftOpen: false
     property bool sidebarRightOpen: false

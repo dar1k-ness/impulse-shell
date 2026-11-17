@@ -8,7 +8,7 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock};
 
-use chrono::{Datelike, NaiveDate};
+use crate::civil::{self, Date};
 
 use crate::locale::Locale;
 use crate::locale_data::ZONES;
@@ -26,7 +26,7 @@ pub fn local_ahead(secs: i64) -> i32 {
 /// The system zone's standard time now, in seconds ahead of UTC (see
 /// [`Zone::standard_ahead_at`]); 0 without a zone to read.
 pub fn local_standard_ahead() -> i32 {
-    let now = chrono::Utc::now().timestamp();
+    let now = civil::now_utc_secs();
     let zone = Database::system().local();
     zone.map_or(0, |zone| zone.standard_ahead_at(now))
 }
@@ -209,17 +209,17 @@ impl Day {
     }
 
     /// calculatePosixDate: this day in `year`. A day after December 31 is in the next year.
-    fn in_year(self, year: i32) -> Option<NaiveDate> {
-        let january = NaiveDate::from_ymd_opt(year, 1, 1)?;
+    fn in_year(self, year: i32) -> Option<Date> {
+        let january = Date::from_ymd_opt(year, 1, 1)?;
         let leap = january.leap_year();
-        let days = |n: i64| chrono::Days::new(n as u64);
+        let days = |n: i64| n as u64;
         match self {
             Day::Nth {
                 month,
                 week,
                 weekday,
             } => {
-                let first = NaiveDate::from_ymd_opt(year, month, 1)?;
+                let first = Date::from_ymd_opt(year, month, 1)?;
                 let starts = first.weekday().number_from_monday();
                 // The last such weekday before the month, then `week` weeks on.
                 let back = i64::from((starts + 7 - weekday - 1) % 7 + 1);
@@ -251,14 +251,14 @@ impl Turn {
 
     /// The local date and time of this turn in `year`, in seconds as if it were UTC.
     fn wall(self, year: i32) -> Option<i64> {
-        let midnight = self.day.in_year(year)?.and_time(chrono::NaiveTime::MIN);
-        Some(midnight.and_utc().timestamp() + i64::from(self.secs))
+        let midnight = self.day.in_year(year)?.and_time(civil::Time::MIN);
+        Some(midnight.timestamp() + i64::from(self.secs))
     }
 }
 
 /// The year of a time in seconds since the epoch.
 fn year_of(secs: i64) -> Option<i32> {
-    Some(chrono::DateTime::from_timestamp(secs, 0)?.year())
+    Some(civil::DateTime::from_timestamp(secs, 0)?.year())
 }
 
 impl Rule {
@@ -325,12 +325,8 @@ impl Rule {
             let (starts, ends) = (saving.starts.wall(y)?, saving.ends.wall(y)?);
             let to_saving = (starts - i64::from(self.std), true);
             let to_std = (ends - i64::from(saving.ahead), false);
-            let january =
-                |y| Some(NaiveDate::from_ymd_opt(y, 1, 1)?.and_time(chrono::NaiveTime::MIN));
-            let (first, next) = (
-                january(y)?.and_utc().timestamp(),
-                january(y + 1)?.and_utc().timestamp(),
-            );
+            let january = |y| Some(Date::from_ymd_opt(y, 1, 1)?.and_time(civil::Time::MIN));
+            let (first, next) = (january(y)?.timestamp(), january(y + 1)?.timestamp());
             if y == year - 1 {
                 // One of the two that lasts the whole year is all there is.
                 if to_saving.0 < to_std.0 {
@@ -1001,8 +997,9 @@ mod tests {
 
     /// Seconds since the epoch of a UTC date and time.
     fn at(y: i32, m: u32, d: u32, h: u32, min: u32) -> i64 {
-        let date = NaiveDate::from_ymd_opt(y, m, d).unwrap();
-        date.and_hms_opt(h, min, 0).unwrap().and_utc().timestamp()
+        let date = Date::from_ymd_opt(y, m, d).unwrap();
+        date.and_time(civil::Time::from_hms_opt(h, min, 0).unwrap())
+            .timestamp()
     }
 
     fn posix(rule: &str) -> Option<Zone> {

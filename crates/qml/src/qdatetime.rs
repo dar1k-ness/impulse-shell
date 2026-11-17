@@ -2,7 +2,7 @@
 //! (qdatetime.cpp): the texts `Qt.formatDate` and friends take for a date, and the ones V4's
 //! `Date.parse` falls back to after the ECMAScript format.
 
-use chrono::{NaiveDate, NaiveTime};
+use crate::civil::{Date, Time};
 
 use crate::tz::{Database, Zone};
 
@@ -28,8 +28,8 @@ impl Spec {
 /// A valid QDateTime: a calendar date and clock time, read in `spec`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct QDateTime {
-    pub date: NaiveDate,
-    pub time: NaiveTime,
+    pub date: Date,
+    pub time: Time,
     pub spec: Spec,
 }
 
@@ -46,13 +46,13 @@ const MONTHS: [&str; 12] = [
 const DAYS: [&str; 7] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 /// QDate(year, month, day): a day of the proleptic Gregorian calendar, which has no year 0.
-fn qdate(year: i32, month: i32, day: i32) -> Option<NaiveDate> {
+fn qdate(year: i32, month: i32, day: i32) -> Option<Date> {
     let year = match year {
         0 => return None,
         y if y < 0 => y + 1,
         y => y,
     };
-    NaiveDate::from_ymd_opt(year, u32::try_from(month).ok()?, u32::try_from(day).ok()?)
+    Date::from_ymd_opt(year, u32::try_from(month).ok()?, u32::try_from(day).ok()?)
 }
 
 /// readInt: a whole number that is the whole text, without sign or spaces.
@@ -101,7 +101,7 @@ fn offset(text: &str) -> Option<i32> {
 
 /// fromIsoTimeString: `HH[:mm[:ss]]` with an optional fraction of the last field given, and
 /// whether it is ISO 8601's 24:00, the end of the day.
-fn iso_time(text: &str, format: DateFormat) -> Option<(NaiveTime, bool)> {
+fn iso_time(text: &str, format: DateFormat) -> Option<(Time, bool)> {
     if !text.is_ascii() {
         return None;
     }
@@ -176,19 +176,18 @@ fn iso_time(text: &str, format: DateFormat) -> Option<(NaiveTime, bool)> {
     if midnight24 {
         hour = 0;
     }
-    let time =
-        NaiveTime::from_hms_milli_opt(hour as u32, minute as u32, second as u32, msec as u32)?;
+    let time = Time::from_hms_milli_opt(hour as u32, minute as u32, second as u32, msec as u32)?;
     Some((time, midnight24))
 }
 
 /// QTime::fromString(text, Qt::ISODate).
-pub fn time_from_iso(text: &str) -> Option<NaiveTime> {
+pub fn time_from_iso(text: &str) -> Option<Time> {
     iso_time(text, DateFormat::Iso).map(|(t, _)| t)
 }
 
 /// QDate::fromString(text, Qt::ISODate): `YYYY-MM-DD` with any punctuation between the fields
 /// and no digit after them.
-pub fn date_from_iso(text: &str) -> Option<NaiveDate> {
+pub fn date_from_iso(text: &str) -> Option<Date> {
     let c: Vec<char> = text.chars().take(11).collect();
     let punct = |i: usize| {
         c[i].is_ascii_punctuation()
@@ -205,7 +204,7 @@ pub fn date_from_iso(text: &str) -> Option<NaiveDate> {
 /// The parts of an RFC 2822 (or 850) date-time, rfcDateImpl: `[ddd,] dd MMM yyyy [hh:mm[:ss]]
 /// [±hhmm]` or `ddd MMM dd [hh:mm:ss] yyyy [±hhmm]`. A text of another shape is None; one of
 /// the right shape has the date and time it names, where valid, and its offset.
-fn rfc_parts(s: &str) -> Option<(Option<NaiveDate>, Option<NaiveTime>, i32)> {
+fn rfc_parts(s: &str) -> Option<(Option<Date>, Option<Time>, i32)> {
     let mut words = words(s, 6).filter(|w| w.len() >= 3)?;
     let short_name = |name: &str| {
         let c: Vec<char> = name.chars().collect();
@@ -247,7 +246,6 @@ fn rfc_parts(s: &str) -> Option<(Option<NaiveDate>, Option<NaiveTime>, i32)> {
         let Some(month) = short_month(words[month_index]) else {
             break 'date None;
         };
-        use chrono::Datelike;
         qdate(year, month, day)
             .filter(|d| day_of_week.is_none_or(|w| d.weekday().num_days_from_monday() == w))
     };
@@ -275,7 +273,7 @@ fn rfc_parts(s: &str) -> Option<(Option<NaiveDate>, Option<NaiveTime>, i32)> {
             _ => 0,
         };
         time = (|| {
-            NaiveTime::from_hms_opt(
+            Time::from_hms_opt(
                 u32::try_from(hour).ok()?,
                 u32::try_from(minute).ok()?,
                 u32::try_from(second).ok()?,
@@ -323,7 +321,7 @@ impl QDateTime {
         let date = date_from_iso(&text[..split])?;
         let rest = &text[split..];
         if rest.is_empty() {
-            let time = NaiveTime::MIN;
+            let time = Time::MIN;
             return Some(QDateTime {
                 date,
                 time,
@@ -617,9 +615,8 @@ fn zone_named(text: &[char]) -> Option<Named> {
 /// QGregorianCalendar::matchCenturyToWeekday: the date with that year in its century, month
 /// and day that falls on `weekday` (1 is Monday), in one of the four centuries around it.
 /// February 29 of a year ending in 00 is in the nearest year that has one.
-fn century_on_weekday(year: i32, month: i32, day: i32, weekday: i32) -> Option<NaiveDate> {
-    use chrono::Datelike;
-    let on = |d: &NaiveDate| d.weekday().number_from_monday() as i32;
+fn century_on_weekday(year: i32, month: i32, day: i32, weekday: i32) -> Option<Date> {
+    let on = |d: &Date| d.weekday().number_from_monday() as i32;
     let astronomical = if year < 0 { year + 1 } else { year };
     let found = |year: i32| {
         qdate(if year > 0 { year } else { year - 1 }, month, day).filter(|d| on(d) == weekday)
@@ -653,7 +650,6 @@ impl QDateTime {
     /// ends with it) and is the result's, as what it is ahead of UTC at that date and
     /// time; without one it is local time.
     pub fn from_format(text: &str, format: &str) -> Option<QDateTime> {
-        use chrono::Datelike;
         let (fields, seps) = fields(format);
         let text: Vec<char> = text.chars().collect();
         let twelve = fields.contains(&Field::AmPm);
@@ -721,13 +717,13 @@ impl QDateTime {
         if weekday.is_some_and(|w| w != date.weekday().number_from_monday() as i32) {
             return None;
         }
-        let time = NaiveTime::from_hms_opt(hour + 12 * pm, minute, second)?;
+        let time = Time::from_hms_opt(hour + 12 * pm, minute, second)?;
         let spec = match zone {
             Named::Local => Spec::Local,
             Named::Ahead(ahead) => Spec::ahead(ahead),
             // QDateTime(date, time, zone): what the zone is ahead of UTC at that instant.
             Named::Zone(zone) => {
-                let wall = date.and_time(time).and_utc().timestamp();
+                let wall = date.and_time(time).timestamp();
                 Spec::ahead((wall - zone.instant_of(wall)) as i32)
             }
         };
@@ -745,8 +741,8 @@ mod tests {
         spec: Spec,
     ) -> QDateTime {
         QDateTime {
-            date: NaiveDate::from_ymd_opt(y, mo, d).unwrap(),
-            time: NaiveTime::from_hms_milli_opt(h, mi, s, ms).unwrap(),
+            date: Date::from_ymd_opt(y, mo, d).unwrap(),
+            time: Time::from_hms_milli_opt(h, mi, s, ms).unwrap(),
             spec,
         }
     }
@@ -788,10 +784,10 @@ mod tests {
         ] {
             assert_eq!(iso(bad), None, "{bad}");
         }
-        assert_eq!(time_from_iso("10:20"), NaiveTime::from_hms_opt(10, 20, 0));
+        assert_eq!(time_from_iso("10:20"), Time::from_hms_opt(10, 20, 0));
         assert_eq!(
             time_from_iso("10:20:30.5"),
-            NaiveTime::from_hms_milli_opt(10, 20, 30, 500)
+            Time::from_hms_milli_opt(10, 20, 30, 500)
         );
         assert_eq!(time_from_iso("1:20"), None);
     }

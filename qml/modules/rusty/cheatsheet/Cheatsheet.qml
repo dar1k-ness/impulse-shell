@@ -1,3 +1,4 @@
+import ri
 import ri.services
 import ri.modules.common
 import ri.modules.common.widgets
@@ -34,9 +35,11 @@ Scope { // Scope
         if (open)
             made = true;
     }
+    // After a reload the "Shell reloaded" popup is animating at that moment: the making waits
+    // until it has gone, then the same while again, so that none of the popup's frames is late.
     Timer {
         interval: 3000
-        running: true
+        running: !root.made && !GlobalStates.reloadPopupShown
         onTriggered: root.made = true
     }
 

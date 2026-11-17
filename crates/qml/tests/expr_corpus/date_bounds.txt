@@ -107,7 +107,7 @@ return Qt.formatTime(new Date(-8.64e15 - 1), "hh:mm:ss")
 return new Date(8.64e15).getTime() - new Date(-8.64e15).getTime()
 return new Date(8.64e15 + 0.5).getTime()
 return new Date(-8.64e15 - 0.5).getTime()
-# Years between the last one chrono's dates hold (±262143) and the ends.
+# Years between the last one the dates of civil.rs hold (±262143) and the ends.
 return new Date(Date.UTC(262143, 11, 31, 23, 59, 59)).toLocaleString()
 return new Date(Date.UTC(262144, 0, 1)).toLocaleString()
 return new Date(Date.UTC(-262144, 0, 1)).toLocaleString()

@@ -1,4 +1,5 @@
 //! Builtin library for the evaluator: ECMAScript subset used by the original + the QML `Qt` object.
+use crate::civil;
 use crate::color::{Color, Spec};
 use crate::eval::{
     BoundFn, Callable, Hint, Interp, ItemIntegrity, NativeFn, PropKey, ProxyFn, R, define_accessor,
@@ -9313,22 +9314,22 @@ pub fn date_copy(v: &Value) -> Option<Value> {
 }
 
 const MS_PER_DAY: f64 = 86_400_000.0;
-/// Time values whose local clock readings chrono's types hold: its years end at ±262143,
+/// Time values whose local clock readings [`civil`]'s types hold: its years end at ±262143,
 /// and ECMA-262's time values (±8.64e15 ms) reach the years -271821 and 275760.
-const CHRONO_MS: f64 = 8.2e15;
+const CIVIL_MS: f64 = 8.2e15;
 /// The proleptic Gregorian calendar repeats every 400 years: 146097 days, a whole number of
 /// weeks, so the dates, the days of the week and the days a zone's daylight-saving rule
 /// names are the same 400 years on.
 const CYCLE_MS: f64 = 146_097.0 * MS_PER_DAY;
 
 /// The whole 400-year cycles, in ms, between time value or local clock reading `t` and the
-/// same day and time of a year chrono holds: `t - cycles_past_chrono(t)` is within
-/// [`CHRONO_MS`]. 0 for a `t` chrono holds.
-fn cycles_past_chrono(t: f64) -> f64 {
-    if t.abs() <= CHRONO_MS {
+/// same day and time of a year [`civil`] holds: `t - cycles_past_civil(t)` is within
+/// [`CIVIL_MS`]. 0 for a `t` it holds.
+fn cycles_past_civil(t: f64) -> f64 {
+    if t.abs() <= CIVIL_MS {
         return 0.0;
     }
-    ((t.abs() - CHRONO_MS) / CYCLE_MS).ceil() * CYCLE_MS * t.signum()
+    ((t.abs() - CIVIL_MS) / CYCLE_MS).ceil() * CYCLE_MS * t.signum()
 }
 
 /// ECMA-262 TimeClip.
@@ -9423,12 +9424,12 @@ fn week_day(t: f64) -> f64 {
     ((t / MS_PER_DAY).floor() + 4.0).rem_euclid(7.0)
 }
 
-/// The local zone's offset from UTC in ms at UTC time value `t`. A year chrono does not
+/// The local zone's offset from UTC in ms at UTC time value `t`. A year [`civil`] does not
 /// hold has the offset of the same day and time 400-year cycles nearer: the zone's rule
 /// for the years after (or before) its recorded changes is the same there.
 fn local_offset(t: f64) -> f64 {
-    let near = t - cycles_past_chrono(t);
-    match chrono::DateTime::from_timestamp_millis(near as i64) {
+    let near = t - cycles_past_civil(t);
+    match civil::DateTime::from_timestamp_millis(near as i64) {
         Some(d) => f64::from(crate::tz::local_ahead(d.timestamp())) * 1000.0,
         None => 0.0,
     }
@@ -9436,8 +9437,8 @@ fn local_offset(t: f64) -> f64 {
 
 /// The first instant, in seconds since the epoch, at which local clocks read `wall`; none
 /// when they skip it.
-fn local_instant(wall: &chrono::NaiveDateTime) -> Option<i64> {
-    let read = wall.and_utc().timestamp();
+fn local_instant(wall: &civil::DateTime) -> Option<i64> {
+    let read = wall.timestamp();
     // Without a zone to read, local time is UTC.
     let Some(zone) = crate::tz::Database::system().local() else {
         return Some(read);
@@ -9454,12 +9455,12 @@ fn local_time(t: f64) -> f64 {
 /// The instant QDateTime makes of the local clock reading `t` (see
 /// [`crate::tz::Zone::instant_of`]): a reading the clocks show twice is the first of the
 /// two, one they skip is read with the offset from before the skip. A reading in a year
-/// chrono does not hold is looked up 400-year cycles nearer (see [`local_offset`]).
+/// [`civil`] does not hold is looked up 400-year cycles nearer (see [`local_offset`]).
 fn qdatetime_instant(t: f64) -> f64 {
     if !t.is_finite() {
         return f64::NAN;
     }
-    let near = t - cycles_past_chrono(t);
+    let near = t - cycles_past_civil(t);
     let read = (near / 1000.0).floor();
     match crate::tz::Database::system().local() {
         Some(zone) => t + (zone.instant_of(read as i64) as f64 - read) * 1000.0,
@@ -9549,13 +9550,12 @@ pub fn new_date(it: &mut Interp, ms: f64) -> Value {
 /// instant by V4's UTC(t); one QDateTime read is the instant QDateTime makes of it, which
 /// differ when the clocks skip the reading or show it twice.
 pub(crate) fn parse_date_local(s: &str) -> f64 {
-    let by_v4 = |d: chrono::NaiveDateTime| {
-        let t = utc_time(d.and_utc().timestamp_millis() as f64);
+    let by_v4 = |d: civil::DateTime| {
+        let t = utc_time(d.timestamp_millis() as f64);
         t.is_finite().then_some(t as i64)
     };
-    let by_qdatetime = |d: chrono::NaiveDateTime| {
-        Some(qdatetime_instant(d.and_utc().timestamp_millis() as f64) as i64)
-    };
+    let by_qdatetime =
+        |d: civil::DateTime| Some(qdatetime_instant(d.timestamp_millis() as f64) as i64);
     parse_date_with(s, by_v4, by_qdatetime)
 }
 
@@ -9717,12 +9717,12 @@ const DATE_FORMATS: [&str; 42] = [
 /// QDateTime read it.
 pub(crate) fn parse_date_with(
     s: &str,
-    local_v4: impl Fn(chrono::NaiveDateTime) -> Option<i64>,
-    local: impl Fn(chrono::NaiveDateTime) -> Option<i64>,
+    local_v4: impl Fn(civil::DateTime) -> Option<i64>,
+    local: impl Fn(civil::DateTime) -> Option<i64>,
 ) -> f64 {
     let local_ms = |clock: f64| {
-        let clock = chrono::DateTime::from_timestamp_millis(time_clip(clock) as i64)?;
-        local_v4(clock.naive_utc()).map(|ms| ms as f64)
+        let clock = civil::DateTime::from_timestamp_millis(time_clip(clock) as i64)?;
+        local_v4(clock).map(|ms| ms as f64)
     };
     if let Some((t, is_local)) = ecma_date_text(s) {
         return match is_local {
@@ -9739,7 +9739,7 @@ pub(crate) fn parse_date_with(
                 Some(match format.contains("h:mm") {
                     true => q,
                     false => QDateTime {
-                        time: chrono::NaiveTime::MIN,
+                        time: civil::Time::MIN,
                         spec: TimeSpec::Utc,
                         ..q
                     },
@@ -9750,7 +9750,7 @@ pub(crate) fn parse_date_with(
         return f64::NAN;
     };
     let clock = q.date.and_time(q.time);
-    let utc = clock.and_utc().timestamp_millis();
+    let utc = clock.timestamp_millis();
     let ms = match q.spec {
         TimeSpec::Local => local(clock),
         TimeSpec::Utc => Some(utc),
@@ -10519,7 +10519,7 @@ pub fn qt_format_in(ms: f64, fmt: &str, loc: Locale) -> String {
 }
 
 /// A QDate: a day of the proleptic Gregorian calendar in any year a time value reaches
-/// (chrono's dates end at the years ±262143).
+/// ([`civil`]'s dates end at the years ±262143).
 #[derive(Clone, Copy)]
 struct Day {
     /// Counted as ECMA-262 counts: the year before year 1 is 0.
@@ -10553,9 +10553,8 @@ impl Day {
     }
 }
 
-impl From<chrono::NaiveDate> for Day {
-    fn from(d: chrono::NaiveDate) -> Day {
-        use chrono::Datelike;
+impl From<civil::Date> for Day {
+    fn from(d: civil::Date) -> Day {
         Day {
             year: i64::from(d.year()),
             month: d.month(),
@@ -10566,9 +10565,9 @@ impl From<chrono::NaiveDate> for Day {
 }
 
 /// The QTime of `t`, a time value or a local clock reading.
-fn time_of_ms(t: f64) -> chrono::NaiveTime {
+fn time_of_ms(t: f64) -> civil::Time {
     let ms = t.rem_euclid(MS_PER_DAY) as u32;
-    chrono::NaiveTime::from_num_seconds_from_midnight_opt(ms / 1000, ms % 1000 * 1_000_000)
+    civil::Time::from_num_seconds_from_midnight_opt(ms / 1000, ms % 1000 * 1_000_000)
         .expect("a time within one day")
 }
 
@@ -10577,7 +10576,7 @@ fn time_of_ms(t: f64) -> chrono::NaiveTime {
 #[derive(Clone, Copy)]
 struct When {
     day: Day,
-    time: chrono::NaiveTime,
+    time: civil::Time,
     spec: TimeSpec,
     secs: i64,
     ahead: i32,
@@ -10604,10 +10603,10 @@ impl When {
         let (secs, ahead) = match q.spec {
             TimeSpec::Local => {
                 let secs = local_instant(&wall)?;
-                (secs, (wall.and_utc().timestamp() - secs) as i32)
+                (secs, (wall.timestamp() - secs) as i32)
             }
-            TimeSpec::Utc => (wall.and_utc().timestamp(), 0),
-            TimeSpec::Offset(ahead) => (wall.and_utc().timestamp() - i64::from(ahead), ahead),
+            TimeSpec::Utc => (wall.timestamp(), 0),
+            TimeSpec::Offset(ahead) => (wall.timestamp() - i64::from(ahead), ahead),
         };
         Some(When {
             day: q.date.into(),
@@ -10643,7 +10642,7 @@ impl When {
 enum Stamp {
     DateTime(When),
     Date(Day),
-    Time(chrono::NaiveTime),
+    Time(civil::Time),
 }
 
 /// QTimeZone::systemTimeZone(), whose names and offsets local time is printed with.
@@ -10797,7 +10796,6 @@ fn icu_default_id() -> String {
 /// (QCalendarBackend::dateTimeToString): a QDate leaves the time fields as written, a QTime
 /// the date fields, and a QTime's `t` is the local zone now.
 fn qt_format_stamp(stamp: &Stamp, fmt: &str, loc: Locale, system: bool) -> String {
-    use chrono::Timelike;
     let (date, time) = match stamp {
         Stamp::DateTime(w) => (Some(w.day), Some(w.time)),
         Stamp::Date(d) => (Some(*d), None),
@@ -11802,7 +11800,7 @@ mod date_tests {
         );
     }
 
-    /// Audit B3-1, B3-2: time values past chrono's years are dates, printed as Qt 6.12 prints
+    /// Audit B3-1, B3-2: time values past the years of `civil` are dates, printed as Qt 6.12 prints
     /// them (QDateTime::toString: the year after the time, the day without a leading zero, no
     /// sign on a year past 9999, nothing for a date that is not one). The zone-dependent
     /// values are in tests/audit_b3_env.rs.

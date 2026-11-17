@@ -8603,6 +8603,11 @@ impl World {
                         }
                         v => v,
                     };
+                    // The animation writes through the item's setter, and a size that was
+                    // set is no longer the implicit one (QQuickItem::setWidth, `widthValid`).
+                    if *explicit && matches!(n.as_str(), "width" | "height") {
+                        self.assign((*i, Sym::new(n)));
+                    }
                     self.step_write(*i, n, v);
                 }
                 *done = p >= 1.0;

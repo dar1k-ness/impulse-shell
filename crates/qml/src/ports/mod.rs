@@ -107,10 +107,22 @@ pub fn capture_output(name: &str, cursor: bool) -> Result<(u32, u32, Vec<u8>), S
 
 /// `printf`-free `date '+%Y-%m-%d_%H.%M.%S'`.
 pub fn date_stamp() -> String {
-    let now = chrono::Utc::now();
-    let ahead = chrono::TimeDelta::seconds(crate::tz::local_ahead(now.timestamp()).into());
-    let local = now.naive_utc() + ahead;
-    local.format("%Y-%m-%d_%H.%M.%S").to_string()
+    let now = crate::civil::now_utc_secs();
+    date_stamp_at(now + i64::from(crate::tz::local_ahead(now)))
+}
+
+/// [`date_stamp`] of the local date and time `local`, in seconds as if it were UTC.
+pub fn date_stamp_at(local: i64) -> String {
+    let at = crate::civil::DateTime::from_timestamp(local, 0).expect("a time in the years held");
+    let (d, t) = (at.date, at.time);
+    // `%Y` is four digits, and signed past them.
+    let year = match d.year() {
+        y @ 0..=9999 => format!("{y:04}"),
+        y => format!("{y:+05}"),
+    };
+    let (month, day) = (d.month(), d.day());
+    let (hour, minute, second) = (t.hour(), t.minute(), t.second());
+    format!("{year}-{month:02}-{day:02}_{hour:02}.{minute:02}.{second:02}")
 }
 
 /// `notify-send <summary> <body> -a <app>` over D-Bus from this process, as libnotify's
@@ -166,6 +178,29 @@ pub struct Watch(Arc<crate::svc::Target>);
 impl Drop for Watch {
     fn drop(&mut self) {
         self.0.disarm();
+    }
+}
+
+#[cfg(test)]
+mod stamp_tests {
+    use super::date_stamp_at;
+
+    /// `date '+%Y-%m-%d_%H.%M.%S'`: two digits each, the year four and signed past them.
+    #[test]
+    fn a_stamp_is_the_date_and_the_time_in_digits() {
+        for (at, stamp) in [
+            (0, "1970-01-01_00.00.00"),
+            (-1, "1969-12-31_23.59.59"),
+            (1_794_924_123, "2026-11-17_14.02.03"),
+            (951_782_400 + 86_399, "2000-02-29_23.59.59"),
+            (-30_636_291_111, "0999-03-05_07.08.09"),
+            (-62_167_219_200, "0000-01-01_00.00.00"),
+            (-62_167_219_201, "-0001-12-31_23.59.59"),
+            (253_402_300_799, "9999-12-31_23.59.59"),
+            (253_402_300_800, "+10000-01-01_00.00.00"),
+        ] {
+            assert_eq!(date_stamp_at(at), stamp, "{at}");
+        }
     }
 }
 
