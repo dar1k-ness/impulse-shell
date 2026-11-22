@@ -3,7 +3,8 @@ hl.on("hyprland.start", function ()
 
     -- Bar, wallpaper
     hl.exec_cmd("$HOME/.config/hypr/hyprland/scripts/start_geoclue_agent.sh")
-    hl.exec_cmd("caelestia shell")
+    -- impulse-shell replaces the previous bar/shell; its autostart is added by install.sh
+    -- hl.exec_cmd("caelestia shell")  -- disabled by impulse-shell install
     hl.exec_cmd("$HOME/.config/hypr/custom/scripts/__restore_video_wallpaper.sh")
 
     -- Core components (authentication, lock screen, notification daemon)
