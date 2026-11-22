@@ -217,9 +217,7 @@ stop() {
 
 start_script() {
     local s=$HOME/.local/bin/$name-start
-    grep -rqsE "(^|[^[:alnum:]_.-])$name-start([^[:alnum:]_.-]|\$)" "$config/hypr" || return 0
-    [ ! -x "$s" ] || return 0
-    step "putting the start script the Hyprland files name: $s"
+    step "writing the start script $s (cd ~, logs to \${XDG_RUNTIME_DIR:-/tmp}/$name.log)"
     mkdir -p -- "${s%/*}" && cat >"$s.new" <<EOF && chmod 755 "$s.new" && mv -f -- "$s.new" "$s" || die "cannot write $s"
 #!/bin/bash
 cd ~
@@ -227,18 +225,13 @@ exec "\$HOME/.local/bin/$name" -c $name >"\${XDG_RUNTIME_DIR:-/tmp}/$name.log" 2
 EOF
 }
 
-# other shells that end-4's / caelestia dots (or an earlier impulse build) put in
-# autostart. Left in place, any of them starts at the next login instead of this
-# shell. is_other_shell matches a full autostart command (the text launched), not
-# a bare substring, so paths that merely contain the word are left alone.
-is_other_shell() {
-    local c=$1
-    case $c in
-    qs | qs\ * | quickshell | quickshell\ *) return 0 ;;
-    caelestia\ shell | caelestia\ shell\ *) return 0 ;;
-    "$prev" | "$prev "* | "$prev-shell" | "$prev-shell "*) return 0 ;;
-    esac
-    return 1
+# The command Hyprland should run to start the shell. The start script ($name-start)
+# does `cd ~` and logs to $XDG_RUNTIME_DIR/$name.log, so autostart matches exactly
+# what switch() runs in the session (which is known to work) and leaves a log to look
+# at if a login start fails. Falls back to the bare binary if the script is missing.
+autostart_cmd() {
+    local s=$HOME/.local/bin/$name-start
+    if [ -x "$s" ]; then printf '%s' "$s"; else printf '%s' "$bin -c $name"; fi
 }
 
 is_our_shell() {
@@ -247,8 +240,27 @@ is_our_shell() {
         [ "$cmd0" = "$name-start" ] || [ "${cmd0##*/}" = "$name-start" ]
 }
 
-disable_other_shell_in_file() {
-    local f=$1 line stripped inner indent out=() changed=
+# Does an autostart command launch another shell? Matched on the first token's
+# basename (so a path like /usr/bin/qs counts too), not a bare substring.
+# carry-over.sh only rewrites the quickshell/ii names, so caelestia and others reach
+# here. caelestia is only its `shell` subcommand, never its other commands.
+is_other_shell() {
+    local -a t
+    read -ra t <<<"$1"
+    [ ${#t[@]} -gt 0 ] || return 1
+    case ${t[0]##*/} in
+    qs | quickshell | "$prev" | "$prev-shell") return 0 ;;
+    caelestia) [ "${t[1]-}" = shell ] && return 0 ;;
+    esac
+    return 1
+}
+
+# Point an existing autostart line at impulse-shell instead of the other shell. Reusing
+# the slot that already started a shell at login is more reliable than appending a new
+# line in a guessed location, and it removes the old shell in one step.
+point_other_shell_in_file() {
+    local f=$1 line stripped inner indent kw cmd out=() changed=
+    cmd=$(autostart_cmd)
     while IFS= read -r line || [ -n "$line" ]; do
         stripped=${line#"${line%%[![:space:]]*}"}
         inner=
@@ -262,10 +274,13 @@ disable_other_shell_in_file() {
         if [ -n "$inner" ] && [[ $stripped != --* ]] && [[ $stripped != \#* ]] &&
             ! is_our_shell "$inner" && is_other_shell "$inner"; then
             indent=${line%%[![:space:]]*}
-            case $f in
-            *.lua) out+=("$indent-- $stripped  -- disabled by $name install") ;;
-            *) out+=("$indent# $stripped  # disabled by $name install") ;;
-            esac
+            if [[ $stripped == hl.exec_cmd* ]]; then
+                out+=("${indent}hl.exec_cmd(\"$cmd\") -- $name autostart (was: $inner)")
+            else
+                kw=${stripped%%=*}
+                kw=${kw%"${kw##*[![:space:]]}"}
+                out+=("${indent}${kw} = $cmd # $name autostart (was: $inner)")
+            fi
             changed=1
         else
             out+=("$line")
@@ -273,22 +288,22 @@ disable_other_shell_in_file() {
     done <"$f"
     [ -z "$changed" ] || {
         printf '%s\n' "${out[@]}" >"$f.new" && mv -f -- "$f.new" "$f" &&
-            step "disabled another shell's autostart in ${f#"$config/hypr/"}"
+            step "pointed another shell's autostart at $name in ${f#"$config/hypr/"}"
     }
 }
 
-disable_other_shells() {
+point_other_shells() {
     [ -d "$config/hypr" ] || return 0
     local f
     while IFS= read -r -d '' f; do
-        disable_other_shell_in_file "$f"
+        point_other_shell_in_file "$f"
     done < <(find "$config/hypr" -type f \( -name '*.lua' -o -name '*.conf' \) -print0)
 }
 
 ensure_autostart() {
     mkdir -p -- "$config/hypr"
 
-    disable_other_shells
+    point_other_shells
 
     local rf
     for rf in "$config/hypr/hyprland/rules.lua" "$config/hypr/custom/rules.lua" "$config/hypr/hyprland/rules.conf" "$config/hypr/custom/rules.conf"; do
@@ -315,7 +330,7 @@ ensure_autostart() {
         else
             target="$config/hypr/hyprland.lua"
         fi
-        line="hl.exec_cmd(\"$bin -c $name\") -- $name autostart"
+        line="hl.exec_cmd(\"$(autostart_cmd)\") -- $name autostart"
 
         step "adding $name to Lua autostart in $target"
         touch -- "$target"
@@ -332,7 +347,7 @@ ensure_autostart() {
         else
             target="$config/hypr/hyprland.conf"
         fi
-        line="exec-once = $bin -c $name # $name autostart"
+        line="exec-once = $(autostart_cmd) # $name autostart"
         step "adding $name to autostart in $target"
         touch -- "$target"
         grep -qxF -- "$line" "$target" || printf '\n%s\n' "$line" >>"$target"
