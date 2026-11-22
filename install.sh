@@ -300,6 +300,38 @@ point_other_shells() {
     done < <(find "$config/hypr" -type f \( -name '*.lua' -o -name '*.conf' \) -print0)
 }
 
+# Prints the file that genuinely autostarts our shell: an exec / exec-once / hl.exec_cmd
+# whose command launches impulse-shell or its start script. Lines that only mention the
+# binary -- the IPC-call variable and the Ctrl+Super+R restart bind in keybinds.lua -- are
+# not autostart and are ignored, so they no longer make the installer think it is done
+# (which left the real autostart entry unadded, so nothing started at login). Empty if none.
+find_our_autostart() {
+    [ -d "$config/hypr" ] || return 0
+    local f line stripped inner
+    while IFS= read -r -d '' f; do
+        while IFS= read -r line || [ -n "$line" ]; do
+            stripped=${line#"${line%%[![:space:]]*}"}
+            [[ $stripped != --* ]] && [[ $stripped != \#* ]] || continue
+            inner=
+            if [[ $stripped == hl.exec_cmd\(\"* ]]; then
+                inner=${stripped#hl.exec_cmd(\"}
+                inner=${inner%%\"*}
+            elif [[ $stripped == exec-once*=* ]] || [[ $stripped == exec*=* ]]; then
+                inner=${stripped#*=}
+                inner=${inner#"${inner%%[![:space:]]*}"}
+            else
+                continue
+            fi
+            [ -n "$inner" ] || continue
+            [[ " $inner " == *" ipc "* ]] && continue
+            if is_our_shell "$inner"; then
+                printf '%s' "$f"
+                return 0
+            fi
+        done <"$f"
+    done < <(find "$config/hypr" -type f \( -name '*.lua' -o -name '*.conf' \) -print0)
+}
+
 ensure_autostart() {
     mkdir -p -- "$config/hypr"
 
@@ -313,7 +345,7 @@ ensure_autostart() {
     done
 
     local existing
-    existing=$(grep -rlsE "(^|[^[:alnum:]_-])($name +-c |$name-start([^[:alnum:]_.-]|\$))" "$config/hypr" | head -n 1 || true)
+    existing=$(find_our_autostart)
     if [ -n "$existing" ]; then
         AUTOSTART_FILE="$existing"
         return 0
