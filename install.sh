@@ -227,8 +227,68 @@ exec "\$HOME/.local/bin/$name" -c $name >"\${XDG_RUNTIME_DIR:-/tmp}/$name.log" 2
 EOF
 }
 
+# other shells that end-4's / caelestia dots (or an earlier impulse build) put in
+# autostart. Left in place, any of them starts at the next login instead of this
+# shell. is_other_shell matches a full autostart command (the text launched), not
+# a bare substring, so paths that merely contain the word are left alone.
+is_other_shell() {
+    local c=$1
+    case $c in
+    qs | qs\ * | quickshell | quickshell\ *) return 0 ;;
+    caelestia\ shell | caelestia\ shell\ *) return 0 ;;
+    "$prev" | "$prev "* | "$prev-shell" | "$prev-shell "*) return 0 ;;
+    esac
+    return 1
+}
+
+is_our_shell() {
+    local cmd0=${1%% *}
+    [ "$cmd0" = "$name" ] || [ "${cmd0##*/}" = "$name" ] || [ "$cmd0" = "$bin" ] ||
+        [ "$cmd0" = "$name-start" ] || [ "${cmd0##*/}" = "$name-start" ]
+}
+
+disable_other_shell_in_file() {
+    local f=$1 line stripped inner indent out=() changed=
+    while IFS= read -r line || [ -n "$line" ]; do
+        stripped=${line#"${line%%[![:space:]]*}"}
+        inner=
+        if [[ $stripped == hl.exec_cmd\(\"* ]]; then
+            inner=${stripped#hl.exec_cmd(\"}
+            inner=${inner%%\"*}
+        elif [[ $stripped == exec-once*=* ]] || [[ $stripped == exec*=* ]]; then
+            inner=${stripped#*=}
+            inner=${inner#"${inner%%[![:space:]]*}"}
+        fi
+        if [ -n "$inner" ] && [[ $stripped != --* ]] && [[ $stripped != \#* ]] &&
+            ! is_our_shell "$inner" && is_other_shell "$inner"; then
+            indent=${line%%[![:space:]]*}
+            case $f in
+            *.lua) out+=("$indent-- $stripped  -- disabled by $name install") ;;
+            *) out+=("$indent# $stripped  # disabled by $name install") ;;
+            esac
+            changed=1
+        else
+            out+=("$line")
+        fi
+    done <"$f"
+    [ -z "$changed" ] || {
+        printf '%s\n' "${out[@]}" >"$f.new" && mv -f -- "$f.new" "$f" &&
+            step "disabled another shell's autostart in ${f#"$config/hypr/"}"
+    }
+}
+
+disable_other_shells() {
+    [ -d "$config/hypr" ] || return 0
+    local f
+    while IFS= read -r -d '' f; do
+        disable_other_shell_in_file "$f"
+    done < <(find "$config/hypr" -type f \( -name '*.lua' -o -name '*.conf' \) -print0)
+}
+
 ensure_autostart() {
     mkdir -p -- "$config/hypr"
+
+    disable_other_shells
 
     local rf
     for rf in "$config/hypr/hyprland/rules.lua" "$config/hypr/custom/rules.lua" "$config/hypr/hyprland/rules.conf" "$config/hypr/custom/rules.conf"; do
@@ -339,8 +399,8 @@ switch() {
     wait_unlocked
     watch_off
 
-    step "stopping running shell ($name, $prev, qs)"
-    stop "$name" "$prev" "$prev-shell" qs
+    step "stopping running shell ($name, $prev, qs, quickshell, caelestia)"
+    stop "$name" "$prev" "$prev-shell" qs quickshell caelestia
 
     local cmd="$bin -c $name"
     [ -x "$HOME/.local/bin/$name-start" ] && cmd="$HOME/.local/bin/$name-start"
