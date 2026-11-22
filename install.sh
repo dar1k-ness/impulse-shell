@@ -82,7 +82,7 @@ main() {
         echo "installed. This is not a Hyprland session, so nothing was started: log in to Hyprland and the shell is there."
     fi
 <<<<<<< Updated upstream
-    echo "OK: $name установлен и добавлен в автозапуск (${AUTOSTART_FILE:-$config/hypr})"
+    echo "OK: $name installed and added to startup (${AUTOSTART_FILE:-$config/hypr})"
 =======
 
     if [ ${#WARNINGS[@]} -gt 0 ]; then
