@@ -1,0 +1,18 @@
+-- Monitor: 1920x1080 @ 100 Hz
+hl.monitor({
+    output = "HDMI-A-2",
+    mode = "1920x1080@100",
+    position = "0x0",
+    scale = 1
+})
+
+-- Keyboard layouts: English + Russian (switch with SUPER + Space, see custom/keybinds.lua)
+hl.config({
+    input = {
+        kb_layout = "us,ru"
+    },
+    -- HW cursor needs patched aquamarine (~/build/aquamarine, GBM.cpp linear cursor fallback) on kernel 7.3+; set 1 if the cursor disappears after an aquamarine update
+    cursor = {
+        no_hardware_cursors = 0
+    }
+})
